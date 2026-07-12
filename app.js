@@ -35,11 +35,14 @@
     });
   });
 
+  let currentLanguage = 'en';
+  let currentResultData = null;
   const demoOptions = document.querySelector('.demo-options');
   const prototypeStatus = document.querySelector('.prototype-status');
   const tcmConsultation = document.getElementById('tcm-consultation');
 
   function setDemoMode(mode) {
+    if (mode !== 'tcm') return;
     document.querySelectorAll('.demo-option').forEach(function (el) {
       const active = el.dataset.mode === mode;
       el.classList.toggle('is-selected', active);
@@ -51,20 +54,11 @@
       demoOptions.classList.add('mode-' + mode);
     }
 
-    const tcmActive = mode === 'tcm';
-    if (tcmConsultation) tcmConsultation.hidden = !tcmActive;
-    if (prototypeStatus) {
-      prototypeStatus.hidden = tcmActive;
-      if (!tcmActive) {
-        const title = prototypeStatus.querySelector('strong');
-        const description = prototypeStatus.querySelector('span:last-child');
-        if (title) title.textContent = 'Not included in this TCM MVP';
-        if (description) description.textContent = 'Select TCM to try the working retrieval prototype. Western and integrative modes remain placeholders.';
-      }
-    }
+    if (tcmConsultation) tcmConsultation.hidden = false;
+    if (prototypeStatus) prototypeStatus.hidden = true;
   }
 
-  document.querySelectorAll('.demo-option').forEach(function (option) {
+  document.querySelectorAll('.demo-option:not(:disabled)').forEach(function (option) {
     option.addEventListener('click', function () {
       setDemoMode(option.dataset.mode);
     });
@@ -79,6 +73,11 @@
   const tcmFormMessage = document.getElementById('tcm-form-message');
   const tcmResults = document.getElementById('tcm-results');
 
+  function uiText() {
+    const language = translations[currentLanguage] || translations.en;
+    return language.tcm;
+  }
+
   function makeElement(tag, className, text) {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -90,22 +89,35 @@
     container.replaceChildren(makeElement('p', 'tcm-empty', message));
   }
 
-  function renderPatterns(patterns) {
-    const container = document.getElementById('tcm-patterns');
+  function localizedDisplay(item) {
+    const localized = item && item.localized ? item.localized : {};
+    const responseLanguage = currentResultData && currentResultData.response_language;
+    return localized[currentLanguage] || localized[responseLanguage] || localized.en || item;
+  }
+
+  function localizedResultFor(data) {
+    const localized = data && data.localized_result ? data.localized_result : {};
+    return localized[currentLanguage] || localized[data.response_language] || localized.en || null;
+  }
+
+  function renderPatterns(containerId, patterns) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     container.replaceChildren();
     if (!patterns.length) {
-      renderEmpty(container, 'No TCM pattern is suggested for this safety-first response.');
+      renderEmpty(container, uiText().emptyPatterns);
       return;
     }
     patterns.forEach(function (item, index) {
+      const display = localizedDisplay(item);
       const article = makeElement('article', 'tcm-list-item');
       const header = makeElement('div', 'tcm-list-item-header');
-      header.append(makeElement('span', 'tcm-index', String(index + 1)), makeElement('h4', '', item.pattern));
-      article.append(header, makeElement('p', '', item.rationale));
-      if (item.matching_symptoms && item.matching_symptoms.length) {
+      header.append(makeElement('span', 'tcm-index', String(index + 1)), makeElement('h4', '', display.name || display.pattern || item.name || item.pattern));
+      article.append(header, makeElement('p', '', display.rationale || item.rationale));
+      const matchingSymptoms = item.matched_symptoms || item.matching_symptoms || [];
+      if (matchingSymptoms.length && (item.matched_symptoms || (currentResultData && currentResultData.response_language === currentLanguage))) {
         const matches = makeElement('div', 'tcm-match-list');
-        item.matching_symptoms.forEach(function (symptom) {
+        matchingSymptoms.forEach(function (symptom) {
           matches.append(makeElement('span', '', symptom));
         });
         article.append(matches);
@@ -114,20 +126,21 @@
     });
   }
 
-  function renderFormulas(formulas) {
-    const container = document.getElementById('tcm-formulas');
+  function renderFormulas(containerId, formulas) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     container.replaceChildren();
     if (!formulas.length) {
-      renderEmpty(container, 'No herb or formula examples are shown for this response.');
+      renderEmpty(container, uiText().emptyExamples);
       return;
     }
     formulas.forEach(function (item) {
+      const display = localizedDisplay(item);
       const article = makeElement('article', 'tcm-list-item');
       const header = makeElement('div', 'tcm-list-item-header');
-      header.append(makeElement('span', 'tcm-type-pill', item.type), makeElement('h4', '', item.name));
-      article.append(header, makeElement('p', '', item.purpose));
-      const warning = makeElement('p', 'tcm-inline-warning', item.safety_warning);
+      header.append(makeElement('span', 'tcm-type-pill', uiText().exampleTypes[item.type] || item.type), makeElement('h4', '', display.name || item.name));
+      article.append(header, makeElement('p', '', display.description || display.purpose || item.description || item.purpose));
+      const warning = makeElement('p', 'tcm-inline-warning', display.warning || display.safety_warning || item.warning || item.safety_warning);
       article.append(warning);
       container.append(article);
     });
@@ -138,27 +151,28 @@
     if (!container) return;
     container.replaceChildren();
     if (!evidence.length) {
-      renderEmpty(container, 'Evidence retrieval was intentionally skipped for this safety response.');
+      renderEmpty(container, uiText().emptyEvidence);
       return;
     }
     evidence.forEach(function (item, index) {
+      const display = localizedDisplay(item);
       const article = makeElement('article', 'tcm-evidence-item');
       const top = makeElement('div', 'tcm-evidence-top');
       const sourceBlock = makeElement('div', '');
-      sourceBlock.append(makeElement('span', 'tcm-citation', '[' + (index + 1) + '] ' + item.source_type), makeElement('h4', '', item.title));
+      sourceBlock.append(makeElement('span', 'tcm-citation', '[' + (index + 1) + '] ' + (display.source_type || item.source_type)), makeElement('h4', '', display.title || item.title));
       const score = Math.round(Number(item.relevance_score || 0) * 100);
-      top.append(sourceBlock, makeElement('strong', 'tcm-relevance', score + '% match'));
+      top.append(sourceBlock, makeElement('strong', 'tcm-relevance', score + '% ' + uiText().match));
       const meter = makeElement('div', 'tcm-relevance-meter');
       const fill = makeElement('span', '');
       fill.style.width = Math.max(2, Math.min(100, score)) + '%';
       meter.append(fill);
-      article.append(top, makeElement('p', '', item.snippet), meter, makeElement('cite', '', item.source));
+      article.append(top, makeElement('p', '', display.snippet || item.snippet), meter, makeElement('cite', '', item.source));
       container.append(article);
     });
   }
 
-  function renderSafety(notes) {
-    const container = document.getElementById('tcm-safety-notes');
+  function renderSafety(containerId, notes) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     container.replaceChildren();
     notes.forEach(function (note) {
@@ -166,59 +180,103 @@
     });
   }
 
-  function renderTCMResult(data) {
+  function shortenAnswer(text) {
+    const limit = /[\u3400-\u9fff\uac00-\ud7af]/.test(text) ? 260 : 420;
+    if (text.length <= limit) return { short: text, truncated: false };
+    const candidate = text.slice(0, limit);
+    const stops = ['。', '！', '？', '. ', '! ', '? '];
+    let cut = -1;
+    stops.forEach(function (stop) { cut = Math.max(cut, candidate.lastIndexOf(stop)); });
+    if (cut < Math.floor(limit * 0.55)) cut = limit;
+    return { short: candidate.slice(0, cut + 1).trim() + (cut === limit ? '…' : ''), truncated: true };
+  }
+
+  function renderTCMResult(data, shouldScroll) {
+    currentResultData = data;
+    const t = uiText();
+    const localizedResult = localizedResultFor(data);
     const score = Math.round(Number(data.confidence.score || 0) * 100);
     const generationSource = data.generation_source || (data.generation_mode === 'llm' ? 'siliconflow_llm' : data.generation_mode === 'safety' ? 'safety_rule' : 'mock_fallback');
-    const modeLabel = generationSource === 'siliconflow_llm'
-      ? 'AI generated with local evidence'
-      : generationSource === 'safety_rule'
-        ? 'Safety rule'
-        : 'Local medical library fallback';
-    const sourceLabel = generationSource === 'siliconflow_llm'
-      ? 'generation_source: siliconflow_llm'
-      : generationSource === 'safety_rule'
-        ? 'generation_source: safety_rule'
-        : 'generation_source: mock_fallback';
-    const modelLabel = data.llm_model ? 'llm_model: ' + data.llm_model : 'llm_model: local';
-    const groundingLabel = generationSource === 'siliconflow_llm'
-      ? 'Grounding: LLM answer grounded by local retrieved evidence.'
-      : generationSource === 'safety_rule'
-        ? 'Grounding: safety rule response; TCM generation was bypassed.'
-        : 'Grounding: local fallback answer generated from retrieved TCM evidence.';
+    const modeLabel = localizedResult && localizedResult.status_label ? localizedResult.status_label : (t.status[generationSource] || generationSource);
+    const groundingLabel = localizedResult && localizedResult.grounding ? localizedResult.grounding : (t.grounding[generationSource] || '');
+    const summaryText = localizedResult && localizedResult.summary ? localizedResult.summary : String(data.tcm_perspective || '');
+    const answer = shortenAnswer(summaryText);
+    const isAbstained = Boolean(data.abstained) || (data.scope_status && data.scope_status !== 'supported');
 
-    document.getElementById('tcm-summary').textContent = data.tcm_perspective;
+    document.getElementById('tcm-summary').textContent = answer.short;
+    document.getElementById('tcm-summary-full').textContent = summaryText;
+    document.getElementById('tcm-full-answer-details').hidden = !answer.truncated;
     document.getElementById('tcm-grounding-note').textContent = groundingLabel;
     document.getElementById('tcm-confidence-score').textContent = score + '%';
-    document.getElementById('tcm-confidence-level').textContent = data.confidence.level + ' confidence';
+    document.getElementById('tcm-confidence-level').textContent = t.confidence[data.confidence.level] || data.confidence.level;
     document.getElementById('tcm-confidence-reason').textContent = data.confidence.reason;
-    document.getElementById('tcm-disclaimer').textContent = data.disclaimer;
+    document.getElementById('tcm-disclaimer').textContent = t.disclaimer;
     document.getElementById('tcm-generation-mode').textContent = modeLabel;
-    document.getElementById('tcm-generation-source').textContent = sourceLabel;
-    document.getElementById('tcm-llm-model').textContent = modelLabel;
+    document.getElementById('tcm-generation-source').textContent = generationSource;
+    document.getElementById('tcm-llm-model').textContent = data.llm_model || 'local';
+    document.getElementById('tcm-response-language').textContent = data.response_language || '—';
+    document.getElementById('tcm-evidence-count').textContent = String((data.evidence || []).length);
+    document.getElementById('tcm-retrieval-method').textContent = data.retrieval_method || (data.retrieval_metadata && data.retrieval_metadata.retrieval_method) || 'not_run';
+    document.getElementById('tcm-meaningful-count').textContent = String(data.meaningful_match_count || (data.retrieval_metadata && data.retrieval_metadata.meaningful_match_count) || 0);
+    document.getElementById('tcm-top-score').textContent = Math.round(Number(data.top_relevance_score || (data.retrieval_metadata && data.retrieval_metadata.top_relevance_score) || 0) * 100) + '%';
+    document.getElementById('tcm-llm-error').textContent = data.llm_error || '—';
+    document.getElementById('tcm-llm-error-row').hidden = !data.llm_error;
 
-    const llmError = document.getElementById('tcm-llm-error');
-    if (llmError) {
-      if (data.llm_error) {
-        llmError.hidden = false;
-        llmError.textContent = data.llm_error === 'LLM_API_KEY is missing'
-          ? 'No LLM API key is configured. This answer is generated from the local TCM medical knowledge base.'
-          : 'The AI provider or network is temporarily unavailable, so this answer is generated from the local TCM medical knowledge base. llm_error: ' + data.llm_error;
-      } else {
-        llmError.hidden = true;
-        llmError.textContent = '';
-      }
+    const statusBadge = document.getElementById('tcm-generation-mode');
+    statusBadge.textContent = modeLabel;
+    statusBadge.dataset.source = generationSource;
+
+    const fallbackBanner = document.getElementById('tcm-fallback-banner');
+    fallbackBanner.hidden = generationSource !== 'mock_fallback';
+
+    const stateCard = document.getElementById('tcm-state-card');
+    const stateTitle = document.getElementById('tcm-state-title');
+    const stateBody = document.getElementById('tcm-state-body');
+    if (stateCard && stateTitle && stateBody) {
+      stateCard.hidden = !isAbstained;
+      stateTitle.textContent = (localizedResult && localizedResult.state_title) || (t.stateTitles && t.stateTitles[data.scope_status]) || modeLabel;
+      stateBody.textContent = (localizedResult && localizedResult.state_body) || summaryText;
     }
 
     const urgent = document.getElementById('tcm-urgent');
     urgent.hidden = !data.urgent;
     tcmResults.classList.toggle('is-urgent', Boolean(data.urgent));
-    renderPatterns(data.possible_patterns || []);
-    renderFormulas(data.related_herbs_or_formulas || []);
-    renderEvidence(data.evidence || []);
-    renderSafety(data.safety_notes || []);
+    tcmResults.classList.toggle('is-abstained', isAbstained);
+    const allPatterns = data.possible_patterns || [];
+    const allFormulas = data.related_herbs_or_formulas || [];
+    const evidence = data.evidence || [];
+    const localizedSafety = data.localized_safety_notes || {};
+    const allSafetyNotes = localizedSafety[currentLanguage] || localizedSafety[data.response_language] || localizedSafety.en || data.safety_notes || [];
+    const visiblePatterns = localizedResult && Array.isArray(localizedResult.patterns) ? localizedResult.patterns.slice(0, 2) : allPatterns.slice(0, 2);
+    const visibleFormulas = localizedResult && Array.isArray(localizedResult.formulas) ? localizedResult.formulas.slice(0, 2) : allFormulas.slice(0, 2);
+    const visibleSafetyNotes = localizedResult && Array.isArray(localizedResult.safety_notes) ? localizedResult.safety_notes.slice(0, 3) : allSafetyNotes.slice(0, 3);
+    renderPatterns('tcm-patterns', visiblePatterns);
+    renderPatterns('tcm-patterns-extra', allPatterns);
+    renderFormulas('tcm-formulas', visibleFormulas);
+    renderFormulas('tcm-formulas-extra', allFormulas);
+    renderEvidence(evidence);
+    renderSafety('tcm-safety-notes', visibleSafetyNotes);
+    renderSafety('tcm-safety-notes-extra', allSafetyNotes);
+    document.querySelector('.tcm-result-grid').hidden = isAbstained;
+    document.getElementById('tcm-patterns-extra-details').hidden = isAbstained || allPatterns.length <= visiblePatterns.length;
+    document.getElementById('tcm-formulas-extra-details').hidden = isAbstained || allFormulas.length <= visibleFormulas.length;
+    document.getElementById('tcm-safety-extra-details').hidden = allSafetyNotes.length <= visibleSafetyNotes.length;
+    document.getElementById('tcm-evidence-details').hidden = !evidence.length;
+    const meaningfulEvidence = evidence.filter(function (item) { return Number(item.relevance_score || 0) > 0; });
+    const strongest = evidence.reduce(function (best, item) { return Math.max(best, Number(item.relevance_score || 0)); }, 0);
+    document.getElementById('tcm-evidence-summary').textContent = localizedResult && localizedResult.evidence_summary
+      ? localizedResult.evidence_summary
+      : t.evidenceSummary(meaningfulEvidence.length, Math.round(strongest * 100));
+    if (localizedResult) {
+      document.querySelector('.tcm-result-hero h2').textContent = localizedResult.summary_title || t.summaryTitle;
+      document.querySelector('.tcm-result-grid section:first-child .tcm-card-heading h3').textContent = localizedResult.patterns_title || t.cardTitles[0];
+      document.querySelector('.tcm-result-grid section:nth-child(2) .tcm-card-heading h3').textContent = localizedResult.examples_title || t.cardTitles[1];
+      document.querySelector('.tcm-safety-card .tcm-card-heading h3').textContent = localizedResult.safety_title || t.cardTitles[2];
+      document.querySelector('#tcm-evidence-details > summary').textContent = localizedResult.evidence_title || t.accordions[2];
+    }
     tcmResults.hidden = false;
     tcmResults.setAttribute('aria-busy', 'false');
-    tcmResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (shouldScroll !== false) tcmResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function showFormMessage(message) {
@@ -242,7 +300,7 @@
       tcmFormMessage.hidden = true;
 
       if (question.length < 3) {
-        showFormMessage('Please enter a health question of at least 3 characters.');
+        showFormMessage(uiText().validation);
         tcmQuestion.focus();
         return;
       }
@@ -261,7 +319,7 @@
 
       tcmSubmit.disabled = true;
       tcmSubmit.classList.add('is-loading');
-      tcmSubmit.querySelector('.tcm-submit-label').textContent = 'Retrieving evidence…';
+      tcmSubmit.querySelector('.tcm-submit-label').textContent = uiText().loading;
       tcmResults.setAttribute('aria-busy', 'true');
 
       try {
@@ -274,22 +332,22 @@
         try {
           data = await response.json();
         } catch (_) {
-          throw new Error('The backend returned an unreadable response.');
+          throw new Error(uiText().unreadable);
         }
         if (!response.ok) {
-          throw new Error(typeof data.detail === 'string' ? data.detail : 'The consultation could not be completed.');
+          throw new Error(typeof data.detail === 'string' ? data.detail : uiText().failed);
         }
         renderTCMResult(data);
       } catch (error) {
         const offline = error instanceof TypeError;
         showFormMessage(offline
-          ? 'The TCM-RAG backend is not reachable. Start it on http://localhost:8000, then try again.'
-          : error.message || 'Something went wrong. Please try again.');
+          ? uiText().backendOffline
+          : error.message || uiText().failed);
         tcmResults.setAttribute('aria-busy', 'false');
       } finally {
         tcmSubmit.disabled = false;
         tcmSubmit.classList.remove('is-loading');
-        tcmSubmit.querySelector('.tcm-submit-label').textContent = 'Run TCM-RAG';
+        tcmSubmit.querySelector('.tcm-submit-label').textContent = uiText().submit;
       }
     });
   }
@@ -301,6 +359,7 @@
       title: 'Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus',
       nav: ['About', 'Architecture', 'Research'],
       view: ['Home', 'Demo'],
+      ariaLabels: ['Page view', 'Primary navigation', 'Language mode'],
       heroEyebrow: 'University of Nottingham · Research Internship',
       heroTitle: 'Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus',
       heroLead: 'A multi-agent healthcare AI framework combining Retrieval-Augmented Generation, Agentic AI, and LLM-as-a-Judge to deliver evidence-grounded, explainable health information across Western Medicine, Traditional Chinese Medicine, Nutrition, and Lifestyle Medicine.',
@@ -375,13 +434,36 @@
       statusTitle: 'Prototyping in progress',
       statusDesc: 'Consultation workflow and medical retrieval outputs are under active development.',
       footer: '© 2026 University of Nottingham Research Internship',
-      footerSub: 'Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus'
+      footerSub: 'Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus',
+      tcm: {
+        modeAria: 'Consultation mode', comingSoon: 'Coming soon', kicker: 'TCM-RAG · Research prototype', title: 'Explore a TCM perspective',
+        lead: 'Ask a health question. Local TCM evidence is retrieved before a concise, safety-aware educational answer is generated.', live: 'Local RAG ready',
+        questionLabel: 'Health question', placeholder: 'e.g. I have trouble sleeping and lower back soreness.', helper: 'Describe what you notice and when it started. Do not include identifying information.',
+        samplesLabel: 'Try a sample', samples: [['Trouble sleeping + lower back soreness', 'I have trouble sleeping and lower back soreness'], ['Feverish head + itchy throat', 'I feel feverish and my throat is itchy'], ['Stress + bloating + poor appetite', 'I feel stressed, bloated, and have poor appetite']],
+        contextTitle: 'Add optional context', contextHint: 'helps retrieval', fields: ['Age', 'Gender', 'Symptom duration', 'Pregnancy status', 'Current medications', 'Allergies'],
+        placeholders: ['e.g. 35', 'e.g. 3 weeks', 'Names only; never stop prescribed medicine based on this demo', 'Medicine, herb, or food allergies'],
+        genderOptions: ['Prefer not to say', 'Female', 'Male', 'Non-binary', 'Self-described'], pregnancyOptions: ['Not provided', 'No', 'Pregnant', 'Trying to conceive', 'Breastfeeding', 'Unsure'],
+        formSafety: '<strong>Research use only.</strong> Not a diagnosis or prescription. Emergencies require immediate professional care.', submit: 'Run TCM-RAG', loading: 'Retrieving evidence…',
+        validation: 'Please enter a health question of at least 3 characters.', unreadable: 'The backend returned an unreadable response.', failed: 'The consultation could not be completed. Please try again.', backendOffline: 'The TCM-RAG backend is not reachable. Start it on http://localhost:8000, then try again.',
+        resultLabel: 'TCM-RAG result', summaryTitle: 'TCM perspective summary', fullAnswer: 'View full answer',
+        status: { siliconflow_llm: 'AI grounded by retrieved evidence', mock_fallback: 'Local evidence fallback', safety_rule: 'Safety-rule response', scope_rule: 'Scope-rule abstention', evidence_gate: 'Evidence-insufficient abstention' },
+        grounding: { siliconflow_llm: 'The LLM answer is grounded only in retrieved local evidence.', mock_fallback: 'AI provider unavailable or not configured; using the local TCM medical library.', safety_rule: 'Safety rules took priority over TCM interpretation.', scope_rule: 'The current TCM-RAG scope took priority over generation.', evidence_gate: 'No meaningful local evidence was retrieved, so generation was blocked.' },
+        stateTitles: { supported: '', insufficient_information: 'More symptom detail is needed', out_of_scope: 'Out of current TCM-RAG scope', safety_critical: 'Safety-first response', evidence_insufficient: 'Insufficient retrieved evidence' },
+        confidenceAria: 'Confidence score', confidence: { low: 'Low confidence', medium: 'Medium confidence', high: 'High confidence' },
+        urgentTitle: 'Urgent safety guidance', urgentText: 'This response prioritises immediate professional care over TCM interpretation.', fallbackTitle: 'Local knowledge mode', fallbackText: 'AI provider unavailable. This result uses the local TCM knowledge base only.',
+        cardLabels: ['Pattern hypotheses', 'Educational examples', 'Safety first'], cardTitles: ['Most relevant possibilities', 'Examples from retrieved sources', 'Key safety notes'],
+        accordions: ['View all possible patterns', 'View all educational examples', 'View retrieved evidence', 'View all safety notes', 'View technical details'], technicalLabels: ['Source', 'Model', 'Response language', 'Evidence count', 'Error', 'Retrieval method', 'Meaningful matches', 'Top relevance'],
+        emptyPatterns: 'No TCM pattern is suggested for this safety-first response.', emptyExamples: 'No herb or formula examples are shown for this response.', emptyEvidence: 'Evidence retrieval was skipped for this safety response.',
+        exampleTypes: { herb: 'herb', formula: 'formula' }, match: 'match', evidenceSummary: (count, score) => `Based on ${count} local evidence match${count === 1 ? '' : 'es'}. Strongest match: ${score}%.`,
+        disclaimer: 'Educational research prototype only — not a diagnosis or prescription, and not a substitute for qualified medical care.'
+      }
     },
     ko: {
       lang: 'ko',
       title: '의료 합의를 위한 Multi-LLM-as-a-Judge RAG 아키텍처',
       nav: ['소개', '아키텍처', '연구'],
       view: ['홈', '데모'],
+      ariaLabels: ['페이지 보기', '주요 탐색', '언어 선택'],
       heroEyebrow: '노팅엄 대학교 · 연구 인턴십',
       heroTitle: '의료 합의를 위한 Multi-LLM-as-a-Judge RAG 아키텍처',
       heroLead: '검색 증강 생성, 에이전트 AI, LLM-as-a-Judge를 결합한 다중 에이전트 헬스케어 AI 프레임워크로, 서양의학, 중의학, 영양, 생활의학 전반에서 근거 기반의 설명 가능한 건강 정보를 제공합니다.',
@@ -456,13 +538,36 @@
       statusTitle: '프로토타입 제작 중',
       statusDesc: '상담 워크플로우와 의료 검색 출력은 현재 개발 중입니다.',
       footer: '© 2026 노팅엄 대학교 연구 인턴십',
-      footerSub: '의료 합의를 위한 Multi-LLM-as-a-Judge RAG 아키텍처'
+      footerSub: '의료 합의를 위한 Multi-LLM-as-a-Judge RAG 아키텍처',
+      tcm: {
+        modeAria: '상담 모드', comingSoon: '준비 중', kicker: 'TCM-RAG · 연구 프로토타입', title: '중의학 관점 알아보기',
+        lead: '건강 질문을 입력하세요. 간결하고 안전을 고려한 교육용 답변을 생성하기 전에 로컬 중의학 근거를 검색합니다.', live: '로컬 RAG 준비됨',
+        questionLabel: '건강 질문', placeholder: '예: 잠을 잘 못 자고 허리가 뻐근해요.', helper: '느끼는 증상과 시작 시점을 적어 주세요. 개인 식별 정보는 입력하지 마세요.',
+        samplesLabel: '예시 질문', samples: [['잠을 잘 못 자고 허리가 뻐근해요', '잠을 잘 못 자고 허리가 뻐근해요'], ['머리에 열감이 있고 목이 간질거려요', '머리에 열감이 있고 목이 간질거려요'], ['스트레스와 복부 팽만, 식욕 저하가 있어요', '스트레스와 복부 팽만, 식욕 저하가 있어요']],
+        contextTitle: '선택 정보 추가', contextHint: '검색에 도움', fields: ['나이', '성별', '증상 기간', '임신 상태', '복용 중인 약', '알레르기'],
+        placeholders: ['예: 35', '예: 3주', '약 이름만 입력하세요. 이 데모를 근거로 처방약을 중단하지 마세요', '약물, 한약재 또는 음식 알레르기'],
+        genderOptions: ['응답하지 않음', '여성', '남성', '논바이너리', '직접 설명'], pregnancyOptions: ['입력하지 않음', '아니요', '임신 중', '임신 준비 중', '수유 중', '확실하지 않음'],
+        formSafety: '<strong>연구용입니다.</strong> 진단이나 처방이 아닙니다. 응급 상황에는 즉시 전문 의료 도움을 받으세요.', submit: 'TCM-RAG 실행', loading: '근거 검색 중…',
+        validation: '건강 질문을 3자 이상 입력해 주세요.', unreadable: '서버 응답을 읽을 수 없습니다.', failed: '상담을 완료하지 못했습니다. 다시 시도해 주세요.', backendOffline: 'TCM-RAG 서버에 연결할 수 없습니다. http://localhost:8000에서 서버를 시작한 뒤 다시 시도하세요.',
+        resultLabel: 'TCM-RAG 결과', summaryTitle: '중의학 관점 요약', fullAnswer: '전체 답변 보기',
+        status: { siliconflow_llm: '검색 근거 기반 AI 생성', mock_fallback: '로컬 근거 기반 대체 응답', safety_rule: '안전 규칙 응답', scope_rule: '범위 규칙에 따른 답변 보류', evidence_gate: '근거 부족으로 답변 보류' },
+        grounding: { siliconflow_llm: 'LLM 답변은 검색된 로컬 근거에만 기반합니다.', mock_fallback: 'AI 제공자가 사용할 수 없거나 설정되지 않아 로컬 한의학 지식베이스로 답변합니다.', safety_rule: '안전 규칙이 한의학적 해석보다 우선 적용되었습니다.', scope_rule: '현재 TCM-RAG 연구 범위가 생성보다 우선 적용되었습니다.', evidence_gate: '의미 있는 로컬 근거가 검색되지 않아 생성이 차단되었습니다.' },
+        stateTitles: { supported: '', insufficient_information: '증상 정보가 더 필요합니다', out_of_scope: '현재 TCM-RAG 범위를 벗어남', safety_critical: '안전 우선 응답', evidence_insufficient: '검색 근거 부족' },
+        confidenceAria: '신뢰도 점수', confidence: { low: '낮은 신뢰도', medium: '보통 신뢰도', high: '높은 신뢰도' },
+        urgentTitle: '긴급 안전 안내', urgentText: '이 답변은 중의학 해석보다 즉각적인 전문 진료를 우선합니다.', fallbackTitle: '로컬 지식 모드', fallbackText: 'AI 서비스를 사용할 수 없어 로컬 TCM 지식베이스만 사용했습니다.',
+        cardLabels: ['변증 가설', '교육용 예시', '안전 우선'], cardTitles: ['가장 관련성 높은 가능성', '검색 근거의 교육용 예시', '핵심 안전 안내'],
+        accordions: ['가능한 변증 모두 보기', '교육용 예시 모두 보기', '검색 근거 보기', '안전 안내 모두 보기', '기술 정보 보기'], technicalLabels: ['생성 출처', '모델', '응답 언어', '근거 수', '오류', '검색 방식', '유의미한 매칭', '최고 관련도'],
+        emptyPatterns: '안전 우선 답변에는 변증 가설을 표시하지 않습니다.', emptyExamples: '이 답변에는 약재 또는 처방 예시를 표시하지 않습니다.', emptyEvidence: '안전 답변에서는 근거 검색을 생략했습니다.',
+        exampleTypes: { herb: '약재', formula: '처방 예시' }, match: '일치', evidenceSummary: (count, score) => `로컬 근거 ${count}건을 바탕으로 했습니다. 최고 일치도: ${score}%.`,
+        disclaimer: '교육·연구용 프로토타입이며 진단이나 처방이 아닙니다. 전문 의료인의 진료를 대신하지 않습니다.'
+      }
     },
     zh: {
       lang: 'zh-Hans',
       title: '面向医疗共识的 Multi-LLM-as-a-Judge RAG 架构',
       nav: ['关于', '架构', '研究'],
       view: ['首页', '演示'],
+      ariaLabels: ['页面视图', '主导航', '语言选择'],
       heroEyebrow: '诺丁汉大学 · 研究实习',
       heroTitle: '面向医疗共识的 Multi-LLM-as-a-Judge RAG 架构',
       heroLead: '一个多智能体医疗 AI 框架，结合检索增强生成、智能体 AI 与 LLM-as-a-Judge，为西医、中医、营养和生活方式医学提供有证据支撑、可解释的健康信息。',
@@ -537,7 +642,29 @@
       statusTitle: '原型开发中',
       statusDesc: '咨询流程和医学检索输出仍在积极开发中。',
       footer: '© 2026 诺丁汉大学研究实习',
-      footerSub: '面向医疗共识的 Multi-LLM-as-a-Judge RAG 架构'
+      footerSub: '面向医疗共识的 Multi-LLM-as-a-Judge RAG 架构',
+      tcm: {
+        modeAria: '咨询模式', comingSoon: '即将开放', kicker: 'TCM-RAG · 研究原型', title: '了解中医视角',
+        lead: '输入健康问题。系统会先检索本地中医证据，再生成简明且注重安全的科普回答。', live: '本地 RAG 已就绪',
+        questionLabel: '健康问题', placeholder: '例如：我有点失眠，最近腰酸。', helper: '请描述你感受到的症状和开始时间，不要填写可识别个人身份的信息。',
+        samplesLabel: '试试示例', samples: [['有点失眠，最近腰酸', '我有点失眠，最近腰酸'], ['头有点发热，嗓子痒', '我头有点发热，嗓子痒'], ['压力大，腹胀，胃口不好', '压力大，腹胀，胃口不好']],
+        contextTitle: '添加可选信息', contextHint: '帮助检索', fields: ['年龄', '性别', '症状持续时间', '怀孕情况', '目前用药', '过敏情况'],
+        placeholders: ['例如：35', '例如：3 周', '只填写药名；不要依据本演示停用处方药', '药物、中药材或食物过敏'],
+        genderOptions: ['不愿透露', '女性', '男性', '非二元性别', '自行描述'], pregnancyOptions: ['未提供', '否', '怀孕中', '备孕中', '哺乳期', '不确定'],
+        formSafety: '<strong>仅供研究。</strong>本系统不提供诊断或处方；紧急情况请立即寻求专业医疗帮助。', submit: '运行 TCM-RAG', loading: '正在检索证据…',
+        validation: '请输入至少 3 个字符的健康问题。', unreadable: '后端返回了无法读取的响应。', failed: '本次咨询未能完成，请重试。', backendOffline: '无法连接 TCM-RAG 后端。请先在 http://localhost:8000 启动服务，然后重试。',
+        resultLabel: 'TCM-RAG 结果', summaryTitle: '中医视角摘要', fullAnswer: '查看完整回答',
+        status: { siliconflow_llm: 'AI 已基于检索证据生成', mock_fallback: '本地证据回退', safety_rule: '安全规则回复', scope_rule: '范围规则回避回答', evidence_gate: '证据不足回避回答' },
+        grounding: { siliconflow_llm: '本次 LLM 回答只基于本地检索到的证据生成。', mock_fallback: 'AI 服务暂不可用或未配置，已暂时使用本地中医医学库为您解答。', safety_rule: '安全规则优先于中医辨证解释。', scope_rule: '当前 TCM-RAG 研究范围优先于模型生成。', evidence_gate: '由于没有检索到足够相关的本地证据，系统已阻断生成。' },
+        stateTitles: { supported: '', insufficient_information: '需要补充更多症状信息', out_of_scope: '超出当前 TCM-RAG 范围', safety_critical: '安全优先回复', evidence_insufficient: '检索证据不足' },
+        confidenceAria: '置信度评分', confidence: { low: '低置信度', medium: '中等置信度', high: '高置信度' },
+        urgentTitle: '紧急安全提示', urgentText: '此回答优先建议立即寻求专业医疗帮助，不进行中医辨证解释。', fallbackTitle: '本地知识模式', fallbackText: 'AI 服务暂不可用，以下结果仅基于本地中医知识库生成。',
+        cardLabels: ['辨证假设', '科普示例', '安全优先'], cardTitles: ['最相关的可能方向', '检索资料中的科普示例', '关键安全提示'],
+        accordions: ['查看全部可能证型', '查看全部科普示例', '查看检索证据', '查看全部安全提示', '查看技术详情'], technicalLabels: ['生成来源', '模型', '回答语言', '证据数量', '错误', '检索方式', '有效匹配数', '最高相关度'],
+        emptyPatterns: '安全优先回答不提供中医证型推测。', emptyExamples: '本回答不展示中药材或方剂示例。', emptyEvidence: '安全优先回答已跳过证据检索。',
+        exampleTypes: { herb: '中药材', formula: '方剂示例' }, match: '匹配', evidenceSummary: (count, score) => `基于 ${count} 条本地证据匹配，最高匹配度为 ${score}%。`,
+        disclaimer: '仅供教育与研究，不构成诊断或处方，也不能替代合格医疗专业人员的诊疗。'
+      }
     }
   };
 
@@ -559,13 +686,25 @@
     });
   }
 
+  function setSelectOptions(selector, labels) {
+    const select = document.querySelector(selector);
+    if (!select) return;
+    Array.from(select.options).forEach(function (option, index) {
+      if (labels[index] !== undefined) option.textContent = labels[index];
+    });
+  }
+
   function applyLanguage(lang) {
     const t = translations[lang] || translations.en;
+    currentLanguage = lang;
     document.documentElement.lang = t.lang;
     document.title = t.title;
 
     setTextList('.toggle-btn', t.view);
     setTextList('.nav a', t.nav);
+    toggle.setAttribute('aria-label', t.ariaLabels[0]);
+    if (nav) nav.setAttribute('aria-label', t.ariaLabels[1]);
+    document.querySelector('.language-switch')?.setAttribute('aria-label', t.ariaLabels[2]);
     setText('.hero .eyebrow', t.heroEyebrow);
     setText('.hero h1', t.heroTitle);
     setText('.hero .lead', t.heroLead);
@@ -637,8 +776,60 @@
         el.querySelector('.demo-option-desc').textContent = t.demoOptions[index][1];
       }
     });
+    setTextList('.demo-coming-soon', [t.tcm.comingSoon, t.tcm.comingSoon]);
+    if (demoOptions) demoOptions.setAttribute('aria-label', t.tcm.modeAria);
     setText('.prototype-status strong', t.statusTitle);
     setText('.prototype-status span:last-child', t.statusDesc);
+    setText('.tcm-kicker', t.tcm.kicker);
+    setText('#tcm-consultation-title', t.tcm.title);
+    setText('.tcm-panel-heading > div > p:last-child', t.tcm.lead);
+    setText('.tcm-live-label', t.tcm.live);
+    setText('.tcm-question-field > span', t.tcm.questionLabel + ' *');
+    if (tcmQuestion) tcmQuestion.placeholder = t.tcm.placeholder;
+    setText('.tcm-question-field small', t.tcm.helper);
+    setText('.tcm-samples > span', t.tcm.samplesLabel);
+    document.querySelector('.tcm-samples')?.setAttribute('aria-label', t.tcm.samplesLabel);
+    document.querySelectorAll('.tcm-sample').forEach(function (button, index) {
+      if (!t.tcm.samples[index]) return;
+      button.textContent = t.tcm.samples[index][0];
+      button.dataset.question = t.tcm.samples[index][1];
+    });
+    setText('.tcm-context-title', t.tcm.contextTitle);
+    setText('.tcm-context-hint', t.tcm.contextHint);
+    setTextList('.tcm-context-grid .tcm-field > span', t.tcm.fields);
+    const age = document.getElementById('tcm-age');
+    const duration = document.getElementById('tcm-duration');
+    const medications = document.getElementById('tcm-medications');
+    const allergies = document.getElementById('tcm-allergies');
+    if (age) age.placeholder = t.tcm.placeholders[0];
+    if (duration) duration.placeholder = t.tcm.placeholders[1];
+    if (medications) medications.placeholder = t.tcm.placeholders[2];
+    if (allergies) allergies.placeholder = t.tcm.placeholders[3];
+    setSelectOptions('#tcm-gender', t.tcm.genderOptions);
+    setSelectOptions('#tcm-pregnancy', t.tcm.pregnancyOptions);
+    setHTML('.tcm-form-footer p', t.tcm.formSafety);
+    setText('.tcm-submit-label', t.tcm.submit);
+    setText('.tcm-result-meta > span:first-child', t.tcm.resultLabel);
+    setText('.tcm-result-hero h2', t.tcm.summaryTitle);
+    setText('#tcm-full-answer-details summary', t.tcm.fullAnswer);
+    document.querySelector('.tcm-confidence')?.setAttribute('aria-label', t.tcm.confidenceAria);
+    setText('#tcm-urgent strong', t.tcm.urgentTitle);
+    setText('#tcm-urgent span', t.tcm.urgentText);
+    setText('#tcm-fallback-banner strong', t.tcm.fallbackTitle);
+    setText('#tcm-fallback-banner span', t.tcm.fallbackText);
+    setTextList('.tcm-result-grid .tcm-card-heading p', t.tcm.cardLabels.slice(0, 2));
+    setTextList('.tcm-result-grid .tcm-card-heading h3', t.tcm.cardTitles.slice(0, 2));
+    setText('.tcm-safety-card .tcm-card-heading p', t.tcm.cardLabels[2]);
+    setText('.tcm-safety-card .tcm-card-heading h3', t.tcm.cardTitles[2]);
+    setTextList('.tcm-accordions > details > summary', t.tcm.accordions);
+    setText('#tcm-source-label', t.tcm.technicalLabels[0]);
+    setText('#tcm-model-label', t.tcm.technicalLabels[1]);
+    setText('#tcm-response-language-label', t.tcm.technicalLabels[2]);
+    setText('#tcm-evidence-count-label', t.tcm.technicalLabels[3]);
+    setText('#tcm-error-label', t.tcm.technicalLabels[4]);
+    setText('#tcm-retrieval-method-label', t.tcm.technicalLabels[5] || 'Retrieval method');
+    setText('#tcm-meaningful-count-label', t.tcm.technicalLabels[6] || 'Meaningful matches');
+    setText('#tcm-top-score-label', t.tcm.technicalLabels[7] || 'Top relevance');
     setText('.site-footer p:first-child', t.footer);
     setText('.footer-sub', t.footerSub);
 
@@ -647,6 +838,8 @@
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
+
+    if (currentResultData) renderTCMResult(currentResultData, false);
   }
 
   languageButtons.forEach(function (button) {
@@ -654,4 +847,5 @@
       applyLanguage(button.dataset.lang);
     });
   });
+  applyLanguage('en');
 })();

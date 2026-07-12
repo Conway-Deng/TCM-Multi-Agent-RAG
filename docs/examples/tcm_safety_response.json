@@ -1,0 +1,17 @@
+{
+  "agent": "tcm",
+  "scope_status": "safety_critical",
+  "abstained": true,
+  "generation_source": "safety_rule",
+  "urgent": true,
+  "summary": "这个问题包含可能需要紧急医学评估的危险信号。请不要等待中医辨证解释，应立即寻求专业医疗帮助。",
+  "patterns": [],
+  "educational_examples": [],
+  "evidence": [],
+  "retrieval_metadata": {
+    "retrieval_method": "not_run",
+    "candidate_count": 0,
+    "meaningful_match_count": 0,
+    "top_relevance_score": 0
+  }
+}

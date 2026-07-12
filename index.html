@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260712-tcm-research">
 </head>
 <body>
   <div class="bg-gradient" aria-hidden="true"></div>
@@ -293,31 +293,33 @@
 
   <main id="demo-view" class="view-panel" hidden>
     <section class="demo-section">
-      <p class="eyebrow">MediConsensus Demo</p>
-      <h1 class="demo-title">Choose a consultation mode</h1>
-      <p class="demo-lead">Select which medical knowledge base to query for your health question.</p>
+      <p class="eyebrow"></p>
+      <h1 class="demo-title"></h1>
+      <p class="demo-lead"></p>
 
-      <div class="demo-options glass mode-tcm" role="radiogroup" aria-label="Consultation mode">
+      <div class="demo-options glass mode-tcm" role="radiogroup" aria-label="">
         <span class="demo-slider" aria-hidden="true"></span>
-        <button type="button" class="demo-option demo-option-west" data-mode="west" data-index="0" role="radio" aria-checked="false">
-          <span class="demo-option-label">Western Medicine</span>
-          <span class="demo-option-desc">Evidence-based modern medicine via MediRAG-West</span>
+        <button type="button" class="demo-option demo-option-west is-disabled" data-mode="west" data-index="0" role="radio" aria-checked="false" aria-disabled="true" disabled>
+          <span class="demo-option-label"></span>
+          <span class="demo-option-desc"></span>
+          <span class="demo-coming-soon"></span>
         </button>
         <button type="button" class="demo-option demo-option-tcm is-selected" data-mode="tcm" data-index="1" role="radio" aria-checked="true">
-          <span class="demo-option-label">TCM</span>
-          <span class="demo-option-desc">Traditional Chinese Medicine via TCM-RAG</span>
+          <span class="demo-option-label"></span>
+          <span class="demo-option-desc"></span>
         </button>
-        <button type="button" class="demo-option demo-option-both" data-mode="both" data-index="2" role="radio" aria-checked="false">
-          <span class="demo-option-label">Western Medicine + TCM</span>
-          <span class="demo-option-desc">Integrative dual-paradigm consultation</span>
+        <button type="button" class="demo-option demo-option-both is-disabled" data-mode="both" data-index="2" role="radio" aria-checked="false" aria-disabled="true" disabled>
+          <span class="demo-option-label"></span>
+          <span class="demo-option-desc"></span>
+          <span class="demo-coming-soon"></span>
         </button>
       </div>
 
       <div class="prototype-status glass" role="status" hidden>
         <span class="status-dot" aria-hidden="true"></span>
         <div>
-          <strong>Prototyping in progress</strong>
-          <span>Consultation workflow and medical retrieval outputs are under active development.</span>
+          <strong></strong>
+          <span></span>
         </div>
       </div>
 
@@ -325,43 +327,43 @@
         <div class="tcm-panel glass">
           <div class="tcm-panel-heading">
             <div>
-              <p class="tcm-kicker">TCM-RAG · Research prototype</p>
-              <h2 id="tcm-consultation-title">Explore a TCM perspective</h2>
-              <p>Ask a health question and optionally add context. The prototype retrieves local TCM evidence before generating a safety-aware educational response.</p>
+              <p class="tcm-kicker"></p>
+              <h2 id="tcm-consultation-title"></h2>
+              <p></p>
             </div>
-            <span class="tcm-live-badge"><span aria-hidden="true"></span> Local RAG ready</span>
+            <span class="tcm-live-badge"><span aria-hidden="true"></span><span class="tcm-live-label"></span></span>
           </div>
 
           <form id="tcm-consult-form" novalidate>
             <label class="tcm-field tcm-question-field" for="tcm-question">
-              <span>Health question <strong aria-hidden="true">*</strong></span>
-              <textarea id="tcm-question" name="question" rows="5" minlength="3" maxlength="2000" required placeholder="e.g. I often feel tired, have poor appetite and cold hands. What might this mean from a TCM perspective?"></textarea>
-              <small>Describe what you notice and when it started. Do not include identifying information.</small>
+              <span></span>
+              <textarea id="tcm-question" name="question" rows="4" minlength="3" maxlength="2000" required placeholder=""></textarea>
+              <small></small>
             </label>
 
-            <div class="tcm-samples" aria-label="Sample questions">
-              <span>Try a sample</span>
-              <button type="button" class="tcm-sample" data-question="I often feel tired, have poor appetite and cold hands. What might this mean from a TCM perspective?">Fatigue &amp; cold hands</button>
-              <button type="button" class="tcm-sample" data-question="Stress makes me irritable and bloated, and I sigh often. How might TCM describe this pattern?">Stress &amp; bloating</button>
-              <button type="button" class="tcm-sample" data-question="I have poor sleep, vivid dreams and occasional palpitations. What TCM patterns could be considered?">Sleep &amp; palpitations</button>
+            <div class="tcm-samples" aria-label="">
+              <span></span>
+              <button type="button" class="tcm-sample" data-question=""></button>
+              <button type="button" class="tcm-sample" data-question=""></button>
+              <button type="button" class="tcm-sample" data-question=""></button>
             </div>
 
             <details class="tcm-context">
-              <summary>Optional health context <span>helps retrieval</span></summary>
+              <summary><span class="tcm-context-title"></span> <span class="tcm-context-hint"></span></summary>
               <div class="tcm-context-grid">
-                <label class="tcm-field" for="tcm-age"><span>Age</span><input id="tcm-age" name="age" type="text" inputmode="numeric" maxlength="40" placeholder="e.g. 35"></label>
-                <label class="tcm-field" for="tcm-gender"><span>Gender</span><select id="tcm-gender" name="gender"><option value="">Prefer not to say</option><option value="female">Female</option><option value="male">Male</option><option value="non-binary">Non-binary</option><option value="self-described">Self-described</option></select></label>
-                <label class="tcm-field" for="tcm-duration"><span>Symptom duration</span><input id="tcm-duration" name="duration" type="text" maxlength="160" placeholder="e.g. 3 weeks"></label>
-                <label class="tcm-field" for="tcm-pregnancy"><span>Pregnancy status</span><select id="tcm-pregnancy" name="pregnancy"><option value="">Not provided</option><option value="no">No</option><option value="yes">Pregnant</option><option value="trying">Trying to conceive</option><option value="breastfeeding">Breastfeeding</option><option value="unknown">Unsure</option></select></label>
-                <label class="tcm-field tcm-field-wide" for="tcm-medications"><span>Current medications</span><input id="tcm-medications" name="medications" type="text" maxlength="500" placeholder="Names only; never stop prescribed medicine based on this demo"></label>
-                <label class="tcm-field tcm-field-wide" for="tcm-allergies"><span>Allergies</span><input id="tcm-allergies" name="allergies" type="text" maxlength="500" placeholder="Medicine, herb, or food allergies"></label>
+                <label class="tcm-field" for="tcm-age"><span></span><input id="tcm-age" name="age" type="text" inputmode="numeric" maxlength="40" placeholder=""></label>
+                <label class="tcm-field" for="tcm-gender"><span></span><select id="tcm-gender" name="gender"><option value=""></option><option value="female"></option><option value="male"></option><option value="non-binary"></option><option value="self-described"></option></select></label>
+                <label class="tcm-field" for="tcm-duration"><span></span><input id="tcm-duration" name="duration" type="text" maxlength="160" placeholder=""></label>
+                <label class="tcm-field" for="tcm-pregnancy"><span></span><select id="tcm-pregnancy" name="pregnancy"><option value=""></option><option value="no"></option><option value="yes"></option><option value="trying"></option><option value="breastfeeding"></option><option value="unknown"></option></select></label>
+                <label class="tcm-field tcm-field-wide" for="tcm-medications"><span></span><input id="tcm-medications" name="medications" type="text" maxlength="500" placeholder=""></label>
+                <label class="tcm-field tcm-field-wide" for="tcm-allergies"><span></span><input id="tcm-allergies" name="allergies" type="text" maxlength="500" placeholder=""></label>
               </div>
             </details>
 
             <div class="tcm-form-footer">
-              <p><strong>Research use only.</strong> Not a diagnosis or prescription. Emergencies require immediate professional care.</p>
+              <p></p>
               <button id="tcm-submit" class="tcm-submit" type="submit">
-                <span class="tcm-submit-label">Run TCM-RAG</span>
+                <span class="tcm-submit-label"></span>
                 <span class="tcm-spinner" aria-hidden="true"></span>
               </button>
             </div>
@@ -373,50 +375,90 @@
           <div class="tcm-result-hero glass">
             <div>
               <div class="tcm-result-meta">
-                <span>TCM-RAG result</span>
-                <span id="tcm-generation-mode">Local fallback</span>
-                <span id="tcm-generation-source">mock_fallback</span>
-                <span id="tcm-llm-model">Model: local</span>
+                <span></span>
+                <span id="tcm-generation-mode" class="tcm-source-badge"></span>
               </div>
-              <p id="tcm-llm-error" class="tcm-llm-error" hidden></p>
-              <h2>TCM perspective summary</h2>
-              <p id="tcm-grounding-note" class="tcm-grounding-note">Grounding: LLM answer grounded by local retrieved evidence.</p>
+              <h2></h2>
+              <p id="tcm-grounding-note" class="tcm-grounding-note"></p>
               <p id="tcm-summary"></p>
+              <details id="tcm-full-answer-details" class="tcm-inline-details" hidden>
+                <summary></summary>
+                <p id="tcm-summary-full"></p>
+              </details>
             </div>
-            <div class="tcm-confidence" aria-label="Confidence score">
+            <div class="tcm-confidence" aria-label="">
               <strong id="tcm-confidence-score">0%</strong>
-              <span id="tcm-confidence-level">Low confidence</span>
+              <span id="tcm-confidence-level"></span>
             </div>
           </div>
 
           <div id="tcm-urgent" class="tcm-urgent" role="alert" hidden>
-            <strong>Urgent safety guidance</strong>
-            <span>This response prioritises immediate professional care over TCM interpretation.</span>
+            <strong></strong>
+            <span></span>
+          </div>
+
+          <div id="tcm-fallback-banner" class="tcm-fallback-banner" role="status" hidden>
+            <strong></strong>
+            <span></span>
+          </div>
+
+          <div id="tcm-state-card" class="tcm-state-card glass" role="status" hidden>
+            <strong id="tcm-state-title"></strong>
+            <span id="tcm-state-body"></span>
           </div>
 
           <div class="tcm-result-grid">
             <section class="tcm-result-card glass">
-              <div class="tcm-card-heading"><span class="tcm-card-icon pattern-icon" aria-hidden="true">辨</span><div><p>Pattern hypotheses</p><h3>Possible syndrome differentiation</h3></div></div>
+              <div class="tcm-card-heading"><span class="tcm-card-icon pattern-icon" aria-hidden="true">辨</span><div><p></p><h3></h3></div></div>
               <div id="tcm-patterns" class="tcm-card-list"></div>
             </section>
             <section class="tcm-result-card glass">
-              <div class="tcm-card-heading"><span class="tcm-card-icon formula-icon" aria-hidden="true">方</span><div><p>Educational examples</p><h3>Related herbs or formulas</h3></div></div>
+              <div class="tcm-card-heading"><span class="tcm-card-icon formula-icon" aria-hidden="true">方</span><div><p></p><h3></h3></div></div>
               <div id="tcm-formulas" class="tcm-card-list"></div>
             </section>
           </div>
 
-          <section class="tcm-result-card glass tcm-evidence-card">
-            <div class="tcm-card-heading"><span class="tcm-card-icon evidence-icon" aria-hidden="true">证</span><div><p>Retrieved context</p><h3>Evidence chunks &amp; citations</h3></div></div>
-            <div id="tcm-evidence" class="tcm-evidence-list"></div>
-          </section>
-
           <section class="tcm-result-card glass tcm-safety-card">
-            <div class="tcm-card-heading"><span class="tcm-card-icon safety-icon" aria-hidden="true">!</span><div><p>Safety first</p><h3>Contraindications &amp; cautions</h3></div></div>
+            <div class="tcm-card-heading"><span class="tcm-card-icon safety-icon" aria-hidden="true">!</span><div><p></p><h3></h3></div></div>
             <ul id="tcm-safety-notes"></ul>
           </section>
 
+          <p id="tcm-evidence-summary" class="tcm-evidence-summary"></p>
+
+          <div class="tcm-accordions">
+            <details id="tcm-patterns-extra-details" class="tcm-result-details glass" hidden>
+              <summary></summary>
+              <div id="tcm-patterns-extra" class="tcm-card-list"></div>
+            </details>
+            <details id="tcm-formulas-extra-details" class="tcm-result-details glass" hidden>
+              <summary></summary>
+              <div id="tcm-formulas-extra" class="tcm-card-list"></div>
+            </details>
+            <details id="tcm-evidence-details" class="tcm-result-details glass">
+              <summary></summary>
+              <div id="tcm-evidence" class="tcm-evidence-list"></div>
+            </details>
+            <details id="tcm-safety-extra-details" class="tcm-result-details glass" hidden>
+              <summary></summary>
+              <ul id="tcm-safety-notes-extra" class="tcm-safety-list"></ul>
+            </details>
+            <details class="tcm-result-details glass">
+              <summary></summary>
+              <dl class="tcm-technical-list">
+                <div><dt id="tcm-source-label"></dt><dd id="tcm-generation-source">—</dd></div>
+                <div><dt id="tcm-model-label"></dt><dd id="tcm-llm-model">—</dd></div>
+                <div><dt id="tcm-response-language-label"></dt><dd id="tcm-response-language">—</dd></div>
+                <div><dt id="tcm-evidence-count-label"></dt><dd id="tcm-evidence-count">0</dd></div>
+                <div><dt id="tcm-retrieval-method-label"></dt><dd id="tcm-retrieval-method">—</dd></div>
+                <div><dt id="tcm-meaningful-count-label"></dt><dd id="tcm-meaningful-count">0</dd></div>
+                <div><dt id="tcm-top-score-label"></dt><dd id="tcm-top-score">0%</dd></div>
+                <div id="tcm-llm-error-row"><dt id="tcm-error-label"></dt><dd id="tcm-llm-error">—</dd></div>
+              </dl>
+              <p id="tcm-confidence-reason" class="tcm-technical-note"></p>
+            </details>
+          </div>
+
           <div class="tcm-result-footer">
-            <p id="tcm-confidence-reason"></p>
             <p id="tcm-disclaimer"></p>
           </div>
         </section>
@@ -429,6 +471,6 @@
     <p class="footer-sub">Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus - website by Yoonjae Lee</p>
   </footer>
   <script src="diagram.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20260712-tcm-research"></script>
 </body>
 </html>

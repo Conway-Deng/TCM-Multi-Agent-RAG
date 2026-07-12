@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,13 +16,18 @@ load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 
 app = FastAPI(
     title="MediConsensus TCM-RAG API",
-    version="0.1.0",
-    description="Research-only TCM retrieval and answer-generation MVP.",
+    version="0.2.0",
+    description="Research-only, evidence-gated TCM retrieval and answer-generation prototype.",
 )
+
+def _cors_origins() -> list[str]:
+    raw = os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500")
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500", "http://127.0.0.1:5500"],
+    allow_origins=_cors_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
@@ -38,7 +44,12 @@ async def validation_exception_handler(_, exc: RequestValidationError) -> JSONRe
 
 @app.get("/health")
 async def health() -> dict[str, str]:
-    return {"status": "ok", "service": "TCM-RAG"}
+    return {
+        "status": "ok",
+        "service": "TCM-RAG",
+        "version": app.version,
+        "port_env": os.getenv("PORT", "not_set"),
+    }
 
 
 @app.post("/api/tcm/consult", response_model=TCMConsultResponse)

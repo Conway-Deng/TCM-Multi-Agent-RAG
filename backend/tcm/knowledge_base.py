@@ -1,352 +1,162 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
+import json
+from pathlib import Path
+from typing import Any, Literal
+
+
+Language = Literal["en", "zh", "ko"]
+
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+KNOWLEDGE_PATH = DATA_DIR / "tcm_knowledge_base.json"
+SOURCES_PATH = DATA_DIR / "tcm_sources.json"
+
+LANGUAGES: tuple[Language, ...] = ("en", "zh", "ko")
+
+FORMULA_WARNING = (
+    "Educational example only, not a prescription. Formula choice, ingredients, and dose require "
+    "assessment by a qualified TCM practitioner plus clinician/pharmacist review for pregnancy, "
+    "allergies, chronic disease, and medicine interactions."
+)
+
+
+@dataclass(frozen=True)
+class SourceRecord:
+    source_id: str
+    title: str
+    organization: str
+    year: int | None
+    url_or_identifier: str
+    section: str
+    source_type: str
+    license_or_usage_note: str
+    verification_status: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "SourceRecord":
+        return cls(
+            source_id=str(data["id"]),
+            title=str(data["title"]),
+            organization=str(data["organization"]),
+            year=data.get("year") if isinstance(data.get("year"), int) else None,
+            url_or_identifier=str(data.get("url_or_identifier", "")),
+            section=str(data.get("section", "")),
+            source_type=str(data["source_type"]),
+            license_or_usage_note=str(data.get("license_or_usage_note", "")),
+            verification_status=str(data.get("verification_status", "needs_review")),
+        )
 
 
 @dataclass(frozen=True)
 class KnowledgeEntry:
     entry_id: str
     topic: str
-    domains: tuple[str, ...]
-    symptoms: tuple[str, ...]
-    keywords: tuple[str, ...]
-    pattern: str
-    rationale: str
-    formulas: tuple[dict[str, str], ...]
-    safety_notes: tuple[str, ...]
-    source: str
+    subtopic: str
+    symptoms: dict[Language, tuple[str, ...]]
+    keywords: dict[Language, tuple[str, ...]]
+    pattern: dict[Language, str]
+    rationale: dict[Language, str]
+    educational_examples: tuple[dict[str, Any], ...]
+    safety_notes: dict[Language, tuple[str, ...]]
+    source_ids: tuple[str, ...]
     source_type: str
-    snippet: str
+    evidence_category: str
+    tags: tuple[str, ...]
+    review_status: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "KnowledgeEntry":
+        def lang_tuple(field: str) -> dict[Language, tuple[str, ...]]:
+            value = data.get(field, {})
+            return {
+                language: tuple(str(item) for item in value.get(language, []))
+                for language in LANGUAGES
+            }
+
+        def lang_str(field: str) -> dict[Language, str]:
+            value = data.get(field, {})
+            return {
+                language: str(value.get(language, value.get("en", "")))
+                for language in LANGUAGES
+            }
+
+        return cls(
+            entry_id=str(data["id"]),
+            topic=str(data["topic"]),
+            subtopic=str(data["subtopic"]),
+            symptoms=lang_tuple("symptoms"),
+            keywords=lang_tuple("keywords"),
+            pattern=lang_str("pattern"),
+            rationale=lang_str("rationale"),
+            educational_examples=tuple(dict(item) for item in data.get("educational_examples", [])),
+            safety_notes=lang_tuple("safety_notes"),
+            source_ids=tuple(str(item) for item in data.get("source_ids", [])),
+            source_type=str(data["source_type"]),
+            evidence_category=str(data["evidence_category"]),
+            tags=tuple(str(item) for item in data.get("tags", [])),
+            review_status=str(data.get("review_status", "needs_human_review")),
+        )
+
+    def title(self, language: Language = "en") -> str:
+        titles = {
+            "sleep": {"en": "Sleep-related presentation", "zh": "睡眠相关表现", "ko": "수면 관련 양상"},
+            "fatigue": {"en": "Fatigue and low energy", "zh": "疲劳与乏力", "ko": "피로와 기력 저하"},
+            "digestion": {"en": "Digestive presentation", "zh": "消化相关表现", "ko": "소화 관련 양상"},
+            "stress": {"en": "Stress and constraint symptoms", "zh": "压力与郁滞表现", "ko": "스트레스와 울체 양상"},
+            "headache": {"en": "Headache and dizziness", "zh": "头痛与头晕", "ko": "두통과 어지러움"},
+            "throat_cough": {"en": "Throat and cough presentation", "zh": "咽喉与咳嗽表现", "ko": "목과 기침 양상"},
+            "cold_heat_sweating": {"en": "Cold/heat and sweating signs", "zh": "寒热与出汗表现", "ko": "한열과 땀 양상"},
+            "lower_back_tinnitus_deficiency": {"en": "Lower-back and deficiency signs", "zh": "腰酸耳鸣与虚损表现", "ko": "허리·이명·허증 양상"},
+        }
+        return titles.get(self.topic, {}).get(language, self.topic.replace("_", " ").title())
+
+    def snippet(self, language: Language = "en") -> str:
+        prefix = {
+            "en": "Local educational TCM evidence: ",
+            "zh": "本地中医教学证据提示：",
+            "ko": "로컬 한의학 교육 근거: ",
+        }[language]
+        return prefix + self.rationale[language]
+
+    def all_search_terms(self) -> dict[Language, tuple[str, ...]]:
+        terms: dict[Language, tuple[str, ...]] = {}
+        for language in LANGUAGES:
+            terms[language] = tuple(
+                dict.fromkeys(
+                    [
+                        *self.keywords[language],
+                        *self.symptoms[language],
+                        self.pattern[language],
+                        self.title(language),
+                        *self.tags,
+                    ]
+                )
+            )
+        return terms
 
 
-FORMULA_WARNING = (
-    "Educational example only, not a prescription. Formula choice and dose require an "
-    "assessment by a qualified TCM practitioner and a pharmacist/clinician review for "
-    "pregnancy, allergies, chronic disease, and medicine interactions."
-)
+@lru_cache(maxsize=1)
+def load_knowledge_base() -> tuple[KnowledgeEntry, ...]:
+    data = json.loads(KNOWLEDGE_PATH.read_text(encoding="utf-8"))
+    return tuple(KnowledgeEntry.from_dict(item) for item in data)
 
 
-KNOWLEDGE_BASE: tuple[KnowledgeEntry, ...] = (
-    KnowledgeEntry(
-        entry_id="spleen-qi-deficiency",
-        topic="Fatigue and digestion",
-        domains=("syndrome differentiation", "digestive health"),
-        symptoms=("fatigue", "poor appetite", "bloating", "loose stools", "weak limbs"),
-        keywords=("tired", "fatigue", "poor appetite", "bloating", "loose stool", "乏力", "食欲差", "腹胀", "便溏"),
-        pattern="Spleen qi deficiency (脾气虚)",
-        rationale="In TCM theory, this pattern is considered when reduced appetite and digestive weakness occur with persistent tiredness.",
-        formulas=({"name": "Si Jun Zi Tang (四君子汤)", "type": "formula", "purpose": "Traditionally discussed for supporting spleen qi."},),
-        safety_notes=("Fatigue and appetite change have many biomedical causes; persistent or worsening symptoms need clinical assessment.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Spleen qi deficiency is a TCM pattern associated in traditional descriptions with reduced digestive function and low energy.",
-    ),
-    KnowledgeEntry(
-        entry_id="spleen-yang-deficiency",
-        topic="Cold digestive symptoms",
-        domains=("syndrome differentiation", "digestive health"),
-        symptoms=("cold hands", "abdominal cold", "poor appetite", "loose stools", "fatigue"),
-        keywords=("cold hands", "feel cold", "abdominal cold", "diarrhea", "poor appetite", "手脚冰凉", "怕冷", "腹泻", "食欲差"),
-        pattern="Spleen yang deficiency (脾阳虚)",
-        rationale="TCM descriptions may consider spleen yang deficiency when digestive weakness is accompanied by a marked sense of cold.",
-        formulas=({"name": "Li Zhong Wan (理中丸)", "type": "formula", "purpose": "Traditionally discussed for warming and supporting the middle burner."},),
-        safety_notes=("Cold intolerance can relate to thyroid, circulatory, nutritional, or other conditions and should not be self-diagnosed.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Traditional pattern descriptions distinguish spleen yang deficiency by digestive weakness together with cold signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="liver-qi-stagnation",
-        topic="Stress and constrained qi",
-        domains=("syndrome differentiation", "emotional wellbeing"),
-        symptoms=("stress", "irritability", "sighing", "chest or rib-side tightness", "variable digestion"),
-        keywords=("stress", "irritable", "sigh", "chest tightness", "rib pain", "mood", "压力", "易怒", "叹气", "胸闷", "胁胀"),
-        pattern="Liver qi stagnation (肝气郁结)",
-        rationale="Within TCM theory, emotional constraint with fluctuating digestive or chest/rib-side discomfort may be framed as constrained liver qi.",
-        formulas=({"name": "Xiao Yao San (逍遥散)", "type": "formula", "purpose": "Traditionally discussed for patterns involving constrained liver qi with digestive weakness."},),
-        safety_notes=("New or severe chest discomfort must be assessed urgently rather than attributed to a TCM pattern.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Liver qi stagnation is a traditional pattern term used for constraint signs that may vary with emotional stress.",
-    ),
-    KnowledgeEntry(
-        entry_id="heart-blood-deficiency",
-        topic="Sleep and palpitations",
-        domains=("syndrome differentiation", "sleep"),
-        symptoms=("poor sleep", "vivid dreams", "palpitations", "forgetfulness", "pale complexion"),
-        keywords=("insomnia", "poor sleep", "dreams", "palpitations", "forgetful", "失眠", "多梦", "心悸", "健忘", "面色苍白"),
-        pattern="Heart blood deficiency (心血虚)",
-        rationale="TCM pattern differentiation may consider heart blood deficiency when sleep disturbance and palpitations appear with deficiency signs.",
-        formulas=({"name": "Gui Pi Tang (归脾汤)", "type": "formula", "purpose": "Traditionally discussed for combined qi and blood deficiency patterns affecting sleep."},),
-        safety_notes=("Palpitations, fainting, chest pain, or breathlessness require biomedical evaluation.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Heart blood deficiency is a traditional pattern associated with insufficient nourishment of the heart and spirit in TCM theory.",
-    ),
-    KnowledgeEntry(
-        entry_id="kidney-yin-deficiency",
-        topic="Yin deficiency and heat signs",
-        domains=("syndrome differentiation", "constitutional health"),
-        symptoms=("night sweats", "dry mouth", "hot palms or soles", "lower back soreness", "tinnitus"),
-        keywords=("night sweat", "dry mouth", "hot palms", "hot soles", "tinnitus", "lower back", "盗汗", "口干", "手足心热", "耳鸣", "腰酸"),
-        pattern="Kidney yin deficiency (肾阴虚)",
-        rationale="TCM theory may group dryness, night heat signs, tinnitus, and lower back soreness under kidney yin deficiency.",
-        formulas=({"name": "Liu Wei Di Huang Wan (六味地黄丸)", "type": "formula", "purpose": "Traditionally discussed for kidney yin deficiency patterns."},),
-        safety_notes=("Night sweats or unexplained weight change warrant medical assessment, especially if persistent.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Kidney yin deficiency is a TCM pattern term traditionally linked with deficiency heat, dryness, and lumbar or auditory signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="kidney-yang-deficiency",
-        topic="Yang deficiency and cold signs",
-        domains=("syndrome differentiation", "constitutional health"),
-        symptoms=("cold limbs", "lower back weakness", "frequent urination", "low energy", "fluid retention"),
-        keywords=("cold limbs", "weak back", "frequent urination", "edema", "low energy", "畏寒", "四肢冷", "腰膝酸软", "尿频", "水肿"),
-        pattern="Kidney yang deficiency (肾阳虚)",
-        rationale="TCM descriptions may consider kidney yang deficiency when pronounced cold and low-energy signs occur with lumbar or urinary symptoms.",
-        formulas=({"name": "Jin Gui Shen Qi Wan (金匮肾气丸)", "type": "formula", "purpose": "Traditionally discussed for warming kidney yang in a matching pattern."},),
-        safety_notes=("Urinary change, swelling, or persistent back symptoms may indicate conditions needing medical tests.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Kidney yang deficiency is a traditional pattern differentiated by deficiency with cold, water metabolism, or lumbar signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="damp-heat-middle",
-        topic="Damp-heat in digestion",
-        domains=("syndrome differentiation", "digestive health"),
-        symptoms=("nausea", "heavy sensation", "sticky taste", "loose foul stools", "abdominal fullness"),
-        keywords=("nausea", "heavy body", "sticky mouth", "foul stool", "abdominal fullness", "恶心", "身重", "口黏", "腹满", "便臭"),
-        pattern="Damp-heat in the middle burner (中焦湿热)",
-        rationale="In TCM theory, digestive heaviness and sticky or heat-like signs may be grouped as damp-heat affecting the middle burner.",
-        formulas=({"name": "Gan Lu Xiao Du Dan (甘露消毒丹)", "type": "formula", "purpose": "Traditionally discussed for selected damp-heat presentations."},),
-        safety_notes=("Fever, dehydration, severe abdominal pain, blood in stool, or persistent vomiting needs prompt medical care.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Damp-heat is a TCM pathogenic pattern term combining dampness signs with heat signs; location matters in differentiation.",
-    ),
-    KnowledgeEntry(
-        entry_id="phlegm-dampness",
-        topic="Phlegm-damp accumulation",
-        domains=("syndrome differentiation", "respiratory and digestive health"),
-        symptoms=("chest stuffiness", "phlegm", "heavy limbs", "dizziness", "nausea"),
-        keywords=("phlegm", "mucus", "chest stuffy", "heavy limbs", "dizzy", "nausea", "痰多", "胸闷", "身重", "眩晕", "恶心"),
-        pattern="Phlegm-dampness (痰湿)",
-        rationale="TCM theory may describe a combination of mucus, heaviness, dizziness, and digestive weakness as phlegm-damp accumulation.",
-        formulas=({"name": "Er Chen Tang (二陈汤)", "type": "formula", "purpose": "Traditionally discussed for phlegm-damp patterns."},),
-        safety_notes=("Breathing difficulty, blue lips, confusion, or sudden severe dizziness needs urgent care.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Phlegm-dampness is a traditional pattern concept involving impaired fluid transformation and accumulation.",
-    ),
-    KnowledgeEntry(
-        entry_id="wind-cold",
-        topic="Acute exterior wind-cold presentation",
-        domains=("syndrome differentiation", "respiratory health"),
-        symptoms=("chills", "mild fever", "clear runny nose", "body aches", "little sweating"),
-        keywords=("chills", "runny nose", "body ache", "no sweat", "common cold", "恶寒", "清鼻涕", "身痛", "无汗", "感冒"),
-        pattern="Wind-cold exterior pattern (风寒表证)",
-        rationale="Traditional differentiation may use the wind-cold label for an acute illness dominated by chills, clear discharge, and body aches.",
-        formulas=({"name": "Gui Zhi Tang (桂枝汤)", "type": "formula", "purpose": "A classical educational example for a specific wind-cold exterior presentation."},),
-        safety_notes=("Respiratory infection symptoms may be contagious; testing or medical review may be appropriate based on severity and risk factors.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Wind-cold is a TCM exterior pattern traditionally differentiated by stronger cold signs and clear secretions.",
-    ),
-    KnowledgeEntry(
-        entry_id="wind-heat",
-        topic="Acute exterior wind-heat presentation",
-        domains=("syndrome differentiation", "respiratory health"),
-        symptoms=("sore throat", "fever", "mild chills", "thirst", "yellow nasal discharge"),
-        keywords=("sore throat", "fever", "thirst", "yellow mucus", "cough", "咽痛", "发热", "口渴", "黄鼻涕", "咳嗽"),
-        pattern="Wind-heat exterior pattern (风热表证)",
-        rationale="TCM descriptions may use wind-heat when an acute exterior illness has prominent throat, fever, thirst, or yellow-discharge signs.",
-        formulas=({"name": "Yin Qiao San (银翘散)", "type": "formula", "purpose": "A classical educational example for selected early wind-heat presentations."},),
-        safety_notes=("High or persistent fever, breathing difficulty, dehydration, confusion, or a stiff neck needs prompt medical care.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Wind-heat is a TCM exterior pattern traditionally differentiated by more prominent heat, throat, and thirst signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="blood-stasis",
-        topic="Fixed pain and blood stasis",
-        domains=("syndrome differentiation", "pain"),
-        symptoms=("fixed stabbing pain", "dark complexion", "pain worse at night", "menstrual clots", "history of injury"),
-        keywords=("stabbing pain", "fixed pain", "worse at night", "clots", "old injury", "刺痛", "固定痛", "夜间加重", "血块", "外伤"),
-        pattern="Blood stasis (血瘀)",
-        rationale="Fixed or stabbing pain and dark or purplish signs are traditionally considered when differentiating blood stasis.",
-        formulas=({"name": "Xue Fu Zhu Yu Tang (血府逐瘀汤)", "type": "formula", "purpose": "Traditionally discussed for a specific blood-stasis presentation."},),
-        safety_notes=("Sudden pain, chest pain, one-sided leg swelling, neurological change, or unexplained bleeding needs urgent biomedical assessment.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Blood stasis is a TCM pattern term traditionally associated with impaired blood movement and fixed pain signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="qi-blood-deficiency",
-        topic="Combined qi and blood deficiency",
-        domains=("syndrome differentiation", "constitutional health"),
-        symptoms=("fatigue", "dizziness", "pale complexion", "shortness of breath on exertion", "poor concentration"),
-        keywords=("fatigue", "dizzy", "pale", "short of breath", "poor concentration", "乏力", "头晕", "面色苍白", "气短", "注意力差"),
-        pattern="Qi and blood deficiency (气血两虚)",
-        rationale="TCM theory may consider combined qi and blood deficiency when low energy appears together with pallor, dizziness, or poor nourishment signs.",
-        formulas=({"name": "Ba Zhen Tang (八珍汤)", "type": "formula", "purpose": "Traditionally discussed for combined qi and blood deficiency patterns."},),
-        safety_notes=("Dizziness, pallor, or exertional breathlessness can reflect anemia, bleeding, heart, lung, or other conditions and needs assessment.",),
-        source="WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Terminology standard",
-        snippet="Qi and blood deficiency combines traditional signs of functional weakness with insufficient nourishment.",
-    ),
-    KnowledgeEntry(
-        entry_id="heart-yin-deficiency-insomnia",
-        topic="Insomnia with yin-deficiency heat signs",
-        domains=("syndrome differentiation", "sleep"),
-        symptoms=("insomnia", "difficulty falling asleep", "restlessness", "night sweats", "dry mouth"),
-        keywords=("insomnia", "trouble sleeping", "difficulty falling asleep", "poor sleep", "restless", "night sweat", "dry mouth", "失眠", "睡不着", "入睡困难", "多梦", "心烦", "盗汗", "口干"),
-        pattern="Heart yin deficiency with deficiency heat (心阴虚)",
-        rationale="TCM pattern differentiation may consider heart yin deficiency when insomnia is accompanied by restlessness, dryness, night sweating, or other deficiency-heat signs.",
-        formulas=({"name": "Tian Wang Bu Xin Dan (天王补心丹)", "type": "formula", "purpose": "Traditionally discussed for selected heart yin/blood deficiency sleep presentations."},),
-        safety_notes=("New, severe, or persistent insomnia can be related to stress, mood disorders, medications, pain, sleep apnea, thyroid disease, or other causes and should be assessed if ongoing.",),
-        source="TCM syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Sleep disturbance in TCM is differentiated by accompanying signs such as heat, dryness, palpitations, digestion, phlegm, or emotional constraint.",
-    ),
-    KnowledgeEntry(
-        entry_id="liver-yang-rising-headache",
-        topic="Headache and dizziness with liver yang rising",
-        domains=("syndrome differentiation", "pain", "neurological symptoms"),
-        symptoms=("headache", "temporal headache", "dizziness", "irritability", "red face"),
-        keywords=("headache", "temple pain", "throbbing headache", "migraine", "dizzy", "vertigo", "irritable", "high blood pressure", "头痛", "头疼", "偏头痛", "太阳穴", "头晕", "眩晕", "易怒", "血压高"),
-        pattern="Liver yang rising (肝阳上亢)",
-        rationale="In TCM theory, headache with dizziness, irritability, facial flushing, or upward-rushing sensations may be considered under liver yang rising, especially when recurrent.",
-        formulas=({"name": "Tian Ma Gou Teng Yin (天麻钩藤饮)", "type": "formula", "purpose": "Traditionally discussed for selected liver yang rising presentations."},),
-        safety_notes=("Sudden worst headache, neurological change, fever with stiff neck, head injury, or very high blood pressure needs urgent medical care.",),
-        source="TCM internal medicine syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Headache pattern differentiation considers location, quality, triggers, dizziness, heat signs, phlegm, blood stasis, and deficiency signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="wind-dryness-lung-throat",
-        topic="Itchy or dry throat and dry cough",
-        domains=("syndrome differentiation", "respiratory health"),
-        symptoms=("itchy throat", "dry throat", "dry cough", "scant phlegm", "throat tickle"),
-        keywords=("itchy throat", "throat tickle", "dry throat", "dry cough", "cough", "scant phlegm", "嗓子痒", "咽痒", "喉咙痒", "嗓子干", "咽干", "干咳", "咳嗽"),
-        pattern="Wind-dryness affecting the lung (风燥犯肺)",
-        rationale="TCM descriptions may consider wind-dryness when throat irritation, dryness, and dry cough are prominent, particularly in dry weather or early respiratory irritation.",
-        formulas=({"name": "Sang Xing Tang (桑杏汤)", "type": "formula", "purpose": "Traditionally discussed for selected mild wind-dryness presentations."},),
-        safety_notes=("Breathing difficulty, high fever, chest pain, coughing blood, dehydration, or symptoms lasting more than a few days should prompt medical review.",),
-        source="TCM respiratory syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Respiratory pattern differentiation distinguishes wind-cold, wind-heat, wind-dryness, phlegm, and deficiency patterns by throat, cough, fever, phlegm, and dryness signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="liver-fire-rising",
-        topic="Heat signs with headache or throat discomfort",
-        domains=("syndrome differentiation", "pain", "emotional wellbeing"),
-        symptoms=("headache", "red eyes", "bitter taste", "irritability", "constipation"),
-        keywords=("headache", "red eyes", "bitter taste", "mouth bitter", "irritable", "angry", "constipation", "sore throat", "头痛", "眼睛红", "目赤", "口苦", "易怒", "上火", "便秘", "咽痛"),
-        pattern="Liver fire rising (肝火上炎)",
-        rationale="TCM theory may frame prominent heat signs such as headache, red eyes, bitter taste, irritability, or constipation as liver fire rising when the overall presentation fits.",
-        formulas=({"name": "Long Dan Xie Gan Tang (龙胆泻肝汤)", "type": "formula", "purpose": "Traditionally discussed for specific liver/gallbladder fire or damp-heat presentations."},),
-        safety_notes=("Severe eye pain, vision loss, severe headache, persistent fever, or marked throat swelling needs prompt medical assessment.",),
-        source="TCM syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Heat-pattern differentiation considers thirst, taste, stool, urine, mood, eyes, throat, and fever signs rather than a single symptom alone.",
-    ),
-    KnowledgeEntry(
-        entry_id="food-stagnation",
-        topic="Indigestion after overeating",
-        domains=("syndrome differentiation", "digestive health"),
-        symptoms=("bloating", "belching", "acid reflux", "bad breath", "nausea"),
-        keywords=("indigestion", "overeating", "bloating", "acid reflux", "burping", "belching", "bad breath", "nausea", "abdominal fullness", "腹胀", "嗳气", "反酸", "口臭", "恶心", "积食", "吃撑", "胃胀"),
-        pattern="Food stagnation (食积)",
-        rationale="Within TCM theory, post-meal fullness, belching, acid regurgitation, bad breath, and nausea after overeating may be discussed as food stagnation.",
-        formulas=({"name": "Bao He Wan (保和丸)", "type": "formula", "purpose": "Traditionally discussed for selected food-stagnation presentations."},),
-        safety_notes=("Severe abdominal pain, persistent vomiting, black stool, blood in stool, chest pain, or unintentional weight loss requires medical assessment.",),
-        source="TCM digestive syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Digestive pattern differentiation considers timing with meals, appetite, stool, pain quality, reflux, nausea, and systemic signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="stomach-yin-deficiency",
-        topic="Dryness and stomach discomfort",
-        domains=("syndrome differentiation", "digestive health"),
-        symptoms=("stomach discomfort", "dry mouth", "poor appetite", "constipation", "hunger without desire to eat"),
-        keywords=("stomach discomfort", "stomach pain", "burning stomach", "dry mouth", "constipation", "poor appetite", "胃不舒服", "胃痛", "胃胀", "胃热", "口干", "便秘", "饥不欲食", "食欲差"),
-        pattern="Stomach yin deficiency (胃阴虚)",
-        rationale="TCM descriptions may consider stomach yin deficiency when stomach discomfort appears with dryness, reduced appetite, constipation, or a hungry-but-not-wanting-to-eat feeling.",
-        formulas=({"name": "Yi Wei Tang (益胃汤)", "type": "formula", "purpose": "Traditionally discussed for selected stomach yin deficiency presentations."},),
-        safety_notes=("Persistent stomach pain, vomiting, blood, black stool, trouble swallowing, anemia, or weight loss should be evaluated medically.",),
-        source="TCM digestive syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Stomach yin deficiency is traditionally associated with dryness and impaired stomach nourishment rather than cold or damp signs.",
-    ),
-    KnowledgeEntry(
-        entry_id="lung-qi-deficiency",
-        topic="Shortness of breath, sweating, and weak voice",
-        domains=("syndrome differentiation", "respiratory health", "constitutional health"),
-        symptoms=("shortness of breath", "weak voice", "spontaneous sweating", "fatigue", "frequent colds"),
-        keywords=("short of breath", "shortness of breath", "weak voice", "spontaneous sweating", "sweating easily", "frequent colds", "fatigue", "气短", "自汗", "容易出汗", "声音低", "容易感冒", "乏力"),
-        pattern="Lung qi deficiency (肺气虚)",
-        rationale="TCM theory may consider lung qi deficiency when weak breathing, low voice, easy sweating, fatigue, or frequent respiratory susceptibility occur together.",
-        formulas=({"name": "Yu Ping Feng San (玉屏风散)", "type": "formula", "purpose": "Traditionally discussed for selected exterior-deficiency or lung/spleen qi presentations."},),
-        safety_notes=("Shortness of breath, chest tightness, blue lips, wheezing, fever, or low oxygen symptoms need prompt medical evaluation.",),
-        source="TCM respiratory syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Lung qi deficiency is a traditional pattern term linked with weakened respiratory function, voice, sweating regulation, and defensive qi in TCM theory.",
-    ),
-    KnowledgeEntry(
-        entry_id="blood-deficiency-headache-dizziness",
-        topic="Dull headache and dizziness with blood deficiency signs",
-        domains=("syndrome differentiation", "pain", "constitutional health"),
-        symptoms=("dull headache", "dizziness", "blurred vision", "pale complexion", "poor sleep"),
-        keywords=("dull headache", "headache", "dizzy", "blurred vision", "pale", "poor sleep", "light period", "头痛", "隐隐头痛", "头晕", "眼花", "面色苍白", "睡眠差", "月经量少"),
-        pattern="Blood deficiency headache (血虚头痛)",
-        rationale="TCM pattern differentiation may consider blood deficiency when dull headache or dizziness appears with pallor, poor sleep, blurred vision, or menstrual deficiency signs.",
-        formulas=({"name": "Si Wu Tang (四物汤)", "type": "formula", "purpose": "Traditionally discussed for selected blood deficiency presentations."},),
-        safety_notes=("Dizziness, pallor, heavy menstrual bleeding, fainting, or exertional breathlessness can indicate anemia or other conditions needing medical tests.",),
-        source="TCM internal medicine syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Deficiency-type headache differentiation considers dull quality, fatigue, pallor, sleep, vision, and blood-related history.",
-    ),
-    KnowledgeEntry(
-        entry_id="spleen-dampness",
-        topic="Heaviness, sticky stools, and dampness signs",
-        domains=("syndrome differentiation", "digestive health", "constitutional health"),
-        symptoms=("heavy body", "sleepiness", "bloating", "sticky stool", "edema"),
-        keywords=("heavy body", "sleepy", "sticky stool", "loose stool", "edema", "bloating", "dampness", "身体困重", "困重", "湿气重", "大便黏", "便溏", "水肿", "腹胀", "犯困"),
-        pattern="Dampness encumbering the spleen (湿困脾)",
-        rationale="TCM descriptions may consider dampness encumbering the spleen when heaviness, sleepiness, bloating, sticky or loose stools, and reduced digestive transformation occur together.",
-        formulas=({"name": "Ping Wei San (平胃散)", "type": "formula", "purpose": "Traditionally discussed for selected dampness obstructing the middle burner presentations."},),
-        safety_notes=("Swelling, persistent diarrhea, dehydration, severe fatigue, or sudden weight change should be medically reviewed.",),
-        source="TCM digestive syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Dampness-related patterns are traditionally differentiated by heaviness, stickiness, digestive sluggishness, and tongue or stool features.",
-    ),
-    KnowledgeEntry(
-        entry_id="wind-heat-throat-cn",
-        topic="Head heat and throat irritation",
-        domains=("syndrome differentiation", "respiratory health"),
-        symptoms=("head heat", "feverish head", "itchy throat", "sore throat", "mild cough"),
-        keywords=("head feels hot", "feverish head", "itchy throat", "throat irritation", "sore throat", "头热", "头有点发热", "发热", "嗓子痒", "嗓子痒痒", "咽痒", "喉咙痒", "咽部不适", "咳嗽"),
-        pattern="Wind-heat or wind-dryness affecting the upper burner (风热或风燥犯上)",
-        rationale="TCM descriptions may consider an exterior heat/dryness tendency when head heat or mild feverish sensation appears with itchy or irritated throat.",
-        formulas=({"name": "Yin Qiao San / Sang Xing Tang (银翘散 / 桑杏汤)", "type": "formula", "purpose": "Educational examples for selected wind-heat or wind-dryness presentations."},),
-        safety_notes=("High fever, breathing difficulty, severe throat swelling, rash, dehydration, or symptoms lasting more than a few days should prompt medical review.",),
-        source="TCM respiratory syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Upper respiratory pattern differentiation considers feverish sensation, throat quality, cough, thirst, phlegm, dryness, chills, and overall onset.",
-    ),
-    KnowledgeEntry(
-        entry_id="liver-spleen-disharmony",
-        topic="Stress-related bloating and poor appetite",
-        domains=("syndrome differentiation", "digestive health", "emotional wellbeing"),
-        symptoms=("stress", "bloating", "poor appetite", "variable digestion", "rib-side or abdominal fullness"),
-        keywords=("stress", "bloating", "poor appetite", "low appetite", "variable digestion", "abdominal fullness", "压力", "压力大", "腹胀", "胃胀", "胃口不好", "食欲差", "不想吃饭", "消化波动", "情绪紧张"),
-        pattern="Liver-spleen disharmony / liver qi stagnation with spleen weakness (肝郁脾虚)",
-        rationale="TCM theory may consider liver-spleen disharmony when emotional stress is associated with bloating, poor appetite, and fluctuating digestion.",
-        formulas=({"name": "Xiao Yao San (逍遥散)", "type": "formula", "purpose": "Educational example for selected liver qi stagnation with spleen weakness presentations."},),
-        safety_notes=("Persistent abdominal pain, vomiting, black stool, blood in stool, weight loss, fever, or severe appetite loss requires medical assessment.",),
-        source="TCM digestive and emotional wellbeing syndrome differentiation teaching reference; WHO International Standard Terminologies on Traditional Chinese Medicine (2022)",
-        source_type="Educational textbook summary",
-        snippet="Digestive symptoms that fluctuate with stress are often differentiated by appetite, stool, pain location, distension, mood, sleep, tongue, and pulse findings.",
-    ),
-)
+@lru_cache(maxsize=1)
+def load_source_registry() -> dict[str, SourceRecord]:
+    data = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
+    return {str(item["id"]): SourceRecord.from_dict(item) for item in data}
+
+
+KNOWLEDGE_BASE = load_knowledge_base()
+SOURCE_REGISTRY = load_source_registry()
+
+
+def knowledge_base_stats() -> dict[str, int]:
+    entries = load_knowledge_base()
+    return {
+        "entry_count": len(entries),
+        "verified_entries": sum(1 for entry in entries if entry.review_status == "verified"),
+        "needs_human_review_entries": sum(1 for entry in entries if entry.review_status == "needs_human_review"),
+    }

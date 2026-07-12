@@ -8,18 +8,30 @@ from typing import Any
 
 import httpx
 
-from .knowledge_base import FORMULA_WARNING
-from .retriever import RetrievalResult, analyse_query, retrieve
+from .knowledge_base import FORMULA_WARNING, KNOWLEDGE_BASE, SOURCE_REGISTRY, KnowledgeEntry, SourceRecord
+from .language import detect_language
+from .localization import FORMULA_WARNINGS, localized_entry_display, localized_entry_safety, localized_formula_display
+from .retriever import RetrievalDiagnostics, RetrievalResult, analyse_query, retrieve
 from .safety import check_emergency
 from .schemas import (
+    Citation,
+    Claim,
     Confidence,
     EvidenceChunk,
+    GenerationSource,
+    LocalizedResultContent,
+    LocalizedResultFormula,
+    LocalizedResultPattern,
     PossiblePattern,
     QueryAnalysis,
     RelatedHerbOrFormula,
+    ResponseLanguage,
+    RetrievalMetadata,
+    ScopeStatus,
     TCMConsultRequest,
     TCMConsultResponse,
 )
+from .scope import ScopeDecision, classify_scope
 
 
 DISCLAIMER = (
@@ -28,24 +40,133 @@ DISCLAIMER = (
     "licensed TCM practitioner. Do not start, stop, or change prescribed medicine based on this response."
 )
 
-BASE_SAFETY_NOTES = [
-    "Do not stop or change prescribed medication without speaking with the prescribing clinician.",
-    "Herbs and formulas can cause side effects and interact with medicines; product quality and correct identification also matter.",
-    "Pregnancy or breastfeeding, allergies, liver or kidney disease, bleeding disorders, and planned surgery require individual professional review before any herbal product is used.",
-]
+BASE_SAFETY_NOTES_LOCALIZED: dict[ResponseLanguage, list[str]] = {
+    "en": [
+        "Do not stop or change prescribed medication without speaking with the prescribing clinician.",
+        "Herbs and formulas can cause side effects and interact with medicines; product quality and correct identification also matter.",
+        "Pregnancy or breastfeeding, allergies, liver or kidney disease, bleeding disorders, and planned surgery require individual professional review before any herbal product is used.",
+    ],
+    "zh": [
+        "不要在未咨询开药医生的情况下停用或更改处方药。",
+        "中药材和方剂可能产生副作用并与药物相互作用，产品质量与品种鉴别也很重要。",
+        "妊娠或哺乳期、过敏、肝肾疾病、出血性疾病及计划手术者，在使用任何中药产品前都需要个体化专业评估。",
+    ],
+    "ko": [
+        "처방약은 처방한 의료진과 상의하지 않고 중단하거나 변경하지 마세요.",
+        "한약재와 처방 예시는 부작용이나 약물 상호작용이 있을 수 있으며, 제품 품질과 정확한 감별도 중요합니다.",
+        "임신·수유, 알레르기, 간·신장 질환, 출혈성 질환, 수술 예정이 있는 경우 한약 제품 사용 전 개별 전문 평가가 필요합니다.",
+    ],
+}
 
-ZH_EVIDENCE_SUMMARIES: dict[str, tuple[str, str]] = {
-    "heart-blood-deficiency": ("心血不足", "本地证据提示：睡眠不安、多梦、心悸、健忘或面色偏淡时，中医辨证可能会考虑心血不足。"),
-    "heart-yin-deficiency-insomnia": ("心阴不足", "本地证据提示：失眠若伴心烦、口干、盗汗或夜间烦热等表现，中医辨证可能会考虑心阴不足。"),
-    "liver-yang-rising-headache": ("肝阳上亢", "本地证据提示：头痛若伴头晕、烦躁、面部发热或上冲感，中医辨证可能会考虑肝阳上亢。"),
-    "wind-dryness-lung-throat": ("风燥犯肺", "本地证据提示：嗓子痒、咽干、干咳或少痰时，中医辨证可能会考虑风燥犯肺。"),
-    "wind-heat": ("风热外袭", "本地证据提示：发热、咽部不适、口渴、咳嗽或黄痰等表现，中医辨证可能会考虑风热外袭。"),
-    "liver-fire-rising": ("肝火上扰", "本地证据提示：头部发热、头痛、口苦、烦躁或咽部不适等热象明显时，中医辨证可能会考虑肝火上扰。"),
-    "food-stagnation": ("食积或胃失和降", "本地证据提示：腹胀、嗳气、反酸、口臭或进食后不适时，中医辨证可能会考虑食积或胃失和降。"),
-    "spleen-dampness": ("湿困脾胃", "本地证据提示：身体困重、腹胀、大便黏滞或食欲下降时，中医辨证可能会考虑湿困脾胃。"),
-    "liver-spleen-disharmony": ("肝郁脾虚", "本地证据提示：压力大、腹胀、胃口不好、情绪紧张和消化波动同时出现时，中医辨证可能会考虑肝郁脾虚。"),
-    "spleen-qi-deficiency": ("脾气不足", "本地证据提示：乏力、胃口不好、腹胀、便溏等表现同时出现时，中医辨证可能会考虑脾气不足。"),
-    "liver-qi-stagnation": ("肝气郁结", "本地证据提示：压力大、情绪不舒、胸胁或腹部胀满、叹气等表现同时出现时，中医辨证可能会考虑肝气郁结。"),
+RESULT_COPY: dict[ResponseLanguage, dict[str, Any]] = {
+    "en": {
+        "status": {
+            "siliconflow_llm": "AI grounded by retrieved evidence",
+            "mock_fallback": "Local evidence fallback",
+            "safety_rule": "Safety-rule response",
+            "scope_rule": "Scope-rule abstention",
+            "evidence_gate": "Evidence-insufficient abstention",
+        },
+        "summary_title": "TCM perspective summary",
+        "grounding": {
+            "siliconflow_llm": "This LLM answer is grounded only in the local evidence retrieved for this question.",
+            "mock_fallback": "The AI provider is unavailable or not configured, so this answer uses the local TCM medical library only.",
+            "safety_rule": "Safety rules took priority over TCM interpretation.",
+            "scope_rule": "The current TCM-RAG scope took priority over generation.",
+            "evidence_gate": "The evidence gate blocked generation because no meaningful local evidence was retrieved.",
+        },
+        "state_title": {
+            "supported": "",
+            "insufficient_information": "More symptom detail is needed",
+            "out_of_scope": "Out of current TCM-RAG scope",
+            "safety_critical": "Safety-first response",
+            "evidence_insufficient": "Insufficient retrieved evidence",
+        },
+        "patterns_title": "Most relevant possibilities",
+        "examples_title": "Educational examples from retrieved sources",
+        "safety_title": "Key safety notes",
+        "evidence_title": "Retrieved evidence",
+        "evidence_empty": "No evidence is shown because this response abstained.",
+        "evidence_summary": "Based on {count} local evidence match(es). Strongest match: {score}%.",
+    },
+    "zh": {
+        "status": {
+            "siliconflow_llm": "AI 已基于检索证据生成",
+            "mock_fallback": "本地证据回退",
+            "safety_rule": "安全规则回复",
+            "scope_rule": "范围规则回避回答",
+            "evidence_gate": "证据不足回避回答",
+        },
+        "summary_title": "中医视角摘要",
+        "grounding": {
+            "siliconflow_llm": "本次 LLM 回答只基于本地检索到的证据生成。",
+            "mock_fallback": "AI 服务暂不可用或未配置，已暂时使用本地中医医学库为您解答。",
+            "safety_rule": "安全规则优先于中医辨证解释。",
+            "scope_rule": "当前 TCM-RAG 研究范围优先于模型生成。",
+            "evidence_gate": "由于没有检索到足够相关的本地证据，系统已阻断生成。",
+        },
+        "state_title": {
+            "supported": "",
+            "insufficient_information": "需要补充更多症状信息",
+            "out_of_scope": "超出当前 TCM-RAG 范围",
+            "safety_critical": "安全优先回复",
+            "evidence_insufficient": "检索证据不足",
+        },
+        "patterns_title": "最相关的可能方向",
+        "examples_title": "检索资料中的教学示例",
+        "safety_title": "关键安全提示",
+        "evidence_title": "检索证据",
+        "evidence_empty": "本次为回避回答，因此不展示证据卡。",
+        "evidence_summary": "基于 {count} 条本地证据匹配。最高匹配度：{score}%。",
+    },
+    "ko": {
+        "status": {
+            "siliconflow_llm": "검색 근거 기반 AI 생성",
+            "mock_fallback": "로컬 근거 기반 대체 응답",
+            "safety_rule": "안전 규칙 응답",
+            "scope_rule": "범위 규칙에 따른 답변 보류",
+            "evidence_gate": "근거 부족으로 답변 보류",
+        },
+        "summary_title": "한의학 관점 요약",
+        "grounding": {
+            "siliconflow_llm": "이 LLM 답변은 이 질문에 대해 검색된 로컬 근거에만 기반합니다.",
+            "mock_fallback": "AI 제공자가 사용할 수 없거나 설정되지 않아, 현재는 로컬 한의학 지식베이스로 답변합니다.",
+            "safety_rule": "안전 규칙이 한의학적 해석보다 우선 적용되었습니다.",
+            "scope_rule": "현재 TCM-RAG 연구 범위가 생성보다 우선 적용되었습니다.",
+            "evidence_gate": "의미 있는 로컬 근거가 검색되지 않아 생성이 차단되었습니다.",
+        },
+        "state_title": {
+            "supported": "",
+            "insufficient_information": "증상 정보가 더 필요합니다",
+            "out_of_scope": "현재 TCM-RAG 범위를 벗어남",
+            "safety_critical": "안전 우선 응답",
+            "evidence_insufficient": "검색 근거 부족",
+        },
+        "patterns_title": "가장 관련 있는 가능 방향",
+        "examples_title": "검색 자료의 교육용 예시",
+        "safety_title": "주요 안전 안내",
+        "evidence_title": "검색된 근거",
+        "evidence_empty": "이번 응답은 답변 보류 상태이므로 근거 카드를 표시하지 않습니다.",
+        "evidence_summary": "로컬 근거 {count}개와 매칭되었습니다. 최고 매칭도: {score}%.",
+    },
+}
+
+LIMITATIONS_LOCALIZED: dict[ResponseLanguage, list[str]] = {
+    "en": [
+        "The local corpus is limited and every knowledge entry is marked needs_human_review.",
+        "Pattern differentiation normally requires history, examination, and often tongue and pulse findings.",
+        "Formula names are educational examples only and are not treatment recommendations.",
+    ],
+    "zh": [
+        "本地语料范围有限，所有知识条目均标记为 needs_human_review。",
+        "中医辨证通常需要完整病史、检查，以及舌脉等信息。",
+        "方剂名称仅作教学示例，不构成治疗建议。",
+    ],
+    "ko": [
+        "로컬 말뭉치는 제한적이며 모든 지식 항목은 needs_human_review로 표시되어 있습니다.",
+        "한의학적 변증은 보통 병력, 진찰, 설진·맥진 등의 정보가 필요합니다.",
+        "처방 이름은 교육용 예시일 뿐 치료 권고가 아닙니다.",
+    ],
 }
 
 
@@ -68,124 +189,6 @@ def _context_text(request: TCMConsultRequest) -> str:
     )
 
 
-def _evidence(results: list[RetrievalResult]) -> list[EvidenceChunk]:
-    return [
-        EvidenceChunk(
-            source=result.entry.source,
-            title=result.entry.topic,
-            source_type=result.entry.source_type,
-            snippet=result.entry.snippet,
-            relevance_score=result.score,
-        )
-        for result in results
-    ]
-
-
-def _confidence(results: list[RetrievalResult]) -> Confidence:
-    best = results[0].score if results else 0.0
-    supporting = sum(1 for result in results if result.score >= 0.25)
-    score = min(0.86, 0.28 + best * 0.5 + min(supporting, 3) * 0.05)
-    score = round(score, 2)
-    if score >= 0.72:
-        level = "high"
-    elif score >= 0.48:
-        level = "medium"
-    else:
-        level = "low"
-    reason = (
-        f"Keyword retrieval found {supporting} meaningfully matching local evidence "
-        f"chunk(s); the strongest relevance score was {best:.2f}. Pattern differentiation "
-        "still requires history, tongue/pulse findings, examination, and clinical judgment."
-    )
-    return Confidence(level=level, score=score, reason=reason)
-
-
-def _safety_notes(request: TCMConsultRequest, results: list[RetrievalResult]) -> list[str]:
-    notes = list(BASE_SAFETY_NOTES)
-    if request.context.medications.strip():
-        notes.append("Because current medication was reported, a pharmacist or clinician should check every proposed herb/formula for interactions.")
-    if request.context.pregnancy.strip() and request.context.pregnancy.casefold() not in {"no", "not pregnant", "n/a"}:
-        notes.append("Pregnancy status was reported; do not use the listed herbal examples without obstetric and qualified TCM review.")
-    if request.context.allergies.strip():
-        notes.append("Allergies were reported; verify every ingredient and excipient with a pharmacist or qualified practitioner.")
-    for result in results:
-        for note in result.entry.safety_notes:
-            if note not in notes:
-                notes.append(note)
-    return notes[:8]
-
-
-def _mock_content(results: list[RetrievalResult]) -> tuple[str, list[PossiblePattern], list[RelatedHerbOrFormula]]:
-    meaningful = [result for result in results if result.score >= 0.2]
-    selected = meaningful[:3]
-    pattern_names = [result.entry.pattern for result in selected]
-    if meaningful:
-        perspective = (
-            "From a TCM educational perspective, the reported features overlap most with "
-            + ", ".join(pattern_names)
-            + ". These are hypotheses for pattern differentiation, not diagnoses. A practitioner would also ask about onset, aggravating factors, sleep, appetite, bowel/urinary changes, and examine the tongue and pulse before drawing a conclusion."
-        )
-    else:
-        return (
-            "The small demonstration knowledge base did not find a strong symptom match. "
-            "A safe TCM interpretation would require more detail and an in-person assessment; no pattern should be inferred from the current information alone."
-        ), [], []
-
-    patterns = [
-        PossiblePattern(
-            pattern=result.entry.pattern,
-            rationale=result.entry.rationale,
-            matching_symptoms=list(result.matched_terms) or list(result.entry.symptoms[:2]),
-        )
-        for result in selected
-    ]
-
-    formula_items: list[RelatedHerbOrFormula] = []
-    seen: set[str] = set()
-    for result in selected:
-        for formula in result.entry.formulas:
-            if formula["name"] in seen:
-                continue
-            seen.add(formula["name"])
-            formula_items.append(
-                RelatedHerbOrFormula(
-                    name=formula["name"],
-                    type=formula["type"],
-                    purpose=formula["purpose"],
-                    safety_warning=FORMULA_WARNING,
-                )
-            )
-    return perspective, patterns, formula_items[:4]
-
-
-def _contains_cjk(text: str) -> bool:
-    return bool(re.search(r"[\u4e00-\u9fff]", text))
-
-
-def _format_evidence_for_prompt(results: list[RetrievalResult], *, chinese: bool = False) -> str:
-    meaningful_results = [item for item in results if item.score >= 0.2]
-    if not meaningful_results:
-        return "本地中医知识库没有检索到强匹配证据。" if chinese else "No strong local TCM evidence match was retrieved."
-
-    lines: list[str] = []
-    for index, item in enumerate(meaningful_results[:4], start=1):
-        matched = ", ".join(item.matched_terms) or "general overlap"
-        if chinese:
-            pattern, note = ZH_EVIDENCE_SUMMARIES.get(
-                item.entry.entry_id,
-                ("中医辨证候选方向", "本地证据提示：该条目与用户描述存在一定重合，但仍需更多问诊信息和舌脉资料。"),
-            )
-            lines.append(f"{index}. 可能方向：{pattern}\n   匹配词：{matched}\n   本地证据：{note}")
-        else:
-            lines.append(
-                f"{index}. Pattern: {item.entry.pattern}\n"
-                f"   Matched terms: {matched}\n"
-                f"   Rationale: {item.entry.rationale}\n"
-                f"   Evidence note: {item.entry.snippet}"
-            )
-    return "\n".join(lines)
-
-
 class OpenAICompatibleClient:
     def __init__(self) -> None:
         self.provider = os.getenv("LLM_PROVIDER", "siliconflow").strip() or "siliconflow"
@@ -193,7 +196,7 @@ class OpenAICompatibleClient:
         self.base_url = os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1").rstrip("/")
         self.model = os.getenv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
         self.timeout = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
-        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "900"))
+        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1400"))
 
     @property
     def configured(self) -> bool:
@@ -215,51 +218,59 @@ class OpenAICompatibleClient:
             raise LLMProviderError("LLM provider returned an unexpected response")
         return data
 
-    async def generate(self, request: TCMConsultRequest, results: list[RetrievalResult]) -> LLMGeneration:
-        chinese = _contains_cjk(request.question)
+    async def generate(
+        self,
+        request: TCMConsultRequest,
+        results: list[RetrievalResult],
+        citations: list[Citation],
+    ) -> LLMGeneration:
+        language = detect_language(request.question)
         context_payload = {
             key: value
             for key, value in request.context.model_dump().items()
             if isinstance(value, str) and value.strip()
         }
-        if chinese:
-            system_prompt = (
-                "你是一个研究原型中的中医视角生成组件。只能依据下面的本地检索证据回答。"
-                "必须使用自然、流畅、完整的现代中文；不要夹杂英文单词、拼音、代码、JSON、表格或项目符号。"
-                "不要写“TCM”“CM”“pattern”“hypothesis”“formula”“herb”等英文标签。"
-                "语气要谨慎，说明只是辨证方向，不是诊断。不要开处方，不要给剂量，不要建议服用或停用任何药物。"
-                "不要提具体草药名或方剂名；界面会在单独区域展示本地库中的教育性示例和安全提示。"
-            )
-            user_prompt = (
-                f"用户问题：\n{request.question}\n\n"
-                f"可选背景：\n{json.dumps(context_payload or {'未提供': '无'}, ensure_ascii=False)}\n\n"
-                f"本地检索证据：\n{_format_evidence_for_prompt(results, chinese=True)}\n\n"
-                "请写一段 3 到 5 句的中文中医视角摘要。"
-                "第一句说明“基于本地检索证据”。"
-                "只讨论可能的辨证方向和还需要补充了解的信息，例如起病时间、寒热、口渴、睡眠、饮食、二便、舌象和脉象。"
-                "不要输出方剂名、草药名、剂量、治疗方案或处方建议。"
-            )
-        else:
-            system_prompt = (
-                "You are the TCM perspective component of a research-only RAG demo. "
-                "Use only the retrieved local TCM evidence below. Return plain text only: no JSON, no code fences, no tables. "
-                "Respond in the same language as the user's question when possible. Keep the answer concise, readable, and uncertainty-aware. "
-                "Do not diagnose, prescribe, give doses, claim proven efficacy, or advise changing medication. "
-                "Do not mention herb or formula names; the interface displays local educational examples separately with safety warnings. "
-                "If the evidence says there is no strong match, say that more clinical context and tongue/pulse assessment would be needed."
-            )
-            user_prompt = (
-                f"Question:\n{request.question}\n\n"
-                f"Optional context:\n{json.dumps(context_payload or {'provided': 'none'}, ensure_ascii=False)}\n\n"
-                f"Retrieved local TCM evidence:\n{_format_evidence_for_prompt(results)}\n\n"
-                "Write one short educational TCM perspective paragraph. Mention that these are pattern hypotheses, not a diagnosis. "
-                "Add one sentence saying the LLM answer is grounded by local retrieved evidence. "
-                "Do not list formula names, herbs, doses, or treatment instructions."
-            )
+        evidence_payload = [
+            {
+                "evidence_id": item.entry.entry_id,
+                "matched_terms": list(item.matched_terms),
+                "relevance_score": item.score,
+                "pattern": item.entry.pattern,
+                "rationale": item.entry.rationale,
+                "symptoms": item.entry.symptoms,
+                "source_ids": list(item.entry.source_ids),
+                "evidence_category": item.entry.evidence_category,
+                "review_status": item.entry.review_status,
+            }
+            for item in results
+        ]
+        citation_payload = [item.model_dump() for item in citations]
+        system_prompt = (
+            "You are the TCM summary component of a research-only RAG prototype. "
+            "Use only the supplied retrieved evidence and source registry. Do not use outside medical knowledge. "
+            "Do not diagnose, prescribe, name additional herbs/formulas/acupuncture points, give doses, or recommend starting/stopping medicines. "
+            "Every concrete claim must be supportable by the supplied evidence IDs. "
+            "If evidence is weak, explicitly say this is only an educational TCM pattern direction. "
+            "Return strict JSON with localized_result.en.summary, localized_result.zh.summary, localized_result.ko.summary, and optional claims. "
+            "Chinese must be natural Simplified Chinese. Korean must be natural Korean. English must be natural English. "
+            "Avoid malformed mixed phrases such as 'CM', '主要CM认为', or English technical labels inside Chinese/Korean prose."
+        )
+        user_prompt = (
+            f"Detected user question language: {language}. Respond to the user's main summary in the same language as the question, "
+            "while also providing the three localized summaries requested by the JSON schema.\n\n"
+            f"User question:\n{request.question}\n\n"
+            f"Optional non-identifying context:\n{json.dumps(context_payload or {'provided': 'none'}, ensure_ascii=False)}\n\n"
+            f"Retrieved evidence JSON:\n{json.dumps(evidence_payload, ensure_ascii=False)}\n\n"
+            f"Source registry JSON:\n{json.dumps(citation_payload, ensure_ascii=False)}\n\n"
+            "Return exactly this shape, with concise 2-3 sentence summaries: "
+            '{"localized_result":{"en":{"summary":"..."},"zh":{"summary":"..."},"ko":{"summary":"..."}},"claims":[{"text":"...","evidence_ids":["..."],"claim_type":"pattern_hypothesis"}]}'
+        )
         payload = {
             "model": self.model,
             "temperature": 0.1,
-            "max_tokens": self.max_tokens,
+            "frequency_penalty": 0.2,
+            "max_tokens": min(max(self.max_tokens, 1000), 1800),
+            "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -294,13 +305,11 @@ def _parse_json_object(content: str) -> dict[str, Any] | None:
         if lines and lines[-1].strip().startswith("```"):
             lines = lines[:-1]
         text = "\n".join(lines).strip()
-
     candidates = [text]
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end > start:
         candidates.append(text[start : end + 1])
-
     for candidate in candidates:
         try:
             parsed = json.loads(candidate)
@@ -311,168 +320,519 @@ def _parse_json_object(content: str) -> dict[str, Any] | None:
     return None
 
 
-def _validated_llm_content(content: dict[str, Any], *, chinese: bool = False) -> tuple[str, list[PossiblePattern], list[RelatedHerbOrFormula]]:
-    perspective = _clean_llm_text(str(content.get("tcm_perspective", "")).strip(), chinese=chinese)
-    if not perspective:
-        raise ValueError("LLM response did not include tcm_perspective")
-    patterns = [PossiblePattern.model_validate(item) for item in content.get("possible_patterns", [])[:3]]
-    formulas: list[RelatedHerbOrFormula] = []
-    for item in content.get("related_herbs_or_formulas", [])[:4]:
-        validated = RelatedHerbOrFormula.model_validate(item)
-        validated.safety_warning = FORMULA_WARNING
-        formulas.append(validated)
-    return perspective, patterns, formulas
+def _clean_text(text: str) -> str:
+    cleaned = re.sub(r"<[^>]+>", " ", text)
+    cleaned = cleaned.replace("**", "").replace("*", "")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned.replace("\ufffd", "")
 
 
-def _plain_text_llm_content(raw_content: str, results: list[RetrievalResult], *, chinese: bool = False) -> tuple[str, list[PossiblePattern], list[RelatedHerbOrFormula]]:
-    _, patterns, formulas = _mock_content(results)
-    perspective = _clean_llm_text(_extract_tcm_perspective(raw_content) or raw_content.strip(), chinese=chinese)
-    return perspective, patterns, formulas
-
-
-def _clean_llm_text(text: str, *, chinese: bool = False) -> str:
-    cleaned = re.sub(r"\s+", " ", text).strip()
-    cleaned = cleaned.replace("\ufffd", "")
-    cleaned = re.sub(r"(?<![A-Za-z])G(?=[\s\u4e00-\u9fff，。；、,.!?])", "", cleaned)
-    cleaned = re.sub(r"(?:\s+[A-Za-z]){8,}.*$", "", cleaned).strip()
-    cleaned = re.sub(r"([\u4e00-\u9fff])\1+", r"\1", cleaned)
-    cleaned = re.sub(r"\s+([，。；、,.!?])", r"\1", cleaned)
-    if chinese:
-        cleaned = cleaned.replace("Traditional Chinese Medicine", "中医")
-        cleaned = cleaned.replace("TCM", "中医").replace("CM", "中医")
-        replacements = {
-            "Traditional Chinese Medicine": "中医",
-            "TCM perspective": "中医视角",
-            "TCM": "中医",
-            "CM": "中医",
-            "pattern hypotheses": "辨证方向",
-            "pattern hypothesis": "辨证方向",
-            "hypotheses": "可能方向",
-            "hypothesis": "可能方向",
-            "patterns": "证型",
-            "pattern": "证型",
-            "formula": "方剂",
-            "formulas": "方剂",
-            "herbs": "草药",
-            "herb": "草药",
-            "diagnosis": "诊断",
-            "two": "两个",
-            "one": "一个",
+def _fallback_summaries(results: list[RetrievalResult]) -> dict[ResponseLanguage, str]:
+    if not results:
+        return {
+            "en": "The local TCM knowledge base did not retrieve enough meaningful evidence, so no TCM pattern direction is generated.",
+            "zh": "本地中医知识库没有检索到足够相关的证据，因此本次不生成中医辨证方向。",
+            "ko": "로컬 한의학 지식베이스에서 충분히 관련 있는 근거를 찾지 못해 한의학적 방향을 생성하지 않습니다.",
         }
-        for old, new in replacements.items():
-            cleaned = re.sub(rf"\b{re.escape(old)}\b", new, cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r"\b[A-Za-z][A-Za-z-]{1,}\b", "", cleaned)
-        cleaned = re.sub(r"\s*([，。；、,.!?])\s*", r"\1", cleaned)
-        cleaned = re.sub(r"([，。；、,.!?])\1+", r"\1", cleaned)
-        cleaned = re.sub(r"([\u4e00-\u9fff])\s+([\u4e00-\u9fff])", r"\1\2", cleaned)
-        cleaned = cleaned.replace("等以及", "以及").replace("等信息等", "等信息")
-        cleaned = cleaned.replace("等可以更准确地辨证", "等信息，才能更准确地辨证")
-        cleaned = cleaned.replace("以更准确地辨证分。", "以更准确地辨证。")
-        cleaned = cleaned.replace("更准确地辨证分。", "更准确地辨证。")
-        if cleaned and cleaned[-1] not in "。！？!?":
-            cleaned += "。"
-    cleaned = re.sub(r"\s+([，。；、,.!?])", r"\1", cleaned)
-    cleaned = re.sub(r"([，。；、,.!?])\1+", r"\1", cleaned)
-    cleaned = re.sub(r"\s{2,}", " ", cleaned)
-    return cleaned.strip()
-
-
-def _extract_tcm_perspective(raw_content: str) -> str | None:
-    parsed = _parse_json_object(raw_content)
-    if parsed is not None:
-        value = str(parsed.get("tcm_perspective", "")).strip()
-        if value:
-            return value
-
-    match = re.search(r'"tcm_perspective"\s*:\s*"((?:\\.|[^"\\])*)"', raw_content, flags=re.DOTALL)
-    if not match:
-        return None
-    try:
-        decoded = json.loads(f'"{match.group(1)}"')
-    except json.JSONDecodeError:
-        decoded = match.group(1).replace('\\"', '"').replace("\\n", "\n")
-    return decoded.strip() or None
-
-
-def _urgent_response(request: TCMConsultRequest, reason: str, immediate: bool) -> TCMConsultResponse:
-    if immediate:
-        guidance = (
-            "Seek urgent medical help now: call your local emergency number or go to the nearest emergency department. "
-            "If there is immediate danger, do not remain alone and do not drive yourself."
-        )
-    else:
-        guidance = (
-            "Please contact the clinician or specialist responsible for your care promptly. "
-            "TCM information may only be considered as a complementary discussion after the condition and any treatment interactions are professionally reviewed."
-        )
-    return TCMConsultResponse(
-        generation_mode="safety",
-        generation_source="safety_rule",
-        llm_model=os.getenv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip(),
-        llm_error=None,
-        urgent=True,
-        query_analysis=QueryAnalysis(keywords=[reason], possible_domains=["emergency triage"]),
-        tcm_perspective=(
-            f"This question contains signs of {reason}. Do not wait for a TCM pattern interpretation. "
-            + guidance
+    patterns = {
+        language: "、".join(item.entry.pattern[language] for item in results[:2]) if language == "zh" else ", ".join(item.entry.pattern[language] for item in results[:2])
+        for language in ("en", "zh", "ko")
+    }
+    return {
+        "en": (
+            f"Based on the retrieved local evidence, the description overlaps most with {patterns['en']}. "
+            "These are educational TCM pattern directions, not diagnoses; more history, examination, tongue and pulse information would be needed."
         ),
-        possible_patterns=[],
-        related_herbs_or_formulas=[],
-        evidence=[],
-        safety_notes=[
-            "Urgent biomedical assessment takes priority over online or traditional-medicine guidance.",
-            "Do not take a new herb, supplement, food, or medicine in an attempt to manage this emergency unless emergency professionals direct you.",
-        ],
-        confidence=Confidence(level="high", score=0.99, reason=f"The safety rule matched wording associated with {reason}."),
+        "zh": (
+            f"基于本地检索证据，当前描述与{patterns['zh']}等方向有一定重合。"
+            "这只是教学性的中医辨证方向，不是诊断；仍需要补充病程、寒热、饮食二便、舌脉和专业评估。"
+        ),
+        "ko": (
+            f"검색된 로컬 근거에 따르면 현재 설명은 {patterns['ko']} 방향과 일부 겹칩니다. "
+            "이는 교육용 한의학적 가능 방향이지 진단이 아니며, 병력·진찰·설진·맥진 정보가 더 필요합니다."
+        ),
+    }
+
+
+def _extract_localized_summaries(
+    generation: LLMGeneration,
+    results: list[RetrievalResult],
+    response_language: ResponseLanguage,
+) -> dict[ResponseLanguage, str]:
+    summaries = _fallback_summaries(results)
+    parsed = generation.parsed_json or {}
+    root = parsed.get("localized_result", parsed) if isinstance(parsed, dict) else {}
+    if isinstance(root, dict):
+        for language in ("en", "zh", "ko"):
+            value = root.get(language)
+            candidate = ""
+            if isinstance(value, dict):
+                candidate = str(value.get("summary", "")).strip()
+            elif isinstance(value, str):
+                candidate = value.strip()
+            if candidate:
+                summaries[language] = _clean_text(candidate)
+    elif generation.raw_content:
+        summaries[response_language] = _clean_text(generation.raw_content)
+
+    if generation.parsed_json is None and generation.raw_content and not generation.raw_content.lstrip().startswith(("{", "[")):
+        summaries[response_language] = _clean_text(generation.raw_content)
+    return summaries
+
+
+def _citation_from_source(source: SourceRecord) -> Citation:
+    return Citation(
+        source_id=source.source_id,
+        title=source.title,
+        organization=source.organization,
+        year=source.year,
+        url_or_identifier=source.url_or_identifier,
+        section=source.section,
+        source_type=source.source_type,
+        verification_status="verified" if source.verification_status == "verified" else "needs_review",
+    )
+
+
+def _citations(results: list[RetrievalResult]) -> list[Citation]:
+    seen: set[str] = set()
+    citations: list[Citation] = []
+    for result in results:
+        for source_id in result.entry.source_ids:
+            if source_id in seen:
+                continue
+            seen.add(source_id)
+            source = SOURCE_REGISTRY.get(source_id)
+            if source:
+                citations.append(_citation_from_source(source))
+    return citations
+
+
+def _evidence(results: list[RetrievalResult]) -> list[EvidenceChunk]:
+    chunks: list[EvidenceChunk] = []
+    for result in results:
+        first_source = SOURCE_REGISTRY.get(result.entry.source_ids[0]) if result.entry.source_ids else None
+        chunks.append(
+            EvidenceChunk(
+                evidence_id=result.entry.entry_id,
+                source=first_source.title if first_source else "Local TCM source registry entry missing",
+                source_ids=list(result.entry.source_ids),
+                title=result.entry.title("en"),
+                source_type=result.entry.source_type,
+                snippet=result.entry.snippet("en"),
+                relevance_score=result.score,
+                matched_terms=list(result.matched_terms),
+                evidence_category=result.entry.evidence_category,
+                review_status=result.entry.review_status,
+                localized=localized_entry_display(result.entry),
+            )
+        )
+    return chunks
+
+
+def _patterns(results: list[RetrievalResult]) -> list[PossiblePattern]:
+    patterns: list[PossiblePattern] = []
+    for result in results:
+        displays = localized_entry_display(result.entry)
+        patterns.append(
+            PossiblePattern(
+                pattern=result.entry.pattern["en"],
+                rationale=result.entry.rationale["en"],
+                matching_symptoms=list(result.matched_terms) or list(result.entry.symptoms["en"][:3]),
+                evidence_ids=[result.entry.entry_id],
+                localized={
+                    language: {"pattern": display["pattern"], "rationale": display["rationale"]}
+                    for language, display in displays.items()
+                },
+            )
+        )
+    return patterns
+
+
+def _formulas(results: list[RetrievalResult]) -> list[RelatedHerbOrFormula]:
+    formulas: list[RelatedHerbOrFormula] = []
+    seen: set[str] = set()
+    for result in results:
+        for formula in result.entry.educational_examples:
+            name_en = str(formula.get("name", {}).get("en", ""))
+            if not name_en or name_en in seen:
+                continue
+            seen.add(name_en)
+            localized = localized_formula_display(result.entry, formula)
+            formulas.append(
+                RelatedHerbOrFormula(
+                    name=name_en,
+                    type=formula.get("type", "formula"),
+                    purpose=str(formula.get("description", {}).get("en", "")),
+                    safety_warning=FORMULA_WARNING,
+                    evidence_ids=[result.entry.entry_id],
+                    localized=localized,
+                )
+            )
+    return formulas
+
+
+def _localized_safety_notes(request: TCMConsultRequest, results: list[RetrievalResult]) -> dict[ResponseLanguage, list[str]]:
+    localized = {language: list(notes) for language, notes in BASE_SAFETY_NOTES_LOCALIZED.items()}
+    if request.context.medications.strip():
+        localized["en"].append("Because current medication was reported, a clinician or pharmacist should check every educational herb/formula example for interactions.")
+        localized["zh"].append("由于已填写目前用药，所有教学性中药或方剂示例都应由医生或药师核查相互作用。")
+        localized["ko"].append("현재 복용 약이 입력되었으므로 모든 교육용 한약·처방 예시는 의료진 또는 약사가 상호작용을 확인해야 합니다.")
+    if request.context.pregnancy.strip() and request.context.pregnancy.casefold() not in {"no", "not pregnant", "n/a"}:
+        localized["en"].append("Pregnancy or breastfeeding status was reported; do not use herbal products without obstetric and qualified TCM review.")
+        localized["zh"].append("已填写妊娠或哺乳相关信息；未经产科与合格中医专业评估，不要使用中药产品。")
+        localized["ko"].append("임신 또는 수유 관련 정보가 입력되었습니다. 산과 및 자격 있는 한의학적 검토 없이 한약 제품을 사용하지 마세요.")
+    if request.context.allergies.strip():
+        localized["en"].append("Allergies were reported; every ingredient and excipient needs professional verification.")
+        localized["zh"].append("已填写过敏信息；每一种成分和辅料都需要专业核对。")
+        localized["ko"].append("알레르기 정보가 입력되었습니다. 모든 성분과 부형제는 전문적으로 확인해야 합니다.")
+    for language in ("en", "zh", "ko"):
+        for result in results:
+            note = localized_entry_safety(result.entry, language)
+            if note and note not in localized[language]:
+                localized[language].append(note)
+        localized[language] = localized[language][:8]
+    return localized
+
+
+def _safety_notes_en(localized_safety: dict[ResponseLanguage, list[str]]) -> list[str]:
+    return localized_safety.get("en", [])[:8]
+
+
+def _claims(results: list[RetrievalResult], language: ResponseLanguage, *, abstention: str = "") -> list[Claim]:
+    if abstention:
+        return [Claim(claim_id="claim_1", text=abstention, evidence_ids=[], claim_type="abstention_reason")]
+    claims: list[Claim] = []
+    for index, result in enumerate(results[:3], start=1):
+        if language == "zh":
+            text = f"用户描述与本地证据 {result.entry.entry_id} 中的“{result.entry.pattern['zh']}”教学方向存在重合。"
+        elif language == "ko":
+            text = f"사용자 설명은 로컬 근거 {result.entry.entry_id}의 '{result.entry.pattern['ko']}' 교육 방향과 일부 겹칩니다."
+        else:
+            text = f"The user's description overlaps with the educational direction '{result.entry.pattern['en']}' in local evidence {result.entry.entry_id}."
+        claims.append(
+            Claim(
+                claim_id=f"claim_{index}",
+                text=text,
+                evidence_ids=[result.entry.entry_id],
+                claim_type="pattern_hypothesis",
+            )
+        )
+    if results:
+        claims.append(
+            Claim(
+                claim_id=f"claim_{len(claims) + 1}",
+                text={
+                    "en": "The retrieved sources are terminology or educational summaries and do not establish clinical treatment efficacy.",
+                    "zh": "检索来源属于术语或教学资料摘要，不能证明具体治疗有效性。",
+                    "ko": "검색된 자료는 용어 또는 교육 요약이며 특정 치료 효과를 입증하지 않습니다.",
+                }[language],
+                evidence_ids=[item.entry.entry_id for item in results[:3]],
+                claim_type="evidence_limitation",
+            )
+        )
+    return claims
+
+
+def _confidence(status: ScopeStatus, diagnostics: RetrievalDiagnostics, results: list[RetrievalResult]) -> Confidence:
+    if status == "safety_critical":
+        return Confidence(level="high", score=0.99, reason="A deterministic safety-critical rule matched the question.")
+    if status in {"out_of_scope", "insufficient_information"}:
+        return Confidence(level="high", score=0.92, reason=f"A deterministic scope rule routed the request to {status}.")
+    if status == "evidence_insufficient":
+        return Confidence(
+            level="medium",
+            score=0.74,
+            reason=(
+                "Retrieval ran, but no evidence passed the configured relevance threshold "
+                f"({diagnostics.min_relevance_score:.2f}); generation was blocked."
+            ),
+        )
+    meaningful = diagnostics.meaningful_match_count
+    source_diversity = len({source_id for result in results for source_id in result.entry.source_ids})
+    score = 0.26 + diagnostics.top_relevance_score * 0.42 + min(meaningful, 4) * 0.06 + min(source_diversity, 3) * 0.03
+    if any(result.entry.review_status == "needs_human_review" for result in results):
+        score = min(score, 0.68)
+    score = round(min(0.86, score), 2)
+    if score >= 0.72:
+        level = "high"
+    elif score >= 0.48:
+        level = "medium"
+    else:
+        level = "low"
+    reason = (
+        f"Experimental confidence from retrieval signals: {meaningful} meaningful evidence match(es), "
+        f"top relevance {diagnostics.top_relevance_score:.2f}, {source_diversity} source id(s). "
+        "Confidence is capped when entries still need human review."
+    )
+    return Confidence(level=level, score=score, reason=reason)
+
+
+def _retrieval_metadata(diagnostics: RetrievalDiagnostics) -> RetrievalMetadata:
+    return RetrievalMetadata(
+        retrieval_method=diagnostics.retrieval_method,  # type: ignore[arg-type]
+        candidate_count=diagnostics.candidate_count,
+        meaningful_match_count=diagnostics.meaningful_match_count,
+        top_relevance_score=diagnostics.top_relevance_score,
+        min_relevance_score=diagnostics.min_relevance_score,
+        retrieval_notes=list(diagnostics.notes),
+    )
+
+
+def _localized_patterns(patterns: list[PossiblePattern], language: ResponseLanguage) -> list[LocalizedResultPattern]:
+    items: list[LocalizedResultPattern] = []
+    for pattern in patterns[:2]:
+        display = pattern.localized.get(language) or pattern.localized.get("en")
+        items.append(
+            LocalizedResultPattern(
+                name=display.pattern if display else pattern.pattern,
+                rationale=display.rationale if display else pattern.rationale,
+                matched_symptoms=pattern.matching_symptoms[:4],
+            )
+        )
+    return items
+
+
+def _localized_formulas(formulas: list[RelatedHerbOrFormula], language: ResponseLanguage) -> list[LocalizedResultFormula]:
+    items: list[LocalizedResultFormula] = []
+    for formula in formulas[:2]:
+        display = formula.localized.get(language) or formula.localized.get("en")
+        items.append(
+            LocalizedResultFormula(
+                name=display.name if display else formula.name,
+                description=display.purpose if display else formula.purpose,
+                warning=display.safety_warning if display else formula.safety_warning,
+            )
+        )
+    return items
+
+
+def _evidence_summary(language: ResponseLanguage, evidence: list[EvidenceChunk], diagnostics: RetrievalDiagnostics) -> str:
+    copy = RESULT_COPY[language]
+    if not evidence:
+        return copy["evidence_empty"]
+    return copy["evidence_summary"].format(count=len(evidence), score=round(diagnostics.top_relevance_score * 100))
+
+
+def _build_localized_result(
+    *,
+    generation_source: GenerationSource,
+    scope_status: ScopeStatus,
+    summaries: dict[ResponseLanguage, str],
+    patterns: list[PossiblePattern],
+    formulas: list[RelatedHerbOrFormula],
+    localized_safety_notes: dict[ResponseLanguage, list[str]],
+    evidence: list[EvidenceChunk],
+    diagnostics: RetrievalDiagnostics,
+) -> dict[ResponseLanguage, LocalizedResultContent]:
+    localized: dict[ResponseLanguage, LocalizedResultContent] = {}
+    for language in ("en", "zh", "ko"):
+        copy = RESULT_COPY[language]
+        localized[language] = LocalizedResultContent(
+            status_label=copy["status"][generation_source],
+            summary_title=copy["summary_title"],
+            grounding=copy["grounding"][generation_source],
+            summary=summaries[language],
+            state_title=copy["state_title"][scope_status],
+            state_body=summaries[language] if scope_status != "supported" else "",
+            patterns_title=copy["patterns_title"],
+            patterns=[] if scope_status != "supported" else _localized_patterns(patterns, language),
+            examples_title=copy["examples_title"],
+            formulas=[] if scope_status != "supported" else _localized_formulas(formulas, language),
+            safety_title=copy["safety_title"],
+            safety_notes=localized_safety_notes.get(language, [])[:3],
+            evidence_summary=_evidence_summary(language, evidence, diagnostics),
+            evidence_title=copy["evidence_title"],
+        )
+    return localized
+
+
+def _abstention_summaries(status: ScopeStatus, language: ResponseLanguage, decision: ScopeDecision | None = None) -> dict[ResponseLanguage, str]:
+    clarifying = decision.clarifying_questions if decision else ()
+    joined_en = " ".join(f"{idx}. {q}" for idx, q in enumerate(clarifying, start=1))
+    joined_zh = " ".join(f"{idx}. {q}" for idx, q in enumerate(clarifying, start=1))
+    joined_ko = " ".join(f"{idx}. {q}" for idx, q in enumerate(clarifying, start=1))
+    if status == "safety_critical":
+        return {
+            "en": "This question contains safety-critical warning signs. Do not wait for a TCM interpretation; seek urgent professional medical help now.",
+            "zh": "这个问题包含可能需要紧急医学评估的危险信号。请不要等待中医辨证解释，应立即寻求专业医疗帮助。",
+            "ko": "이 질문에는 긴급 의학적 평가가 필요한 위험 신호가 포함되어 있습니다. 한의학적 해석을 기다리지 말고 즉시 전문 의료 도움을 받으세요.",
+        }
+    if status == "out_of_scope":
+        return {
+            "en": "This question is outside the current limited TCM-RAG scope, so the system will not generate TCM patterns, formulas, or treatment advice. Please seek professional assessment or route this to a more appropriate medical module.",
+            "zh": "这个问题超出当前 TCM-RAG 的有限研究范围，因此系统不会生成中医证型、方剂或治疗建议。建议优先寻求专业评估，或后续转交更合适的医学模块处理。",
+            "ko": "이 질문은 현재 제한된 TCM-RAG 범위를 벗어나므로 한의학적 변증, 처방 예시, 치료 조언을 생성하지 않습니다. 전문 평가를 받거나 더 적절한 의료 모듈로 라우팅해야 합니다.",
+        }
+    if status == "insufficient_information":
+        return {
+            "en": "There is not enough symptom detail for evidence-grounded TCM retrieval. Please add a few details before the system attempts a pattern direction. " + joined_en,
+            "zh": "目前症状信息不足，无法进行有证据约束的中医检索。请先补充少量关键信息，再尝试生成辨证方向。" + joined_zh,
+            "ko": "현재 증상 정보가 부족해 근거 기반 한의학 검색을 수행하기 어렵습니다. 변증 방향을 시도하기 전에 몇 가지 정보를 더 알려주세요. " + joined_ko,
+        }
+    return {
+        "en": "The system did not retrieve meaningful local TCM evidence above the configured threshold, so it abstained instead of asking the LLM to answer from unsupported knowledge.",
+        "zh": "系统没有检索到超过阈值的相关本地中医证据，因此选择回避回答，而不是让 LLM 基于无证据知识自由生成。",
+        "ko": "설정된 기준을 넘는 관련 로컬 한의학 근거가 검색되지 않아, LLM이 근거 없는 지식으로 답하지 않도록 답변을 보류했습니다.",
+    }
+
+
+def _base_response(
+    *,
+    request: TCMConsultRequest,
+    scope_status: ScopeStatus,
+    generation_mode: str,
+    generation_source: GenerationSource,
+    summaries: dict[ResponseLanguage, str],
+    diagnostics: RetrievalDiagnostics,
+    results: list[RetrievalResult],
+    llm_model: str,
+    llm_error: str | None,
+    urgent: bool = False,
+    abstained: bool = False,
+    claims: list[Claim] | None = None,
+) -> TCMConsultResponse:
+    language = detect_language(request.question)
+    evidence = [] if abstained else _evidence(results)
+    patterns = [] if abstained else _patterns(results)
+    formulas = [] if abstained else _formulas(results)
+    citations = [] if abstained else _citations(results)
+    localized_safety = _localized_safety_notes(request, [] if urgent else results)
+    localized_result = _build_localized_result(
+        generation_source=generation_source,
+        scope_status=scope_status,
+        summaries=summaries,
+        patterns=patterns,
+        formulas=formulas,
+        localized_safety_notes=localized_safety,
+        evidence=evidence,
+        diagnostics=diagnostics,
+    )
+    keywords, domains = analyse_query(results)
+    metadata = _retrieval_metadata(diagnostics)
+    summary = summaries[language]
+    return TCMConsultResponse(
+        scope_status=scope_status,
+        abstained=abstained,
+        generation_mode=generation_mode,  # type: ignore[arg-type]
+        generation_source=generation_source,
+        response_language=language,
+        llm_model=llm_model,
+        llm_error=llm_error,
+        urgent=urgent,
+        query_analysis=QueryAnalysis(keywords=keywords, possible_domains=domains),
+        summary=summary,
+        tcm_perspective=summary,
+        claims=claims or _claims(results, language, abstention=summary if abstained else ""),
+        patterns=patterns,
+        educational_examples=formulas,
+        possible_patterns=patterns,
+        related_herbs_or_formulas=formulas,
+        evidence=evidence,
+        citations=citations,
+        safety_notes=_safety_notes_en(localized_safety),
+        localized_safety_notes=localized_safety,
+        localized_result=localized_result,
+        confidence=_confidence(scope_status, diagnostics, results),
+        limitations=LIMITATIONS_LOCALIZED[language],
+        retrieval_metadata=metadata,
+        retrieval_method=metadata.retrieval_method,
+        candidate_count=metadata.candidate_count,
+        meaningful_match_count=metadata.meaningful_match_count,
+        top_relevance_score=metadata.top_relevance_score,
         disclaimer=DISCLAIMER,
     )
 
 
+def _not_run_diagnostics(note: str = "") -> RetrievalDiagnostics:
+    return RetrievalDiagnostics(
+        retrieval_method="not_run",
+        candidate_count=0,
+        meaningful_match_count=0,
+        top_relevance_score=0.0,
+        min_relevance_score=0.0,
+        notes=(note,) if note else (),
+    )
+
+
 async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
+    language = detect_language(request.question)
+    client = OpenAICompatibleClient()
+    llm_model = client.model
     safety = check_emergency(f"{request.question} {_context_text(request)}")
     if safety.urgent:
-        return _urgent_response(request, safety.reason, safety.immediate)
+        summaries = _abstention_summaries("safety_critical", language)
+        return _base_response(
+            request=request,
+            scope_status="safety_critical",
+            generation_mode="safety",
+            generation_source="safety_rule",
+            summaries=summaries,
+            diagnostics=_not_run_diagnostics(safety.reason),
+            results=[],
+            llm_model=llm_model,
+            llm_error=None,
+            urgent=True,
+            abstained=True,
+        )
 
-    results = retrieve(request.question, _context_text(request), top_k=4)
-    keywords, domains = analyse_query(results)
-    client = OpenAICompatibleClient()
-    chinese = _contains_cjk(request.question)
+    scope = classify_scope(request.question)
+    if scope.status in {"out_of_scope", "insufficient_information"}:
+        summaries = _abstention_summaries(scope.status, language, scope)
+        return _base_response(
+            request=request,
+            scope_status=scope.status,
+            generation_mode="rule",
+            generation_source="scope_rule",
+            summaries=summaries,
+            diagnostics=_not_run_diagnostics(scope.reason),
+            results=[],
+            llm_model=llm_model,
+            llm_error=None,
+            abstained=True,
+        )
+
+    results, diagnostics = await retrieve(request.question, _context_text(request), entries=KNOWLEDGE_BASE)
+    if not results:
+        summaries = _abstention_summaries("evidence_insufficient", language, scope)
+        return _base_response(
+            request=request,
+            scope_status="evidence_insufficient",
+            generation_mode="abstention",
+            generation_source="evidence_gate",
+            summaries=summaries,
+            diagnostics=diagnostics,
+            results=[],
+            llm_model=llm_model,
+            llm_error=None,
+            abstained=True,
+        )
+
+    summaries = _fallback_summaries(results)
     generation_mode = "mock"
-    generation_source = "mock_fallback"
+    generation_source: GenerationSource = "mock_fallback"
     llm_error: str | None = None
-    llm_model = client.model
-
+    citations = _citations(results)
     if client.configured:
         try:
-            generation = await client.generate(request, results)
-            if generation.parsed_json is not None:
-                try:
-                    perspective, patterns, formulas = _validated_llm_content(generation.parsed_json, chinese=chinese)
-                except (TypeError, ValueError):
-                    perspective, patterns, formulas = _plain_text_llm_content(generation.raw_content, results, chinese=chinese)
-            else:
-                perspective, patterns, formulas = _plain_text_llm_content(generation.raw_content, results, chinese=chinese)
+            generation = await client.generate(request, results, citations)
+            summaries = _extract_localized_summaries(generation, results, language)
             generation_mode = "llm"
             generation_source = "siliconflow_llm"
             llm_model = generation.model
         except LLMProviderError as exc:
             llm_error = str(exc)
-            perspective, patterns, formulas = _mock_content(results)
     else:
         llm_error = "LLM_API_KEY is missing"
-        perspective, patterns, formulas = _mock_content(results)
 
-    return TCMConsultResponse(
+    return _base_response(
+        request=request,
+        scope_status="supported",
         generation_mode=generation_mode,
         generation_source=generation_source,
+        summaries=summaries,
+        diagnostics=diagnostics,
+        results=results,
         llm_model=llm_model,
         llm_error=llm_error,
-        query_analysis=QueryAnalysis(keywords=keywords, possible_domains=domains),
-        tcm_perspective=perspective,
-        possible_patterns=patterns,
-        related_herbs_or_formulas=formulas,
-        evidence=_evidence(results),
-        safety_notes=_safety_notes(request, results),
-        confidence=_confidence(results),
-        disclaimer=DISCLAIMER,
+        abstained=False,
     )

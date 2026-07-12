@@ -1,0 +1,18 @@
+{
+  "agent": "tcm",
+  "scope_status": "out_of_scope",
+  "abstained": true,
+  "generation_source": "scope_rule",
+  "summary": "这个问题超出当前 TCM-RAG 的有限研究范围，因此系统不会生成中医证型、方剂或治疗建议。",
+  "claims": [
+    {
+      "claim_id": "claim_1",
+      "text": "这个问题超出当前 TCM-RAG 的有限研究范围，因此系统不会生成中医证型、方剂或治疗建议。",
+      "evidence_ids": [],
+      "claim_type": "abstention_reason"
+    }
+  ],
+  "patterns": [],
+  "educational_examples": [],
+  "evidence": []
+}
