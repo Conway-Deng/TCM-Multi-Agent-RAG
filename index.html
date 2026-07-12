@@ -297,25 +297,23 @@
       <h1 class="demo-title"></h1>
       <p class="demo-lead"></p>
 
-      <div class="demo-options glass mode-tcm" role="radiogroup" aria-label="">
+      <div class="demo-options glass mode-west" role="radiogroup" aria-label="">
         <span class="demo-slider" aria-hidden="true"></span>
-        <button type="button" class="demo-option demo-option-west is-disabled" data-mode="west" data-index="0" role="radio" aria-checked="false" aria-disabled="true" disabled>
-          <span class="demo-option-label"></span>
-          <span class="demo-option-desc"></span>
-          <span class="demo-coming-soon"></span>
-        </button>
-        <button type="button" class="demo-option demo-option-tcm is-selected" data-mode="tcm" data-index="1" role="radio" aria-checked="true">
+        <button type="button" class="demo-option demo-option-west is-selected" data-mode="west" data-index="0" role="radio" aria-checked="true">
           <span class="demo-option-label"></span>
           <span class="demo-option-desc"></span>
         </button>
-        <button type="button" class="demo-option demo-option-both is-disabled" data-mode="both" data-index="2" role="radio" aria-checked="false" aria-disabled="true" disabled>
+        <button type="button" class="demo-option demo-option-tcm" data-mode="tcm" data-index="1" role="radio" aria-checked="false">
           <span class="demo-option-label"></span>
           <span class="demo-option-desc"></span>
-          <span class="demo-coming-soon"></span>
+        </button>
+        <button type="button" class="demo-option demo-option-both" data-mode="both" data-index="2" role="radio" aria-checked="false">
+          <span class="demo-option-label"></span>
+          <span class="demo-option-desc"></span>
         </button>
       </div>
 
-      <div class="prototype-status glass" role="status" hidden>
+      <div class="prototype-status glass" role="status">
         <span class="status-dot" aria-hidden="true"></span>
         <div>
           <strong></strong>
@@ -323,7 +321,7 @@
         </div>
       </div>
 
-      <div id="tcm-consultation" class="tcm-consultation" aria-labelledby="tcm-consultation-title">
+      <div id="tcm-consultation" class="tcm-consultation" aria-labelledby="tcm-consultation-title" hidden>
         <div class="tcm-panel glass">
           <div class="tcm-panel-heading">
             <div>

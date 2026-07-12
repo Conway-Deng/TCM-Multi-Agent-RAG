@@ -42,29 +42,30 @@
   const tcmConsultation = document.getElementById('tcm-consultation');
 
   function setDemoMode(mode) {
-    if (mode !== 'tcm') return;
+    const selectedMode = ['west', 'tcm', 'both'].includes(mode) ? mode : 'west';
     document.querySelectorAll('.demo-option').forEach(function (el) {
-      const active = el.dataset.mode === mode;
+      const active = el.dataset.mode === selectedMode;
       el.classList.toggle('is-selected', active);
       el.setAttribute('aria-checked', active ? 'true' : 'false');
     });
 
     if (demoOptions) {
       demoOptions.classList.remove('mode-west', 'mode-tcm', 'mode-both');
-      demoOptions.classList.add('mode-' + mode);
+      demoOptions.classList.add('mode-' + selectedMode);
     }
 
-    if (tcmConsultation) tcmConsultation.hidden = false;
-    if (prototypeStatus) prototypeStatus.hidden = true;
+    const isTcmMode = selectedMode === 'tcm';
+    if (tcmConsultation) tcmConsultation.hidden = !isTcmMode;
+    if (prototypeStatus) prototypeStatus.hidden = isTcmMode;
   }
 
-  document.querySelectorAll('.demo-option:not(:disabled)').forEach(function (option) {
+  document.querySelectorAll('.demo-option').forEach(function (option) {
     option.addEventListener('click', function () {
       setDemoMode(option.dataset.mode);
     });
   });
 
-  setDemoMode('tcm');
+  setDemoMode(document.querySelector('.demo-option.is-selected')?.dataset.mode || 'west');
 
   const API_BASE_URL = window.MEDIRAG_API_BASE_URL || 'http://localhost:8000';
   const tcmForm = document.getElementById('tcm-consult-form');
