@@ -1,0 +1,29 @@
+{
+  "agent": "tcm",
+  "scope_status": "supported",
+  "abstained": false,
+  "generation_source": "siliconflow_llm",
+  "summary": "基于本地检索证据，当前描述与睡眠和腰酸相关的教学性中医方向有重合。这不是诊断。",
+  "claims": [
+    {
+      "claim_id": "claim_1",
+      "text": "用户描述与本地证据 tcm_sleep_001 中的教学方向存在重合。",
+      "evidence_ids": ["tcm_sleep_001"],
+      "claim_type": "pattern_hypothesis"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "tcm_sleep_001",
+      "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+      "relevance_score": 0.52,
+      "review_status": "needs_human_review"
+    }
+  ],
+  "retrieval_metadata": {
+    "retrieval_method": "lexical",
+    "candidate_count": 10,
+    "meaningful_match_count": 2,
+    "top_relevance_score": 0.52
+  }
+}

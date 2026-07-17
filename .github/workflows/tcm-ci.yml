@@ -1,0 +1,80 @@
+name: TCM-RAG CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/tcm-module-research
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tcm-rag-checks:
+    name: TCM-RAG checks
+    runs-on: ubuntu-latest
+
+    env:
+      LLM_API_KEY: ""
+      ENABLE_SEMANTIC_RETRIEVAL: "false"
+      ENABLE_REMOTE_RERANK: "false"
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+
+      - name: Run backend tests
+        working-directory: backend
+        run: python -m pytest
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run JavaScript syntax checks
+        run: |
+          node --check app.js
+          node --check diagram.js
+
+      - name: Confirm backend .env is not tracked
+        run: |
+          if [ -n "$(git ls-files backend/.env)" ]; then
+            echo "::error::backend/.env is tracked by Git. Remove it from the index before merging."
+            exit 1
+          fi
+          git check-ignore backend/.env
+
+      - name: Scan tracked files for API keys
+        run: |
+          if git grep -n -E '(LLM_API_KEY|SILICONFLOW_API_KEY|SILICONFLOW).*sk-[A-Za-z0-9_-]+' -- . ':!backend/tests/test_api.py'; then
+            echo "::error::Potential SiliconFlow API key found in tracked files."
+            exit 1
+          fi
+          if git grep -n -E 'sk-[A-Za-z0-9]{32,}' -- . ':!backend/tests/test_api.py'; then
+            echo "::error::Potential API key-like token found in tracked files."
+            exit 1
+          fi
+
+      - name: Check whitespace in working tree
+        run: git diff --check
+
+      - name: Check whitespace in pull request diff
+        if: github.event_name == 'pull_request'
+        run: git diff --check "origin/${{ github.base_ref }}...HEAD"

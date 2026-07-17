@@ -1,0 +1,160 @@
+{
+  "scope_statuses": ["supported", "insufficient_information", "out_of_scope", "safety_critical", "evidence_insufficient"],
+  "supported_topic_groups": [
+    {
+      "id": "sleep",
+      "label": {"en": "sleep problems", "zh": "睡眠问题", "ko": "수면 문제"},
+      "keywords": {
+        "en": ["insomnia", "sleep", "trouble sleeping", "poor sleep", "dreams", "palpitations", "restless"],
+        "zh": ["失眠", "睡不着", "睡眠", "多梦", "心悸", "心慌", "烦躁"],
+        "ko": ["불면", "잠", "잠을 못", "꿈", "두근", "가슴 두근", "불안"]
+      }
+    },
+    {
+      "id": "fatigue",
+      "label": {"en": "fatigue and low energy", "zh": "疲劳与乏力", "ko": "피로와 기력 저하"},
+      "keywords": {
+        "en": ["fatigue", "tired", "low energy", "weak", "poor appetite"],
+        "zh": ["乏力", "疲劳", "累", "没精神", "胃口不好", "食欲差"],
+        "ko": ["피곤", "피로", "기운", "무기력", "입맛"]
+      }
+    },
+    {
+      "id": "digestion",
+      "label": {"en": "appetite, bloating, and digestion", "zh": "食欲、腹胀与消化", "ko": "식욕, 더부룩함, 소화"},
+      "keywords": {
+        "en": ["bloating", "poor appetite", "indigestion", "burping", "acid reflux", "nausea"],
+        "zh": ["腹胀", "胃胀", "胃口不好", "食欲差", "嗳气", "反酸", "恶心", "消化"],
+        "ko": ["더부룩", "복부팽만", "입맛", "소화", "트림", "속쓰림", "메스꺼움"]
+      }
+    },
+    {
+      "id": "stress_constraint",
+      "label": {"en": "emotional stress and constraint symptoms", "zh": "压力与郁滞相关表现", "ko": "스트레스와 울체 관련 양상"},
+      "keywords": {
+        "en": ["stress", "irritable", "anxious", "sigh", "rib tightness", "mood"],
+        "zh": ["压力", "焦虑", "烦躁", "易怒", "叹气", "胸闷", "胁胀", "情绪"],
+        "ko": ["스트레스", "짜증", "불안", "한숨", "가슴 답답", "기분"]
+      }
+    },
+    {
+      "id": "headache_dizziness",
+      "label": {"en": "headache and dizziness", "zh": "头痛与头晕", "ko": "두통과 어지러움"},
+      "keywords": {
+        "en": ["headache", "dizziness", "vertigo", "migraine", "feverish head"],
+        "zh": ["头痛", "头疼", "头晕", "眩晕", "偏头痛", "头发热", "头有点热"],
+        "ko": ["두통", "머리 아픔", "어지러움", "현기증", "머리에 열"]
+      }
+    },
+    {
+      "id": "throat_cough",
+      "label": {"en": "mild throat irritation and cough presentations", "zh": "轻度咽喉不适与咳嗽", "ko": "가벼운 목 불편감과 기침"},
+      "keywords": {
+        "en": ["itchy throat", "sore throat", "dry throat", "cough", "throat tickle", "phlegm"],
+        "zh": ["嗓子痒", "喉咙痒", "咽痒", "咽痛", "咽干", "干咳", "咳嗽", "痰"],
+        "ko": ["목이 간질", "목 간지러움", "목 아픔", "마른기침", "기침", "가래"]
+      }
+    },
+    {
+      "id": "cold_heat_sweating",
+      "label": {"en": "cold/heat signs and sweating", "zh": "寒热与出汗表现", "ko": "한열과 땀 양상"},
+      "keywords": {
+        "en": ["cold hands", "feel cold", "night sweats", "sweating", "hot palms", "feverish"],
+        "zh": ["手脚冰凉", "怕冷", "盗汗", "出汗", "手足心热", "发热", "潮热"],
+        "ko": ["손발이 차", "추위", "식은땀", "도한", "열감", "손바닥 열"]
+      }
+    },
+    {
+      "id": "lower_back_tinnitus_deficiency",
+      "label": {"en": "lower-back soreness, tinnitus, and deficiency-related presentations", "zh": "腰酸、耳鸣与虚损相关表现", "ko": "허리 뻐근함, 이명, 허증 관련 양상"},
+      "keywords": {
+        "en": ["lower back soreness", "low back", "tinnitus", "night sweats", "dry mouth", "weak knees"],
+        "zh": ["腰酸", "腰背酸", "耳鸣", "盗汗", "口干", "膝软"],
+        "ko": ["허리 뻐근", "허리 시림", "이명", "도한", "입마름", "무릎 힘"]
+      }
+    }
+  ],
+  "insufficient_information": {
+    "phrases": {
+      "en": ["I feel unwell", "not comfortable", "something feels wrong", "I feel weird", "not feeling good"],
+      "zh": ["不舒服", "身体有点怪", "有点难受", "不太舒服", "最近不舒服"],
+      "ko": ["몸이 이상해요", "불편해요", "컨디션이 안 좋아요", "몸이 좀 안 좋아요"]
+    }
+  },
+  "out_of_scope": [
+    {
+      "id": "acute_trauma_wounds",
+      "label": {"en": "acute trauma or wound", "zh": "急性外伤或伤口", "ko": "급성 외상 또는 상처"},
+      "keywords": {
+        "en": ["cut", "wound", "glass cut", "burn", "stab", "injury", "trauma", "infected wound"],
+        "zh": ["划伤", "割伤", "玻璃划伤", "伤口", "外伤", "烧伤", "烫伤", "感染了", "发炎了"],
+        "ko": ["베였", "상처", "유리", "화상", "외상", "감염", "염증"]
+      }
+    },
+    {
+      "id": "fracture_or_severe_structural_injury",
+      "label": {"en": "fracture or structural injury", "zh": "骨折或结构性损伤", "ko": "골절 또는 구조적 손상"},
+      "keywords": {
+        "en": ["fracture", "broken bone", "dislocation", "bone broke"],
+        "zh": ["骨折", "脱臼", "骨头断了", "腿骨折"],
+        "ko": ["골절", "뼈가 부러", "탈구"]
+      }
+    },
+    {
+      "id": "cancer_or_serious_disease_treatment",
+      "label": {"en": "serious disease treatment advice", "zh": "严重疾病治疗建议", "ko": "중증 질환 치료 조언"},
+      "keywords": {
+        "en": ["cancer", "tumor", "heart failure", "kidney failure", "liver failure", "cure my"],
+        "zh": ["癌", "肿瘤", "心衰", "肾衰", "肝衰", "治好"],
+        "ko": ["암", "종양", "심부전", "신부전", "간부전", "치료해"]
+      }
+    },
+    {
+      "id": "medication_or_dose_request",
+      "label": {"en": "medication dosing or prescription request", "zh": "用药剂量或处方请求", "ko": "약물 용량 또는 처방 요청"},
+      "keywords": {
+        "en": ["dose", "dosage", "how much", "prescription", "tell me exactly what to take"],
+        "zh": ["剂量", "吃多少", "处方", "开方", "直接告诉我吃什么", "不用提醒风险"],
+        "ko": ["용량", "얼마나 먹", "처방", "정확히 뭘 먹"]
+      }
+    }
+  ],
+  "safety_critical": [
+    {
+      "id": "chest_breathing",
+      "label": {"en": "possible heart or breathing emergency", "zh": "可能的胸痛或呼吸急症", "ko": "흉통 또는 호흡 응급 가능성"},
+      "keywords": {
+        "en": ["severe chest pain", "crushing chest pain", "chest pain and cannot breathe", "can't breathe", "cannot breathe", "blue lips"],
+        "zh": ["胸口剧痛", "胸痛而且呼吸困难", "呼吸困难", "喘不上气", "嘴唇发紫"],
+        "ko": ["가슴이 심하게 아프", "숨쉬기 어렵", "숨을 못", "입술이 파래"]
+      }
+    },
+    {
+      "id": "fainting_confusion_neuro",
+      "label": {"en": "loss of consciousness or acute neurological symptoms", "zh": "昏倒、意识或神经急症", "ko": "실신, 의식 변화 또는 신경학적 응급"},
+      "keywords": {
+        "en": ["fainted", "passed out", "confusion", "seizure", "face droop", "one-sided weakness", "slurred speech"],
+        "zh": ["昏倒", "晕倒", "意识不清", "抽搐", "口角歪斜", "单侧无力", "说话不清"],
+        "ko": ["실신", "의식이 흐림", "경련", "얼굴이 처짐", "한쪽 힘이 빠짐", "말이 어눌"]
+      }
+    },
+    {
+      "id": "severe_allergy_bleeding_infection",
+      "label": {"en": "severe allergy, bleeding, or high-risk infection signs", "zh": "严重过敏、出血或高危感染信号", "ko": "심한 알레르기, 출혈 또는 고위험 감염 신호"},
+      "keywords": {
+        "en": ["severe allergic reaction", "throat swelling", "uncontrolled bleeding", "stiff neck with fever", "very high fever"],
+        "zh": ["严重过敏", "喉咙肿胀", "止不住血", "发热伴颈项强直", "高烧不退"],
+        "ko": ["심한 알레르기", "목이 붓", "피가 멈추지", "열과 목 경직", "고열"]
+      }
+    },
+    {
+      "id": "self_harm",
+      "label": {"en": "self-harm risk", "zh": "自伤风险", "ko": "자해 위험"},
+      "keywords": {
+        "en": ["suicide", "kill myself", "end my life", "self-harm", "hurt myself"],
+        "zh": ["自杀", "轻生", "结束生命", "自残", "伤害自己"],
+        "ko": ["자살", "죽고 싶", "생을 끝", "자해", "나를 해치"]
+      }
+    }
+  ]
+}
