@@ -55,8 +55,14 @@
     }
 
     const isTcmMode = selectedMode === 'tcm';
+    const isWestMode = selectedMode === 'west';
+
     if (tcmConsultation) tcmConsultation.hidden = !isTcmMode;
-    if (prototypeStatus) prototypeStatus.hidden = isTcmMode;
+
+    const westConsultation = document.getElementById('west-consultation');
+    if (westConsultation) westConsultation.hidden = !isWestMode;
+
+    if (prototypeStatus) prototypeStatus.hidden = isTcmMode || isWestMode;
   }
 
   document.querySelectorAll('.demo-option').forEach(function (option) {

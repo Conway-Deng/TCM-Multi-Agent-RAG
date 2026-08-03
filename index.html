@@ -321,6 +321,174 @@
         </div>
       </div>
 
+      <!-- ════ WEST CONSULTATION ════ -->
+      <div id="west-consultation" class="west-consultation" aria-labelledby="west-consultation-title" hidden>
+        <div class="west-panel glass">
+          <div class="west-panel-heading">
+            <div>
+              <p class="west-kicker">MediRAG-West · Research Prototype</p>
+              <h2 id="west-consultation-title">Evidence-Based Western Medicine</h2>
+              <p>Ask a health question. Multiple specialist AI agents retrieve clinical evidence, debate, and reach a safety-checked consensus — simulating how our Multi-LLM framework works.</p>
+            </div>
+            <span class="west-live-badge"><span aria-hidden="true"></span><span class="west-live-label">Local Demo</span></span>
+          </div>
+
+          <form id="west-consult-form" novalidate>
+            <label class="west-field west-question-field" for="west-question">
+              <span>Health question *</span>
+              <textarea id="west-question" name="question" rows="4" minlength="3" maxlength="2000" required
+                placeholder="e.g. I have been getting frequent headaches and feeling unusually tired for the past 3 weeks."></textarea>
+              <small>Describe your symptoms and when they started. Do not include identifying personal information.</small>
+            </label>
+
+            <div class="west-samples" aria-label="Sample questions">
+              <span>Try a sample</span>
+              <button type="button" class="west-sample" data-question="I have been getting frequent headaches and feeling unusually tired for the past 3 weeks.">Persistent headache + fatigue</button>
+              <button type="button" class="west-sample" data-question="I experience tightness in my chest when climbing stairs or walking fast. It goes away with rest.">Chest tightness on exertion</button>
+              <button type="button" class="west-sample" data-question="My blood pressure reading was 145/92. I am 48 years old. Should I be concerned?">Elevated blood pressure (145/92)</button>
+            </div>
+
+            <div class="west-form-footer">
+              <p><strong>Research use only.</strong> Not a diagnosis or prescription. Emergencies require immediate professional care.</p>
+              <button id="west-submit" class="west-submit" type="submit">
+                <span class="west-submit-label">Run MediRAG-West</span>
+                <span class="west-spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p id="west-form-message" class="west-form-message" role="alert" hidden></p>
+          </form>
+        </div>
+
+        <!-- Pipeline visualisation -->
+        <div id="west-viz" class="west-viz glass" hidden>
+          <div class="west-viz-header">
+            <h3 class="west-viz-title">Multi-LLM Reasoning Pipeline</h3>
+            <p class="west-viz-desc">Visualisation of how the multi-agent system processes your question in real time</p>
+          </div>
+
+          <!-- Canvas neural-net animation -->
+          <canvas id="west-viz-canvas" class="west-viz-canvas" aria-label="Neural network visualisation of multi-LLM reasoning" role="img"></canvas>
+
+          <!-- Pipeline step tracker -->
+          <div class="west-pipeline" id="west-pipeline-steps">
+            <div class="west-step" id="wstep-query" data-status="waiting">
+              <div class="west-step-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4zm-.75 3.75a.75.75 0 011.5 0v3.5l2.25 1.3a.75.75 0 01-.75 1.3L9.5 14.2a.75.75 0 01-.25-.6V9.75z"/></svg>
+              </div>
+              <div class="west-step-text">
+                <strong>Query Planning</strong>
+                <span>Analysing question intent</span>
+              </div>
+            </div>
+            <div class="west-step-connector"></div>
+            <div class="west-step" id="wstep-retrieval" data-status="waiting">
+              <div class="west-step-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 3a6 6 0 100 12A6 6 0 009 3zM1 9a8 8 0 1114.32 4.906l3.387 3.387a1 1 0 01-1.414 1.414l-3.387-3.387A8 8 0 011 9z"/></svg>
+              </div>
+              <div class="west-step-text">
+                <strong>RAG Retrieval</strong>
+                <span>NICE, PubMed, WHO guidelines</span>
+              </div>
+            </div>
+            <div class="west-step-connector"></div>
+            <div class="west-step" id="wstep-debate" data-status="waiting">
+              <div class="west-step-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h6a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm7 8a1 1 0 011-1h3a1 1 0 011 1v2a1 1 0 01-1 1h-3a1 1 0 01-1-1v-2zM2 12a1 1 0 011-1h3a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2z"/></svg>
+              </div>
+              <div class="west-step-text">
+                <strong>Agent Debate</strong>
+                <span>West · Nutrition · Lifestyle</span>
+              </div>
+            </div>
+            <div class="west-step-connector"></div>
+            <div class="west-step" id="wstep-judging" data-status="waiting">
+              <div class="west-step-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1a9 9 0 100 18A9 9 0 0010 1zm0 2a7 7 0 110 14A7 7 0 0110 3zm1 4a1 1 0 00-2 0v4a1 1 0 00.293.707l2.5 2.5a1 1 0 001.414-1.414L11 11.586V7z"/></svg>
+              </div>
+              <div class="west-step-text">
+                <strong>SafeJudge Panel</strong>
+                <span>Evidence · Safety · Conflict · Confidence</span>
+              </div>
+            </div>
+            <div class="west-step-connector"></div>
+            <div class="west-step" id="wstep-consensus" data-status="waiting">
+              <div class="west-step-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+              </div>
+              <div class="west-step-text">
+                <strong>Consensus</strong>
+                <span>Integrated response</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <section id="west-results" class="west-results" aria-live="polite" hidden>
+          <!-- Urgent banner -->
+          <div id="west-urgent-banner" class="west-urgent-banner" role="alert" hidden>
+            <span class="west-urgent-icon">⚠️</span>
+            <div>
+              <strong>Urgent Safety Guidance</strong>
+              <span>This response prioritises immediate professional medical care. Please seek help now.</span>
+            </div>
+          </div>
+
+          <!-- Agent cards -->
+          <div class="west-results-section">
+            <div class="west-section-head">
+              <h3>Specialist Agent Opinions</h3>
+              <p>Each agent independently generated recommendations from retrieved clinical evidence</p>
+            </div>
+            <div id="west-agents-grid" class="west-agents-grid"></div>
+          </div>
+
+          <!-- Judge scores -->
+          <div class="west-results-section">
+            <div class="west-section-head">
+              <h3>SafeJudge Evaluation</h3>
+              <p>LLM-as-a-Judge evaluates evidence quality, safety, conflicts, and confidence across all agent outputs</p>
+            </div>
+            <div id="west-judges-grid" class="west-judges-grid"></div>
+          </div>
+
+          <!-- Consensus -->
+          <div class="west-consensus glass">
+            <div class="west-consensus-top">
+              <div class="west-consensus-meta">
+                <span class="west-consensus-kicker">Integrated Consensus</span>
+                <span id="west-evidence-count" class="west-evidence-count-badge">— evidence sources</span>
+              </div>
+              <div class="west-conf-display" aria-label="Consensus confidence score">
+                <strong id="west-conf-score">—%</strong>
+                <span id="west-conf-label">Confidence</span>
+              </div>
+            </div>
+            <p id="west-consensus-summary" class="west-consensus-body"></p>
+
+            <details class="west-accordion">
+              <summary>View cited sources</summary>
+              <ul id="west-sources-list" class="west-sources"></ul>
+            </details>
+          </div>
+
+          <!-- Safety notes -->
+          <div class="west-safety-section glass">
+            <div class="west-safety-head">
+              <span class="west-safety-icon">🛡</span>
+              <div>
+                <p class="west-safety-kicker">Safety First</p>
+                <h3>Key Safety Notes</h3>
+              </div>
+            </div>
+            <ul id="west-safety-list" class="west-safety-list"></ul>
+          </div>
+
+          <p class="west-disclaimer">Educational research prototype only — not a diagnosis or prescription, and not a substitute for qualified medical care.</p>
+        </section>
+      </div>
+      <!-- ════ END WEST CONSULTATION ════ -->
+
       <div id="tcm-consultation" class="tcm-consultation" aria-labelledby="tcm-consultation-title" hidden>
         <div class="tcm-panel glass">
           <div class="tcm-panel-heading">
@@ -469,6 +637,7 @@
     <p class="footer-sub">Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus - website by Yoonjae Lee</p>
   </footer>
   <script src="diagram.js"></script>
+  <script src="west.js?v=20260803-west-prototype"></script>
   <script src="app.js?v=20260712-tcm-research"></script>
 </body>
 </html>
