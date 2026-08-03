@@ -2867,6 +2867,10 @@ body {
   padding: 0 0 3rem;
 }
 
+.west-consultation[hidden] {
+  display: none;
+}
+
 /* ── Input panel ────────────────────────────────────────────────── */
 .west-panel {
   border-radius: 18px;
