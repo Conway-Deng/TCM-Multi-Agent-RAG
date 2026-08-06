@@ -1,13 +1,14 @@
-# MediRAG-Judge Project 2: TCM-RAG
+# MediRAG-Judge: TCM-RAG and MediConsensus Orchestration Pilot
 
-This folder contains the standalone Traditional Chinese Medicine retrieval module for the MediRAG-Judge research internship. It is limited to the TCM-RAG stage only.
+This repository contains the functional Traditional Chinese Medicine retrieval module and an experimental, model-agnostic MediConsensus orchestration pilot for the MediRAG-Judge research internship.
 
 Not implemented here:
 
-- MediRAG-West
-- full Multi-Agent Debate
-- full SafeJudge layer
-- final integrated dual-medicine response
+- a real MediRAG-West backend or API
+- clinically validated multi-agent recommendations
+- verified Western Medicine retrieval in the current orchestration pilot
+
+The TCM module is real local RAG. Western Medicine input in the consensus pilot is a synthetic fixture, disabled by default, and is never represented as a live API result.
 
 The module is a research prototype, not a diagnosis or prescription system.
 
@@ -27,6 +28,13 @@ The module is a research prototype, not a diagnosis or prescription system.
 - structured API response for future Debate/Judge integration
 - evaluation dataset and metrics scaffold
 - tests for routing, fallback, LLM parsing, evidence gating, source integrity, and `.env` safety
+- normalized cross-domain `AgentOutput` schema
+- direct combination, deterministic weighted, debate, and debate-plus-judge strategies
+- independently invoked Debate, Evidence, Safety, Conflict, Confidence, and Synthesis roles
+- same-model defaults with role-specific model overrides for later heterogeneous experiments
+- synthetic Western fixture adapter plus a safely failing future API adapter
+- `POST /api/consensus/consult`
+- deterministic no-LLM consensus evaluation scaffold
 
 ## Project structure
 
@@ -80,6 +88,8 @@ Health check:
 http://localhost:8000/health
 ```
 
+The health response reports whether consensus and Western fixtures are enabled, without exposing credentials.
+
 ## Run frontend
 
 Open a second PowerShell window:
@@ -123,6 +133,34 @@ If the LLM call fails:
 - local fallback is used
 - the UI shows that the local medical library is being used
 - the technical panel shows a short safe error message
+
+## MediConsensus research configuration
+
+The consensus pilot is enabled by default, but the synthetic Western fixture is not:
+
+```dotenv
+CONSENSUS_ENABLED=true
+ALLOW_WEST_FIXTURE=false
+CONSENSUS_TEMPERATURE=0
+```
+
+For local Both-mode research testing, explicitly set `ALLOW_WEST_FIXTURE=true`. Do not enable it in a production medical workflow. Consensus roles inherit `LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL`; optional `CONSENSUS_API_KEY` and `CONSENSUS_BASE_URL` override them. Role model variables such as `CONSENSUS_DEBATE_MODEL` and `CONSENSUS_SAFETY_JUDGE_MODEL` fall back to `LLM_MODEL`.
+
+When LLM configuration is available, the `debate_judge` strategy makes separate calls for Debate, Evidence Judge, Safety Judge, Conflict Judge, Confidence Judge, and Consensus Synthesizer. Using the same underlying model for each role is still a multi-agent controlled condition; different providers are not required.
+
+Example PowerShell request:
+
+```powershell
+$body = @{
+  question = "I have trouble sleeping and lower back soreness."
+  context = @{}
+  strategy = "debate_judge"
+  domains = @("tcm", "western_fixture")
+  include_trace = $true
+} | ConvertTo-Json -Depth 6
+
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/api/consensus/consult -ContentType "application/json" -Body $body
+```
 
 ## Retrieval and evidence gate
 
@@ -188,6 +226,21 @@ Outputs:
 - `backend/evaluation/results/last_results.json`
 - `backend/evaluation/results/manual_review.csv`
 
+Consensus evaluation:
+
+```powershell
+cd D:\project\multi_agent_rag_research\TCM\backend
+.\.venv\Scripts\python.exe -m evaluation.run_consensus_evaluation --no-llm
+```
+
+Outputs:
+
+- `backend/evaluation/results/consensus_last_results.json`
+- `backend/evaluation/results/consensus_manual_review.csv`
+- `backend/evaluation/results/consensus_summary.md`
+
+The consensus benchmark is synthetic and tests orchestration behavior, provenance labels, safety propagation, abstention, conflicts, and pipeline reliability. It does not measure clinical correctness.
+
 Evaluation focuses on routing, retrieval, grounding structure, citation coverage, abstention, safety, and language behavior. It does not prove clinical correctness.
 
 ## Documentation
@@ -201,6 +254,11 @@ See:
 - `docs/tcm_retrieval_experiments.md`
 - `docs/tcm_evaluation_plan.md`
 - `docs/limitations.md`
+- `docs/consensus_architecture.md`
+- `docs/consensus_api_contract.md`
+- `docs/consensus_research_design.md`
+- `docs/consensus_evaluation_plan.md`
+- `docs/consensus_limitations.md`
 
 ## Known limitations and review requirements
 

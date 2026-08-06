@@ -321,16 +321,42 @@
         </div>
       </div>
 
+      <div id="consensus-consultation" class="consensus-consultation" aria-labelledby="consensus-title" hidden>
+        <div class="consensus-panel glass">
+          <div class="consensus-heading">
+            <div>
+              <p class="consensus-kicker">MediConsensus · Orchestration Research Pilot</p>
+              <h2 id="consensus-title">Experimental Western Medicine + TCM orchestration</h2>
+              <p>TCM output may come from the live local RAG pipeline. Western Medicine output is a clearly labelled synthetic fixture for orchestration testing only.</p>
+            </div>
+            <span class="consensus-experimental-badge">Experimental</span>
+          </div>
+          <div class="consensus-warning" role="note"><strong>Not clinically validated.</strong><span>The Western fixture performs no live medical retrieval, diagnosis, or verified guideline lookup.</span></div>
+          <form id="consensus-form" novalidate>
+            <label class="consensus-field" for="consensus-question"><span>Health question *</span><textarea id="consensus-question" rows="4" minlength="3" maxlength="2000" required placeholder="e.g. I have trouble sleeping and lower back soreness."></textarea></label>
+            <label class="consensus-field" for="consensus-strategy"><span>Research strategy</span><select id="consensus-strategy"><option value="concatenate">Direct combination</option><option value="weighted">Weighted aggregation</option><option value="debate">Debate</option><option value="debate_judge" selected>Debate + Judges</option></select></label>
+            <div class="consensus-form-footer"><p>Research use only. This pilot studies orchestration behavior, not clinical correctness.</p><button id="consensus-submit" class="consensus-submit" type="submit"><span>Run MediConsensus</span><span class="consensus-spinner" aria-hidden="true"></span></button></div>
+            <p id="consensus-message" class="consensus-message" role="alert" hidden></p>
+          </form>
+        </div>
+        <section id="consensus-results" class="consensus-results" aria-live="polite" hidden>
+          <div class="consensus-summary glass"><div class="consensus-result-meta"><span id="consensus-strategy-badge"></span><span id="consensus-confidence"></span></div><h3>Integrated research response</h3><p id="consensus-summary-text"></p></div>
+          <div class="consensus-columns"><section class="glass"><h3>Domain agent outputs</h3><div id="consensus-agents"></div></section><section class="glass"><h3>Agreements</h3><ul id="consensus-agreements"></ul><h3>Disagreements</h3><ul id="consensus-disagreements"></ul></section></div>
+          <div class="consensus-columns"><section class="glass"><h3>Judge results</h3><div id="consensus-judges"></div></section><section class="glass"><h3>Safety and limitations</h3><ul id="consensus-safety"></ul><ul id="consensus-limitations"></ul></section></div>
+          <details class="consensus-technical glass"><summary>Technical details</summary><dl><div><dt>Latency</dt><dd id="consensus-latency">—</dd></div><div><dt>Model API calls</dt><dd id="consensus-api-calls">0</dd></div><div><dt>Model-call failures</dt><dd id="consensus-call-failures">0</dd></div><div><dt>Fixture used</dt><dd id="consensus-fixture-used">—</dd></div></dl><div id="consensus-trace"></div></details>
+        </section>
+      </div>
+
       <!-- ════ WEST CONSULTATION ════ -->
       <div id="west-consultation" class="west-consultation" aria-labelledby="west-consultation-title" hidden>
         <div class="west-panel glass">
           <div class="west-panel-heading">
             <div>
-              <p class="west-kicker">MediRAG-West · Research Prototype</p>
+              <p class="west-kicker">MediRAG-West · Frontend Simulation</p>
               <h2 id="west-consultation-title">Evidence-Based Western Medicine</h2>
-              <p>Ask a health question. Multiple specialist AI agents retrieve clinical evidence, debate, and reach a safety-checked consensus — simulating how our Multi-LLM framework works.</p>
+              <p>This static frontend simulation illustrates a future multi-agent workflow. It does not call a Western Medicine backend, retrieve live evidence, or run real debate and judge agents.</p>
             </div>
-            <span class="west-live-badge"><span aria-hidden="true"></span><span class="west-live-label">Local Demo</span></span>
+            <span class="west-live-badge"><span aria-hidden="true"></span><span class="west-live-label">Static Demo</span></span>
           </div>
 
           <form id="west-consult-form" novalidate>
@@ -438,7 +464,7 @@
           <div class="west-results-section">
             <div class="west-section-head">
               <h3>Specialist Agent Opinions</h3>
-              <p>Each agent independently generated recommendations from retrieved clinical evidence</p>
+              <p>Static sample agent cards for frontend workflow demonstration only</p>
             </div>
             <div id="west-agents-grid" class="west-agents-grid"></div>
           </div>
@@ -447,7 +473,7 @@
           <div class="west-results-section">
             <div class="west-section-head">
               <h3>SafeJudge Evaluation</h3>
-              <p>LLM-as-a-Judge evaluates evidence quality, safety, conflicts, and confidence across all agent outputs</p>
+              <p>Static judge cards illustrate the planned evidence, safety, conflict, and confidence stages</p>
             </div>
             <div id="west-judges-grid" class="west-judges-grid"></div>
           </div>

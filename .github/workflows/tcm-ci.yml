@@ -21,6 +21,7 @@ jobs:
       LLM_API_KEY: ""
       ENABLE_SEMANTIC_RETRIEVAL: "false"
       ENABLE_REMOTE_RERANK: "false"
+      ALLOW_WEST_FIXTURE: "false"
       PYTHONDONTWRITEBYTECODE: "1"
 
     steps:
@@ -52,6 +53,11 @@ jobs:
         run: |
           node --check app.js
           node --check diagram.js
+          node --check west.js
+
+      - name: Run deterministic consensus evaluation
+        working-directory: backend
+        run: python -m evaluation.run_consensus_evaluation --no-llm
 
       - name: Confirm backend .env is not tracked
         run: |

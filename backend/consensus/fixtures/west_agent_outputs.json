@@ -1,0 +1,111 @@
+[
+  {
+    "case_id": "insomnia_fatigue",
+    "keywords": ["insomnia", "sleep", "fatigue", "tired", "失眠", "睡", "疲劳", "잠"],
+    "summary": "Synthetic fixture: persistent sleep difficulty and fatigue would usually require history-taking about duration, sleep schedule, medicines, mood, and red-flag symptoms before any clinical interpretation.",
+    "claims": [
+      {"claim_id": "west_sleep_1", "text": "Sleep difficulty and fatigue are non-specific and require more context.", "evidence_ids": ["WEST_FIX_SLEEP_01"], "confidence": 0.55, "claim_type": "fixture_observation"}
+    ],
+    "evidence": [
+      {"evidence_id": "WEST_FIX_SLEEP_01", "title": "Synthetic sleep assessment fixture", "source": "Synthetic fixture; not a clinical source", "snippet": "Fixture text for testing whether orchestration preserves uncertainty and requests missing information.", "relevance_score": 0.7, "source_type": "synthetic_fixture", "verification_status": "not_verified"}
+    ],
+    "confidence": 0.5,
+    "limitations": ["No live retrieval, guideline lookup, diagnosis, or clinical verification was performed."],
+    "safety_flags": [],
+    "urgent": false,
+    "abstained": false,
+    "scope_status": "supported"
+  },
+  {
+    "case_id": "headache",
+    "keywords": ["headache", "head pain", "头痛", "머리"],
+    "summary": "Synthetic fixture: headache assessment depends on onset, severity, neurological symptoms, fever, injury, medicines, and recurrence; sudden severe or neurological presentations require urgent evaluation.",
+    "claims": [
+      {"claim_id": "west_headache_1", "text": "Headache safety assessment depends on onset and associated warning signs.", "evidence_ids": ["WEST_FIX_HEAD_01"], "confidence": 0.6, "claim_type": "fixture_safety_observation"}
+    ],
+    "evidence": [
+      {"evidence_id": "WEST_FIX_HEAD_01", "title": "Synthetic headache triage fixture", "source": "Synthetic fixture; not a clinical source", "snippet": "Fixture text for testing warning-sign preservation without claiming live guideline retrieval.", "relevance_score": 0.72, "source_type": "synthetic_fixture", "verification_status": "not_verified"}
+    ],
+    "confidence": 0.52,
+    "limitations": ["This fixture does not perform NICE, WHO, PubMed, or other live evidence retrieval."],
+    "safety_flags": ["Escalate sudden severe headache or neurological symptoms."],
+    "urgent": false,
+    "abstained": false,
+    "scope_status": "supported"
+  },
+  {
+    "case_id": "chest_discomfort",
+    "keywords": ["chest", "胸口", "胸痛", "breath", "가슴"],
+    "summary": "Synthetic fixture: chest discomfort with breathing difficulty or severe pain must be routed to urgent professional medical assessment rather than consensus generation.",
+    "claims": [
+      {"claim_id": "west_chest_1", "text": "Severe chest discomfort with breathing difficulty requires urgent assessment.", "evidence_ids": ["WEST_FIX_CHEST_01"], "confidence": 0.9, "claim_type": "fixture_safety_observation"}
+    ],
+    "evidence": [
+      {"evidence_id": "WEST_FIX_CHEST_01", "title": "Synthetic urgent chest-symptom fixture", "source": "Synthetic fixture; not a clinical source", "snippet": "Fixture text solely for testing urgent-signal propagation through the orchestrator.", "relevance_score": 0.9, "source_type": "synthetic_fixture", "verification_status": "not_verified"}
+    ],
+    "confidence": 0.65,
+    "limitations": ["Urgency label is synthetic and intended only for safety-routing tests."],
+    "safety_flags": ["urgent_chest_symptoms"],
+    "urgent": true,
+    "abstained": true,
+    "scope_status": "safety_critical"
+  },
+  {
+    "case_id": "elevated_blood_pressure",
+    "keywords": ["blood pressure", "145/92", "hypertension", "血压", "혈압"],
+    "summary": "Synthetic fixture: a single elevated blood-pressure reading is insufficient for a diagnosis and should be interpreted with repeat measurements and professional review.",
+    "claims": [
+      {"claim_id": "west_bp_1", "text": "One fixture blood-pressure reading does not establish a diagnosis.", "evidence_ids": ["WEST_FIX_BP_01"], "confidence": 0.58, "claim_type": "fixture_observation"}
+    ],
+    "evidence": [
+      {"evidence_id": "WEST_FIX_BP_01", "title": "Synthetic blood-pressure fixture", "source": "Synthetic fixture; not a clinical source", "snippet": "Fixture text for testing cautious synthesis and uncertainty.", "relevance_score": 0.74, "source_type": "synthetic_fixture", "verification_status": "not_verified"}
+    ],
+    "confidence": 0.5,
+    "limitations": ["No measurement validation or cardiovascular risk calculation was performed."],
+    "safety_flags": [],
+    "urgent": false,
+    "abstained": false,
+    "scope_status": "supported"
+  },
+  {
+    "case_id": "insufficient_information",
+    "keywords": ["unwell", "not well", "不舒服", "이상"],
+    "summary": "Synthetic fixture: the question does not contain enough information for a meaningful Western Medicine test output.",
+    "claims": [],
+    "evidence": [],
+    "confidence": 0.15,
+    "limitations": ["More symptom detail is required before orchestration testing can be meaningful."],
+    "safety_flags": [],
+    "urgent": false,
+    "abstained": true,
+    "scope_status": "insufficient_information"
+  },
+  {
+    "case_id": "out_of_scope",
+    "keywords": ["legal", "finance", "weather", "法律", "股票", "날씨"],
+    "summary": "Synthetic fixture: this request is outside the medical orchestration pilot scope.",
+    "claims": [],
+    "evidence": [],
+    "confidence": 0.2,
+    "limitations": ["The fixture adapter abstained because the request is outside its research cases."],
+    "safety_flags": [],
+    "urgent": false,
+    "abstained": true,
+    "scope_status": "out_of_scope"
+  },
+  {
+    "case_id": "deliberate_conflict",
+    "keywords": ["conflict fixture", "冲突测试", "충돌 테스트"],
+    "summary": "Synthetic fixture intentionally disagrees with another educational agent output so conflict handling can be evaluated.",
+    "claims": [
+      {"claim_id": "west_conflict_1", "text": "This synthetic fixture asserts that the TCM educational pattern should be treated as a confirmed diagnosis.", "evidence_ids": [], "confidence": 0.8, "claim_type": "deliberately_unsupported_fixture_claim"}
+    ],
+    "evidence": [],
+    "confidence": 0.4,
+    "limitations": ["Contains a deliberate unsupported claim for judge-evaluation testing."],
+    "safety_flags": [],
+    "urgent": false,
+    "abstained": false,
+    "scope_status": "supported"
+  }
+]

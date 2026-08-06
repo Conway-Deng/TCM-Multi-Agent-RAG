@@ -4,20 +4,23 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from tcm.agent import consult
 from tcm.schemas import TCMConsultRequest, TCMConsultResponse
+from consensus.adapters.base import AdapterError, AdapterUnavailableError, FixtureDisabledError
+from consensus.orchestrator import ConsensusDisabledError, ConsensusOrchestrator, consensus_enabled
+from consensus.schemas import ConsensusConsultRequest, ConsensusError, ConsensusResponse
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 
 app = FastAPI(
     title="MediConsensus TCM-RAG API",
     version="0.2.0",
-    description="Research-only, evidence-gated TCM retrieval and answer-generation prototype.",
+    description="Research-only TCM-RAG plus model-agnostic consensus-orchestration pilot.",
 )
 
 def _cors_origins() -> list[str]:
@@ -43,15 +46,44 @@ async def validation_exception_handler(_, exc: RequestValidationError) -> JSONRe
 
 
 @app.get("/health")
-async def health() -> dict[str, str]:
+async def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "service": "TCM-RAG",
         "version": app.version,
         "port_env": os.getenv("PORT", "not_set"),
+        "consensus_enabled": consensus_enabled(),
+        "west_fixture_enabled": os.getenv("ALLOW_WEST_FIXTURE", "false").strip().casefold() in {"1", "true", "yes", "on"},
     }
 
 
 @app.post("/api/tcm/consult", response_model=TCMConsultResponse)
 async def tcm_consult(request: TCMConsultRequest) -> TCMConsultResponse:
     return await consult(request)
+
+
+@app.post(
+    "/api/consensus/consult",
+    response_model=ConsensusResponse,
+    responses={
+        403: {"model": ConsensusError, "description": "Fixture use is disabled."},
+        503: {"model": ConsensusError, "description": "Consensus or an external adapter is unavailable."},
+    },
+    summary="Run the experimental MediConsensus orchestration pilot",
+    description=(
+        "Combines normalized domain-agent outputs with concatenate, deterministic weighted, debate, "
+        "or debate-plus-judge strategies. Western fixtures are synthetic and disabled by default."
+    ),
+)
+async def consensus_consult(request: ConsensusConsultRequest) -> ConsensusResponse:
+    try:
+        return await ConsensusOrchestrator().run(request)
+    except FixtureDisabledError as exc:
+        raise HTTPException(status_code=403, detail={"code": "fixture_disabled", "message": str(exc)}) from None
+    except (AdapterUnavailableError, ConsensusDisabledError) as exc:
+        raise HTTPException(status_code=503, detail={"code": "service_unavailable", "message": str(exc)}) from None
+    except AdapterError:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "adapter_failure", "message": "A domain adapter failed safely."},
+        ) from None

@@ -40,6 +40,7 @@
   const demoOptions = document.querySelector('.demo-options');
   const prototypeStatus = document.querySelector('.prototype-status');
   const tcmConsultation = document.getElementById('tcm-consultation');
+  const consensusConsultation = document.getElementById('consensus-consultation');
 
   function setDemoMode(mode) {
     const selectedMode = ['west', 'tcm', 'both'].includes(mode) ? mode : 'west';
@@ -56,13 +57,15 @@
 
     const isTcmMode = selectedMode === 'tcm';
     const isWestMode = selectedMode === 'west';
+    const isBothMode = selectedMode === 'both';
 
     if (tcmConsultation) tcmConsultation.hidden = !isTcmMode;
+    if (consensusConsultation) consensusConsultation.hidden = !isBothMode;
 
     const westConsultation = document.getElementById('west-consultation');
     if (westConsultation) westConsultation.hidden = !isWestMode;
 
-    if (prototypeStatus) prototypeStatus.hidden = isTcmMode || isWestMode;
+    if (prototypeStatus) prototypeStatus.hidden = isTcmMode || isWestMode || isBothMode;
   }
 
   document.querySelectorAll('.demo-option').forEach(function (option) {
@@ -79,6 +82,11 @@
   const tcmSubmit = document.getElementById('tcm-submit');
   const tcmFormMessage = document.getElementById('tcm-form-message');
   const tcmResults = document.getElementById('tcm-results');
+  const consensusForm = document.getElementById('consensus-form');
+  const consensusQuestion = document.getElementById('consensus-question');
+  const consensusSubmit = document.getElementById('consensus-submit');
+  const consensusMessage = document.getElementById('consensus-message');
+  const consensusResults = document.getElementById('consensus-results');
 
   function uiText() {
     const language = translations[currentLanguage] || translations.en;
@@ -90,6 +98,105 @@
     if (className) element.className = className;
     if (text !== undefined) element.textContent = text;
     return element;
+  }
+
+  function replaceList(containerId, items, emptyText) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.replaceChildren();
+    const values = Array.isArray(items) && items.length ? items : [emptyText];
+    values.forEach(function (item) { container.append(makeElement('li', '', String(item))); });
+  }
+
+  function renderConsensusResult(data) {
+    const integrated = data.integrated_response || {};
+    const confidence = integrated.confidence || {};
+    document.getElementById('consensus-strategy-badge').textContent = String(data.strategy || '—').replaceAll('_', ' ');
+    document.getElementById('consensus-confidence').textContent = Math.round(Number(confidence.score || 0) * 100) + '% ' + String(confidence.level || 'low') + ' confidence';
+    document.getElementById('consensus-summary-text').textContent = integrated.summary || 'No integrated response was generated.';
+
+    const agents = document.getElementById('consensus-agents');
+    agents.replaceChildren();
+    (data.agents || []).forEach(function (agent) {
+      const card = makeElement('article', 'consensus-agent-card');
+      const header = makeElement('div', 'consensus-agent-header');
+      header.append(
+        makeElement('strong', '', String(agent.domain || agent.agent_id)),
+        makeElement('span', 'consensus-source-badge ' + (agent.source_type === 'fixture' ? 'is-fixture' : 'is-live'), agent.source_type === 'fixture' ? 'Synthetic fixture' : agent.source_type)
+      );
+      card.append(header, makeElement('p', '', agent.summary || 'No summary.'));
+      if (agent.source_type === 'fixture') card.append(makeElement('small', '', 'Experimental fixture — not verified clinical evidence.'));
+      agents.append(card);
+    });
+
+    replaceList('consensus-agreements', integrated.agreements, 'No agreement was evaluated or identified.');
+    replaceList('consensus-disagreements', integrated.disagreements, 'No material disagreement was reported.');
+    replaceList('consensus-safety', integrated.safety_notes, 'No additional safety note was generated.');
+    replaceList('consensus-limitations', integrated.limitations, 'No limitation metadata was returned.');
+
+    const judgeContainer = document.getElementById('consensus-judges');
+    judgeContainer.replaceChildren();
+    const judges = data.judges || {};
+    Object.keys(judges).forEach(function (name) {
+      if (!judges[name]) return;
+      const item = makeElement('article', 'consensus-judge-row');
+      item.append(makeElement('strong', '', name.replaceAll('_', ' ') + ' judge'));
+      const judge = judges[name];
+      const detail = judge.reasoning_summary || judge.reason || (judge.conflicts ? judge.conflicts.length + ' conflict(s)' : JSON.stringify(judge));
+      item.append(makeElement('span', '', detail));
+      judgeContainer.append(item);
+    });
+    if (!judgeContainer.children.length) judgeContainer.append(makeElement('p', '', 'This baseline does not run judges.'));
+
+    document.getElementById('consensus-latency').textContent = String(data.latency_ms || 0) + ' ms';
+    document.getElementById('consensus-api-calls').textContent = String(data.api_call_count || 0);
+    document.getElementById('consensus-call-failures').textContent = String(data.model_call_failure_count || 0);
+    document.getElementById('consensus-fixture-used').textContent = data.fixture_used ? 'Yes — synthetic Western fixture' : 'No';
+    const trace = document.getElementById('consensus-trace');
+    trace.replaceChildren();
+    (data.model_trace || []).forEach(function (entry) {
+      trace.append(makeElement('p', 'consensus-trace-row', entry.role + ' · ' + entry.model + ' · ' + entry.status + ' · ' + entry.latency_ms + ' ms'));
+    });
+    consensusResults.hidden = false;
+    consensusResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (consensusForm) {
+    consensusForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const question = consensusQuestion.value.trim();
+      if (question.length < 3) {
+        consensusMessage.textContent = 'Please enter a health question of at least 3 characters.';
+        consensusMessage.hidden = false;
+        return;
+      }
+      consensusMessage.hidden = true;
+      consensusResults.hidden = true;
+      consensusSubmit.disabled = true;
+      consensusSubmit.classList.add('is-loading');
+      consensusSubmit.querySelector('span:first-child').textContent = 'Running orchestration…';
+      try {
+        const response = await fetch(API_BASE_URL + '/api/consensus/consult', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ question: question, context: {}, strategy: document.getElementById('consensus-strategy').value, domains: ['tcm', 'western_fixture'], include_trace: true })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          const detail = data && data.detail;
+          const message = detail && typeof detail === 'object' ? detail.message : detail;
+          throw new Error(message || 'The consensus pilot could not be completed.');
+        }
+        renderConsensusResult(data);
+      } catch (error) {
+        consensusMessage.textContent = error instanceof TypeError ? 'The backend is not reachable. Start it on http://localhost:8000 and try again.' : error.message;
+        consensusMessage.hidden = false;
+      } finally {
+        consensusSubmit.disabled = false;
+        consensusSubmit.classList.remove('is-loading');
+        consensusSubmit.querySelector('span:first-child').textContent = 'Run MediConsensus';
+      }
+    });
   }
 
   function renderEmpty(container, message) {
