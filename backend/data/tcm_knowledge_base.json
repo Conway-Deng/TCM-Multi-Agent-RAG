@@ -498,5 +498,57 @@
     "evidence_category": "terminology_or_educational",
     "tags": ["lower_back", "tinnitus", "yin_deficiency"],
     "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_acupuncture_001",
+    "topic": "acupuncture_meridian",
+    "subtopic": "meridian_theory_conceptual_scope",
+    "symptoms": {"en": ["conceptual acupuncture question", "meridian relationship"], "zh": ["针灸概念", "经络联系"], "ko": ["침 개념", "경락 관계"]},
+    "keywords": {"en": ["acupuncture", "meridian", "acupoint", "channel theory"], "zh": ["针灸", "经络", "穴位", "经脉"], "ko": ["침", "경락", "혈자리"]},
+    "pattern": {"en": "Meridian and acupuncture conceptual framework", "zh": "经络与针灸概念框架", "ko": "경락과 침 개념 체계"},
+    "rationale": {"en": "Traditional TCM teaching uses meridian theory as a conceptual framework for relationships among channels, body regions, and functional descriptions; this does not establish a biomedical mechanism.", "zh": "中医教学以经络理论作为描述经脉、身体部位与传统功能联系的概念框架；这并不等同于已证实的现代生物医学机制。", "ko": "한의학 교육에서는 경락 이론을 경로, 신체 부위, 전통적 기능 관계를 설명하는 개념 체계로 사용하며, 이는 현대 생의학적 기전이 입증되었다는 뜻이 아닙니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Conceptual information must not be converted into self-needling instructions; acupuncture procedures require appropriately qualified practitioners."], "zh": ["概念性说明不得转化为自行针刺操作；针灸操作需要具备相应资质的专业人员。"], "ko": ["개념 설명을 자가 침 시술로 바꾸어서는 안 되며, 침 시술은 적절한 자격을 갖춘 전문가가 해야 합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary", "evidence_category": "terminology_or_educational", "tags": ["acupuncture", "meridian", "conceptual"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_constitution_001",
+    "topic": "constitution",
+    "subtopic": "constitution_theory_overview",
+    "symptoms": {"en": ["persistent cold tendency", "fatigue tendency"], "zh": ["长期怕冷倾向", "容易疲劳"], "ko": ["지속적인 냉감 경향", "쉽게 피로함"]},
+    "keywords": {"en": ["constitution", "body constitution", "cold tendency", "fatigue tendency"], "zh": ["体质", "身体体质", "怕冷倾向", "疲劳倾向"], "ko": ["체질", "냉감 경향", "피로 경향"]},
+    "pattern": {"en": "TCM constitution theory", "zh": "中医体质理论", "ko": "한의학 체질 이론"},
+    "rationale": {"en": "TCM constitution theory describes relatively persistent tendencies rather than diagnosing a disease from one symptom; classification normally requires broader history and qualified assessment.", "zh": "中医体质理论描述相对持续的倾向，不能依据单一症状诊断疾病；体质分类通常需要更完整的病史与专业评估。", "ko": "한의학 체질 이론은 한 가지 증상으로 질병을 진단하기보다 비교적 지속적인 경향을 설명하며, 분류에는 더 넓은 병력과 전문 평가가 필요합니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Persistent cold intolerance or fatigue can have many medical causes and should not be attributed to constitution without assessment."], "zh": ["持续怕冷或乏力可能有多种医学原因，不应未经评估就归因于体质。"], "ko": ["지속적인 냉감이나 피로는 다양한 의학적 원인이 있을 수 있어 평가 없이 체질로 돌리지 않아야 합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary", "evidence_category": "terminology_or_educational", "tags": ["constitution", "cold", "fatigue"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_dietary_001",
+    "topic": "dietary_therapy",
+    "subtopic": "traditional_food_properties",
+    "symptoms": {"en": ["dietary therapy question", "digestive comfort"], "zh": ["食疗问题", "消化舒适度"], "ko": ["식이요법 질문", "소화 편안함"]},
+    "keywords": {"en": ["dietary therapy", "food properties", "warming food", "cooling food"], "zh": ["食疗", "食物属性", "温性食物", "凉性食物"], "ko": ["식이요법", "음식 성질", "따뜻한 음식", "찬 음식"]},
+    "pattern": {"en": "Traditional TCM dietary-property concepts", "zh": "传统中医食物属性概念", "ko": "전통 한의학 음식 성질 개념"},
+    "rationale": {"en": "Traditional dietary therapy classifies foods with concepts such as warming or cooling properties; these traditional categories must be distinguished from modern nutritional composition and clinical evidence.", "zh": "传统食疗以温、凉等概念描述食物属性；这些传统分类必须与现代营养成分及临床证据明确区分。", "ko": "전통 식이요법은 따뜻함·차가움 같은 개념으로 음식 성질을 분류하며, 이는 현대 영양 성분과 임상 근거와 구분해야 합니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Food allergy, diabetes, kidney disease, eating disorders, pregnancy, and medicine interactions require individualized professional advice."], "zh": ["食物过敏、糖尿病、肾病、进食障碍、妊娠及药物相互作用需要个体化专业建议。"], "ko": ["음식 알레르기, 당뇨, 신장 질환, 섭식장애, 임신, 약물 상호작용은 개별 전문 조언이 필요합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary"],
+    "source_type": "educational_textbook_summary", "evidence_category": "traditional_theory", "tags": ["dietary", "food", "digestion"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_yangsheng_001",
+    "topic": "lifestyle_yangsheng",
+    "subtopic": "sleep_routine_and_seasonal_concepts",
+    "symptoms": {"en": ["irregular sleep routine", "stress"], "zh": ["作息不规律", "压力"], "ko": ["불규칙한 수면 습관", "스트레스"]},
+    "keywords": {"en": ["yangsheng", "sleep routine", "seasonal routine", "gentle movement"], "zh": ["养生", "睡眠作息", "顺应季节", "适度运动"], "ko": ["양생", "수면 습관", "계절 생활", "가벼운 움직임"]},
+    "pattern": {"en": "Traditional Yangsheng lifestyle concepts", "zh": "传统养生生活方式概念", "ko": "전통 양생 생활 개념"},
+    "rationale": {"en": "Traditional Yangsheng teaching emphasizes regular sleep, moderate movement, and seasonal routines as general educational concepts, not individualized clinical prescriptions.", "zh": "传统养生教学重视规律睡眠、适度活动与季节性作息；这些是一般教学概念，不是个体化临床处方。", "ko": "전통 양생 교육은 규칙적 수면, 적당한 움직임, 계절에 따른 생활을 일반 교육 개념으로 강조하며 개인 임상 처방이 아닙니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Lifestyle suggestions must not delay assessment of persistent, severe, or worsening symptoms."], "zh": ["生活方式建议不得延误对持续、严重或加重症状的医学评估。"], "ko": ["생활 조언 때문에 지속되거나 심하거나 악화되는 증상에 대한 평가가 지연되어서는 안 됩니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary"],
+    "source_type": "educational_textbook_summary", "evidence_category": "traditional_theory", "tags": ["lifestyle", "yangsheng", "sleep", "seasonal"], "review_status": "needs_human_review"
   }
 ]

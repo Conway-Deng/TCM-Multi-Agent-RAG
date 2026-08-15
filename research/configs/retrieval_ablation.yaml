@@ -1,0 +1,12 @@
+{
+  "experiment_id": "retrieval_ablation",
+  "research_question": "TCM retrieval quality",
+  "dataset": "research/datasets/seed_tcm.jsonl",
+  "conditions": ["C1"],
+  "retrieval_modes": ["R0", "R1", "R2", "R3"],
+  "top_k_evidence": 4,
+  "repeat_count": 1,
+  "max_parallel_calls": 4,
+  "seed": 20260815,
+  "limitations": "Local dense and rerank providers are deterministic research fallbacks, not neural production models."
+}

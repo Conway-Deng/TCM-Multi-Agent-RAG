@@ -1,4 +1,6 @@
-# Consensus Evaluation Plan
+# ARCHIVED PRE-V1: Consensus Evaluation Plan
+
+Inactive historical design. Use `docs/evaluation_methodology.md`.
 
 The synthetic benchmark covers evidence-supported, insufficient-information, out-of-scope, urgent-safety, deliberate-conflict, unsupported-claim, and agreement cases.
 

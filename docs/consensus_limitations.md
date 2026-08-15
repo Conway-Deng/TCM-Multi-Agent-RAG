@@ -1,4 +1,6 @@
-# MediConsensus Pilot Limitations
+# ARCHIVED PRE-V1: MediConsensus Pilot Limitations
+
+Inactive historical design. Use `docs/safety_and_limitations.md`.
 
 - The TCM corpus is small and still requires human source and clinical review.
 - Western Medicine output is synthetic fixture data, not a real API, RAG system, guideline search, diagnosis, or verified citation set.

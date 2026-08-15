@@ -1,3 +1,4 @@
+"""DEPRECATED and inactive. No active API imports this historical adapter."""
 from __future__ import annotations
 
 import os

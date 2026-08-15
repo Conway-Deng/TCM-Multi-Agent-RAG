@@ -1,4 +1,6 @@
-# Consensus Research Design
+# ARCHIVED PRE-V1: Consensus Research Design
+
+Inactive historical design. Use `docs/experiment_design.md`.
 
 The first controlled comparison is:
 

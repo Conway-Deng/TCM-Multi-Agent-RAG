@@ -1,0 +1,16 @@
+{
+  "experiment_id": "rq1_single_vs_multi",
+  "research_question": "RQ1",
+  "dataset": "research/datasets/seed_tcm.jsonl",
+  "conditions": ["C1", "C2", "C5", "C6"],
+  "retrieval_modes": ["R2"],
+  "top_k_candidates": 10,
+  "top_k_evidence": 4,
+  "active_agents": ["syndrome", "herbal", "acupuncture_meridian", "constitution", "dietary_therapy", "lifestyle_yangsheng"],
+  "judges": ["evidence", "hallucination", "safety", "conflict", "confidence", "provenance"],
+  "debate_rounds": 1,
+  "repeat_count": 1,
+  "max_parallel_calls": 4,
+  "seed": 20260815,
+  "limitations": "Seed labels are synthetic and not expert ground truth."
+}

@@ -1,4 +1,6 @@
-# MediConsensus Orchestration Architecture
+# ARCHIVED PRE-V1: MediConsensus Orchestration Architecture
+
+Inactive historical design. Use `docs/multi_agent_architecture.md`.
 
 The pilot adds a backend orchestration layer without copying or weakening TCM-RAG. `TCMAdapter` invokes the existing `tcm.agent.consult` flow, then normalizes the returned evidence, claims, safety state, abstention, generation source, model metadata, and latency into a shared `AgentOutput` model.
 

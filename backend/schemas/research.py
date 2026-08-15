@@ -1,0 +1,274 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field, field_validator
+
+from tcm.schemas import UserContext
+
+
+class ConditionId(str, Enum):
+    C0 = "C0"
+    C1 = "C1"
+    C2 = "C2"
+    C3 = "C3"
+    C4 = "C4"
+    C5 = "C5"
+    C6 = "C6"
+
+
+class RetrievalStrategy(str, Enum):
+    R0 = "R0"
+    R1 = "R1"
+    R2 = "R2"
+    R3 = "R3"
+
+
+class ResearchMode(str, Enum):
+    SINGLE_RAG = "tcm_single_rag"
+    MULTI_AGENT = "tcm_multi_agent"
+    COMPARE = "research_compare"
+
+
+class RunState(str, Enum):
+    SUPPORTED = "supported"
+    INSUFFICIENT_INFORMATION = "insufficient_information"
+    OUT_OF_SCOPE = "out_of_scope"
+    SAFETY_CRITICAL = "safety_critical"
+    EVIDENCE_INSUFFICIENT = "evidence_insufficient"
+
+
+class StructuredClaim(BaseModel):
+    claim_id: str
+    text: str
+    claim_type: str = "educational"
+    evidence_ids: list[str] = Field(default_factory=list)
+    reasoning_summary: str = ""
+    confidence: float = Field(default=0.0, ge=0, le=1)
+
+
+class ResearchCitation(BaseModel):
+    evidence_id: str
+    source_id: str
+    title: str
+    locator: str = ""
+    provenance_valid: bool = False
+
+
+class RetrievalItem(BaseModel):
+    chunk_id: str
+    source_id: str
+    rank: int = Field(ge=1)
+    lexical_score: float | None = None
+    semantic_score: float | None = None
+    fusion_score: float | None = None
+    rerank_score: float | None = None
+    retrieval_method: str
+    chunk_text: str
+    source_metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class PlannerOutput(BaseModel):
+    normalized_question: str
+    language: Literal["en", "zh", "ko"]
+    intent: str
+    subdomains: list[str] = Field(default_factory=list)
+    required_agents: list[str] = Field(default_factory=list)
+    missing_context: list[str] = Field(default_factory=list)
+    retrieval_filters: dict[str, list[str]] = Field(default_factory=dict)
+    safety_critical: bool = False
+    scope_state: RunState = RunState.SUPPORTED
+    reasoning_summary: str = ""
+
+
+class ResearchAgentOutput(BaseModel):
+    agent_id: str
+    agent_name: str
+    agent_version: str
+    question: str
+    language: Literal["en", "zh", "ko"]
+    subdomain: str
+    claims: list[StructuredClaim] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
+    citations: list[ResearchCitation] = Field(default_factory=list)
+    uncertainties: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    safety_flags: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0, le=1)
+    abstained: bool = False
+    abstention_reason: str | None = None
+    latency_ms: int = Field(default=0, ge=0)
+    provider: str = "mock"
+    model: str = "deterministic-mock-v1"
+    prompt_version: str = "v1"
+    reasoning_summary: str = ""
+    token_usage: dict[str, int] = Field(default_factory=dict)
+
+
+class JudgeResult(BaseModel):
+    judge_id: str
+    judge_name: str
+    judge_version: str = "1.0.0"
+    score: float = Field(default=0.0, ge=0, le=1)
+    passed: bool = False
+    findings: list[str] = Field(default_factory=list)
+    affected_claim_ids: list[str] = Field(default_factory=list)
+    unsupported_claim_ids: list[str] = Field(default_factory=list)
+    reasoning_summary: str = ""
+    provider: str = "local"
+    model: str = "deterministic-evaluator-v1"
+    latency_ms: int = Field(default=0, ge=0)
+
+
+class DebateTrace(BaseModel):
+    enabled: bool = False
+    rounds: int = 0
+    critiques: list[dict[str, str]] = Field(default_factory=list)
+    revisions: list[dict[str, str]] = Field(default_factory=list)
+    agreements: list[str] = Field(default_factory=list)
+    disagreements: list[str] = Field(default_factory=list)
+    unresolved_conflicts: list[str] = Field(default_factory=list)
+
+
+class StageTiming(BaseModel):
+    stage: str
+    latency_ms: int = Field(ge=0)
+
+
+class RunTrace(BaseModel):
+    run_id: str
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    git_commit: str = "unknown"
+    corpus_version: str = "unknown"
+    dataset_version: str = "ad-hoc"
+    condition_id: ConditionId
+    experiment_config: dict[str, Any] = Field(default_factory=dict)
+    provider: str = "mock"
+    model: str = "deterministic-mock-v1"
+    embedding_model: str = "local-hash-embedding-v1"
+    reranker: str = "none"
+    prompt_versions: dict[str, str] = Field(default_factory=dict)
+    prompt_hashes: dict[str, str] = Field(default_factory=dict)
+    temperature: float = 0.0
+    top_k: int = 4
+    random_seed: int = 20260815
+    active_agents: list[str] = Field(default_factory=list)
+    active_judges: list[str] = Field(default_factory=list)
+    retrieval_strategy: RetrievalStrategy = RetrievalStrategy.R2
+    retrieved_evidence_ids: list[str] = Field(default_factory=list)
+    agent_outputs: list[dict[str, Any]] = Field(default_factory=list)
+    judge_outputs: list[dict[str, Any]] = Field(default_factory=list)
+    final_answer: str = ""
+    confidence: float = Field(default=0.0, ge=0, le=1)
+    abstention: bool = False
+    latency_ms: int = Field(default=0, ge=0)
+    stage_timings: list[StageTiming] = Field(default_factory=list)
+    token_usage: dict[str, int] = Field(default_factory=dict)
+    provider_calls: int = 0
+    provider_errors: list[str] = Field(default_factory=list)
+    fallback_usage: bool = False
+    iterative_retrieval_used: bool = False
+    raw_query_stored: bool = False
+
+
+class ResearchRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=2000)
+    context: UserContext = Field(default_factory=UserContext)
+    condition_id: ConditionId = ConditionId.C6
+    retrieval_strategy: RetrievalStrategy = RetrievalStrategy.R2
+    active_agents: list[str] = Field(default_factory=list)
+    active_judges: list[str] = Field(default_factory=list)
+    top_k: int = Field(default=4, ge=1, le=20)
+    debate_rounds: int = Field(default=1, ge=0, le=3)
+    iterative_retrieval: bool = False
+    include_trace: bool = True
+    store_raw_query: bool = False
+    random_seed: int = 20260815
+
+    @field_validator("question")
+    @classmethod
+    def clean_question(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("Please enter a health question of at least 3 characters.")
+        return value
+
+
+class ResearchRunResult(BaseModel):
+    run_id: str
+    mode: ResearchMode
+    condition_id: ConditionId
+    condition_name: str
+    scope_state: RunState
+    planner: PlannerOutput
+    retrieval: list[RetrievalItem] = Field(default_factory=list)
+    agent_outputs: list[ResearchAgentOutput] = Field(default_factory=list)
+    debate: DebateTrace = Field(default_factory=DebateTrace)
+    judge_outputs: list[JudgeResult] = Field(default_factory=list)
+    final_answer: str
+    citations: list[ResearchCitation] = Field(default_factory=list)
+    agreements: list[str] = Field(default_factory=list)
+    disagreements: list[str] = Field(default_factory=list)
+    unresolved_conflicts: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    safety_flags: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0, le=1)
+    abstained: bool = False
+    abstention_reason: str | None = None
+    trace: RunTrace | None = None
+    metrics: dict[str, float | int | None] = Field(default_factory=dict)
+    experimental: bool = True
+    mock_mode: bool = True
+
+
+class CompareRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=2000)
+    context: UserContext = Field(default_factory=UserContext)
+    conditions: list[ConditionId] = Field(default_factory=lambda: [ConditionId.C1, ConditionId.C2, ConditionId.C6])
+    retrieval_strategy: RetrievalStrategy = RetrievalStrategy.R2
+    active_agents: list[str] = Field(default_factory=list)
+    active_judges: list[str] = Field(default_factory=list)
+    top_k: int = Field(default=4, ge=1, le=20)
+    iterative_retrieval: bool = False
+    random_seed: int = 20260815
+
+
+class CompareResponse(BaseModel):
+    comparison_id: str
+    question: str
+    results: list[ResearchRunResult]
+    metric_comparison: dict[str, dict[str, float | int | None]]
+    limitations: list[str]
+
+
+class DatasetItem(BaseModel):
+    question_id: str
+    question: str
+    language: Literal["en", "zh", "ko"]
+    category: str
+    difficulty: Literal["easy", "medium", "hard"] = "medium"
+    tcm_subdomains: list[str] = Field(default_factory=list)
+    expected_scope: RunState = RunState.SUPPORTED
+    safety_label: str = "routine"
+    gold_evidence_ids: list[str] = Field(default_factory=list)
+    required_concepts: list[str] = Field(default_factory=list)
+    forbidden_claims: list[str] = Field(default_factory=list)
+    reference_notes: str = ""
+    expert_review_status: str = "synthetic_provisional_not_expert_validated"
+
+
+class HumanReview(BaseModel):
+    run_id: str
+    question_id: str
+    reviewer_id_anonymous: str
+    reviewer_role: str
+    evidence_support_score: int = Field(ge=1, le=5)
+    completeness_score: int = Field(ge=1, le=5)
+    explainability_score: int = Field(ge=1, le=5)
+    safety_score: int = Field(ge=1, le=5)
+    uncertainty_communication_score: int = Field(ge=1, le=5)
+    trustworthiness_score: int = Field(ge=1, le=5)
+    system_preference: str = ""
+    notes: str = ""

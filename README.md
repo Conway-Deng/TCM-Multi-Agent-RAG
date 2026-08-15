@@ -1,4 +1,36 @@
-# MediRAG-Judge: TCM-RAG and MediConsensus Orchestration Pilot
+# TCM Multi-Agent RAG + LLM-as-a-Judge Research Workbench
+
+This repository is the active TCM-only research specialization of the supervisor's broader MediRAG-Judge project cluster. It implements conventional TCM RAG, specialist multi-agent comparison, debate, deterministic weighting, LLM-as-a-Judge evaluation, safety/provenance checks, retrieval ablations, human-review preparation, and exportable experiments.
+
+Scientific status: research infrastructure, not a clinical system. The corpus and seed datasets are provisional and not expert validated. Automated judges are not ground truth. `RQ3-TCM-within-paradigm proxy` does not answer cross-paradigm RQ3. RQ6 requires actual human participant data.
+
+## Current quick start
+
+```powershell
+cd D:\project\multi_agent_rag_research\code_git
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+$env:PYTHONPATH = "$PWD\backend"
+.\.venv\Scripts\python.exe -m uvicorn main:app --app-dir backend --reload --port 8000
+```
+
+In a second terminal, serve the static frontend with `.\.venv\Scripts\python.exe -m http.server 5500` and open `http://localhost:5500`. Without an API key, the backend and runner use clearly labelled deterministic mock/local providers.
+
+Representative experiments:
+
+```powershell
+.\.venv\Scripts\python.exe -m research.run_experiment --config research/configs/rq1_single_vs_multi.yaml --no-llm
+.\.venv\Scripts\python.exe -m research.run_experiment --config research/configs/rq2_judge_detection.yaml --no-llm
+.\.venv\Scripts\python.exe -m research.run_experiment --config research/configs/rq4_debate_ablation.yaml --no-llm
+.\.venv\Scripts\python.exe -m research.run_experiment --config research/configs/retrieval_ablation.yaml --no-llm
+```
+
+Start with [`docs/research_overview.md`](docs/research_overview.md), [`docs/tcm_architecture.md`](docs/tcm_architecture.md), [`docs/experiment_design.md`](docs/experiment_design.md), and [`docs/safety_and_limitations.md`](docs/safety_and_limitations.md).
+
+<details>
+<summary>Archived pre-v1 prototype notes (historical only)</summary>
+
+The material below describes the earlier prototype and may mention paths or runtime components that are no longer active.
 
 This repository contains the functional Traditional Chinese Medicine retrieval module and an experimental, model-agnostic MediConsensus orchestration pilot for the MediRAG-Judge research internship.
 
@@ -268,3 +300,5 @@ See:
 - Formula names are educational examples only, not recommendations.
 - No dose, preparation, prescription, or treatment plan is generated.
 - Automated tests do not replace clinical validation.
+
+</details>

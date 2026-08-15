@@ -1,0 +1,13 @@
+{
+  "experiment_id": "rq5_communication",
+  "research_question": "RQ5",
+  "dataset": "research/datasets/seed_tcm.jsonl",
+  "conditions": ["C1", "C6"],
+  "retrieval_modes": ["R3"],
+  "top_k_evidence": 4,
+  "active_agents": ["syndrome", "herbal", "constitution", "dietary_therapy", "lifestyle_yangsheng"],
+  "judges": ["evidence", "safety", "conflict", "confidence", "provenance"],
+  "debate_rounds": 1,
+  "repeat_count": 1,
+  "seed": 20260815
+}

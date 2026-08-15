@@ -1,0 +1,15 @@
+{
+  "experiment_id": "rq2_judge_detection",
+  "research_question": "RQ2",
+  "dataset": "research/datasets/rq2_judge_benchmark.jsonl",
+  "conditions": ["C5", "C6"],
+  "retrieval_modes": ["R2"],
+  "top_k_evidence": 4,
+  "active_agents": ["syndrome", "herbal", "dietary_therapy", "lifestyle_yangsheng"],
+  "judges": ["evidence", "hallucination", "safety", "conflict", "confidence", "provenance"],
+  "debate_rounds": 1,
+  "repeat_count": 1,
+  "max_parallel_calls": 4,
+  "seed": 20260815,
+  "limitations": "LLM-as-a-Judge outputs are predictions; only independent labels can support classification metrics."
+}

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus</title>
-  <meta name="description" content="Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus — University of Nottingham research internship.">
+  <title>TCM Multi-Agent RAG Research Workbench</title>
+  <meta name="description" content="TCM Multi-Agent RAG and LLM-as-a-Judge research workbench — University of Nottingham research internship.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -42,11 +42,11 @@
   <main id="home-view" class="view-panel">
     <section id="team" class="hero">
       <p class="eyebrow">University of Nottingham · Research Internship</p>
-      <h1>Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus</h1>
+      <h1>TCM Multi-Agent RAG Research Workbench</h1>
       <p class="lead">
-        A multi-agent healthcare AI framework combining Retrieval-Augmented Generation, Agentic AI,
-        and LLM-as-a-Judge to deliver evidence-grounded, explainable health information across
-        Western Medicine, Traditional Chinese Medicine, Nutrition, and Lifestyle Medicine.
+        A TCM-focused specialization of the supervisor's wider MediRAG-Judge cluster, combining
+        Retrieval-Augmented Generation, specialist agents, structured debate, and LLM-as-a-Judge
+        for reproducible research on grounding, safety, conflict, confidence, and explainability.
       </p>
 
       <div class="team-list">
@@ -153,35 +153,35 @@
         <section class="arch-stage arch-stage-retrieval" aria-label="Retrieval stage">
           <div class="arch-stage-header">
             <span class="metric-kicker">Retrieval</span>
-            <h3>Dual Evidence Grounding</h3>
-            <p>Western medicine and TCM evidence sources are retrieved separately before being reconciled.</p>
+            <h3>TCM Retrieval Laboratory</h3>
+            <p>Lexical, dense, hybrid, and reranked TCM retrieval conditions expose complete evidence traces.</p>
           </div>
 
           <div class="arch-layer arch-layer-dual layer-animate" data-layer="3">
             <div class="arch-node node-blue arch-node-wide" tabindex="0"
                  data-tooltip="Evidence-grounded RAG for modern medicine. Retrieves from authoritative Western medical sources to support evidence-based recommendations with citations.">
               <div class="node-text">
-                <strong>MediRAG-West</strong>
-                <span>Modern medicine retrieval</span>
+                <strong>Retrieval Baselines</strong>
+                <span>R0 lexical · R1 dense</span>
               </div>
               <ul class="node-sources">
-                <li>Clinical Guidelines (NICE, WHO)</li>
-                <li>Biomedical Literature (PubMed)</li>
-                <li>Drug Databases</li>
-                <li>Systematic Reviews</li>
+                <li>Deterministic lexical baseline</li>
+                <li>Embedding provider abstraction</li>
+                <li>Inspectable scores and ranks</li>
+                <li>Resolvable evidence IDs</li>
               </ul>
             </div>
             <div class="arch-node node-green arch-node-wide" tabindex="0"
                  data-tooltip="Specialised RAG for Traditional Chinese Medicine. Retrieves TCM knowledge including syndrome differentiation, herbal medicine, and acupuncture theory.">
               <div class="node-text">
-                <strong>TCM-RAG</strong>
-                <span>Traditional Chinese Medicine retrieval</span>
+                <strong>Advanced TCM Retrieval</strong>
+                <span>R2 hybrid · R3 reranked</span>
               </div>
               <ul class="node-sources">
-                <li>TCM Textbooks &amp; Classics</li>
-                <li>Herbal Medicine Databases</li>
-                <li>Acupuncture &amp; Meridian Knowledge</li>
-                <li>TCM Clinical Guidelines &amp; Studies</li>
+                <li>Auditable source registry</li>
+                <li>Deterministic corpus chunks</li>
+                <li>Optional iterative retrieval</li>
+                <li>Corpus versioning and review status</li>
               </ul>
             </div>
           </div>
@@ -203,23 +203,23 @@
             <div class="arch-row">
               <div class="arch-node node-blue arch-node-sm" tabindex="0"
                    data-tooltip="Provides evidence-based recommendations from a modern Western medicine perspective, grounded in retrieved clinical guidelines and literature.">
-                <strong>Western Medicine Agent</strong>
-                <span>Evidence-based modern medicine</span>
+                <strong>Syndrome Agent</strong>
+                <span>Pattern concepts and relationships</span>
               </div>
               <div class="arch-node node-green arch-node-sm" tabindex="0"
                    data-tooltip="Generates recommendations based on TCM theory, syndrome differentiation, herbal knowledge, and constitution analysis.">
-                <strong>TCM Agent</strong>
-                <span>TCM theory, syndrome differentiation, herbal knowledge</span>
+                <strong>Herbal Agent</strong>
+                <span>Educational knowledge without prescribing</span>
               </div>
               <div class="arch-node node-orange arch-node-sm" tabindex="0"
                    data-tooltip="Provides nutrition-related recommendations and dietary guidance aligned with the user's health context.">
-                <strong>Nutrition Agent</strong>
-                <span>Dietary guidance</span>
+                <strong>Acupuncture Agent</strong>
+                <span>Meridian concepts without procedures</span>
               </div>
               <div class="arch-node node-purple arch-node-sm" tabindex="0"
                    data-tooltip="Offers lifestyle, behavioural, and wellness guidance to complement medical and nutritional advice.">
-                <strong>Lifestyle Agent</strong>
-                <span>Behavioral and wellness guidance</span>
+                <strong>Constitution Agent</strong>
+                <span>Constitution theory with uncertainty</span>
               </div>
             </div>
           </div>
@@ -243,7 +243,7 @@
               <div class="arch-node node-orange arch-node-sm" tabindex="0"
                    data-tooltip="Identifies conflicts between agents and medical paradigms, surfacing areas of disagreement for transparent resolution.">
                 <strong>Conflict Judge</strong>
-                <span>Identifies conflicts between paradigms</span>
+                <span>Identifies within-TCM disagreements</span>
               </div>
               <div class="arch-node node-purple arch-node-sm" tabindex="0"
                    data-tooltip="Estimates overall confidence and uncertainty levels, helping users understand how reliable each recommendation is.">
@@ -297,17 +297,17 @@
       <h1 class="demo-title"></h1>
       <p class="demo-lead"></p>
 
-      <div class="demo-options glass mode-west" role="radiogroup" aria-label="">
+      <div class="demo-options glass mode-west" role="radiogroup" aria-label="Research mode">
         <span class="demo-slider" aria-hidden="true"></span>
-        <button type="button" class="demo-option demo-option-west is-selected" data-mode="west" data-index="0" role="radio" aria-checked="true">
+        <button type="button" class="demo-option demo-option-west is-selected" data-mode="single" data-index="0" role="radio" aria-checked="true">
           <span class="demo-option-label"></span>
           <span class="demo-option-desc"></span>
         </button>
-        <button type="button" class="demo-option demo-option-tcm" data-mode="tcm" data-index="1" role="radio" aria-checked="false">
+        <button type="button" class="demo-option demo-option-tcm" data-mode="multi" data-index="1" role="radio" aria-checked="false">
           <span class="demo-option-label"></span>
           <span class="demo-option-desc"></span>
         </button>
-        <button type="button" class="demo-option demo-option-both" data-mode="both" data-index="2" role="radio" aria-checked="false">
+        <button type="button" class="demo-option demo-option-both" data-mode="compare" data-index="2" role="radio" aria-checked="false">
           <span class="demo-option-label"></span>
           <span class="demo-option-desc"></span>
         </button>
@@ -325,30 +325,31 @@
         <div class="consensus-panel glass">
           <div class="consensus-heading">
             <div>
-              <p class="consensus-kicker">MediConsensus · Orchestration Research Pilot</p>
-              <h2 id="consensus-title">Experimental Western Medicine + TCM orchestration</h2>
-              <p>TCM output may come from the live local RAG pipeline. Western Medicine output is a clearly labelled synthetic fixture for orchestration testing only.</p>
+              <p class="consensus-kicker">TCM Multi-Agent · Orchestration Research</p>
+              <h2 id="consensus-title">TCM specialist agents, debate, and judges</h2>
+              <p>Run a controlled TCM-only condition with inspectable evidence, specialist outputs, disagreement, judge evaluations, and reproducibility metadata.</p>
             </div>
             <span class="consensus-experimental-badge">Experimental</span>
           </div>
-          <div class="consensus-warning" role="note"><strong>Not clinically validated.</strong><span>The Western fixture performs no live medical retrieval, diagnosis, or verified guideline lookup.</span></div>
+          <div class="consensus-warning" role="note"><strong>Not clinically validated.</strong><span>The provisional corpus and automated judges do not establish clinical correctness.</span></div>
           <form id="consensus-form" novalidate>
             <label class="consensus-field" for="consensus-question"><span>Health question *</span><textarea id="consensus-question" rows="4" minlength="3" maxlength="2000" required placeholder="e.g. I have trouble sleeping and lower back soreness."></textarea></label>
-            <label class="consensus-field" for="consensus-strategy"><span>Research strategy</span><select id="consensus-strategy"><option value="concatenate">Direct combination</option><option value="weighted">Weighted aggregation</option><option value="debate">Debate</option><option value="debate_judge" selected>Debate + Judges</option></select></label>
-            <div class="consensus-form-footer"><p>Research use only. This pilot studies orchestration behavior, not clinical correctness.</p><button id="consensus-submit" class="consensus-submit" type="submit"><span>Run MediConsensus</span><span class="consensus-spinner" aria-hidden="true"></span></button></div>
+            <label class="consensus-field" for="consensus-strategy"><span>Experiment condition</span><select id="consensus-strategy"><option value="C2">C2 · Independent agents</option><option value="C3">C3 · Weighted aggregation</option><option value="C4">C4 · Structured debate</option><option value="C5">C5 · Judge arbitration</option><option value="C6" selected>C6 · Debate + Judges</option></select></label>
+            <label class="consensus-field" for="consensus-retrieval"><span>Retrieval strategy</span><select id="consensus-retrieval"><option value="R0">R0 · Lexical</option><option value="R1">R1 · Dense</option><option value="R2" selected>R2 · Hybrid</option><option value="R3">R3 · Hybrid + rerank</option></select></label>
+            <div class="consensus-form-footer"><p>Research use only. This workbench studies orchestration behavior, not clinical correctness.</p><button id="consensus-submit" class="consensus-submit" type="submit"><span>Run TCM Multi-Agent</span><span class="consensus-spinner" aria-hidden="true"></span></button></div>
             <p id="consensus-message" class="consensus-message" role="alert" hidden></p>
           </form>
         </div>
         <section id="consensus-results" class="consensus-results" aria-live="polite" hidden>
-          <div class="consensus-summary glass"><div class="consensus-result-meta"><span id="consensus-strategy-badge"></span><span id="consensus-confidence"></span></div><h3>Integrated research response</h3><p id="consensus-summary-text"></p></div>
+          <div class="consensus-summary glass"><div class="consensus-result-meta"><span id="consensus-strategy-badge"></span><span id="consensus-confidence"></span><span id="consensus-run-id"></span></div><h3>Integrated research response</h3><p id="consensus-summary-text"></p></div>
           <div class="consensus-columns"><section class="glass"><h3>Domain agent outputs</h3><div id="consensus-agents"></div></section><section class="glass"><h3>Agreements</h3><ul id="consensus-agreements"></ul><h3>Disagreements</h3><ul id="consensus-disagreements"></ul></section></div>
           <div class="consensus-columns"><section class="glass"><h3>Judge results</h3><div id="consensus-judges"></div></section><section class="glass"><h3>Safety and limitations</h3><ul id="consensus-safety"></ul><ul id="consensus-limitations"></ul></section></div>
-          <details class="consensus-technical glass"><summary>Technical details</summary><dl><div><dt>Latency</dt><dd id="consensus-latency">—</dd></div><div><dt>Model API calls</dt><dd id="consensus-api-calls">0</dd></div><div><dt>Model-call failures</dt><dd id="consensus-call-failures">0</dd></div><div><dt>Fixture used</dt><dd id="consensus-fixture-used">—</dd></div></dl><div id="consensus-trace"></div></details>
+          <details class="consensus-technical glass"><summary>Technical details</summary><dl><div><dt>Latency</dt><dd id="consensus-latency">—</dd></div><div><dt>Provider calls</dt><dd id="consensus-api-calls">0</dd></div><div><dt>Fallback / mock</dt><dd id="consensus-call-failures">—</dd></div><div><dt>Retrieval</dt><dd id="consensus-fixture-used">—</dd></div></dl><div id="consensus-trace"></div></details>
         </section>
       </div>
 
       <!-- ════ WEST CONSULTATION ════ -->
-      <div id="west-consultation" class="west-consultation" aria-labelledby="west-consultation-title" hidden>
+      <div id="west-consultation" class="west-consultation" data-deprecated="western-demo-disabled" aria-hidden="true" inert hidden>
         <div class="west-panel glass">
           <div class="west-panel-heading">
             <div>
@@ -515,6 +516,19 @@
       </div>
       <!-- ════ END WEST CONSULTATION ════ -->
 
+      <div id="research-compare-consultation" class="consensus-consultation" hidden>
+        <div class="consensus-panel glass">
+          <div class="consensus-heading"><div><p class="consensus-kicker">Research Compare</p><h2>Controlled same-question comparison</h2><p>Compare compatible C0-C6 results while holding the question and retrieval controls constant.</p></div><span class="consensus-experimental-badge">Experimental</span></div>
+          <form id="research-compare-form" novalidate>
+            <label class="consensus-field" for="research-compare-question"><span>Research question *</span><textarea id="research-compare-question" rows="4" minlength="3" maxlength="2000" required placeholder="e.g. How are stress-related sleep and digestive signs discussed across TCM specialists?"></textarea></label>
+            <fieldset class="research-condition-grid"><legend>Conditions</legend><label><input type="checkbox" name="condition" value="C0"> C0 Direct LLM</label><label><input type="checkbox" name="condition" value="C1" checked> C1 Single RAG</label><label><input type="checkbox" name="condition" value="C2" checked> C2 Multi-Agent</label><label><input type="checkbox" name="condition" value="C3"> C3 Weighted</label><label><input type="checkbox" name="condition" value="C4"> C4 Debate</label><label><input type="checkbox" name="condition" value="C5"> C5 Judges</label><label><input type="checkbox" name="condition" value="C6" checked> C6 Debate + Judges</label></fieldset>
+            <details class="research-controls"><summary>Advanced research controls</summary><div class="research-control-grid"><label>Retrieval<select id="research-compare-retrieval"><option value="R0">R0 Lexical</option><option value="R1">R1 Dense</option><option value="R2" selected>R2 Hybrid</option><option value="R3">R3 Hybrid + rerank</option></select></label><label>Top K<input id="research-compare-top-k" type="number" min="1" max="20" value="4"></label><label><input id="research-compare-reflection" type="checkbox"> Iterative retrieval</label></div></details>
+            <div class="consensus-form-footer"><p>Comparisons are descriptive until evaluated on expert-reviewed data.</p><button class="consensus-submit" type="submit"><span>Run Comparison</span></button></div><p id="research-compare-message" class="consensus-message" role="alert" hidden></p>
+          </form>
+        </div>
+        <section id="research-compare-results" class="research-compare-results" aria-live="polite" hidden><div id="research-compare-grid" class="research-compare-grid"></div><details class="consensus-technical glass"><summary>Comparison metrics and limitations</summary><pre id="research-compare-metrics"></pre></details></section>
+      </div>
+
       <div id="tcm-consultation" class="tcm-consultation" aria-labelledby="tcm-consultation-title" hidden>
         <div class="tcm-panel glass">
           <div class="tcm-panel-heading">
@@ -660,10 +674,10 @@
 
   <footer class="site-footer">
     <p>&copy; 2026 University of Nottingham Research Internship</p>
-    <p class="footer-sub">Multi-LLM-as-a-Judge RAG Architecture for Medical Consensus - website by Yoonjae Lee</p>
+    <p class="footer-sub">TCM Multi-Agent RAG Research Workbench · University of Nottingham research internship</p>
   </footer>
   <script src="diagram.js"></script>
-  <script src="west.js?v=20260803-west-prototype"></script>
-  <script src="app.js?v=20260712-tcm-research"></script>
+  <!-- The obsolete Western/TCM/Both runtime was removed; this TCM-only workbench is the active UI. -->
+  <script src="research-app.js?v=20260815-tcm-workbench"></script>
 </body>
 </html>

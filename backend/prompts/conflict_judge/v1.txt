@@ -1,0 +1,3 @@
+prompt_id: judge.conflict
+version: v1
+purpose: Identify agent disagreement and whether synthesis hides unresolved TCM-within-paradigm conflict.

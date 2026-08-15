@@ -1,4 +1,6 @@
-# MediConsensus API Contract
+# ARCHIVED PRE-V1: MediConsensus API Contract
+
+Inactive historical design. Use `docs/api_contract.md`; no active runtime imports this Western/TCM contract.
 
 Endpoint: `POST /api/consensus/consult`
 

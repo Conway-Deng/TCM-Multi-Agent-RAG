@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -8,29 +7,33 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
+from agents import AGENT_REGISTRY
+from config import get_settings
+from corpus import corpus_stats
+from judges import JUDGE_REGISTRY
+from orchestration import CONDITION_REGISTRY, ResearchWorkbench, get_run
+from retrieval import RETRIEVER_REGISTRY, RetrievalEngine
+from schemas.research import CompareRequest, CompareResponse, ResearchRequest, ResearchRunResult, RetrievalItem, RetrievalStrategy
 from tcm.agent import consult
 from tcm.schemas import TCMConsultRequest, TCMConsultResponse
-from consensus.adapters.base import AdapterError, AdapterUnavailableError, FixtureDisabledError
-from consensus.orchestrator import ConsensusDisabledError, ConsensusOrchestrator, consensus_enabled
-from consensus.schemas import ConsensusConsultRequest, ConsensusError, ConsensusResponse
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
+settings = get_settings()
 
 app = FastAPI(
-    title="MediConsensus TCM-RAG API",
-    version="0.2.0",
-    description="Research-only TCM-RAG plus model-agnostic consensus-orchestration pilot.",
+    title="TCM Multi-Agent RAG Research Workbench",
+    version="1.0.0",
+    description=(
+        "TCM-only research platform for retrieval, specialist-agent, debate, LLM-as-a-Judge, "
+        "safety, provenance, and reproducible experiment studies. Educational research use only."
+    ),
 )
-
-def _cors_origins() -> list[str]:
-    raw = os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500")
-    return [item.strip() for item in raw.split(",") if item.strip()]
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins(),
+    allow_origins=settings.cors_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
@@ -39,51 +42,91 @@ app.add_middleware(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(_, exc: RequestValidationError) -> JSONResponse:
-    errors = exc.errors()
-    question_error = next((item for item in errors if "question" in item.get("loc", ())), None)
-    detail = "Please enter a health question of at least 3 characters." if question_error else "Please check the submitted fields and try again."
-    return JSONResponse(status_code=422, content={"detail": detail, "errors": errors})
+    return JSONResponse(status_code=422, content={"detail": "Please check the submitted research fields.", "errors": exc.errors()})
 
 
 @app.get("/health")
-async def health() -> dict[str, str | bool]:
+async def health() -> dict[str, object]:
     return {
         "status": "ok",
-        "service": "TCM-RAG",
+        "service": "TCM Multi-Agent RAG Research Workbench",
         "version": app.version,
-        "port_env": os.getenv("PORT", "not_set"),
-        "consensus_enabled": consensus_enabled(),
-        "west_fixture_enabled": os.getenv("ALLOW_WEST_FIXTURE", "false").strip().casefold() in {"1", "true", "yes", "on"},
+        "scope": "tcm_only",
+        "provider_mode": settings.provider_mode,
+        "mock_mode": settings.provider_mode == "mock",
+        "research_mode": settings.research_mode,
+        "strict_medical_safety": settings.strict_medical_safety,
     }
 
 
-@app.post("/api/tcm/consult", response_model=TCMConsultResponse)
+@app.post("/api/tcm/consult", response_model=TCMConsultResponse, summary="Run the conventional TCM Single RAG interface")
 async def tcm_consult(request: TCMConsultRequest) -> TCMConsultResponse:
     return await consult(request)
 
 
-@app.post(
-    "/api/consensus/consult",
-    response_model=ConsensusResponse,
-    responses={
-        403: {"model": ConsensusError, "description": "Fixture use is disabled."},
-        503: {"model": ConsensusError, "description": "Consensus or an external adapter is unavailable."},
-    },
-    summary="Run the experimental MediConsensus orchestration pilot",
-    description=(
-        "Combines normalized domain-agent outputs with concatenate, deterministic weighted, debate, "
-        "or debate-plus-judge strategies. Western fixtures are synthetic and disabled by default."
-    ),
-)
-async def consensus_consult(request: ConsensusConsultRequest) -> ConsensusResponse:
-    try:
-        return await ConsensusOrchestrator().run(request)
-    except FixtureDisabledError as exc:
-        raise HTTPException(status_code=403, detail={"code": "fixture_disabled", "message": str(exc)}) from None
-    except (AdapterUnavailableError, ConsensusDisabledError) as exc:
-        raise HTTPException(status_code=503, detail={"code": "service_unavailable", "message": str(exc)}) from None
-    except AdapterError:
-        raise HTTPException(
-            status_code=503,
-            detail={"code": "adapter_failure", "message": "A domain adapter failed safely."},
-        ) from None
+@app.post("/api/tcm/multi-agent/consult", response_model=ResearchRunResult, summary="Run a TCM specialist multi-agent condition")
+async def multi_agent_consult(request: ResearchRequest) -> ResearchRunResult:
+    return await ResearchWorkbench().run(request)
+
+
+@app.post("/api/research/run", response_model=ResearchRunResult, summary="Run one controlled research condition")
+async def research_run(request: ResearchRequest) -> ResearchRunResult:
+    return await ResearchWorkbench().run(request)
+
+
+@app.post("/api/research/compare", response_model=CompareResponse, summary="Compare multiple conditions on the same question")
+async def research_compare(request: CompareRequest) -> CompareResponse:
+    return await ResearchWorkbench().compare(request)
+
+
+@app.get("/api/research/conditions")
+async def research_conditions() -> list[dict]:
+    return CONDITION_REGISTRY
+
+
+@app.get("/api/research/agents")
+async def research_agents() -> list[dict]:
+    return AGENT_REGISTRY
+
+
+@app.get("/api/research/retrievers")
+async def research_retrievers() -> list[dict]:
+    return RETRIEVER_REGISTRY
+
+
+@app.get("/api/research/judges")
+async def research_judges() -> list[dict]:
+    return JUDGE_REGISTRY
+
+
+@app.get("/api/research/runs/{run_id}", response_model=ResearchRunResult)
+async def research_run_by_id(run_id: str) -> ResearchRunResult:
+    result = get_run(run_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Research run not found in this process.")
+    return result
+
+
+@app.get("/api/research/runs/{run_id}/metrics")
+async def research_run_metrics(run_id: str) -> dict[str, float | int | None]:
+    result = get_run(run_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Research run not found in this process.")
+    return result.metrics
+
+
+class RetrievalSearchRequest(BaseModel):
+    query: str = Field(min_length=2, max_length=2000)
+    retrieval_strategy: RetrievalStrategy = RetrievalStrategy.R2
+    top_k: int = Field(default=4, ge=1, le=20)
+    topics: list[str] = Field(default_factory=list)
+
+
+@app.post("/api/retrieval/search", response_model=list[RetrievalItem], summary="Inspect a retrieval strategy directly")
+async def retrieval_search(request: RetrievalSearchRequest) -> list[RetrievalItem]:
+    return await RetrievalEngine().search(request.query, strategy=request.retrieval_strategy, top_k=request.top_k, topics=request.topics)
+
+
+@app.get("/api/corpus/stats")
+async def api_corpus_stats() -> dict[str, object]:
+    return corpus_stats()

@@ -1,0 +1,14 @@
+{
+  "experiment_id": "rq3_tcm_within_paradigm_proxy",
+  "research_question": "RQ3-TCM-within-paradigm proxy",
+  "dataset": "research/datasets/seed_tcm.jsonl",
+  "conditions": ["C2", "C4", "C6"],
+  "retrieval_modes": ["R2"],
+  "top_k_evidence": 4,
+  "active_agents": ["syndrome", "herbal", "acupuncture_meridian", "constitution", "dietary_therapy", "lifestyle_yangsheng"],
+  "judges": ["conflict", "confidence", "provenance"],
+  "debate_rounds": 2,
+  "repeat_count": 1,
+  "seed": 20260815,
+  "limitations": "This within-TCM proxy is not equivalent to Western-versus-TCM paradigm conflict."
+}

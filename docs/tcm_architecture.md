@@ -1,4 +1,21 @@
-# TCM-RAG Architecture
+# TCM Research Architecture
+
+```mermaid
+flowchart TD
+  Q["Question"] --> P["Query Planner"]
+  P --> R["R0-R3 Retrieval"]
+  R --> A["TCM Specialist Agents"]
+  A --> D["Optional Debate / Critique / Revision"]
+  D --> J["Independent Judge Layer"]
+  J --> S["Evidence-aware Synthesis"]
+  S --> T["Run Trace + Metrics + Exports"]
+```
+
+The legacy `/api/tcm/consult` endpoint remains the conventional user interface. Research requests use normalized Pydantic models in `backend/schemas/research.py`. Active orchestration lives in `backend/orchestration/`; the old `backend/consensus/` directory is an unimported migration archive.
+
+The planner handles language, TCM intent/subdomain routing, missing context, retrieval filters, scope, and emergency routing. Specialist outputs include claims, evidence IDs, citations, uncertainty, limitations, safety flags, confidence, provenance, provider/model, prompt version, and latency. Hidden chain-of-thought is never stored.
+
+## Archived notes
 
 The TCM-RAG module is a standalone research prototype inside the larger MediRAG-Judge architecture. It does not implement MediRAG-West, multi-agent debate, SafeJudge, or an integrated dual-medicine answer.
 

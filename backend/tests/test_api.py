@@ -35,8 +35,10 @@ def test_health() -> None:
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
-    assert data["service"] == "TCM-RAG"
-    assert data["version"] == "0.2.0"
+    assert data["service"] == "TCM Multi-Agent RAG Research Workbench"
+    assert data["version"] == "1.0.0"
+    assert data["scope"] == "tcm_only"
+    assert "west_fixture_enabled" not in data
 
 
 def test_knowledge_base_validation_passes() -> None:
@@ -287,7 +289,7 @@ def test_confidence_is_deterministic_and_capped_for_needs_review_entries() -> No
 
 
 def test_api_key_never_appears_in_response(monkeypatch: pytest.MonkeyPatch) -> None:
-    secret = "sk-test-secret-should-not-appear"
+    secret = "TEST_SECRET_SENTINEL_SHOULD_NOT_APPEAR"
 
     class FailingClient:
         model = "Qwen/Qwen2.5-7B-Instruct"

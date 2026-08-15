@@ -5,6 +5,15 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Research runs are private/local by default. Publish selected artifacts intentionally.
+research/results/*
+!research/results/.gitkeep
+backend/research/results/*
+!backend/research/results/.gitkeep
+*.sqlite3
+.env.local
+backend/.env.local
+
 
 backend/.env
 backend/.venv/

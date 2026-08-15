@@ -1,0 +1,14 @@
+{
+  "experiment_id": "rq4_debate_ablation",
+  "research_question": "RQ4",
+  "dataset": "research/datasets/seed_tcm.jsonl",
+  "conditions": ["C2", "C3", "C4", "C5", "C6"],
+  "retrieval_modes": ["R2"],
+  "top_k_evidence": 4,
+  "active_agents": ["syndrome", "herbal", "constitution", "dietary_therapy", "lifestyle_yangsheng"],
+  "judges": ["evidence", "safety", "conflict", "confidence", "provenance"],
+  "debate_rounds": 2,
+  "repeat_count": 2,
+  "max_parallel_calls": 4,
+  "seed": 20260815
+}
