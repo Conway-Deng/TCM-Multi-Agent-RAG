@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const API = window.MEDIRAG_API_BASE_URL || 'http://localhost:8000';
+  const isLocalDevelopment = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const API = window.MEDIRAG_API_BASE_URL || (isLocalDevelopment ? 'http://localhost:8000' : 'https://tcm-multi-agent-rag-api.onrender.com');
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
   let language = 'en';
