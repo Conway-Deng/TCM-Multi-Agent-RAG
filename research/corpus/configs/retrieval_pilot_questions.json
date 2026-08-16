@@ -1,0 +1,26 @@
+[
+  {
+    "question_id": "pilot-herb-001",
+    "question": "Which traditional properties and meridians are recorded for Red Ginseng?",
+    "category": "herbal_medicine",
+    "expected_entity": "Red Ginseng"
+  },
+  {
+    "question_id": "pilot-herb-002",
+    "question": "What source-recorded function is listed for Pomegranate Heartwood?",
+    "category": "herbal_medicine",
+    "expected_entity": "Pomegranate Heartwood"
+  },
+  {
+    "question_id": "pilot-syndrome-001",
+    "question": "Find the SymMap syndrome record named deficiency-cold of kidney.",
+    "category": "syndrome_differentiation",
+    "expected_entity": "deficiency-cold of kidney"
+  },
+  {
+    "question_id": "pilot-syndrome-002",
+    "question": "Which source definition is associated with weak spleen and stomach?",
+    "category": "syndrome_differentiation",
+    "expected_entity": "weak spleen and stomach"
+  }
+]

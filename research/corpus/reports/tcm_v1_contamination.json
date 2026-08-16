@@ -1,0 +1,12 @@
+{
+  "benchmark_file_count": 2,
+  "benchmark_text_count": 36,
+  "exact_text_overlap_count": 0,
+  "exact_text_overlaps": [],
+  "high_similarity_overlap_count": 0,
+  "high_similarity_overlaps": [],
+  "source_record_leakage_count": 0,
+  "source_record_leakage_source_ids": [],
+  "zero_leakage_claimed": false,
+  "interpretation": "No zero-leakage claim is made; the checker covers available local benchmark files only."
+}

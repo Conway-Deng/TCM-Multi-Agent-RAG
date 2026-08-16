@@ -17,3 +17,16 @@ backend/.env.local
 
 backend/.env
 backend/.venv/
+
+# Third-party TCM corpus material is local-only unless redistribution is
+# explicitly cleared. Keep raw, normalized, and built restricted data out of Git;
+# commit only configs, code, manifests/reports without source record content, and
+# placeholder files.
+research/corpus/raw/**
+!research/corpus/raw/.gitkeep
+research/corpus/normalized/**
+!research/corpus/normalized/.gitkeep
+research/corpus/tcm_v1/**
+!research/corpus/tcm_v1/.gitkeep
+research/benchmarks/external/**
+!research/benchmarks/external/.gitkeep

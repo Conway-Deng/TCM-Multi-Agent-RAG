@@ -1,5 +1,7 @@
 # Corpus methodology
 
+The frozen provenance-aware corpus workflow, licence gate, schemas, build commands, validation, and current quantitative report are documented in [`tcm_corpus_v1.md`](tcm_corpus_v1.md). The generic ingestion notes below remain available for researcher-supplied material; they do not supersede the v1 source audit.
+
 The active adapter exposes an auditable source registry and deterministic chunks. Source metadata records organization, type, year, language, reference, access note, evidence category, review status, reviewer, date, and notes. Chunk metadata records topic, syndrome, herb, meridian, constitution, dietary, lifestyle, safety, and review tags.
 
 Current content is provisional and needs human review. Source-type labels do not imply equal scientific strength.

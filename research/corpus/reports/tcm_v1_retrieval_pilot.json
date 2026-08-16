@@ -1,0 +1,514 @@
+{
+  "pilot_name": "TCM Corpus v1 retrieval-only pilot",
+  "corpus_version": "tcm-research-corpus-v1",
+  "chunk_count": 4461,
+  "top_k": 5,
+  "strategy_mapping_note": "The existing repository registry is preserved: R0=lexical, R1=dense, R2=hybrid, R3=hybrid+rerank.",
+  "embedding_note": "Dense/hybrid pilot used deterministic local hash embeddings. No remote or paid embedding call was made.",
+  "remote_embedding_estimate": {
+    "document_inputs": 4461,
+    "query_inputs": 4,
+    "approval_required_before_remote_bulk_run": true
+  },
+  "summaries": {
+    "lexical": {
+      "existing_registry_id": "R0",
+      "questions": 4,
+      "hit_rate_at_k": 1.0,
+      "mean_reciprocal_rank": 1.0,
+      "mean_provenance_completeness": 1.0,
+      "mean_top_k_source_diversity": 1.25,
+      "mean_duplicate_result_rate": 0.0,
+      "mean_latency_ms": 23.747
+    },
+    "dense_local_hash": {
+      "existing_registry_id": "R1",
+      "questions": 4,
+      "hit_rate_at_k": 0.25,
+      "mean_reciprocal_rank": 0.25,
+      "mean_provenance_completeness": 1.0,
+      "mean_top_k_source_diversity": 1.25,
+      "mean_duplicate_result_rate": 0.0,
+      "mean_latency_ms": 143.699
+    },
+    "hybrid": {
+      "existing_registry_id": "R2",
+      "questions": 4,
+      "hit_rate_at_k": 1.0,
+      "mean_reciprocal_rank": 0.6125,
+      "mean_provenance_completeness": 1.0,
+      "mean_top_k_source_diversity": 1.25,
+      "mean_duplicate_result_rate": 0.0,
+      "mean_latency_ms": 100.731
+    },
+    "hybrid_local_reranked": {
+      "existing_registry_id": "R3",
+      "questions": 4,
+      "hit_rate_at_k": 1.0,
+      "mean_reciprocal_rank": 0.520833,
+      "mean_provenance_completeness": 1.0,
+      "mean_top_k_source_diversity": 1.25,
+      "mean_duplicate_result_rate": 0.0,
+      "mean_latency_ms": 116.73
+    }
+  },
+  "per_question": [
+    {
+      "method": "lexical",
+      "existing_registry_id": "R0",
+      "question_id": "pilot-herb-001",
+      "category": "herbal_medicine",
+      "expected_entity": "Red Ginseng",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 2,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 21.299,
+      "top_chunk_ids": [
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-0aaba1cbd4c4296e8ce6e234",
+        "tcmv1-3ba68a0db74bcfc59b8f96d8",
+        "tcmv1-c8d5df0f2e242ac667a58918",
+        "tcmv1-03fa25ec6d72b46199e74769"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "lexical",
+      "existing_registry_id": "R0",
+      "question_id": "pilot-herb-002",
+      "category": "herbal_medicine",
+      "expected_entity": "Pomegranate Heartwood",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 20.08,
+      "top_chunk_ids": [
+        "tcmv1-03b346f5b012827221ea7dae",
+        "tcmv1-0f7a9479719379a2adf35a48",
+        "tcmv1-6701848154207ca44721902f",
+        "tcmv1-4bab81f085683857f7936a21",
+        "tcmv1-8dd5bc04bb695a29ae2a2bbb"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "lexical",
+      "existing_registry_id": "R0",
+      "question_id": "pilot-syndrome-001",
+      "category": "syndrome_differentiation",
+      "expected_entity": "deficiency-cold of kidney",
+      "expected_chunk_count": 1,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 15.017,
+      "top_chunk_ids": [
+        "tcmv1-1838b64bb3530be14c8968c4",
+        "tcmv1-6e7e1a731f2f2ae930169875",
+        "tcmv1-d6655a44f23fc0de18842440",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "lexical",
+      "existing_registry_id": "R0",
+      "question_id": "pilot-syndrome-002",
+      "category": "syndrome_differentiation",
+      "expected_entity": "weak spleen and stomach",
+      "expected_chunk_count": 3,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 38.592,
+      "top_chunk_ids": [
+        "tcmv1-079919868955bcf05c3c24e8",
+        "tcmv1-42803fcad95a4dcaab207d45",
+        "tcmv1-da630dcb4969176335c13f9a",
+        "tcmv1-04b855d6b3623548c98c6648",
+        "tcmv1-45e8644f0a527529cbe51a63"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "dense_local_hash",
+      "existing_registry_id": "R1",
+      "question_id": "pilot-herb-001",
+      "category": "herbal_medicine",
+      "expected_entity": "Red Ginseng",
+      "expected_chunk_count": 2,
+      "hit_at_k": 0,
+      "reciprocal_rank": 0.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 2,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 398.686,
+      "top_chunk_ids": [
+        "tcmv1-53895d642a9a31e71540476b",
+        "tcmv1-22a7efe1788de20ca5a6ce13",
+        "tcmv1-9a53c208087d322ad71b5b9a",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-52d1774b4f319ec63d1e3ac9"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "dense_local_hash",
+      "existing_registry_id": "R1",
+      "question_id": "pilot-herb-002",
+      "category": "herbal_medicine",
+      "expected_entity": "Pomegranate Heartwood",
+      "expected_chunk_count": 2,
+      "hit_at_k": 0,
+      "reciprocal_rank": 0.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 59.883,
+      "top_chunk_ids": [
+        "tcmv1-2a80564298354a18b6c21798",
+        "tcmv1-ab8c140ef7fc9e0145b9585f",
+        "tcmv1-ef85e65161b9328699d13a17",
+        "tcmv1-4af3bde8c0d56d6c4dd63d9d",
+        "tcmv1-8f6d38672f97e51ba76ac0ca"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "dense_local_hash",
+      "existing_registry_id": "R1",
+      "question_id": "pilot-syndrome-001",
+      "category": "syndrome_differentiation",
+      "expected_entity": "deficiency-cold of kidney",
+      "expected_chunk_count": 1,
+      "hit_at_k": 0,
+      "reciprocal_rank": 0.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 55.421,
+      "top_chunk_ids": [
+        "tcmv1-2a01f6a33b3140d9c4a7c8ca",
+        "tcmv1-37929d7cdae018cdb20f923b",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923",
+        "tcmv1-a5f2d5d725f5e670903b7d7a"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "dense_local_hash",
+      "existing_registry_id": "R1",
+      "question_id": "pilot-syndrome-002",
+      "category": "syndrome_differentiation",
+      "expected_entity": "weak spleen and stomach",
+      "expected_chunk_count": 3,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 60.807,
+      "top_chunk_ids": [
+        "tcmv1-da630dcb4969176335c13f9a",
+        "tcmv1-079919868955bcf05c3c24e8",
+        "tcmv1-42803fcad95a4dcaab207d45",
+        "tcmv1-dfbdd5ef0273a6ba1c631a49",
+        "tcmv1-45e8644f0a527529cbe51a63"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "hybrid",
+      "existing_registry_id": "R2",
+      "question_id": "pilot-herb-001",
+      "category": "herbal_medicine",
+      "expected_entity": "Red Ginseng",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 2,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 119.447,
+      "top_chunk_ids": [
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-3fe03b892c7e5d40cd553ec7",
+        "tcmv1-008bc5af3eced1bdcca7a904",
+        "tcmv1-03fa25ec6d72b46199e74769"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "hybrid",
+      "existing_registry_id": "R2",
+      "question_id": "pilot-herb-002",
+      "category": "herbal_medicine",
+      "expected_entity": "Pomegranate Heartwood",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 0.25,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 72.959,
+      "top_chunk_ids": [
+        "tcmv1-4bab81f085683857f7936a21",
+        "tcmv1-5435cf35899402c22d604b8e",
+        "tcmv1-389e421873c83e673242801b",
+        "tcmv1-03b346f5b012827221ea7dae",
+        "tcmv1-0f7a9479719379a2adf35a48"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "hybrid",
+      "existing_registry_id": "R2",
+      "question_id": "pilot-syndrome-001",
+      "category": "syndrome_differentiation",
+      "expected_entity": "deficiency-cold of kidney",
+      "expected_chunk_count": 1,
+      "hit_at_k": 1,
+      "reciprocal_rank": 0.2,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 66.72,
+      "top_chunk_ids": [
+        "tcmv1-37929d7cdae018cdb20f923b",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923",
+        "tcmv1-596c7423935c2e0e03c2badb",
+        "tcmv1-1838b64bb3530be14c8968c4"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "hybrid",
+      "existing_registry_id": "R2",
+      "question_id": "pilot-syndrome-002",
+      "category": "syndrome_differentiation",
+      "expected_entity": "weak spleen and stomach",
+      "expected_chunk_count": 3,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 143.799,
+      "top_chunk_ids": [
+        "tcmv1-079919868955bcf05c3c24e8",
+        "tcmv1-da630dcb4969176335c13f9a",
+        "tcmv1-42803fcad95a4dcaab207d45",
+        "tcmv1-45e8644f0a527529cbe51a63",
+        "tcmv1-fe50adb6f40d5795557fcfae"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "hybrid_local_reranked",
+      "existing_registry_id": "R3",
+      "question_id": "pilot-herb-001",
+      "category": "herbal_medicine",
+      "expected_entity": "Red Ginseng",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 0.5,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 2,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 123.24,
+      "top_chunk_ids": [
+        "tcmv1-d2f8b8fd64a8d9e6224faddd",
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-008bc5af3eced1bdcca7a904",
+        "tcmv1-e66b266db30ac731552cf4ea"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "hybrid_local_reranked",
+      "existing_registry_id": "R3",
+      "question_id": "pilot-herb-002",
+      "category": "herbal_medicine",
+      "expected_entity": "Pomegranate Heartwood",
+      "expected_chunk_count": 2,
+      "hit_at_k": 1,
+      "reciprocal_rank": 0.333333,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 122.388,
+      "top_chunk_ids": [
+        "tcmv1-4bab81f085683857f7936a21",
+        "tcmv1-5435cf35899402c22d604b8e",
+        "tcmv1-03b346f5b012827221ea7dae",
+        "tcmv1-0f7a9479719379a2adf35a48",
+        "tcmv1-cc2d3a1098a2414c33f6b82c"
+      ],
+      "top_source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ]
+    },
+    {
+      "method": "hybrid_local_reranked",
+      "existing_registry_id": "R3",
+      "question_id": "pilot-syndrome-001",
+      "category": "syndrome_differentiation",
+      "expected_entity": "deficiency-cold of kidney",
+      "expected_chunk_count": 1,
+      "hit_at_k": 1,
+      "reciprocal_rank": 0.25,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 104.779,
+      "top_chunk_ids": [
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923",
+        "tcmv1-596c7423935c2e0e03c2badb",
+        "tcmv1-1838b64bb3530be14c8968c4",
+        "tcmv1-539e7881b312b469fdc298b8"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    },
+    {
+      "method": "hybrid_local_reranked",
+      "existing_registry_id": "R3",
+      "question_id": "pilot-syndrome-002",
+      "category": "syndrome_differentiation",
+      "expected_entity": "weak spleen and stomach",
+      "expected_chunk_count": 3,
+      "hit_at_k": 1,
+      "reciprocal_rank": 1.0,
+      "provenance_completeness": 1.0,
+      "top_k_source_diversity": 1,
+      "duplicate_result_rate": 0.0,
+      "latency_ms": 116.511,
+      "top_chunk_ids": [
+        "tcmv1-079919868955bcf05c3c24e8",
+        "tcmv1-da630dcb4969176335c13f9a",
+        "tcmv1-42803fcad95a4dcaab207d45",
+        "tcmv1-45e8644f0a527529cbe51a63",
+        "tcmv1-fe50adb6f40d5795557fcfae"
+      ],
+      "top_source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ]
+    }
+  ],
+  "manual_inspection": {
+    "sample_size": 16,
+    "method": "Expected source entity and top-k chunk/source IDs were inspected; no generation was run.",
+    "top_source_frequency": {
+      "symmap_v2": 53,
+      "tcmbank_v1": 27
+    },
+    "limitation": "This small entity-lookup pilot is a pipeline check, not a final retrieval-quality conclusion or clinical evaluation."
+  }
+}

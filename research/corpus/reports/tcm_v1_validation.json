@@ -1,0 +1,65 @@
+{
+  "report_name": "TCM Corpus v1 Validation Report",
+  "corpus_name": "TCM Research Corpus v1",
+  "corpus_version": "tcm-research-corpus-v1",
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    "No external ZhongJing benchmark files are present; external contamination testing is deferred."
+  ],
+  "number_of_sources": 2,
+  "raw_record_count": 10127,
+  "normalized_entity_count": 4461,
+  "relation_count": 0,
+  "chunk_count": 4461,
+  "chunks_per_category": {
+    "herbal_medicine": 4228,
+    "syndrome_differentiation": 233
+  },
+  "chunks_per_source": {
+    "tcmbank_v1": 3531,
+    "symmap_v2": 930
+  },
+  "missing_field_rates": {
+    "source_version": 0.0,
+    "subcategory": 0.0,
+    "aliases": 0.0,
+    "relation_type": 1.0,
+    "related_entities": 1.0,
+    "conflict_group_ids": 0.773593
+  },
+  "duplicate_statistics": {
+    "duplicate_chunk_ids": 0,
+    "exact_duplicates_removed": 9,
+    "alias_equivalent_groups": 1135,
+    "near_duplicates_flagged": 81
+  },
+  "conflict_statistics": {
+    "conflict_groups_preserved": 406
+  },
+  "language_distribution": {
+    "en": 4461
+  },
+  "provenance_completeness": 1.0,
+  "expert_reviewed_source_coverage": 0.208473,
+  "benchmark_contamination": {
+    "benchmark_file_count": 2,
+    "benchmark_text_count": 36,
+    "exact_text_overlap_count": 0,
+    "exact_text_overlaps": [],
+    "high_similarity_overlap_count": 0,
+    "high_similarity_overlaps": [],
+    "source_record_leakage_count": 0,
+    "source_record_leakage_source_ids": [],
+    "zero_leakage_claimed": false,
+    "interpretation": "No zero-leakage claim is made; the checker covers available local benchmark files only."
+  },
+  "known_coverage_gaps": [
+    "No reliable prescription/formula source was available under verified database terms.",
+    "No dedicated acupuncture source was accepted.",
+    "No dedicated meridian-theory source was accepted.",
+    "No dedicated constitution-analysis source was accepted.",
+    "No source-level safety/contraindication corpus beyond herb toxicity fields was accepted.",
+    "No bulk relationship files were accepted; relation_count is zero."
+  ]
+}

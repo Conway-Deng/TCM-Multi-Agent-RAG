@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_name": "TCM Research Corpus v1",
+  "corpus_version": "tcm-research-corpus-v1",
+  "build_timestamp": "2026-08-16T14:36:59.747320+00:00",
+  "deterministic_ingestion_timestamp": "2026-08-16T00:00:00Z",
+  "git_commit": "41ff718bf1369ee0e02d98128d1a3c99e4d741fb",
+  "transformation_code": "backend.ingestion.tcm_v1",
+  "source_versions": {
+    "symmap_v2": "v2.0",
+    "tcmbank_v1": "v1.0",
+    "cpmcp": null
+  },
+  "source_files": [
+    {
+      "source_id": "symmap_v2",
+      "path": "research/corpus/raw/symmap_v2/symmap_v2_SMHB.xlsx",
+      "sha256": "aafa7a2dca0298eca73ae3add133110ff9f114f23480aae204b94e95800c0288",
+      "bytes": 99614
+    },
+    {
+      "source_id": "symmap_v2",
+      "path": "research/corpus/raw/symmap_v2/symmap_v2_SMSY.xlsx",
+      "sha256": "6d91b4bfae9752f42cb51d1c049f204ce61b7349c77dd0c2673b97519e25d9a2",
+      "bytes": 31666
+    },
+    {
+      "source_id": "tcmbank_v1",
+      "path": "research/corpus/raw/tcmbank_v1/herb_all.xlsx",
+      "sha256": "1796d232c8fd9a0fe4a50352ceabaa1c12b5145a63c0d6bc14fad348ec6940e8",
+      "bytes": 1475016
+    }
+  ],
+  "source_count": 2,
+  "raw_record_count": 10127,
+  "normalized_record_count": 4461,
+  "relation_count": 0,
+  "chunk_count": 4461,
+  "chunks_per_category": {
+    "herbal_medicine": 4228,
+    "syndrome_differentiation": 233
+  },
+  "chunks_per_source": {
+    "tcmbank_v1": 3531,
+    "symmap_v2": 930
+  },
+  "language_distribution": {
+    "en": 4461
+  },
+  "deduplication": {
+    "raw_normalized_count": 4470,
+    "normalized_count": 4461,
+    "exact_duplicates_removed": 9,
+    "alias_equivalent_groups": 1135,
+    "near_duplicates_flagged": 81,
+    "conflicts_preserved": 406
+  },
+  "configuration": {
+    "config_path": "research/corpus/configs/tcm_v1.yaml",
+    "remote_embeddings_built": false
+  },
+  "excluded_sources": [
+    {
+      "source_id": "tcmm_knowledge_graph",
+      "reason": "Reference implementation only; repository has no license and some facts are LLM-derived."
+    },
+    {
+      "source_id": "zhongjing_tcm_benchmark",
+      "reason": "Evaluation-only; repository lacks an actual LICENSE file and answers must not enter retrieval knowledge."
+    },
+    {
+      "source_id": "zhongjing_omni",
+      "reason": "Evaluation-only; claimed dataset files are absent and no license is provided."
+    },
+    {
+      "source_id": "symmap_mm_symptoms_targets",
+      "reason": "SMMS and SMTT were acquired for audit reproducibility but are excluded from TCM Corpus v1 because they are modern-medicine symptoms/targets without selected TCM relations."
+    }
+  ],
+  "known_limitations": [
+    "Corpus v1 covers herbs and syndrome terminology but not reliable TCM symptom relations, prescriptions, acupuncture, meridians as independent theory records, or constitution analysis.",
+    "Upstream Chinese cells contain mojibake in downloaded files; corrupted text is preserved but excluded from retrieval text.",
+    "Restricted-source normalized records and chunks cannot be redistributed until maintainers confirm permission.",
+    "Source claims require independent qualified TCM review before clinical or authoritative use."
+  ],
+  "redistribution_note": "Restricted-source raw, normalized, and chunk data are local-only and gitignored pending rights clearance."
+}

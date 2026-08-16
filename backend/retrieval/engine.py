@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 import math
+import os
 import re
 
 from corpus import load_chunks, load_sources
@@ -24,33 +25,43 @@ class RetrievalEngine:
         self.chunks = load_chunks()
         self.sources = load_sources()
         self.providers = get_provider_bundle()
+        self._doc_counts = [Counter(_tokens(chunk.text + " " + " ".join(chunk.keywords))) for chunk in self.chunks]
+        self._average_doc_length = sum(sum(doc.values()) for doc in self._doc_counts) / max(1, len(self._doc_counts))
+        self._document_frequency = Counter(token for doc in self._doc_counts for token in doc)
+        self._document_vectors: list[list[float]] | None = None
 
     def _lexical(self, query: str) -> dict[str, float]:
         query_counts = Counter(_tokens(query))
-        docs = [Counter(_tokens(chunk.text + " " + " ".join(chunk.keywords))) for chunk in self.chunks]
-        avg_len = sum(sum(doc.values()) for doc in docs) / max(1, len(docs))
-        document_frequency = Counter(token for doc in docs for token in doc)
         scores: dict[str, float] = {}
-        for chunk, doc in zip(self.chunks, docs):
+        for chunk, doc in zip(self.chunks, self._doc_counts):
             score = 0.0
             length = sum(doc.values())
             for token, query_frequency in query_counts.items():
                 frequency = doc[token]
                 if frequency == 0:
                     continue
-                idf = math.log(1 + (len(docs) - document_frequency[token] + 0.5) / (document_frequency[token] + 0.5))
-                denominator = frequency + 1.5 * (1 - 0.75 + 0.75 * length / max(1.0, avg_len))
+                idf = math.log(1 + (len(self._doc_counts) - self._document_frequency[token] + 0.5) / (self._document_frequency[token] + 0.5))
+                denominator = frequency + 1.5 * (1 - 0.75 + 0.75 * length / max(1.0, self._average_doc_length))
                 score += query_frequency * idf * (frequency * 2.5) / denominator
             scores[chunk.chunk_id] = score
         maximum = max(scores.values(), default=0.0) or 1.0
         return {key: round(value / maximum, 6) for key, value in scores.items()}
 
     async def _semantic(self, query: str) -> dict[str, float]:
+        provider = self.providers.embedding
+        bulk_approved = os.getenv("ALLOW_BULK_REMOTE_EMBEDDING", "false").strip().casefold() in {"1", "true", "yes", "on"}
+        if provider.name != "local" and not bulk_approved:
+            provider = LocalHashEmbeddingProvider()
         try:
-            vectors = await self.providers.embedding.embed([query, *[chunk.text for chunk in self.chunks]])
+            if self._document_vectors is None:
+                self._document_vectors = await provider.embed([chunk.text for chunk in self.chunks])
+            query_vector = (await provider.embed([query]))[0]
         except ProviderUnavailable:
-            vectors = await LocalHashEmbeddingProvider().embed([query, *[chunk.text for chunk in self.chunks]])
-        return {chunk.chunk_id: round(_cosine(vectors[0], vector), 6) for chunk, vector in zip(self.chunks, vectors[1:])}
+            local = LocalHashEmbeddingProvider()
+            if self._document_vectors is None or provider.name != "local":
+                self._document_vectors = await local.embed([chunk.text for chunk in self.chunks])
+            query_vector = (await local.embed([query]))[0]
+        return {chunk.chunk_id: round(_cosine(query_vector, vector), 6) for chunk, vector in zip(self.chunks, self._document_vectors)}
 
     async def search(
         self,
@@ -60,8 +71,8 @@ class RetrievalEngine:
         top_k: int = 4,
         topics: list[str] | None = None,
     ) -> list[RetrievalItem]:
-        lexical = self._lexical(query)
-        semantic = await self._semantic(query)
+        lexical = self._lexical(query) if strategy != RetrievalStrategy.R1 else {chunk.chunk_id: 0.0 for chunk in self.chunks}
+        semantic = await self._semantic(query) if strategy != RetrievalStrategy.R0 else {chunk.chunk_id: 0.0 for chunk in self.chunks}
         allowed = [chunk for chunk in self.chunks if not topics or set(topics) & set(chunk.topics)] or list(self.chunks)
         lexical_rank = {item_id: rank for rank, (item_id, _) in enumerate(sorted(lexical.items(), key=lambda item: item[1], reverse=True), 1)}
         semantic_rank = {item_id: rank for rank, (item_id, _) in enumerate(sorted(semantic.items(), key=lambda item: item[1], reverse=True), 1)}

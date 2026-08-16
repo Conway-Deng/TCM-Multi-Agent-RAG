@@ -2,7 +2,7 @@
 
 This repository is the active TCM-only research specialization of the supervisor's broader MediRAG-Judge project cluster. It implements conventional TCM RAG, specialist multi-agent comparison, debate, deterministic weighting, LLM-as-a-Judge evaluation, safety/provenance checks, retrieval ablations, human-review preparation, and exportable experiments.
 
-Scientific status: research infrastructure, not a clinical system. The corpus and seed datasets are provisional and not expert validated. Automated judges are not ground truth. `RQ3-TCM-within-paradigm proxy` does not answer cross-paradigm RQ3. RQ6 requires actual human participant data.
+Scientific status: research infrastructure, not a clinical system. The provenance-aware TCM Corpus v1 is source-derived but not clinically validated; restricted-source data remains local pending redistribution clearance. The legacy 16 entries and seed datasets are provisional fixtures. Automated judges are not ground truth. `RQ3-TCM-within-paradigm proxy` does not answer cross-paradigm RQ3. RQ6 requires actual human participant data.
 
 ## Current quick start
 
@@ -25,7 +25,7 @@ Representative experiments:
 .\.venv\Scripts\python.exe -m research.run_experiment --config research/configs/retrieval_ablation.yaml --no-llm
 ```
 
-Start with [`docs/research_overview.md`](docs/research_overview.md), [`docs/tcm_architecture.md`](docs/tcm_architecture.md), [`docs/experiment_design.md`](docs/experiment_design.md), and [`docs/safety_and_limitations.md`](docs/safety_and_limitations.md).
+Start with [`docs/research_overview.md`](docs/research_overview.md), [`docs/tcm_architecture.md`](docs/tcm_architecture.md), [`docs/tcm_corpus_v1.md`](docs/tcm_corpus_v1.md), [`docs/experiment_design.md`](docs/experiment_design.md), and [`docs/safety_and_limitations.md`](docs/safety_and_limitations.md).
 
 <details>
 <summary>Archived pre-v1 prototype notes (historical only)</summary>
