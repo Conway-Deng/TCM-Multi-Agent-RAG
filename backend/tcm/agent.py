@@ -4,7 +4,8 @@ from dataclasses import dataclass
 import json
 import os
 import re
-from typing import Any
+from time import perf_counter
+from typing import Any, ClassVar
 
 import httpx
 
@@ -25,6 +26,7 @@ from .schemas import (
     PossiblePattern,
     QueryAnalysis,
     RelatedHerbOrFormula,
+    RequestTimings,
     ResponseLanguage,
     RetrievalMetadata,
     ScopeStatus,
@@ -190,6 +192,8 @@ def _context_text(request: TCMConsultRequest) -> str:
 
 
 class OpenAICompatibleClient:
+    _shared_http_client: ClassVar[httpx.AsyncClient | None] = None
+
     def __init__(self) -> None:
         self.provider = os.getenv("LLM_PROVIDER", "siliconflow").strip() or "siliconflow"
         self.api_key = os.getenv("LLM_API_KEY", "").strip()
@@ -202,14 +206,27 @@ class OpenAICompatibleClient:
     def configured(self) -> bool:
         return bool(self.api_key and self.base_url and self.model)
 
+    def _http_client(self) -> httpx.AsyncClient:
+        shared = type(self)._shared_http_client
+        if shared is None or shared.is_closed:
+            shared = httpx.AsyncClient(timeout=self.timeout)
+            type(self)._shared_http_client = shared
+        return shared
+
+    @classmethod
+    async def close_shared_http_client(cls) -> None:
+        if cls._shared_http_client is not None and not cls._shared_http_client.is_closed:
+            await cls._shared_http_client.aclose()
+        cls._shared_http_client = None
+
     async def _post_chat(self, payload: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
-            if response.status_code in {400, 422} and "response_format" in payload:
-                retry_payload = dict(payload)
-                retry_payload.pop("response_format", None)
-                response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=retry_payload)
-            response.raise_for_status()
+        client = self._http_client()
+        response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
+        if response.status_code in {400, 422} and "response_format" in payload:
+            retry_payload = dict(payload)
+            retry_payload.pop("response_format", None)
+            response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=retry_payload)
+        response.raise_for_status()
         try:
             data = response.json()
         except ValueError as exc:
@@ -755,13 +772,35 @@ def _not_run_diagnostics(note: str = "") -> RetrievalDiagnostics:
 
 
 async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
+    started = perf_counter()
+    preprocessing_ms = 0.0
+    retrieval_ms = 0.0
+    embedding_ms = 0.0
+    reranking_ms = 0.0
+    llm_ms = 0.0
+
+    def finish(response: TCMConsultResponse, post_started: float) -> TCMConsultResponse:
+        response.timings = RequestTimings(
+            preprocessing_ms=round(preprocessing_ms, 3),
+            retrieval_ms=round(retrieval_ms, 3),
+            embedding_ms=round(embedding_ms, 3),
+            reranking_ms=round(reranking_ms, 3),
+            llm_ms=round(llm_ms, 3),
+            post_processing_ms=round((perf_counter() - post_started) * 1000, 3),
+            total_ms=round((perf_counter() - started) * 1000, 3),
+        )
+        return response
+
+    preprocessing_started = perf_counter()
     language = detect_language(request.question)
     client = OpenAICompatibleClient()
     llm_model = client.model
     safety = check_emergency(f"{request.question} {_context_text(request)}")
     if safety.urgent:
+        preprocessing_ms = (perf_counter() - preprocessing_started) * 1000
         summaries = _abstention_summaries("safety_critical", language)
-        return _base_response(
+        post_started = perf_counter()
+        response = _base_response(
             request=request,
             scope_status="safety_critical",
             generation_mode="safety",
@@ -774,11 +813,14 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
             urgent=True,
             abstained=True,
         )
+        return finish(response, post_started)
 
     scope = classify_scope(request.question)
     if scope.status in {"out_of_scope", "insufficient_information"}:
+        preprocessing_ms = (perf_counter() - preprocessing_started) * 1000
         summaries = _abstention_summaries(scope.status, language, scope)
-        return _base_response(
+        post_started = perf_counter()
+        response = _base_response(
             request=request,
             scope_status=scope.status,
             generation_mode="rule",
@@ -790,11 +832,17 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
             llm_error=None,
             abstained=True,
         )
+        return finish(response, post_started)
 
+    preprocessing_ms = (perf_counter() - preprocessing_started) * 1000
     results, diagnostics = await retrieve(request.question, _context_text(request), entries=KNOWLEDGE_BASE)
+    retrieval_ms = diagnostics.total_ms
+    embedding_ms = diagnostics.semantic_ms
+    reranking_ms = diagnostics.reranking_ms
     if not results:
         summaries = _abstention_summaries("evidence_insufficient", language, scope)
-        return _base_response(
+        post_started = perf_counter()
+        response = _base_response(
             request=request,
             scope_status="evidence_insufficient",
             generation_mode="abstention",
@@ -806,25 +854,35 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
             llm_error=None,
             abstained=True,
         )
+        return finish(response, post_started)
 
+    preparation_started = perf_counter()
     summaries = _fallback_summaries(results)
     generation_mode = "mock"
     generation_source: GenerationSource = "mock_fallback"
     llm_error: str | None = None
     citations = _citations(results)
+    preprocessing_ms += (perf_counter() - preparation_started) * 1000
+    generation: LLMGeneration | None = None
     if client.configured:
+        llm_started = perf_counter()
         try:
             generation = await client.generate(request, results, citations)
-            summaries = _extract_localized_summaries(generation, results, language)
-            generation_mode = "llm"
-            generation_source = "siliconflow_llm"
-            llm_model = generation.model
         except LLMProviderError as exc:
             llm_error = str(exc)
+        finally:
+            llm_ms = (perf_counter() - llm_started) * 1000
     else:
         llm_error = "LLM_API_KEY is missing"
 
-    return _base_response(
+    post_started = perf_counter()
+    if generation is not None:
+        summaries = _extract_localized_summaries(generation, results, language)
+        generation_mode = "llm"
+        generation_source = "siliconflow_llm"
+        llm_model = generation.model
+
+    response = _base_response(
         request=request,
         scope_status="supported",
         generation_mode=generation_mode,
@@ -836,3 +894,4 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
         llm_error=llm_error,
         abstained=False,
     )
+    return finish(response, post_started)

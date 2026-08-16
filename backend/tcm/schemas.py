@@ -166,6 +166,16 @@ class LocalizedResultContent(BaseModel):
     evidence_title: str
 
 
+class RequestTimings(BaseModel):
+    preprocessing_ms: float = Field(default=0, ge=0)
+    retrieval_ms: float = Field(default=0, ge=0)
+    embedding_ms: float = Field(default=0, ge=0)
+    reranking_ms: float = Field(default=0, ge=0)
+    llm_ms: float = Field(default=0, ge=0)
+    post_processing_ms: float = Field(default=0, ge=0)
+    total_ms: float = Field(default=0, ge=0)
+
+
 class TCMConsultResponse(BaseModel):
     mode: Literal["TCM-RAG"] = "TCM-RAG"
     agent: Literal["tcm"] = "tcm"
@@ -197,4 +207,5 @@ class TCMConsultResponse(BaseModel):
     candidate_count: int = 0
     meaningful_match_count: int = 0
     top_relevance_score: float = 0
+    timings: RequestTimings = Field(default_factory=RequestTimings)
     disclaimer: str

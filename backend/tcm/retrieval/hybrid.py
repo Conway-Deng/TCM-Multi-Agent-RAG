@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 from ..knowledge_base import KNOWLEDGE_BASE, KnowledgeEntry
 from .lexical import retrieve_lexical
@@ -40,6 +41,7 @@ async def retrieve(
     *,
     entries: tuple[KnowledgeEntry, ...] = KNOWLEDGE_BASE,
 ) -> tuple[list[RetrievalResult], RetrievalDiagnostics]:
+    retrieval_started = time.perf_counter()
     config = retrieval_config()
     mode = str(config["mode"])
     top_k_candidates = int(config["top_k_candidates"])
@@ -48,11 +50,16 @@ async def retrieve(
     retrieval_query = f"{query} {context_text}".strip()
     notes: list[str] = []
 
+    lexical_started = time.perf_counter()
     lexical = retrieve_lexical(retrieval_query, entries=entries, top_k=top_k_candidates)
+    lexical_ms = (time.perf_counter() - lexical_started) * 1000
+    semantic_ms = 0.0
+    reranking_ms = 0.0
     method = "lexical"
     candidates = lexical
 
-    if mode in {"semantic", "hybrid", "hybrid_reranked"}:
+    if mode in {"semantic", "hybrid", "hybrid_reranked"} and bool(config["enable_semantic"]):
+      semantic_started = time.perf_counter()
       try:
           semantic = await retrieve_semantic(retrieval_query, entries, top_k=top_k_candidates)
       except SemanticRetrievalUnavailable as exc:
@@ -80,14 +87,17 @@ async def retrieve(
                   score_breakdown=breakdown,
               )
           candidates = dedupe_results(list(by_id.values()))[:top_k_candidates]
+      semantic_ms = (time.perf_counter() - semantic_started) * 1000
 
     if method == "hybrid" and bool(config["enable_rerank"]):
+        reranking_started = time.perf_counter()
         try:
             candidates = await rerank(retrieval_query, candidates)
         except RerankerUnavailable as exc:
             notes.append(str(exc))
         else:
             method = "hybrid_reranked"
+        reranking_ms = (time.perf_counter() - reranking_started) * 1000
 
     meaningful = [item for item in candidates if item.score >= threshold]
     meaningful.sort(key=lambda item: item.score, reverse=True)
@@ -99,5 +109,9 @@ async def retrieve(
         top_relevance_score=round(evidence[0].score if evidence else 0.0, 3),
         min_relevance_score=threshold,
         notes=tuple(notes),
+        lexical_ms=round(lexical_ms, 3),
+        semantic_ms=round(semantic_ms, 3),
+        reranking_ms=round(reranking_ms, 3),
+        total_ms=round((time.perf_counter() - retrieval_started) * 1000, 3),
     )
     return evidence, diagnostics

@@ -13,21 +13,24 @@
       modes: [['TCM Single RAG', 'Conventional evidence-grounded baseline'], ['TCM Multi-Agent', 'Specialists, debate, and judges'], ['Research Compare', 'Same-question controlled conditions']],
       status: 'Backend status', question: 'TCM educational question *', helper: 'Do not include identifying information. Emergencies require immediate professional help.',
       submit: 'Run TCM Single RAG', samples: 'Try a sample', context: 'Optional context', contextHint: 'used only for this request',
-      result: 'Evidence-grounded TCM perspective', patterns: 'Possible educational patterns', examples: 'Educational source examples', safety: 'Safety notes', evidence: 'Retrieved evidence', technical: 'Technical details'
+      result: 'Evidence-grounded TCM perspective', patterns: 'Possible educational patterns', examples: 'Educational source examples', safety: 'Safety notes', evidence: 'Retrieved evidence', technical: 'Technical details',
+      progress: { connecting: 'Connecting to backend', processing: 'Processing on backend', rendering: 'Rendering response', complete: 'Response ready', detail: 'Scope and safety checks run first; evidence retrieval and generation follow when applicable.' }
     },
     zh: {
       home: '首页', demo: '研究台', title: '中医多智能体 RAG 研究台', lead: '运行中医单路 RAG、多智能体条件或同题对照实验。',
       modes: [['中医单路 RAG', '常规证据检索基线'], ['中医多智能体', '专科智能体、辩论与评审'], ['研究对照', '同一问题的受控条件比较']],
       status: '后端状态', question: '中医教学研究问题 *', helper: '请勿填写可识别个人身份的信息。紧急情况请立即寻求专业帮助。',
       submit: '运行中医单路 RAG', samples: '示例问题', context: '可选背景', contextHint: '仅用于本次请求',
-      result: '基于证据的中医视角', patterns: '教学性辨证方向', examples: '资料中的教学示例', safety: '安全提示', evidence: '检索证据', technical: '技术详情'
+      result: '基于证据的中医视角', patterns: '教学性辨证方向', examples: '资料中的教学示例', safety: '安全提示', evidence: '检索证据', technical: '技术详情',
+      progress: { connecting: '正在连接后端', processing: '后端正在处理请求', rendering: '正在渲染结果', complete: '结果已就绪', detail: '后端会先进行范围与安全检查，并在适用时继续检索证据和生成回答。' }
     },
     ko: {
       home: '홈', demo: '연구대', title: 'TCM 멀티에이전트 RAG 연구대', lead: 'TCM 단일 RAG, 전문 에이전트 조건 또는 동일 질문 비교를 실행합니다.',
       modes: [['TCM 단일 RAG', '근거 검색 기준선'], ['TCM 멀티에이전트', '전문가, 토론, 심사'], ['연구 비교', '동일 질문 통제 비교']],
       status: '백엔드 상태', question: 'TCM 교육 연구 질문 *', helper: '식별 가능한 개인정보를 입력하지 마세요. 응급 상황에서는 즉시 전문 도움을 받으세요.',
       submit: 'TCM 단일 RAG 실행', samples: '예시 질문', context: '선택 배경', contextHint: '이번 요청에만 사용',
-      result: '근거 기반 TCM 관점', patterns: '교육용 변증 방향', examples: '자료의 교육 예시', safety: '안전 안내', evidence: '검색 근거', technical: '기술 세부정보'
+      result: '근거 기반 TCM 관점', patterns: '교육용 변증 방향', examples: '자료의 교육 예시', safety: '안전 안내', evidence: '검색 근거', technical: '기술 세부정보',
+      progress: { connecting: '백엔드에 연결 중', processing: '백엔드에서 요청 처리 중', rendering: '응답 렌더링 중', complete: '응답 준비 완료', detail: '범위와 안전 검사를 먼저 수행하고, 해당되는 경우 근거 검색과 답변 생성을 이어갑니다.' }
     }
   };
 
@@ -99,6 +102,7 @@
     setText('.tcm-context-title', t.context);
     setText('.tcm-context-hint', t.contextHint);
     setText('.tcm-result-hero h2', t.result);
+    if (!$('#tcm-run-progress').hidden) updateTcmProgress(tcmProgressStage);
     const headings = $$('.tcm-result-card h3');
     if (headings[0]) headings[0].textContent = t.patterns;
     if (headings[1]) headings[1].textContent = t.examples;
@@ -116,16 +120,88 @@
     $$('.tcm-sample').forEach((button, index) => { button.textContent = samples[index]; button.dataset.question = samples[index]; });
   }
 
-  async function api(path, body) {
-    const response = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+  async function api(path, body, onRequestSent) {
+    const started = performance.now();
+    const pending = fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+    if (onRequestSent) onRequestSent();
+    const response = await pending;
+    const headersReceived = performance.now();
     const data = await response.json();
+    const parsed = performance.now();
     if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed (' + response.status + ')');
+    const serverTiming = response.headers.get('Server-Timing') || '';
+    const serverDuration = Number((serverTiming.match(/dur=([\d.]+)/) || [])[1] || 0);
+    Object.defineProperty(data, '__clientTimings', { value: {
+      request_ms: parsed - started,
+      time_to_headers_ms: headersReceived - started,
+      json_parse_ms: parsed - headersReceived,
+      server_ms: serverDuration,
+    } });
     return data;
   }
 
   function showMessage(node, message) {
     node.textContent = message;
     node.hidden = !message;
+  }
+
+  let tcmRequestActive = false;
+  let tcmProgressStarted = 0;
+  let tcmProgressTimer = null;
+  let tcmProgressStage = 'connecting';
+
+  function updateTcmElapsed(elapsedMs) {
+    $('#tcm-progress-elapsed').textContent = (elapsedMs / 1000).toFixed(1) + ' s';
+  }
+
+  function updateTcmProgress(stage) {
+    tcmProgressStage = stage;
+    const progressCopy = copy[language].progress;
+    setText('#tcm-progress-status', progressCopy[stage]);
+    setText('#tcm-progress-detail', progressCopy.detail);
+  }
+
+  function startTcmProgress() {
+    const progress = $('#tcm-run-progress');
+    tcmProgressStarted = performance.now();
+    progress.hidden = false;
+    progress.classList.remove('is-complete');
+    progress.removeAttribute('data-frontend-total-ms');
+    progress.dataset.requestStartedAt = new Date().toISOString();
+    updateTcmProgress('connecting');
+    updateTcmElapsed(0);
+    clearInterval(tcmProgressTimer);
+    tcmProgressTimer = setInterval(() => updateTcmElapsed(performance.now() - tcmProgressStarted), 100);
+  }
+
+  function finishTcmProgress(data, renderMs) {
+    const progress = $('#tcm-run-progress');
+    const totalMs = performance.now() - tcmProgressStarted;
+    clearInterval(tcmProgressTimer);
+    tcmProgressTimer = null;
+    updateTcmProgress('complete');
+    updateTcmElapsed(totalMs);
+    progress.classList.add('is-complete');
+    progress.dataset.frontendTotalMs = totalMs.toFixed(3);
+    progress.dataset.renderMs = renderMs.toFixed(3);
+    progress.dataset.networkAndParseMs = String(data.__clientTimings?.request_ms?.toFixed(3) || '0');
+    progress.dataset.timeToHeadersMs = String(data.__clientTimings?.time_to_headers_ms?.toFixed(3) || '0');
+    progress.dataset.jsonParseMs = String(data.__clientTimings?.json_parse_ms?.toFixed(3) || '0');
+    progress.dataset.serverMs = String(data.__clientTimings?.server_ms?.toFixed(3) || '0');
+    progress.dataset.backendTotalMs = String(data.timings?.total_ms || 0);
+    progress.dataset.preprocessingMs = String(data.timings?.preprocessing_ms || 0);
+    progress.dataset.retrievalMs = String(data.timings?.retrieval_ms || 0);
+    progress.dataset.embeddingMs = String(data.timings?.embedding_ms || 0);
+    progress.dataset.rerankingMs = String(data.timings?.reranking_ms || 0);
+    progress.dataset.llmMs = String(data.timings?.llm_ms || 0);
+    progress.dataset.postProcessingMs = String(data.timings?.post_processing_ms || 0);
+    progress.dataset.serializationMs = Math.max(0, (data.__clientTimings?.server_ms || 0) - (data.timings?.total_ms || 0)).toFixed(3);
+  }
+
+  function cancelTcmProgress() {
+    clearInterval(tcmProgressTimer);
+    tcmProgressTimer = null;
+    $('#tcm-run-progress').hidden = true;
   }
 
   function renderList(container, items, empty) {
@@ -241,16 +317,33 @@
 
   $('#tcm-consult-form').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (tcmRequestActive) return;
     const form = event.currentTarget;
     const message = $('#tcm-form-message');
     const question = $('#tcm-question').value.trim();
     if (question.length < 3) return showMessage(message, 'Please enter a longer question.');
-    showMessage(message, ''); $('#tcm-submit').disabled = true;
+    tcmRequestActive = true;
+    showMessage(message, '');
+    $('#tcm-submit').disabled = true;
+    $('#tcm-submit').classList.add('is-loading');
+    form.setAttribute('aria-busy', 'true');
+    startTcmProgress();
     try {
       const values = Object.fromEntries(new FormData(form));
-      renderTcm(await api('/api/tcm/consult', { question, context: { age: values.age || '', gender: values.gender || '', duration: values.duration || '', medications: values.medications || '', pregnancy: values.pregnancy || '', allergies: values.allergies || '' } }));
-    } catch (error) { showMessage(message, error.message + '. The static website remains available; start the backend to run research.'); }
-    finally { $('#tcm-submit').disabled = false; }
+      const data = await api('/api/tcm/consult', { question, context: { age: values.age || '', gender: values.gender || '', duration: values.duration || '', medications: values.medications || '', pregnancy: values.pregnancy || '', allergies: values.allergies || '' } }, () => updateTcmProgress('processing'));
+      updateTcmProgress('rendering');
+      const renderStarted = performance.now();
+      renderTcm(data);
+      finishTcmProgress(data, performance.now() - renderStarted);
+    } catch (error) {
+      cancelTcmProgress();
+      showMessage(message, error.message + '. The static website remains available; start the backend to run research.');
+    } finally {
+      tcmRequestActive = false;
+      $('#tcm-submit').disabled = false;
+      $('#tcm-submit').classList.remove('is-loading');
+      form.setAttribute('aria-busy', 'false');
+    }
   });
 
   $('#consensus-form').addEventListener('submit', async (event) => {

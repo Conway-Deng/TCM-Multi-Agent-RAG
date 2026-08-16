@@ -23,6 +23,10 @@ class RetrievalDiagnostics:
     top_relevance_score: float
     min_relevance_score: float
     notes: tuple[str, ...] = field(default_factory=tuple)
+    lexical_ms: float = 0.0
+    semantic_ms: float = 0.0
+    reranking_ms: float = 0.0
+    total_ms: float = 0.0
 
 
 def normalise(text: str) -> str:

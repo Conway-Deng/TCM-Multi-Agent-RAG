@@ -2369,6 +2369,72 @@ body {
   display: inline-block;
 }
 
+.tcm-run-progress {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(22, 163, 74, 0.18);
+  border-radius: 12px;
+  color: #14532d;
+  background: rgba(240, 253, 244, 0.78);
+}
+
+.tcm-run-progress[hidden] {
+  display: none;
+}
+
+.tcm-progress-track {
+  position: relative;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.16);
+}
+
+.tcm-progress-track span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #15803d, #4ade80);
+  animation: tcm-progress-indeterminate 1.2s ease-in-out infinite;
+}
+
+.tcm-run-progress.is-complete .tcm-progress-track span {
+  width: 100%;
+  animation: none;
+}
+
+.tcm-progress-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.76rem;
+}
+
+.tcm-progress-row time {
+  color: #166534;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tcm-run-progress p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+@keyframes tcm-progress-indeterminate {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(340%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tcm-progress-track span { animation-duration: 2.4s; }
+}
+
 .tcm-form-message {
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(220, 38, 38, 0.18);

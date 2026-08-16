@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
+from time import perf_counter
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -16,11 +18,18 @@ from judges import JUDGE_REGISTRY
 from orchestration import CONDITION_REGISTRY, ResearchWorkbench, get_run
 from retrieval import RETRIEVER_REGISTRY, RetrievalEngine
 from schemas.research import CompareRequest, CompareResponse, ResearchRequest, ResearchRunResult, RetrievalItem, RetrievalStrategy
-from tcm.agent import consult
+from tcm.agent import OpenAICompatibleClient, consult
 from tcm.schemas import TCMConsultRequest, TCMConsultResponse
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    yield
+    await OpenAICompatibleClient.close_shared_http_client()
+
 
 app = FastAPI(
     title="TCM Multi-Agent RAG Research Workbench",
@@ -29,6 +38,7 @@ app = FastAPI(
         "TCM-only research platform for retrieval, specialist-agent, debate, LLM-as-a-Judge, "
         "safety, provenance, and reproducible experiment studies. Educational research use only."
     ),
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -37,7 +47,16 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
+    expose_headers=["Server-Timing"],
 )
+
+
+@app.middleware("http")
+async def add_server_timing(request: Request, call_next):
+    started = perf_counter()
+    response = await call_next(request)
+    response.headers["Server-Timing"] = f"app;dur={(perf_counter() - started) * 1000:.3f}"
+    return response
 
 
 @app.exception_handler(RequestValidationError)

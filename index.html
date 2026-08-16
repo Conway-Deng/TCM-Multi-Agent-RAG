@@ -7,6 +7,7 @@
   <meta name="description" content="TCM Multi-Agent RAG and LLM-as-a-Judge research workbench — University of Nottingham research internship.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://tcm-multi-agent-rag-api.onrender.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260723-fix">
 </head>
@@ -573,6 +574,14 @@
                 <span class="tcm-spinner" aria-hidden="true"></span>
               </button>
             </div>
+            <div id="tcm-run-progress" class="tcm-run-progress" role="status" aria-live="polite" hidden>
+              <div class="tcm-progress-track" aria-hidden="true"><span></span></div>
+              <div class="tcm-progress-row">
+                <strong id="tcm-progress-status"></strong>
+                <time id="tcm-progress-elapsed">0.0 s</time>
+              </div>
+              <p id="tcm-progress-detail"></p>
+            </div>
             <p id="tcm-form-message" class="tcm-form-message" role="alert" hidden></p>
           </form>
         </div>
@@ -678,6 +687,6 @@
   </footer>
   <script src="diagram.js"></script>
   <!-- The obsolete Western/TCM/Both runtime was removed; this TCM-only workbench is the active UI. -->
-  <script src="research-app.js?v=20260815-render-api"></script>
+  <script src="research-app.js?v=20260816-run-progress"></script>
 </body>
 </html>

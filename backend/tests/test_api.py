@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from pathlib import Path
 import subprocess
@@ -39,6 +40,15 @@ def test_health() -> None:
     assert data["version"] == "1.0.0"
     assert data["scope"] == "tcm_only"
     assert "west_fixture_enabled" not in data
+    assert response.headers["server-timing"].startswith("app;dur=")
+
+
+def test_llm_http_client_is_reused_between_requests() -> None:
+    asyncio.run(agent.OpenAICompatibleClient.close_shared_http_client())
+    first = agent.OpenAICompatibleClient()._http_client()
+    second = agent.OpenAICompatibleClient()._http_client()
+    assert first is second
+    asyncio.run(agent.OpenAICompatibleClient.close_shared_http_client())
 
 
 def test_knowledge_base_validation_passes() -> None:
@@ -81,6 +91,10 @@ def test_supported_question_without_api_key_returns_grounded_local_fallback() ->
     assert data["meaningful_match_count"] >= 1
     assert data["top_relevance_score"] > 0
     assert all(chunk["relevance_score"] >= data["retrieval_metadata"]["min_relevance_score"] for chunk in data["evidence"])
+    assert data["timings"]["total_ms"] >= data["timings"]["retrieval_ms"]
+    assert data["timings"]["retrieval_ms"] >= 0
+    assert data["timings"]["embedding_ms"] == 0
+    assert data["timings"]["reranking_ms"] == 0
 
 
 def test_supported_english_question_keeps_answer_language_english() -> None:
