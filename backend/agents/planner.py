@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 
+from corpus import load_chunks
 from schemas.research import PlannerOutput, RunState
 from tcm.language import detect_language
 from tcm.safety import check_emergency
@@ -28,6 +30,32 @@ AGENT_BY_SUBDOMAIN = {
 }
 
 
+@lru_cache(maxsize=1)
+def _corpus_entity_patterns() -> tuple[tuple[str, re.Pattern[str]], ...]:
+    aliases: set[tuple[str, str]] = set()
+    for chunk in load_chunks():
+        aliases.update(("herbal", item.casefold().strip()) for item in chunk.herbs)
+        aliases.update(("syndrome", item.casefold().strip()) for item in chunk.syndromes)
+    patterns: list[tuple[str, re.Pattern[str]]] = []
+    for subdomain, alias in sorted(aliases):
+        if not alias:
+            continue
+        if re.search(r"[a-z]", alias):
+            if len(alias) < 4:
+                continue
+            pattern = re.compile(rf"(?<![a-z]){re.escape(alias)}(?![a-z])", re.IGNORECASE)
+        else:
+            if len(alias) < 2:
+                continue
+            pattern = re.compile(re.escape(alias), re.IGNORECASE)
+        patterns.append((subdomain, pattern))
+    return tuple(patterns)
+
+
+def _entity_subdomains(question: str) -> list[str]:
+    return list(dict.fromkeys(subdomain for subdomain, pattern in _corpus_entity_patterns() if pattern.search(question)))
+
+
 class QueryPlannerAgent:
     agent_id = "query_planner"
     version = "1.0.0"
@@ -38,6 +66,7 @@ class QueryPlannerAgent:
         emergency = check_emergency(normalized)
         scope = classify_scope(normalized)
         subdomains = [name for name, terms in SUBDOMAIN_TERMS.items() if any(term.casefold() in normalized.casefold() for term in terms)]
+        subdomains = list(dict.fromkeys([*subdomains, *_entity_subdomains(normalized)]))
         if not subdomains and scope.status == "supported":
             subdomains = ["syndrome"]
         state = RunState.SAFETY_CRITICAL if emergency.urgent else RunState(scope.status)

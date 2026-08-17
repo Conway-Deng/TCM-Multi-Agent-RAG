@@ -294,9 +294,10 @@
     setText('#consensus-fixture-used', traceData.retrieval_strategy || 'not run');
     setText('#consensus-embedding', (traceData.embedding_provider || 'none') + ' · ' + (traceData.embedding_model || 'none'));
     setText('#consensus-reranker', (traceData.reranker_provider || 'none') + ' · ' + (traceData.reranker || 'none'));
-    setText('#consensus-participating', (traceData.participating_agents || []).join(', ') || 'none');
-    setText('#consensus-abstaining', (traceData.abstaining_agents || []).join(', ') || 'none');
-    setText('#consensus-stages', 'debate=' + String(Boolean(traceData.debate_enabled)) + ' · judges=' + String(Boolean(traceData.judges_enabled)));
+    const systemAbstained = traceData.termination_stage === 'planner_scope_gate';
+    setText('#consensus-participating', (traceData.participating_agents || []).join(', ') || (systemAbstained ? 'none · system stopped before specialists' : 'none'));
+    setText('#consensus-abstaining', (traceData.abstaining_agents || []).join(', ') || (systemAbstained ? 'not run · system-level abstention' : 'none'));
+    setText('#consensus-stages', 'termination=' + (traceData.termination_stage || 'completed') + (traceData.system_abstention_reason ? ' (' + traceData.system_abstention_reason + ')' : '') + ' · debate=' + String(Boolean(traceData.debate_enabled)) + ' · judges=' + String(Boolean(traceData.judges_enabled)));
     setText('#consensus-score-formula', traceData.support_score_formula || 'retrieval evidence support; not medical correctness');
     const trace = $('#consensus-trace'); trace.replaceChildren();
     (data.retrieval || []).forEach((item) => trace.append(element('p', '', '#' + item.rank + ' ' + item.chunk_id + ' · ' + item.source_id + ' · ' + item.retrieval_method)));
@@ -314,7 +315,7 @@
       card.append(element('small', '', result.run_id + ' · evidence support ' + Math.round(result.confidence * 100) + '% · ' + (result.trace?.latency_ms || 0) + ' ms · calls ' + (result.trace?.provider_calls || 0) + ' · ' + (result.generation_mode || 'deterministic')));
       const details = element('details', 'research-card-details');
       details.append(element('summary', '', 'Agents, judges, evidence'));
-      details.append(element('pre', '', JSON.stringify({ corpus: { name: result.trace?.corpus_name, version: result.trace?.corpus_version, chunks: result.trace?.corpus_chunk_count, mode: result.trace?.corpus_mode }, provider: { configured: result.trace?.provider_configured, actual: result.trace?.provider, model: result.trace?.model, calls: result.trace?.provider_calls, successful: result.trace?.successful_provider_calls, failed: result.trace?.failed_provider_calls, generation_mode: result.trace?.generation_mode }, agents: result.trace?.active_agents || [], participating_agents: result.trace?.participating_agents || [], abstaining_agents: result.trace?.abstaining_agents || [], judges: result.trace?.active_judges || [], debate_enabled: result.trace?.debate_enabled, evidence: result.trace?.retrieved_evidence_ids || [], sources: result.trace?.retrieved_source_names || [], embedding: result.trace?.embedding_model, reranker: result.trace?.reranker, metrics: result.metrics }, null, 2)));
+      details.append(element('pre', '', JSON.stringify({ corpus: { name: result.trace?.corpus_name, version: result.trace?.corpus_version, chunks: result.trace?.corpus_chunk_count, mode: result.trace?.corpus_mode }, provider: { configured: result.trace?.provider_configured, actual: result.trace?.provider, model: result.trace?.model, calls: result.trace?.provider_calls, successful: result.trace?.successful_provider_calls, failed: result.trace?.failed_provider_calls, generation_mode: result.trace?.generation_mode }, termination: { stage: result.trace?.termination_stage, system_abstention_reason: result.trace?.system_abstention_reason }, agents: result.trace?.active_agents || [], participating_agents: result.trace?.participating_agents || [], abstaining_agents: result.trace?.abstaining_agents || [], judges: result.trace?.active_judges || [], debate_enabled: result.trace?.debate_enabled, evidence: result.trace?.retrieved_evidence_ids || [], sources: result.trace?.retrieved_source_names || [], embedding: result.trace?.embedding_model, reranker: result.trace?.reranker, metrics: result.metrics }, null, 2)));
       card.append(details); grid.append(card);
     });
     setText('#research-compare-metrics', JSON.stringify({ comparison_id: data.comparison_id, metrics: data.metric_comparison, limitations: data.limitations }, null, 2));

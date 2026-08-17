@@ -390,6 +390,8 @@ class ResearchWorkbench:
             provider_configured=self.settings.llm_provider,
             llm_execution_enabled=self.settings.research_real_llm_enabled and not self.providers.mock_mode,
             generation_mode="abstention",
+            termination_stage="planner_scope_gate",
+            system_abstention_reason=plan.scope_state.value,
             active_agents=[],
             active_judges=[],
             retrieval_strategy=request.retrieval_strategy,

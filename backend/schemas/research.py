@@ -157,6 +157,8 @@ class RunTrace(BaseModel):
     provider_configured: str = "mock"
     llm_execution_enabled: bool = False
     generation_mode: str = "deterministic"
+    termination_stage: str = "completed"
+    system_abstention_reason: str | None = None
     support_score_formula: str = "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run"
     successful_provider_calls: int = 0
     failed_provider_calls: int = 0

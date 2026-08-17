@@ -117,6 +117,10 @@ def test_emergency_abstains_before_retrieval() -> None:
     assert data["abstained"] is True
     assert data["retrieval"] == []
     assert data["agent_outputs"] == []
+    assert data["trace"]["termination_stage"] == "planner_scope_gate"
+    assert data["trace"]["system_abstention_reason"] == "safety_critical"
+    assert data["trace"]["participating_agents"] == []
+    assert data["trace"]["abstaining_agents"] == []
 
 
 def test_old_consensus_and_western_runtime_are_absent() -> None:
