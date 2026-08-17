@@ -27,6 +27,8 @@ Representative experiments:
 
 Start with [`docs/research_overview.md`](docs/research_overview.md), [`docs/tcm_architecture.md`](docs/tcm_architecture.md), [`docs/tcm_corpus_v1.md`](docs/tcm_corpus_v1.md), [`docs/experiment_design.md`](docs/experiment_design.md), and [`docs/safety_and_limitations.md`](docs/safety_and_limitations.md).
 
+The current corpus/runtime audit and exact condition semantics are in [`docs/runtime_audit_2026-08-17.md`](docs/runtime_audit_2026-08-17.md). Public/default research mode intentionally uses the 16-entry provisional fixture. Authorized local Corpus v1 research starts with `./scripts/start-local-research.ps1 -RequireLlm`; it fails rather than falling back when the 4,461-chunk artifact or local LLM configuration is missing.
+
 <details>
 <summary>Archived pre-v1 prototype notes (historical only)</summary>
 

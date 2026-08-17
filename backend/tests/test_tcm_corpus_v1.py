@@ -5,11 +5,14 @@ from pathlib import Path
 import sqlite3
 import sys
 
+import pytest
+
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
 from corpus.v1_models import NormalizedRecord, ResearchChunk
+from corpus import registry as corpus_registry
 from ingestion.contamination import check_contamination
 from ingestion.tabular import read_tabular
 from ingestion.tcm_v1 import (
@@ -118,3 +121,31 @@ def test_contamination_checker_finds_exact_text_and_source_leakage(tmp_path: Pat
     assert report["exact_text_overlap_count"] == 1
     assert report["source_record_leakage_count"] == 1
     assert report["zero_leakage_claimed"] is False
+
+
+def test_default_public_mode_is_legacy_even_when_local_v1_exists(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TCM_CORPUS_MODE", raising=False)
+    monkeypatch.delenv("TCM_CORPUS_PATH", raising=False)
+    assert corpus_registry.active_v1_path() is None
+
+
+def test_required_mode_cannot_silently_fall_back(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("TCM_CORPUS_MODE", "required")
+    monkeypatch.setenv("TCM_CORPUS_PATH", str(tmp_path / "missing.jsonl"))
+    with pytest.raises(FileNotFoundError, match="required but not built"):
+        corpus_registry.active_v1_path()
+
+
+def test_real_corpus_loader_reads_configured_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    path = tmp_path / "chunks.jsonl"
+    chunk = record_to_chunk(_record())
+    path.write_text(chunk.model_dump_json() + "\n", encoding="utf-8")
+    monkeypatch.setenv("TCM_CORPUS_MODE", "required")
+    monkeypatch.setenv("TCM_CORPUS_PATH", str(path))
+    corpus_registry._v1_chunks.cache_clear()
+    try:
+        loaded = corpus_registry._v1_chunks()
+        assert len(loaded) == 1
+        assert loaded[0].chunk_id == chunk.chunk_id
+    finally:
+        corpus_registry._v1_chunks.cache_clear()

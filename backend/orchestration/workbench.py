@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import subprocess
 import time
 import uuid
 
 from agents import QueryPlannerAgent, build_agents
 from config import get_settings
-from corpus import corpus_version
+from corpus import corpus_stats, corpus_version
 from judges import run_judges
 from prompts import prompt_metadata
 from providers import get_provider_bundle
+from providers.base import GenerationResult
 from providers.local import DeterministicMockLLM
 from providers.openai_compatible import ProviderUnavailable
 from retrieval import RetrievalEngine
@@ -20,6 +22,7 @@ from schemas.research import (
     ConditionId,
     DebateTrace,
     ResearchCitation,
+    ResearchAgentOutput,
     ResearchMode,
     ResearchRequest,
     ResearchRunResult,
@@ -116,6 +119,23 @@ def _metrics(result: ResearchRunResult) -> dict[str, float | int | None]:
     }
 
 
+def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOutput, evidence) -> tuple[str, str]:
+    system = (
+        f"You are the {agent.agent_name} in a TCM research workbench. Use only the supplied evidence. "
+        "Write one concise educational paragraph, cite supporting chunk IDs in square brackets, preserve uncertainty, "
+        "and do not diagnose, prescribe, recommend doses, or add facts absent from the evidence. "
+        "Traditional claims must be framed as source-reported TCM content, not established biomedical fact."
+    )
+    selected = [item for item in evidence if item.chunk_id in baseline.evidence_ids]
+    prompt = json.dumps({
+        "question": question,
+        "response_language": language,
+        "specialist_scope": agent.subdomain,
+        "evidence": [{"chunk_id": item.chunk_id, "source_id": item.source_id, "text": item.chunk_text} for item in selected],
+    }, ensure_ascii=False)
+    return system, prompt
+
+
 class ResearchWorkbench:
     def __init__(self, *, force_mock: bool = False) -> None:
         self.settings = get_settings()
@@ -123,11 +143,43 @@ class ResearchWorkbench:
         self.retriever = RetrievalEngine()
         self.planner = QueryPlannerAgent()
 
+    async def _run_agent(self, agent, request, plan, evidence, *, llm_enabled: bool):
+        baseline = await agent.answer(
+            request.question,
+            plan.language,
+            evidence,
+            provider="local",
+            model="deterministic-evidence-mapper-v1",
+        )
+        if baseline.abstained or not llm_enabled:
+            return baseline, 0, 0, None
+        system, prompt = _agent_prompt(agent, request.question, plan.language, baseline, evidence)
+        try:
+            generated = await self.providers.llm.generate(system=system, prompt=prompt, temperature=0.0)
+        except ProviderUnavailable as exc:
+            return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), 1, 0, str(exc)
+        combined_claim = baseline.claims[0].model_copy(update={
+            "text": generated.text.strip(),
+            "evidence_ids": baseline.evidence_ids,
+            "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
+        })
+        output = baseline.model_copy(update={
+            "claims": [combined_claim],
+            "provider": generated.provider,
+            "model": generated.model,
+            "generation_mode": "llm",
+            "token_usage": {"prompt_tokens": generated.prompt_tokens, "completion_tokens": generated.completion_tokens},
+            "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
+        })
+        return output, 1, 1, None
+
     async def run(self, request: ResearchRequest) -> ResearchRunResult:
         started = time.perf_counter()
         run_id = f"run-{uuid.uuid4().hex[:16]}"
         condition = CONDITIONS[request.condition_id]
         timings: list[StageTiming] = []
+        corpus_metadata = corpus_stats()
+        llm_enabled = self.settings.research_real_llm_enabled and not self.providers.mock_mode
 
         stage = time.perf_counter()
         plan = self.planner.plan(request.question)
@@ -160,18 +212,38 @@ class ResearchWorkbench:
         if request.condition_id == ConditionId.C0:
             stage = time.perf_counter()
             provider_errors: list[str] = []
-            try:
-                generated = await self.providers.llm.generate(
-                    system="Direct no-retrieval TCM research control. Do not prescribe or claim evidence support.",
-                    prompt=request.question,
-                    temperature=0.0,
-                )
-            except ProviderUnavailable as exc:
-                provider_errors.append(str(exc))
+            provider_calls = 0
+            successful_provider_calls = 0
+            if llm_enabled:
+                provider_calls = 1
+                try:
+                    generated = await self.providers.llm.generate(
+                        system="Direct no-retrieval TCM research control. Do not prescribe or claim evidence support.",
+                        prompt=request.question,
+                        temperature=0.0,
+                    )
+                    successful_provider_calls = 1
+                except ProviderUnavailable as exc:
+                    provider_errors.append(str(exc))
+                    generated = await DeterministicMockLLM().generate(
+                        system="Direct no-retrieval TCM research control. Do not prescribe or claim evidence support.",
+                        prompt=request.question,
+                        temperature=0.0,
+                    )
+            elif self.providers.mock_mode:
                 generated = await DeterministicMockLLM().generate(
                     system="Direct no-retrieval TCM research control. Do not prescribe or claim evidence support.",
                     prompt=request.question,
                     temperature=0.0,
+                )
+            else:
+                generated = GenerationResult(
+                    text=(
+                        "Deterministic generation-only baseline. External LLM execution is disabled for this "
+                        "runtime, and this answer has no retrieved evidence support."
+                    ),
+                    provider="local",
+                    model="deterministic-direct-control-v1",
                 )
             timings.append(StageTiming(stage="generation", latency_ms=round((time.perf_counter() - stage) * 1000)))
             final_answer = "Direct no-retrieval control: " + generated.text
@@ -180,19 +252,21 @@ class ResearchWorkbench:
             judges = []
             citations: list[ResearchCitation] = []
             confidence = 0.2
-            provider_calls = 1
             token_usage = {"prompt_tokens": generated.prompt_tokens, "completion_tokens": generated.completion_tokens}
-            fallback_used = self.providers.mock_mode or generated.fallback
+            fallback_used = bool(provider_errors) or self.providers.mock_mode
+            generation_mode = "llm" if successful_provider_calls else "deterministic_fallback" if provider_errors else "mock" if self.providers.mock_mode else "deterministic"
         else:
             provider_errors = []
-            fallback_used = self.providers.mock_mode
             stage = time.perf_counter()
             ids = _agent_ids(request, plan.required_agents, bool(condition["multi_agent"]))
             agents = build_agents(ids)
-            outputs = await asyncio.gather(*[
-                agent.answer(request.question, plan.language, evidence, provider=self.providers.llm.name, model=self.providers.llm.model)
-                for agent in agents
+            executions = await asyncio.gather(*[
+                self._run_agent(agent, request, plan, evidence, llm_enabled=llm_enabled) for agent in agents
             ])
+            outputs = [item[0] for item in executions]
+            provider_calls = sum(item[1] for item in executions)
+            successful_provider_calls = sum(item[2] for item in executions)
+            provider_errors = [item[3] for item in executions if item[3]]
             timings.append(StageTiming(stage="agents", latency_ms=round((time.perf_counter() - stage) * 1000)))
             stage = time.perf_counter()
             debate_trace = debate(outputs, request.debate_rounds if condition["debate"] else 0)
@@ -202,8 +276,17 @@ class ResearchWorkbench:
             timings.append(StageTiming(stage="judges", latency_ms=round((time.perf_counter() - stage) * 1000)))
             final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges)
             citations = list({(item.evidence_id, item.source_id): item for output in outputs for item in output.citations}.values())
-            provider_calls = 0
-            token_usage = {}
+            token_usage = {
+                "prompt_tokens": sum(output.token_usage.get("prompt_tokens", 0) for output in outputs),
+                "completion_tokens": sum(output.token_usage.get("completion_tokens", 0) for output in outputs),
+            }
+            fallback_used = bool(provider_errors)
+            generation_mode = (
+                "mixed" if successful_provider_calls and provider_errors else
+                "llm" if successful_provider_calls else
+                "deterministic_fallback" if provider_errors else
+                "deterministic"
+            )
 
         versions, hashes = prompt_metadata()
         limitations = [
@@ -219,12 +302,28 @@ class ResearchWorkbench:
             run_id=run_id,
             git_commit=_git_commit(),
             corpus_version=corpus_version(),
+            corpus_name=str(corpus_metadata["corpus_name"]),
+            corpus_chunk_count=int(corpus_metadata["chunk_count"]),
+            corpus_source_count=int(corpus_metadata["source_count"]),
+            corpus_mode=str(corpus_metadata["corpus_mode"]),
             condition_id=request.condition_id,
             experiment_config=request.model_dump(mode="json", exclude={"question", "context"}),
-            provider=self.providers.llm.name,
-            model=self.providers.llm.model,
-            embedding_model=self.providers.embedding.model,
-            reranker=self.providers.rerank.model if request.retrieval_strategy.value == "R3" else "none",
+            provider=self.providers.llm.name if successful_provider_calls else "none",
+            model=self.providers.llm.model if successful_provider_calls else "none",
+            provider_configured=self.settings.llm_provider,
+            llm_execution_enabled=llm_enabled,
+            generation_mode=generation_mode,
+            successful_provider_calls=successful_provider_calls,
+            failed_provider_calls=provider_calls - successful_provider_calls,
+            participating_agents=[output.agent_id for output in outputs if not output.abstained],
+            abstaining_agents=[output.agent_id for output in outputs if output.abstained],
+            debate_enabled=debate_trace.enabled,
+            judges_enabled=bool(judges),
+            retrieved_source_names=list(dict.fromkeys(str(item.source_metadata.get("title") or item.source_id) for item in evidence)),
+            embedding_provider=self.retriever.actual_embedding_provider,
+            embedding_model=self.retriever.actual_embedding_model,
+            reranker_provider=self.retriever.actual_reranker_provider,
+            reranker=self.retriever.actual_reranker_model,
             prompt_versions=versions,
             prompt_hashes=hashes,
             top_k=request.top_k,
@@ -268,20 +367,29 @@ class ResearchWorkbench:
             confidence=confidence,
             trace=trace if request.include_trace else None,
             mock_mode=fallback_used,
+            generation_mode=generation_mode,
         )
         result.metrics = _metrics(result)
         _RUN_CACHE[run_id] = result
         return result
 
     def _abstention(self, run_id, request, condition, plan, answer, timings, started) -> ResearchRunResult:
+        corpus_metadata = corpus_stats()
         trace = RunTrace(
             run_id=run_id,
             git_commit=_git_commit(),
             corpus_version=corpus_version(),
+            corpus_name=str(corpus_metadata["corpus_name"]),
+            corpus_chunk_count=int(corpus_metadata["chunk_count"]),
+            corpus_source_count=int(corpus_metadata["source_count"]),
+            corpus_mode=str(corpus_metadata["corpus_mode"]),
             condition_id=request.condition_id,
             experiment_config=request.model_dump(mode="json", exclude={"question", "context"}),
-            provider=self.providers.llm.name,
-            model=self.providers.llm.model,
+            provider="none",
+            model="none",
+            provider_configured=self.settings.llm_provider,
+            llm_execution_enabled=self.settings.research_real_llm_enabled and not self.providers.mock_mode,
+            generation_mode="abstention",
             active_agents=[],
             active_judges=[],
             retrieval_strategy=request.retrieval_strategy,
@@ -289,7 +397,7 @@ class ResearchWorkbench:
             abstention=True,
             latency_ms=round((time.perf_counter() - started) * 1000),
             stage_timings=timings,
-            fallback_usage=self.providers.mock_mode,
+            fallback_usage=False,
             raw_query_stored=False,
         )
         return ResearchRunResult(
@@ -306,7 +414,8 @@ class ResearchWorkbench:
             abstained=True,
             abstention_reason=plan.scope_state.value,
             trace=trace if request.include_trace else None,
-            mock_mode=self.providers.mock_mode,
+            mock_mode=False,
+            generation_mode="abstention",
             metrics={"abstained": 1, "latency_ms": trace.latency_ms},
         )
 

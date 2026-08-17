@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import time
 
 from schemas.research import ResearchAgentOutput, ResearchCitation, RetrievalItem, StructuredClaim
@@ -20,10 +21,22 @@ class SpecialistAgent:
     version = "1.0.0"
     prompt_version = "v1"
     focus_terms: tuple[str, ...] = ()
+    accepted_topics: tuple[str, ...] = ()
 
     def _supports(self, item: RetrievalItem) -> bool:
+        if self.agent_id == "single_rag":
+            return True
+        if item.topics:
+            return bool(set(self.accepted_topics) & set(item.topics))
         haystack = item.chunk_text.casefold()
-        return not self.focus_terms or any(term.casefold() in haystack for term in self.focus_terms)
+        for term in self.focus_terms:
+            normalized = term.casefold()
+            if re.search(r"[a-z]", normalized):
+                if re.search(rf"\b{re.escape(normalized)}\b", haystack):
+                    return True
+            elif len(normalized) > 1 and normalized in haystack:
+                return True
+        return False
 
     def _statement(self, item: RetrievalItem, language: str) -> str:
         lines = [line.strip() for line in item.chunk_text.splitlines() if line.strip()]
@@ -87,6 +100,7 @@ class SpecialistAgent:
             latency_ms=round((time.perf_counter() - started) * 1000),
             provider=provider,
             model=model,
+            generation_mode="deterministic",
             prompt_version=self.prompt_version,
             reasoning_summary=f"Evidence selection and structured claim mapping for {self.subdomain}; no hidden reasoning tokens are stored.",
         )
@@ -100,6 +114,7 @@ class SyndromeDifferentiationAgent(SpecialistAgent):
     agent_name = "Syndrome Differentiation Agent"
     subdomain = "syndrome_differentiation"
     focus_terms = ("pattern", "syndrome", "辨证", "证", "deficiency", "stagnation")
+    accepted_topics = ("syndrome", "syndrome_differentiation", "tcm_symptom", "tcm_symptoms")
 
 
 class HerbalKnowledgeAgent(SpecialistAgent):
@@ -107,6 +122,7 @@ class HerbalKnowledgeAgent(SpecialistAgent):
     agent_name = "Herbal Knowledge Agent"
     subdomain = "herbal_knowledge"
     focus_terms = ("formula", "herb", "方", "汤", "丸", "散")
+    accepted_topics = ("herbal", "herb", "herbal_medicine", "herbal_knowledge")
 
     def extra_limitations(self) -> list[str]:
         return ["No dosing, individualized formula, or prescribing instruction is generated."]
@@ -117,6 +133,7 @@ class AcupunctureMeridianAgent(SpecialistAgent):
     agent_name = "Acupuncture and Meridian Agent"
     subdomain = "acupuncture_meridian"
     focus_terms = ("acupuncture", "meridian", "针", "经络", "point")
+    accepted_topics = ("acupuncture", "acupuncture_meridian", "meridian_theory")
 
     def extra_limitations(self) -> list[str]:
         return ["No needling locations, depths, techniques, or procedural instructions are generated."]
@@ -127,6 +144,7 @@ class ConstitutionAgent(SpecialistAgent):
     agent_name = "Constitution Agent"
     subdomain = "constitution"
     focus_terms = ("constitution", "体质", "deficiency", "heat", "cold")
+    accepted_topics = ("constitution", "constitution_analysis")
 
 
 class DietaryTherapyAgent(SpecialistAgent):
@@ -134,6 +152,7 @@ class DietaryTherapyAgent(SpecialistAgent):
     agent_name = "TCM Dietary Therapy Agent"
     subdomain = "dietary_therapy"
     focus_terms = ("food", "diet", "digestion", "食", "胃", "脾")
+    accepted_topics = ("dietary", "dietary_therapy")
 
     def extra_limitations(self) -> list[str]:
         return ["Traditional food-property concepts are distinct from modern nutritional evidence."]
@@ -144,6 +163,7 @@ class LifestyleYangshengAgent(SpecialistAgent):
     agent_name = "Lifestyle and Yangsheng Agent"
     subdomain = "lifestyle_yangsheng"
     focus_terms = ("sleep", "stress", "fatigue", "season", "失眠", "压力", "乏力")
+    accepted_topics = ("lifestyle", "lifestyle_yangsheng")
 
     def extra_limitations(self) -> list[str]:
         return ["Any lifestyle content is conservative educational information, not a clinical prescription."]

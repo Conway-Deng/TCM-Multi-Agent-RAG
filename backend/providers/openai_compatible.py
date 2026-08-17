@@ -12,9 +12,8 @@ class ProviderUnavailable(RuntimeError):
 
 
 class OpenAICompatibleLLMProvider:
-    name = "openai_compatible"
-
-    def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int) -> None:
+    def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
+        self.name = provider_name
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model

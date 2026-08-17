@@ -10,7 +10,7 @@
   const copy = {
     en: {
       home: 'Home', demo: 'Workbench', title: 'TCM Research Workbench', lead: 'Run a conventional TCM RAG baseline, a specialist multi-agent condition, or a controlled comparison.',
-      modes: [['TCM Single RAG', 'Conventional evidence-grounded baseline'], ['TCM Multi-Agent', 'Specialists, debate, and judges'], ['Research Compare', 'Same-question controlled conditions']],
+      modes: [['Standard TCM consultation', 'Legacy 16-entry compatibility fixture'], ['TCM Multi-Agent', 'Specialists with transparent deterministic debate and judge stages'], ['Research Compare', 'Same-question controlled conditions']],
       status: 'Backend status', question: 'TCM educational question *', helper: 'Do not include identifying information. Emergencies require immediate professional help.',
       submit: 'Run TCM Single RAG', samples: 'Try a sample', context: 'Optional context', contextHint: 'used only for this request',
       result: 'Evidence-grounded TCM perspective', patterns: 'Possible educational patterns', examples: 'Educational source examples', safety: 'Safety notes', evidence: 'Retrieved evidence', technical: 'Technical details',
@@ -18,7 +18,7 @@
     },
     zh: {
       home: '首页', demo: '研究台', title: '中医多智能体 RAG 研究台', lead: '运行中医单路 RAG、多智能体条件或同题对照实验。',
-      modes: [['中医单路 RAG', '常规证据检索基线'], ['中医多智能体', '专科智能体、辩论与评审'], ['研究对照', '同一问题的受控条件比较']],
+      modes: [['标准中医咨询', '旧版 16 条兼容性样例库'], ['中医多智能体', '专科智能体与透明的确定性辩论和评审'], ['研究对照', '同一问题的受控条件比较']],
       status: '后端状态', question: '中医教学研究问题 *', helper: '请勿填写可识别个人身份的信息。紧急情况请立即寻求专业帮助。',
       submit: '运行中医单路 RAG', samples: '示例问题', context: '可选背景', contextHint: '仅用于本次请求',
       result: '基于证据的中医视角', patterns: '教学性辨证方向', examples: '资料中的教学示例', safety: '安全提示', evidence: '检索证据', technical: '技术详情',
@@ -26,7 +26,7 @@
     },
     ko: {
       home: '홈', demo: '연구대', title: 'TCM 멀티에이전트 RAG 연구대', lead: 'TCM 단일 RAG, 전문 에이전트 조건 또는 동일 질문 비교를 실행합니다.',
-      modes: [['TCM 단일 RAG', '근거 검색 기준선'], ['TCM 멀티에이전트', '전문가, 토론, 심사'], ['연구 비교', '동일 질문 통제 비교']],
+      modes: [['표준 TCM 상담', '기존 16개 호환성 샘플'], ['TCM 멀티에이전트', '전문 에이전트와 투명한 결정론적 토론·심사'], ['연구 비교', '동일 질문 통제 비교']],
       status: '백엔드 상태', question: 'TCM 교육 연구 질문 *', helper: '식별 가능한 개인정보를 입력하지 마세요. 응급 상황에서는 즉시 전문 도움을 받으세요.',
       submit: 'TCM 단일 RAG 실행', samples: '예시 질문', context: '선택 배경', contextHint: '이번 요청에만 사용',
       result: '근거 기반 TCM 관점', patterns: '교육용 변증 방향', examples: '자료의 교육 예시', safety: '안전 안내', evidence: '검색 근거', technical: '기술 세부정보',
@@ -92,7 +92,7 @@
       button.querySelector('.demo-option-desc').textContent = values[1];
     });
     setText('.prototype-status strong', t.status);
-    setText('.tcm-kicker', 'TCM-RAG · C1');
+    setText('.tcm-kicker', 'TCM consultation · legacy compatibility fixture');
     setText('#tcm-consultation-title', t.modes[0][0]);
     setText('.tcm-panel-heading p:last-child', t.modes[0][1]);
     setText('.tcm-question-field > span', t.question);
@@ -260,8 +260,9 @@
   }
 
   function renderResearchRun(data) {
+    const traceData = data.trace || {};
     setText('#consensus-strategy-badge', data.condition_id + ' · ' + data.condition_name);
-    setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '% confidence');
+    setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '% cross-specialist evidence support');
     setText('#consensus-run-id', data.run_id);
     setText('#consensus-summary-text', data.final_answer);
     const agents = $('#consensus-agents'); agents.replaceChildren();
@@ -269,7 +270,7 @@
       const card = element('article', 'consensus-agent-card');
       card.append(element('strong', '', agent.agent_name));
       card.append(element('p', '', (agent.claims || []).map((claim) => claim.text).join(' ') || agent.abstention_reason));
-      card.append(element('small', '', agent.subdomain + ' · ' + Math.round(agent.confidence * 100) + '% · ' + agent.evidence_ids.join(', ')));
+      card.append(element('small', '', agent.subdomain + ' · evidence support ' + Math.round(agent.confidence * 100) + '% · ' + agent.generation_mode + ' · ' + (agent.evidence_ids.join(', ') || 'abstained')));
       agents.append(card);
     });
     renderList($('#consensus-agreements'), data.agreements || [], 'No measured agreement.');
@@ -283,12 +284,22 @@
     });
     renderList($('#consensus-safety'), data.safety_flags || [], 'No structured safety flag.');
     renderList($('#consensus-limitations'), data.limitations || [], 'No additional limitation.');
-    setText('#consensus-latency', (data.trace?.latency_ms || 0) + ' ms');
-    setText('#consensus-api-calls', String(data.trace?.provider_calls || 0));
-    setText('#consensus-call-failures', data.mock_mode ? 'mock/local' : 'live provider');
-    setText('#consensus-fixture-used', data.trace?.retrieval_strategy || 'not run');
+    setText('#consensus-latency', (traceData.latency_ms || 0) + ' ms');
+    setText('#consensus-api-calls', String(traceData.provider_calls || 0) + ' attempted · ' + String(traceData.successful_provider_calls || 0) + ' succeeded');
+    setText('#consensus-call-failures', (traceData.failed_provider_calls || 0) + ' failed · fallback=' + String(Boolean(traceData.fallback_usage)));
+    setText('#consensus-generation-mode', traceData.generation_mode || data.generation_mode || 'deterministic');
+    setText('#consensus-corpus', (traceData.corpus_name || 'unknown') + ' · ' + (traceData.corpus_chunk_count || 0) + ' chunks · mode=' + (traceData.corpus_mode || 'unknown'));
+    setText('#consensus-provider', traceData.provider_configured || 'unknown');
+    setText('#consensus-model', traceData.successful_provider_calls ? (traceData.provider + ' · ' + traceData.model) : 'none');
+    setText('#consensus-fixture-used', traceData.retrieval_strategy || 'not run');
+    setText('#consensus-embedding', (traceData.embedding_provider || 'none') + ' · ' + (traceData.embedding_model || 'none'));
+    setText('#consensus-reranker', (traceData.reranker_provider || 'none') + ' · ' + (traceData.reranker || 'none'));
+    setText('#consensus-participating', (traceData.participating_agents || []).join(', ') || 'none');
+    setText('#consensus-abstaining', (traceData.abstaining_agents || []).join(', ') || 'none');
+    setText('#consensus-stages', 'debate=' + String(Boolean(traceData.debate_enabled)) + ' · judges=' + String(Boolean(traceData.judges_enabled)));
+    setText('#consensus-score-formula', traceData.support_score_formula || 'retrieval evidence support; not medical correctness');
     const trace = $('#consensus-trace'); trace.replaceChildren();
-    (data.retrieval || []).forEach((item) => trace.append(element('p', '', '#' + item.rank + ' ' + item.chunk_id + ' · ' + item.retrieval_method)));
+    (data.retrieval || []).forEach((item) => trace.append(element('p', '', '#' + item.rank + ' ' + item.chunk_id + ' · ' + item.source_id + ' · ' + item.retrieval_method)));
     $('#consensus-results').hidden = false;
     $('#consensus-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -300,10 +311,10 @@
       card.append(element('span', 'consensus-experimental-badge', result.condition_id));
       card.append(element('h3', '', result.condition_name));
       card.append(element('p', '', result.final_answer));
-      card.append(element('small', '', result.run_id + ' · confidence ' + Math.round(result.confidence * 100) + '% · ' + (result.trace?.latency_ms || 0) + ' ms'));
+      card.append(element('small', '', result.run_id + ' · evidence support ' + Math.round(result.confidence * 100) + '% · ' + (result.trace?.latency_ms || 0) + ' ms · calls ' + (result.trace?.provider_calls || 0) + ' · ' + (result.generation_mode || 'deterministic')));
       const details = element('details', 'research-card-details');
       details.append(element('summary', '', 'Agents, judges, evidence'));
-      details.append(element('pre', '', JSON.stringify({ agents: result.trace?.active_agents || [], judges: result.trace?.active_judges || [], evidence: result.trace?.retrieved_evidence_ids || [], metrics: result.metrics }, null, 2)));
+      details.append(element('pre', '', JSON.stringify({ corpus: { name: result.trace?.corpus_name, version: result.trace?.corpus_version, chunks: result.trace?.corpus_chunk_count, mode: result.trace?.corpus_mode }, provider: { configured: result.trace?.provider_configured, actual: result.trace?.provider, model: result.trace?.model, calls: result.trace?.provider_calls, successful: result.trace?.successful_provider_calls, failed: result.trace?.failed_provider_calls, generation_mode: result.trace?.generation_mode }, agents: result.trace?.active_agents || [], participating_agents: result.trace?.participating_agents || [], abstaining_agents: result.trace?.abstaining_agents || [], judges: result.trace?.active_judges || [], debate_enabled: result.trace?.debate_enabled, evidence: result.trace?.retrieved_evidence_ids || [], sources: result.trace?.retrieved_source_names || [], embedding: result.trace?.embedding_model, reranker: result.trace?.reranker, metrics: result.metrics }, null, 2)));
       card.append(details); grid.append(card);
     });
     setText('#research-compare-metrics', JSON.stringify({ comparison_id: data.comparison_id, metrics: data.metric_comparison, limitations: data.limitations }, null, 2));
@@ -364,7 +375,12 @@
   });
 
   fetch(API + '/health').then((response) => response.json()).then((data) => {
-    setText('.prototype-status span:last-child', data.scope + ' · ' + (data.mock_mode ? 'mock/local fallback' : data.provider_mode));
+    const profile = data.runtime_profile === 'local_research' ? 'Local research' : 'Public demo';
+    const corpusLabel = (data.corpus_name || data.active_corpus) + ' · ' + (data.corpus_chunk_count || 0) + ' chunks';
+    const providerLabel = 'provider configured=' + data.provider_configured + ' · LLM execution=' + (data.llm_execution_enabled ? 'enabled' : 'disabled');
+    setText('.prototype-status span:last-child', profile + ' · ' + corpusLabel + ' · ' + providerLabel);
+    setText('#consensus-corpus-status', profile + ' uses ' + corpusLabel + '. Scores below are evidence-support signals, not medical correctness.');
+    setText('#compare-corpus-status', profile + ' · ' + corpusLabel + '.');
     $('.prototype-status').classList.toggle('is-live', true);
   }).catch(() => setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'));
 

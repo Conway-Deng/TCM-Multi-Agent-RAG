@@ -4,7 +4,11 @@ from functools import lru_cache
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
+
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env", override=False)
 
 
 class Settings(BaseModel):
@@ -27,6 +31,7 @@ class Settings(BaseModel):
     qdrant_api_key: str = ""
     qdrant_collection: str = "tcm-research"
     research_mode: bool = True
+    research_real_llm_enabled: bool = False
     research_max_parallel_calls: int = Field(default=4, ge=1, le=32)
     research_repeat_count: int = Field(default=1, ge=1, le=100)
     research_random_seed: int = 20260815
@@ -74,6 +79,7 @@ def get_settings() -> Settings:
         qdrant_api_key=os.getenv("QDRANT_API_KEY", "").strip(),
         qdrant_collection=os.getenv("QDRANT_COLLECTION", "tcm-research").strip(),
         research_mode=_bool("RESEARCH_MODE", True),
+        research_real_llm_enabled=_bool("RESEARCH_REAL_LLM_ENABLED", False),
         research_max_parallel_calls=int(os.getenv("RESEARCH_MAX_PARALLEL_CALLS", "4")),
         research_repeat_count=int(os.getenv("RESEARCH_REPEAT_COUNT", "1")),
         research_random_seed=int(os.getenv("RESEARCH_RANDOM_SEED", "20260815")),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import asyncio
 import sys
 
 from fastapi.testclient import TestClient
@@ -13,6 +14,10 @@ os.environ["LLM_API_KEY"] = ""
 os.environ["LLM_PROVIDER"] = "mock"
 
 from main import app
+from orchestration import ResearchWorkbench
+from providers.base import GenerationResult
+from providers.factory import ProviderBundle
+from schemas.research import ConditionId, ResearchRequest, RetrievalStrategy
 
 
 client = TestClient(app)
@@ -32,7 +37,10 @@ def research_payload(condition: str = "C6") -> dict:
 
 
 def test_research_registries_are_complete() -> None:
-    assert {item["id"] for item in client.get("/api/research/conditions").json()} == {f"C{i}" for i in range(7)}
+    conditions = client.get("/api/research/conditions").json()
+    assert {item["id"] for item in conditions} == {f"C{i}" for i in range(7)}
+    assert next(item for item in conditions if item["id"] == "C4")["debate"] == "deterministic"
+    assert next(item for item in conditions if item["id"] == "C5")["judges"] == "deterministic"
     assert {item["id"] for item in client.get("/api/research/retrievers").json()} == {f"R{i}" for i in range(4)}
     assert {item["id"] for item in client.get("/api/research/judges").json()} == {"evidence", "hallucination", "safety", "conflict", "confidence", "provenance"}
     assert len(client.get("/api/research/agents").json()) >= 7
@@ -43,7 +51,7 @@ def test_full_c6_pipeline_runs_without_key() -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["condition_id"] == "C6"
-    assert data["mock_mode"] is True
+    assert data["mock_mode"] is False
     assert len(data["agent_outputs"]) >= 2
     assert data["debate"]["enabled"] is True
     assert len(data["judge_outputs"]) == 6
@@ -51,6 +59,11 @@ def test_full_c6_pipeline_runs_without_key() -> None:
     assert data["trace"]["git_commit"]
     assert data["trace"]["corpus_version"].startswith("tcm-")
     assert data["trace"]["prompt_hashes"]
+    assert data["trace"]["provider_calls"] == 0
+    assert data["trace"]["successful_provider_calls"] == 0
+    assert data["trace"]["generation_mode"] == "deterministic"
+    assert data["trace"]["fallback_usage"] is False
+    assert all(item["provider"] == "local" for item in data["agent_outputs"])
     assert "question" not in data["trace"]["experiment_config"]
 
 
@@ -111,3 +124,71 @@ def test_old_consensus_and_western_runtime_are_absent() -> None:
     env_text = (BACKEND / ".env.example").read_text(encoding="utf-8")
     for obsolete in ("ALLOW_WEST_FIXTURE", "WEST_API_BASE_URL", "WEST_API_TIMEOUT_SECONDS", "WEST_API_IMPLEMENTED"):
         assert obsolete not in env_text
+
+
+def test_public_health_and_corpus_stats_disclose_legacy_fixture() -> None:
+    health = client.get("/health").json()
+    stats = client.get("/api/corpus/stats").json()
+    assert health["runtime_profile"] == "public_demo"
+    assert health["corpus_chunk_count"] == 16
+    assert health["active_corpus"] == "legacy_provisional_fixture"
+    assert health["llm_execution_enabled"] is False
+    assert stats["corpus_mode"] == "legacy"
+    assert stats["chunk_count"] == 16
+
+
+class _FakeSiliconFlowLLM:
+    name = "siliconflow"
+    model = "Qwen/Qwen2.5-7B-Instruct"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system: str, prompt: str, temperature: float = 0.0) -> GenerationResult:
+        self.calls += 1
+        return GenerationResult(
+            text="Source-constrained educational specialist summary.",
+            provider=self.name,
+            model=self.model,
+            prompt_tokens=20,
+            completion_tokens=6,
+        )
+
+
+def test_c1_and_c2_track_actual_llm_calls_with_same_retrieval_and_model() -> None:
+    async def run_pair():
+        workbench = ResearchWorkbench(force_mock=True)
+        fake = _FakeSiliconFlowLLM()
+        current = workbench.providers
+        workbench.providers = ProviderBundle(
+            llm=fake,
+            embedding=current.embedding,
+            rerank=current.rerank,
+            vector_store=current.vector_store,
+            evaluator=fake,
+            mock_mode=False,
+        )
+        workbench.settings = workbench.settings.model_copy(update={
+            "llm_provider": "siliconflow",
+            "llm_api_key": "unit-test-placeholder",
+            "research_real_llm_enabled": True,
+        })
+        common = {
+            "question": "Explain herbal formula concepts for insomnia in TCM teaching.",
+            "retrieval_strategy": RetrievalStrategy.R2,
+            "active_agents": ["syndrome", "herbal"],
+            "top_k": 4,
+        }
+        c1 = await workbench.run(ResearchRequest(condition_id=ConditionId.C1, **common))
+        c2 = await workbench.run(ResearchRequest(condition_id=ConditionId.C2, **common))
+        return fake, c1, c2
+
+    fake, c1, c2 = asyncio.run(run_pair())
+    assert c1.trace is not None and c2.trace is not None
+    assert c1.trace.retrieved_evidence_ids == c2.trace.retrieved_evidence_ids
+    assert c1.trace.provider_calls == c1.trace.successful_provider_calls == 1
+    assert c2.trace.provider_calls == c2.trace.successful_provider_calls == 2
+    assert c1.trace.model == c2.trace.model == "Qwen/Qwen2.5-7B-Instruct"
+    assert c1.generation_mode == c2.generation_mode == "llm"
+    assert c1.mock_mode is False and c2.mock_mode is False
+    assert fake.calls == 3

@@ -12,3 +12,5 @@ Configs select dataset, C0-C6 conditions, R0-R3 retrieval, top-k, agents, debate
 | RQ6 | reviewer schema, CSV workflow, agreement utilities | unanswered until real human data exists |
 
 Do not claim significance from the seed dataset. Traces record provider calls, tokens, latency, failures, fallback, and stages when available.
+
+In C1-C6 the planner, evidence mapping, debate, judge rubrics, and final aggregation are deterministic. When `RESEARCH_REAL_LLM_ENABLED=true` and a real provider is configured, each evidence-participating specialist makes one constrained LLM call; abstaining specialists make none. C0 makes one direct call when enabled. Therefore call count is an observed runtime value, not proof inferred from provider configuration.

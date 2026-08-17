@@ -8,12 +8,15 @@ BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
 from agents.planner import QueryPlannerAgent
+from agents.specialists import HerbalKnowledgeAgent, LifestyleYangshengAgent
+from config import get_settings
 from corpus import corpus_version, validate_corpus
 from evaluation.research_metrics import hit_rate_at_k, ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank
 from evaluation.statistics import paired_comparison, summarize
 from ingestion.pipeline import deterministic_chunk_id, normalize_text
 from prompts import prompt_metadata
 from schemas.research import DatasetItem
+from schemas.research import RetrievalItem
 from research.run_experiment import load_config, load_dataset
 
 
@@ -69,3 +72,21 @@ def test_all_experiment_configs_and_seed_items_validate() -> None:
     assert len(items) >= 14
     assert all(isinstance(item, DatasetItem) for item in items)
     assert all("synthetic" in item.expert_review_status for item in items)
+
+
+def test_specialists_route_by_chunk_metadata_not_ambiguous_substrings() -> None:
+    item = RetrievalItem(
+        chunk_id="tcm_yangsheng_001",
+        source_id="fixture",
+        rank=1,
+        lexical_score=1.0,
+        retrieval_method="lexical",
+        chunk_text="Traditional lifestyle teaching discusses 生活方式 and sleep.",
+        topics=["lifestyle_yangsheng", "sleep"],
+    )
+    assert HerbalKnowledgeAgent()._supports(item) is False
+    assert LifestyleYangshengAgent()._supports(item) is True
+
+
+def test_real_llm_execution_is_explicitly_disabled_by_default() -> None:
+    assert get_settings().research_real_llm_enabled is False

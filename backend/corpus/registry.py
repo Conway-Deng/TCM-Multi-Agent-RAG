@@ -19,7 +19,10 @@ DEFAULT_V1_MANIFEST = PROJECT_ROOT / "research" / "corpus" / "manifests" / "tcm_
 
 
 def active_v1_path() -> Path | None:
-    mode = os.getenv("TCM_CORPUS_MODE", "v1_if_available").strip().casefold()
+    mode = os.getenv("TCM_CORPUS_MODE", "legacy").strip().casefold()
+    allowed_modes = {"legacy", "fixture", "provisional", "v1_if_available", "v1", "required"}
+    if mode not in allowed_modes:
+        raise ValueError(f"Unsupported TCM_CORPUS_MODE={mode!r}; expected one of {sorted(allowed_modes)}")
     if mode in {"legacy", "fixture", "provisional"}:
         return None
     configured = os.getenv("TCM_CORPUS_PATH", "").strip()
@@ -113,6 +116,9 @@ def load_chunks() -> tuple[KnowledgeChunk, ...]:
     chunks: list[KnowledgeChunk] = []
     for entry in KNOWLEDGE_BASE:
         examples = [str(example.get("name", {}).get("en", "")) for example in entry.educational_examples]
+        research_topics = [entry.topic, *entry.tags]
+        if entry.educational_examples:
+            research_topics.extend(["syndrome_differentiation", "herbal_medicine"])
         example_text = "\n".join(
             " ".join(
                 filter(None, [
@@ -138,7 +144,7 @@ def load_chunks() -> tuple[KnowledgeChunk, ...]:
                 source_ids=list(entry.source_ids),
                 section=entry.subtopic,
                 text=text,
-                topics=list(dict.fromkeys([entry.topic, *entry.tags])),
+                topics=list(dict.fromkeys(research_topics)),
                 syndromes=[entry.pattern["en"], entry.pattern["zh"], entry.pattern["ko"]],
                 herbs=examples,
                 meridians=[tag for tag in entry.tags if "meridian" in tag],
@@ -183,10 +189,21 @@ def validate_corpus() -> list[str]:
     return issues
 
 
+@lru_cache(maxsize=8)
+def _artifact_sha256(path_string: str, size: int, modified_ns: int) -> str:
+    # The stat inputs make the cache self-invalidating when the local artifact changes.
+    del size, modified_ns
+    return hashlib.sha256(Path(path_string).read_bytes()).hexdigest()
+
+
 def corpus_stats() -> dict[str, object]:
     chunks = load_chunks()
     sources = load_sources()
+    v1_path = active_v1_path()
+    mode = os.getenv("TCM_CORPUS_MODE", "legacy").strip().casefold()
+    is_v1 = v1_path is not None
     return {
+        "corpus_name": "TCM Research Corpus v1" if is_v1 else "Legacy provisional fixture",
         "corpus_version": corpus_version(),
         "source_count": len(sources),
         "chunk_count": len(chunks),
@@ -194,6 +211,12 @@ def corpus_stats() -> dict[str, object]:
         "reviewed_chunk_count": sum(item.human_review_status == "verified" for item in chunks),
         "languages": sorted({item.language for item in chunks}),
         "validation_issues": validate_corpus(),
-        "active_corpus": "tcm_research_corpus_v1" if active_v1_path() is not None else "legacy_provisional_fixture",
-        "scientific_status": "provenance-aware research corpus; not clinically authoritative or validated" if active_v1_path() is not None else "small provisional educational fixture; not clinically validated",
+        "corpus_mode": mode,
+        "runtime_profile": "local_research" if is_v1 and mode in {"v1", "required"} else "public_demo",
+        "active_corpus": "tcm_research_corpus_v1" if is_v1 else "legacy_provisional_fixture",
+        "corpus_sha256": (
+            _artifact_sha256(str(v1_path.resolve()), v1_path.stat().st_size, v1_path.stat().st_mtime_ns)
+            if v1_path else None
+        ),
+        "scientific_status": "provenance-aware research corpus; not clinically authoritative or validated" if is_v1 else "small provisional educational fixture; not clinically validated",
     }

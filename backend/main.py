@@ -27,6 +27,9 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # In required local-research mode this loads and validates corpus selection
+    # before the server accepts traffic. Missing artifacts fail startup loudly.
+    corpus_stats()
     yield
     await OpenAICompatibleClient.close_shared_http_client()
 
@@ -66,15 +69,26 @@ async def validation_exception_handler(_, exc: RequestValidationError) -> JSONRe
 
 @app.get("/health")
 async def health() -> dict[str, object]:
+    corpus = corpus_stats()
     return {
         "status": "ok",
         "service": "TCM Multi-Agent RAG Research Workbench",
         "version": app.version,
         "scope": "tcm_only",
         "provider_mode": settings.provider_mode,
+        "provider_configured": settings.llm_provider,
+        "provider_ready": settings.provider_mode != "mock",
+        "llm_execution_enabled": settings.research_real_llm_enabled and settings.provider_mode != "mock",
         "mock_mode": settings.provider_mode == "mock",
         "research_mode": settings.research_mode,
         "strict_medical_safety": settings.strict_medical_safety,
+        "corpus_name": corpus["corpus_name"],
+        "corpus_version": corpus["corpus_version"],
+        "corpus_chunk_count": corpus["chunk_count"],
+        "corpus_source_count": corpus["source_count"],
+        "corpus_mode": corpus["corpus_mode"],
+        "active_corpus": corpus["active_corpus"],
+        "runtime_profile": corpus["runtime_profile"],
     }
 
 

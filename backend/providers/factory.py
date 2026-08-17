@@ -34,6 +34,7 @@ def get_provider_bundle(*, force_mock: bool = False) -> ProviderBundle:
             model=settings.llm_model,
             timeout=settings.llm_timeout_seconds,
             max_tokens=settings.llm_max_tokens,
+            provider_name=settings.llm_provider,
         )
         mock_mode = False
     embedding: EmbeddingProvider = LocalHashEmbeddingProvider()

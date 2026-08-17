@@ -72,7 +72,7 @@ The manifest records source versions, file hashes and sizes, deterministic inges
 
 ## Runtime integration
 
-The research corpus registry uses `research/corpus/tcm_v1/chunks.jsonl` when present. Set `TCM_CORPUS_MODE=legacy` to force the 16-entry fixture, or `TCM_CORPUS_MODE=required` to fail fast if v1 is missing. `TCM_CORPUS_PATH` may point to an authorized external artifact location.
+The safe default is `TCM_CORPUS_MODE=legacy`, which always uses the 16-entry fixture even when a local restricted artifact exists. Local research must set `TCM_CORPUS_MODE=required`; startup then fails if v1 is missing or invalid. `TCM_CORPUS_PATH` may point to an authorized external artifact location. The convenience command `./scripts/start-local-research.ps1 -RequireLlm` performs the corpus preflight and requires locally configured LLM credentials without printing them.
 
 Existing retrieval IDs are unchanged: R0 lexical, R1 dense, R2 hybrid, and R3 hybrid plus reranking. Lexical indexes and document vectors are reused per engine. Bulk remote document embeddings are blocked unless `ALLOW_BULK_REMOTE_EMBEDDING=true`; the v1 pilot used deterministic local hash embeddings and no paid API.
 

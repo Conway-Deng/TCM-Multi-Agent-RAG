@@ -67,6 +67,7 @@ class RetrievalItem(BaseModel):
     rerank_score: float | None = None
     retrieval_method: str
     chunk_text: str
+    topics: list[str] = Field(default_factory=list)
     source_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -97,11 +98,13 @@ class ResearchAgentOutput(BaseModel):
     limitations: list[str] = Field(default_factory=list)
     safety_flags: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0, le=1)
+    confidence_basis: str = "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches"
     abstained: bool = False
     abstention_reason: str | None = None
     latency_ms: int = Field(default=0, ge=0)
     provider: str = "mock"
     model: str = "deterministic-mock-v1"
+    generation_mode: str = "deterministic"
     prompt_version: str = "v1"
     reasoning_summary: str = ""
     token_usage: dict[str, int] = Field(default_factory=dict)
@@ -142,12 +145,29 @@ class RunTrace(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_commit: str = "unknown"
     corpus_version: str = "unknown"
+    corpus_name: str = "unknown"
+    corpus_chunk_count: int = 0
+    corpus_source_count: int = 0
+    corpus_mode: str = "legacy"
     dataset_version: str = "ad-hoc"
     condition_id: ConditionId
     experiment_config: dict[str, Any] = Field(default_factory=dict)
     provider: str = "mock"
     model: str = "deterministic-mock-v1"
+    provider_configured: str = "mock"
+    llm_execution_enabled: bool = False
+    generation_mode: str = "deterministic"
+    support_score_formula: str = "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run"
+    successful_provider_calls: int = 0
+    failed_provider_calls: int = 0
+    participating_agents: list[str] = Field(default_factory=list)
+    abstaining_agents: list[str] = Field(default_factory=list)
+    debate_enabled: bool = False
+    judges_enabled: bool = False
+    retrieved_source_names: list[str] = Field(default_factory=list)
+    embedding_provider: str = "none"
     embedding_model: str = "local-hash-embedding-v1"
+    reranker_provider: str = "none"
     reranker: str = "none"
     prompt_versions: dict[str, str] = Field(default_factory=dict)
     prompt_hashes: dict[str, str] = Field(default_factory=dict)
@@ -221,6 +241,7 @@ class ResearchRunResult(BaseModel):
     metrics: dict[str, float | int | None] = Field(default_factory=dict)
     experimental: bool = True
     mock_mode: bool = True
+    generation_mode: str = "deterministic"
 
 
 class CompareRequest(BaseModel):

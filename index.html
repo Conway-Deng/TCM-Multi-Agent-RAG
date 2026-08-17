@@ -195,12 +195,12 @@
           <div class="arch-stage-header">
             <span class="metric-kicker">Governance</span>
             <h3>Debate, Judge, Consensus</h3>
-            <p>Specialist agents propose answers, then SafeJudge checks evidence, risk, conflict, and confidence.</p>
+            <p>Evidence-scoped specialists contribute or abstain; deterministic rubrics currently check support, risk, conflict, and provenance.</p>
           </div>
 
           <div class="arch-layer arch-layer-container layer-debate layer-animate" data-layer="4">
             <p class="container-label">Multi-Agent Debate</p>
-            <p class="container-desc">Domain-specific agents independently generate recommendations and rationales</p>
+            <p class="container-desc">Domain specialists map retrieved evidence and may generate constrained summaries only when explicit LLM execution is enabled</p>
             <div class="arch-row">
               <div class="arch-node node-blue arch-node-sm" tabindex="0"
                    data-tooltip="Provides evidence-based recommendations from a modern Western medicine perspective, grounded in retrieved clinical guidelines and literature.">
@@ -228,8 +228,8 @@
           <div class="arch-arrow" aria-hidden="true"><span>↓</span></div>
 
           <div class="arch-layer arch-layer-container layer-judge layer-animate" data-layer="5">
-            <p class="container-label">SafeJudge</p>
-            <p class="container-desc">LLM-as-a-Judge evaluates, verifies, and scores all agent outputs</p>
+            <p class="container-label">Deterministic judge baselines</p>
+            <p class="container-desc">The current runtime applies transparent safety, support, conflict, confidence, and provenance rubrics; configured LLM judge roles are not called</p>
             <div class="arch-row">
               <div class="arch-node node-blue arch-node-sm" tabindex="0"
                    data-tooltip="Checks whether agent recommendations are supported by retrieved evidence and assesses citation quality and factual grounding.">
@@ -332,10 +332,10 @@
             </div>
             <span class="consensus-experimental-badge">Experimental</span>
           </div>
-          <div class="consensus-warning" role="note"><strong>Not clinically validated.</strong><span>The provisional corpus and automated judges do not establish clinical correctness.</span></div>
+          <div class="consensus-warning" role="note"><strong>Not clinically validated.</strong><span id="consensus-corpus-status">Corpus status is loading. Automated scores measure evidence support, not medical correctness.</span></div>
           <form id="consensus-form" novalidate>
             <label class="consensus-field" for="consensus-question"><span>Health question *</span><textarea id="consensus-question" rows="4" minlength="3" maxlength="2000" required placeholder="e.g. I have trouble sleeping and lower back soreness."></textarea></label>
-            <label class="consensus-field" for="consensus-strategy"><span>Experiment condition</span><select id="consensus-strategy"><option value="C2">C2 · Independent agents</option><option value="C3">C3 · Weighted aggregation</option><option value="C4">C4 · Structured debate</option><option value="C5">C5 · Judge arbitration</option><option value="C6" selected>C6 · Debate + Judges</option></select></label>
+            <label class="consensus-field" for="consensus-strategy"><span>Experiment condition</span><select id="consensus-strategy"><option value="C2">C2 · Independent specialists</option><option value="C3">C3 · Deterministic weighted aggregation</option><option value="C4">C4 · Deterministic structured debate</option><option value="C5">C5 · Deterministic judge rubrics</option><option value="C6" selected>C6 · Deterministic debate + judges</option></select></label>
             <label class="consensus-field" for="consensus-retrieval"><span>Retrieval strategy</span><select id="consensus-retrieval"><option value="R0">R0 · Lexical</option><option value="R1">R1 · Dense</option><option value="R2" selected>R2 · Hybrid</option><option value="R3">R3 · Hybrid + rerank</option></select></label>
             <div class="consensus-form-footer"><p>Research use only. This workbench studies orchestration behavior, not clinical correctness.</p><button id="consensus-submit" class="consensus-submit" type="submit"><span>Run TCM Multi-Agent</span><span class="consensus-spinner" aria-hidden="true"></span></button></div>
             <p id="consensus-message" class="consensus-message" role="alert" hidden></p>
@@ -345,7 +345,7 @@
           <div class="consensus-summary glass"><div class="consensus-result-meta"><span id="consensus-strategy-badge"></span><span id="consensus-confidence"></span><span id="consensus-run-id"></span></div><h3>Integrated research response</h3><p id="consensus-summary-text"></p></div>
           <div class="consensus-columns"><section class="glass"><h3>Domain agent outputs</h3><div id="consensus-agents"></div></section><section class="glass"><h3>Agreements</h3><ul id="consensus-agreements"></ul><h3>Disagreements</h3><ul id="consensus-disagreements"></ul></section></div>
           <div class="consensus-columns"><section class="glass"><h3>Judge results</h3><div id="consensus-judges"></div></section><section class="glass"><h3>Safety and limitations</h3><ul id="consensus-safety"></ul><ul id="consensus-limitations"></ul></section></div>
-          <details class="consensus-technical glass"><summary>Technical details</summary><dl><div><dt>Latency</dt><dd id="consensus-latency">—</dd></div><div><dt>Provider calls</dt><dd id="consensus-api-calls">0</dd></div><div><dt>Fallback / mock</dt><dd id="consensus-call-failures">—</dd></div><div><dt>Retrieval</dt><dd id="consensus-fixture-used">—</dd></div></dl><div id="consensus-trace"></div></details>
+          <details class="consensus-technical glass"><summary>Technical details</summary><dl><div><dt>Latency</dt><dd id="consensus-latency">—</dd></div><div><dt>Actual provider calls</dt><dd id="consensus-api-calls">0</dd></div><div><dt>Call result</dt><dd id="consensus-call-failures">—</dd></div><div><dt>Generation mode</dt><dd id="consensus-generation-mode">—</dd></div><div><dt>Corpus</dt><dd id="consensus-corpus">—</dd></div><div><dt>Provider configured</dt><dd id="consensus-provider">—</dd></div><div><dt>Model actually called</dt><dd id="consensus-model">—</dd></div><div><dt>Retrieval</dt><dd id="consensus-fixture-used">—</dd></div><div><dt>Embedding</dt><dd id="consensus-embedding">—</dd></div><div><dt>Reranker</dt><dd id="consensus-reranker">—</dd></div><div><dt>Participating agents</dt><dd id="consensus-participating">—</dd></div><div><dt>Abstaining agents</dt><dd id="consensus-abstaining">—</dd></div><div><dt>Debate / judges</dt><dd id="consensus-stages">—</dd></div><div><dt>Score meaning</dt><dd id="consensus-score-formula">—</dd></div></dl><div id="consensus-trace"></div></details>
         </section>
       </div>
 
@@ -519,10 +519,10 @@
 
       <div id="research-compare-consultation" class="consensus-consultation" hidden>
         <div class="consensus-panel glass">
-          <div class="consensus-heading"><div><p class="consensus-kicker">Research Compare</p><h2>Controlled same-question comparison</h2><p>Compare compatible C0-C6 results while holding the question and retrieval controls constant.</p></div><span class="consensus-experimental-badge">Experimental</span></div>
+          <div class="consensus-heading"><div><p class="consensus-kicker">Research Compare</p><h2>Controlled same-question comparison</h2><p>Compare compatible C0-C6 results while holding the question and retrieval controls constant.</p></div><span class="consensus-experimental-badge">Experimental</span></div><div class="consensus-warning" role="note"><strong>Runtime corpus:</strong><span id="compare-corpus-status">Loading corpus status.</span></div>
           <form id="research-compare-form" novalidate>
             <label class="consensus-field" for="research-compare-question"><span>Research question *</span><textarea id="research-compare-question" rows="4" minlength="3" maxlength="2000" required placeholder="e.g. How are stress-related sleep and digestive signs discussed across TCM specialists?"></textarea></label>
-            <fieldset class="research-condition-grid"><legend>Conditions</legend><label><input type="checkbox" name="condition" value="C0"> C0 Direct LLM</label><label><input type="checkbox" name="condition" value="C1" checked> C1 Single RAG</label><label><input type="checkbox" name="condition" value="C2" checked> C2 Multi-Agent</label><label><input type="checkbox" name="condition" value="C3"> C3 Weighted</label><label><input type="checkbox" name="condition" value="C4"> C4 Debate</label><label><input type="checkbox" name="condition" value="C5"> C5 Judges</label><label><input type="checkbox" name="condition" value="C6" checked> C6 Debate + Judges</label></fieldset>
+            <fieldset class="research-condition-grid"><legend>Conditions</legend><label><input type="checkbox" name="condition" value="C0"> C0 Direct / no retrieval</label><label><input type="checkbox" name="condition" value="C1" checked> C1 Single RAG</label><label><input type="checkbox" name="condition" value="C2" checked> C2 Independent specialists</label><label><input type="checkbox" name="condition" value="C3"> C3 Deterministic weighted</label><label><input type="checkbox" name="condition" value="C4"> C4 Deterministic debate</label><label><input type="checkbox" name="condition" value="C5"> C5 Deterministic judges</label><label><input type="checkbox" name="condition" value="C6" checked> C6 Deterministic debate + judges</label></fieldset>
             <details class="research-controls"><summary>Advanced research controls</summary><div class="research-control-grid"><label>Retrieval<select id="research-compare-retrieval"><option value="R0">R0 Lexical</option><option value="R1">R1 Dense</option><option value="R2" selected>R2 Hybrid</option><option value="R3">R3 Hybrid + rerank</option></select></label><label>Top K<input id="research-compare-top-k" type="number" min="1" max="20" value="4"></label><label><input id="research-compare-reflection" type="checkbox"> Iterative retrieval</label></div></details>
             <div class="consensus-form-footer"><p>Comparisons are descriptive until evaluated on expert-reviewed data.</p><button class="consensus-submit" type="submit"><span>Run Comparison</span></button></div><p id="research-compare-message" class="consensus-message" role="alert" hidden></p>
           </form>
@@ -540,6 +540,7 @@
             </div>
             <span class="tcm-live-badge"><span aria-hidden="true"></span><span class="tcm-live-label"></span></span>
           </div>
+          <div class="consensus-warning" role="note"><strong>Compatibility interface:</strong><span>This standard consultation endpoint uses the 16-entry provisional fixture. Use Research Compare C1 for Corpus v1 experiments.</span></div>
 
           <form id="tcm-consult-form" novalidate>
             <label class="tcm-field tcm-question-field" for="tcm-question">
