@@ -15,7 +15,15 @@ class DeterministicMockLLM:
     name = "mock"
     model = "deterministic-mock-v1"
 
-    async def generate(self, *, system: str, prompt: str, temperature: float = 0.0) -> GenerationResult:
+    async def generate(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        frequency_penalty: float = 0.0,
+    ) -> GenerationResult:
         digest = hashlib.sha256((system + "\n" + prompt).encode("utf-8")).hexdigest()[:10]
         text = (
             "Mock research output derived from the supplied local evidence. "

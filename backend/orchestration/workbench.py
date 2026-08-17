@@ -15,6 +15,7 @@ from providers import get_provider_bundle
 from providers.base import GenerationResult
 from providers.local import DeterministicMockLLM
 from providers.openai_compatible import ProviderUnavailable
+from providers.output_quality import runaway_output_reason
 from retrieval import RetrievalEngine
 from schemas.research import (
     CompareRequest,
@@ -80,9 +81,9 @@ def _synthesis(outputs, condition: dict, debate_trace: DebateTrace, judges) -> t
         seen_claims.add(key)
         unique_pairs.append((output, claim))
     if condition["aggregation"] == "independent":
-        parts = [f"{output.agent_name}: {claim.text} " + " ".join(f"[{evidence_id}]" for evidence_id in claim.evidence_ids) for output, claim in unique_pairs[:8]]
+        parts = [f"{output.agent_name}: {_claim_with_citations(claim.text, claim.evidence_ids)}" for output, claim in unique_pairs[:8]]
     else:
-        parts = [claim.text + " " + " ".join(f"[{evidence_id}]" for evidence_id in claim.evidence_ids) for _, claim in unique_pairs[:6]]
+        parts = [_claim_with_citations(claim.text, claim.evidence_ids) for _, claim in unique_pairs[:6]]
     if not parts:
         return "The system abstained because no evidence-linked claim passed the selected condition.", [], [], 0.0
     answer = "TCM educational synthesis: " + " ".join(parts)
@@ -119,19 +120,29 @@ def _metrics(result: ResearchRunResult) -> dict[str, float | int | None]:
     }
 
 
-def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOutput, evidence) -> tuple[str, str]:
+def _claim_with_citations(text: str, evidence_ids: list[str]) -> str:
+    missing = [evidence_id for evidence_id in evidence_ids if f"[{evidence_id}]" not in text]
+    return " ".join(part for part in (text.strip(), " ".join(f"[{item}]" for item in missing)) if part)
+
+
+def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOutput, evidence, *, retry: bool = False) -> tuple[str, str]:
     system = (
         f"You are the {agent.agent_name} in a TCM research workbench. Use only the supplied evidence. "
-        "Write one concise educational paragraph, cite supporting chunk IDs in square brackets, preserve uncertainty, "
+        "Write one concise educational paragraph of at most 120 words, preserve uncertainty, "
         "and do not diagnose, prescribe, recommend doses, or add facts absent from the evidence. "
-        "Traditional claims must be framed as source-reported TCM content, not established biomedical fact."
+        "Traditional claims must be framed as source-reported TCM content, not established biomedical fact. "
+        "Return plain text only: do not emit citations, evidence IDs, source labels, Markdown, JSON, or backslashes; "
+        "the application attaches provenance separately. Answer the named entity in the question directly and do not "
+        "merge properties from evidence about a different entity. Do not repeat a word consecutively or repeat phrases."
     )
+    if retry:
+        system += " This is a format retry: check the completed paragraph for repetition and formatting corruption before returning it."
     selected = [item for item in evidence if item.chunk_id in baseline.evidence_ids]
     prompt = json.dumps({
         "question": question,
         "response_language": language,
         "specialist_scope": agent.subdomain,
-        "evidence": [{"chunk_id": item.chunk_id, "source_id": item.source_id, "text": item.chunk_text} for item in selected],
+        "evidence": [{"label": f"Evidence {index}", "text": item.chunk_text} for index, item in enumerate(selected, start=1)],
     }, ensure_ascii=False)
     return system, prompt
 
@@ -153,11 +164,30 @@ class ResearchWorkbench:
         )
         if baseline.abstained or not llm_enabled:
             return baseline, 0, 0, None
-        system, prompt = _agent_prompt(agent, request.question, plan.language, baseline, evidence)
-        try:
-            generated = await self.providers.llm.generate(system=system, prompt=prompt, temperature=0.0)
-        except ProviderUnavailable as exc:
-            return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), 1, 0, str(exc)
+        attempts = 0
+        generated = None
+        rejection = None
+        for retry in (False, True):
+            system, prompt = _agent_prompt(agent, request.question, plan.language, baseline, evidence, retry=retry)
+            attempts += 1
+            try:
+                candidate = await self.providers.llm.generate(
+                    system=system,
+                    prompt=prompt,
+                    temperature=0.0,
+                    max_tokens=384,
+                    frequency_penalty=0.5 if not retry else 1.0,
+                )
+            except ProviderUnavailable as exc:
+                rejection = str(exc)
+                continue
+            rejection = runaway_output_reason(candidate.text)
+            if rejection is None:
+                generated = candidate
+                break
+        if generated is None:
+            reason = f"Provider output rejected: {rejection}" if rejection else "Provider output rejected"
+            return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), attempts, 0, reason
         combined_claim = baseline.claims[0].model_copy(update={
             "text": generated.text.strip(),
             "evidence_ids": baseline.evidence_ids,
@@ -171,7 +201,7 @@ class ResearchWorkbench:
             "token_usage": {"prompt_tokens": generated.prompt_tokens, "completion_tokens": generated.completion_tokens},
             "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
         })
-        return output, 1, 1, None
+        return output, attempts, 1, None
 
     async def run(self, request: ResearchRequest) -> ResearchRunResult:
         started = time.perf_counter()

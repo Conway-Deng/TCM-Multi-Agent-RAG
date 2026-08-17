@@ -148,10 +148,18 @@ class _FakeSiliconFlowLLM:
     def __init__(self) -> None:
         self.calls = 0
 
-    async def generate(self, *, system: str, prompt: str, temperature: float = 0.0) -> GenerationResult:
+    async def generate(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        frequency_penalty: float = 0.0,
+    ) -> GenerationResult:
         self.calls += 1
         return GenerationResult(
-            text="Source-constrained educational specialist summary.",
+            text="This source-constrained educational specialist summary reports only the supplied evidence.",
             provider=self.name,
             model=self.model,
             prompt_tokens=20,

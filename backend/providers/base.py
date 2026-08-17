@@ -19,7 +19,15 @@ class LLMProvider(Protocol):
     name: str
     model: str
 
-    async def generate(self, *, system: str, prompt: str, temperature: float = 0.0) -> GenerationResult: ...
+    async def generate(
+        self,
+        *,
+        system: str,
+        prompt: str,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        frequency_penalty: float = 0.0,
+    ) -> GenerationResult: ...
 
 
 class EmbeddingProvider(Protocol):
