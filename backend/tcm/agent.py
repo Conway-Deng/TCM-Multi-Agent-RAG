@@ -198,7 +198,7 @@ class OpenAICompatibleClient:
         self.provider = os.getenv("LLM_PROVIDER", "siliconflow").strip() or "siliconflow"
         self.api_key = os.getenv("LLM_API_KEY", "").strip()
         self.base_url = os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1").rstrip("/")
-        self.model = os.getenv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+        self.model = os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip()
         self.timeout = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
         self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1400"))
 

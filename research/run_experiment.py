@@ -128,6 +128,11 @@ async def execute(config: dict, *, no_llm: bool, output: Path, resume: bool, que
     manifest = {
         "schema_version": "1.0.0", "experiment_id": config.get("experiment_id", output.name),
         "created_at": datetime.now(timezone.utc).isoformat(), "config": config,
+        "runtime_model": {
+            "provider": workbench.providers.llm.name,
+            "model": workbench.providers.llm.model,
+            "enable_thinking": getattr(workbench.providers.llm, "enable_thinking", None),
+        },
         "synthetic_dataset_warning": "Seed labels are provisional researcher-created data, not expert ground truth.",
         "run_count": len(all_rows), "no_llm": no_llm,
     }

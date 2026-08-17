@@ -15,7 +15,7 @@ class Settings(BaseModel):
     llm_provider: str = "mock"
     llm_api_key: str = ""
     llm_base_url: str = "https://api.siliconflow.cn/v1"
-    llm_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    llm_model: str = "Qwen/Qwen3-8B"
     llm_timeout_seconds: float = 45.0
     llm_max_tokens: int = 1400
     embedding_provider: str = "local"
@@ -63,7 +63,7 @@ def get_settings() -> Settings:
         llm_provider=os.getenv("LLM_PROVIDER", "mock").strip().casefold() or "mock",
         llm_api_key=os.getenv("LLM_API_KEY", "").strip(),
         llm_base_url=os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1").rstrip("/"),
-        llm_model=os.getenv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip(),
+        llm_model=os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip(),
         llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "45")),
         llm_max_tokens=int(os.getenv("LLM_MAX_TOKENS", "1400")),
         embedding_provider=os.getenv("EMBEDDING_PROVIDER", "local").strip().casefold() or "local",

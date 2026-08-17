@@ -189,7 +189,7 @@ def test_adversarial_dosage_request_is_out_of_scope() -> None:
 
 def test_llm_plain_text_response_is_preserved(monkeypatch: pytest.MonkeyPatch) -> None:
     class DummyClient:
-        model = "Qwen/Qwen2.5-7B-Instruct"
+        model = "Qwen/Qwen3-8B"
 
         @property
         def configured(self) -> bool:
@@ -213,7 +213,7 @@ def test_llm_plain_text_response_is_preserved(monkeypatch: pytest.MonkeyPatch) -
 
 def test_llm_malformed_json_falls_back_to_plain_text_summary(monkeypatch: pytest.MonkeyPatch) -> None:
     class MalformedClient:
-        model = "Qwen/Qwen2.5-7B-Instruct"
+        model = "Qwen/Qwen3-8B"
 
         @property
         def configured(self) -> bool:
@@ -237,7 +237,7 @@ def test_llm_malformed_json_falls_back_to_plain_text_summary(monkeypatch: pytest
 
 def test_llm_json_populates_localized_summaries(monkeypatch: pytest.MonkeyPatch) -> None:
     class LocalizedClient:
-        model = "Qwen/Qwen2.5-7B-Instruct"
+        model = "Qwen/Qwen3-8B"
 
         @property
         def configured(self) -> bool:
@@ -264,7 +264,7 @@ def test_llm_json_populates_localized_summaries(monkeypatch: pytest.MonkeyPatch)
 
 def test_llm_provider_failure_uses_safe_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     class FailingClient:
-        model = "Qwen/Qwen2.5-7B-Instruct"
+        model = "Qwen/Qwen3-8B"
 
         @property
         def configured(self) -> bool:
@@ -306,7 +306,7 @@ def test_api_key_never_appears_in_response(monkeypatch: pytest.MonkeyPatch) -> N
     secret = "TEST_SECRET_SENTINEL_SHOULD_NOT_APPEAR"
 
     class FailingClient:
-        model = "Qwen/Qwen2.5-7B-Instruct"
+        model = "Qwen/Qwen3-8B"
 
         @property
         def configured(self) -> bool:

@@ -143,7 +143,7 @@ def test_public_health_and_corpus_stats_disclose_legacy_fixture() -> None:
 
 class _FakeSiliconFlowLLM:
     name = "siliconflow"
-    model = "Qwen/Qwen2.5-7B-Instruct"
+    model = "Qwen/Qwen3-8B"
 
     def __init__(self) -> None:
         self.calls = 0
@@ -200,7 +200,7 @@ def test_c1_and_c2_track_actual_llm_calls_with_same_retrieval_and_model() -> Non
     assert c1.trace.retrieved_evidence_ids == c2.trace.retrieved_evidence_ids
     assert c1.trace.provider_calls == c1.trace.successful_provider_calls == 1
     assert c2.trace.provider_calls == c2.trace.successful_provider_calls == 2
-    assert c1.trace.model == c2.trace.model == "Qwen/Qwen2.5-7B-Instruct"
+    assert c1.trace.model == c2.trace.model == "Qwen/Qwen3-8B"
     assert c1.generation_mode == c2.generation_mode == "llm"
     assert c1.mock_mode is False and c2.mock_mode is False
     assert fake.calls == 3

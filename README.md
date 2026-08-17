@@ -152,10 +152,18 @@ Copy `backend/.env.example` to `backend/.env` and edit locally. Do not commit `.
 Default free SiliconFlow models:
 
 ```dotenv
-LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+LLM_MODEL=Qwen/Qwen3-8B
 EMBEDDING_MODEL=BAAI/bge-m3
 RERANK_MODEL=BAAI/bge-reranker-v2-m3
 ```
+
+The OpenAI-compatible provider sends `enable_thinking=false` only for the supported
+`Qwen/Qwen3-8B` chat model. This keeps controlled specialist responses concise and
+records that setting in new experiment manifests. The model is listed as free on
+[SiliconFlow pricing](https://www2.siliconflow.cn/pricing), and SiliconFlow's
+[chat-completions reference](https://docs.siliconflow.cn/en/api-reference/chat-completions/chat-completions)
+documents its `enable_thinking` support. Remote embedding and reranking remain opt-in;
+this LLM change does not activate them.
 
 If `LLM_API_KEY` is missing:
 

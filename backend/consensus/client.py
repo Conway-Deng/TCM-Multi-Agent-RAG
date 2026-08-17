@@ -43,7 +43,7 @@ class ConsensusLLMClient:
             os.getenv("CONSENSUS_BASE_URL", "").strip()
             or os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1").strip()
         ).rstrip("/")
-        self.default_model = os.getenv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+        self.default_model = os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip()
         self.timeout = float(os.getenv("CONSENSUS_TIMEOUT_SECONDS", "45"))
         self.max_tokens = int(os.getenv("CONSENSUS_MAX_TOKENS", "1400"))
         self.temperature = float(os.getenv("CONSENSUS_TEMPERATURE", "0"))

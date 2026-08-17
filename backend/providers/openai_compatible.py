@@ -11,6 +11,10 @@ class ProviderUnavailable(RuntimeError):
     pass
 
 
+def _supports_thinking_toggle(model: str) -> bool:
+    return model in {"Qwen/Qwen3-8B"}
+
+
 def _chat_payload(
     *,
     model: str,
@@ -28,6 +32,8 @@ def _chat_payload(
         "max_tokens": max_tokens,
         "stream": False,
     }
+    if _supports_thinking_toggle(model):
+        payload["enable_thinking"] = False
     return payload
 
 
@@ -46,6 +52,7 @@ class OpenAICompatibleLLMProvider:
         self.model = model
         self.timeout = timeout
         self.max_tokens = max_tokens
+        self.enable_thinking = False if _supports_thinking_toggle(model) else None
 
     async def generate(
         self,

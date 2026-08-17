@@ -27,11 +27,22 @@ def test_non_streaming_payload_and_response_content_are_extracted_once() -> None
         frequency_penalty=0.5,
     )
     assert payload["stream"] is False
+    assert "enable_thinking" not in payload
     assert payload["max_tokens"] == 384
     assert payload["frequency_penalty"] == 0.5
     assert _extract_chat_content({"choices": [{"message": {"content": "one complete response"}}]}) == "one complete response"
     with pytest.raises(TypeError):
         _extract_chat_content({"choices": [{"message": {"content": {"text": "not a string"}}}]})
+
+    qwen3_payload = _chat_payload(
+        model="Qwen/Qwen3-8B",
+        system="system",
+        prompt="prompt",
+        temperature=0.0,
+        max_tokens=384,
+        frequency_penalty=0.5,
+    )
+    assert qwen3_payload["enable_thinking"] is False
 
 
 def test_evidence_prompt_is_clean_and_leaves_provenance_to_backend() -> None:
