@@ -15,6 +15,11 @@ def test_research_selector_uses_controlled_c1_and_separates_legacy_demo() -> Non
 
 
 def test_navigation_and_results_contract_is_present() -> None:
+    assert 'data-view="home"' in HTML
+    assert 'data-view="workbench"' in HTML
+    assert "setView('home'" in JS
+    assert "setView('workbench'" in JS
+    assert "is-workbench" in JS
     assert "history.pushState" in JS
     assert "popstate" in JS
     assert "aria-selected" in JS

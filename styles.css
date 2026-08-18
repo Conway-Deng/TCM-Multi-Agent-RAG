@@ -182,7 +182,7 @@ body {
   z-index: 1;
 }
 
-.view-toggle.is-demo .toggle-slider {
+.view-toggle.is-workbench .toggle-slider {
   transform: translateX(100%);
 }
 

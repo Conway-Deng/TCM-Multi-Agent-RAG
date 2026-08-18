@@ -49,20 +49,24 @@
     if (node) node.textContent = text;
   }
 
-  function setView(view) {
-    const demo = view === 'demo';
-    $('#home-view').hidden = demo;
-    $('#demo-view').hidden = !demo;
+  function setView(view, { push = false } = {}) {
+    const workbench = view === 'workbench';
+    $('#home-view').hidden = workbench;
+    $('#demo-view').hidden = !workbench;
     $$('.toggle-btn').forEach((button) => {
-      const active = button.dataset.view === view;
+      const active = button.dataset.view === (workbench ? 'workbench' : 'home');
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-selected', String(active));
+      button.setAttribute('aria-current', active ? 'page' : 'false');
     });
-    $('.nav').hidden = demo;
+    $('.view-toggle').classList.toggle('is-workbench', workbench);
+    $('.nav').hidden = workbench;
+    if (push) history.pushState({ view: workbench ? 'workbench' : 'home' }, '', workbench ? '#workbench' : '#home');
   }
 
   function setMode(mode, { push = false } = {}) {
     const active = ['single', 'multi', 'compare'].includes(mode) ? mode : 'single';
+    setView('workbench');
     $('#tcm-consultation').hidden = active !== 'single';
     $('#consensus-consultation').hidden = active !== 'multi';
     $('#research-compare-consultation').hidden = active !== 'compare';
@@ -74,7 +78,7 @@
     });
     $('.demo-options').className = 'demo-options glass mode-' + ({ single: 'west', multi: 'tcm', compare: 'both' }[active]);
     $$('.demo-option').forEach((button) => button.setAttribute('tabindex', button.dataset.mode === active ? '0' : '-1'));
-    if (push) history.pushState({ mode: active }, '', '#' + (active === 'single' ? 'legacy-demo' : active === 'multi' ? 'research-workbench' : 'research-compare'));
+    if (push) history.pushState({ view: 'workbench', mode: active }, '', '#' + (active === 'single' ? 'legacy-demo' : active === 'multi' ? 'research-workbench' : 'research-compare'));
   }
 
   function applyLanguage(next) {
@@ -345,7 +349,10 @@
     $('#research-compare-results').hidden = false;
   }
 
-  $$('.toggle-btn').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+  $$('.toggle-btn').forEach((button) => button.addEventListener('click', () => {
+    if (button.dataset.view === 'workbench') { setMode('multi'); setView('workbench', { push: true }); }
+    else setView('home', { push: true });
+  }));
   $$('.demo-option').forEach((button) => {
     button.addEventListener('click', () => setMode(button.dataset.mode, { push: true }));
     button.addEventListener('keydown', (event) => { if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); const next = button.nextElementSibling || $$('.demo-option')[0]; next.focus(); setMode(next.dataset.mode, { push: true }); } if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); const options = $$('.demo-option'); const previous = button.previousElementSibling || options[options.length - 1]; previous.focus(); setMode(previous.dataset.mode, { push: true }); } });
@@ -411,7 +418,12 @@
   $('#download-run-csv').addEventListener('click', () => { if (currentResearchRun) downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.csv', runCsv(currentResearchRun), 'text/csv;charset=utf-8'); });
   $('#download-compare-json').addEventListener('click', () => { if (currentComparison) downloadText('tcm-comparison_' + currentComparison.comparison_id + '.json', JSON.stringify(safeRunExport(currentComparison), null, 2), 'application/json;charset=utf-8'); });
   $('#download-compare-csv').addEventListener('click', () => { if (currentComparison) { const rows = [['condition', 'condition_name', 'run_id', 'model', 'provider_calls', 'successful_calls', 'latency_ms', 'fallback', 'evidence_ids']]; (currentComparison.results || []).forEach((result) => { const trace = result.trace || {}; rows.push([result.condition_id, result.condition_name, result.run_id, trace.model || '', trace.provider_calls || 0, trace.successful_provider_calls || 0, trace.latency_ms || 0, Boolean(trace.fallback_usage), (trace.retrieved_evidence_ids || []).join('; ')]); }); downloadText('tcm-comparison_' + currentComparison.comparison_id + '.csv', rows.map((row) => row.map((value) => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); } });
-  window.addEventListener('popstate', () => setMode(location.hash === '#research-workbench' ? 'multi' : location.hash === '#research-compare' ? 'compare' : 'single'));
+  window.addEventListener('popstate', () => {
+    if (location.hash === '#workbench' || location.hash === '#legacy-demo' || location.hash === '#research-workbench' || location.hash === '#research-compare') {
+      setView('workbench');
+      setMode(location.hash === '#research-compare' ? 'compare' : location.hash === '#legacy-demo' ? 'single' : 'multi');
+    } else setView('home');
+  });
   fetch(API + '/health').then((response) => response.json()).then((data) => {
     const profile = data.runtime_profile === 'local_research' ? 'Local research' : 'Public demo';
     const corpusLabel = (data.corpus_name || data.active_corpus) + ' · ' + (data.corpus_chunk_count || 0) + ' chunks';
@@ -422,5 +434,9 @@
     $('.prototype-status').classList.toggle('is-live', true);
   }).catch(() => setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'));
 
-  applyLanguage('en'); updateConditionHelp(); setView('demo'); setMode(location.hash === '#research-workbench' ? 'multi' : location.hash === '#research-compare' ? 'compare' : 'single');
+  applyLanguage('en'); updateConditionHelp();
+  if (location.hash === '#workbench' || location.hash === '#legacy-demo' || location.hash === '#research-workbench' || location.hash === '#research-compare') {
+    setView('workbench');
+    setMode(location.hash === '#research-compare' ? 'compare' : location.hash === '#legacy-demo' ? 'single' : 'multi');
+  } else setView('home');
 }());
