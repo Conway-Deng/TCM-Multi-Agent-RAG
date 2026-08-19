@@ -154,7 +154,10 @@ class RetrievalEngine:
         topics: list[str],
         enabled: bool,
     ) -> tuple[list[RetrievalItem], bool]:
-        initial = await self.search(query, strategy=strategy, top_k=top_k, topics=topics)
+        anchors = self.query_anchors(query)
+        searches = list(dict.fromkeys([query, *anchors]))
+        anchor_results = [await self.search(item, strategy=strategy, top_k=top_k, topics=topics) for item in searches]
+        initial = self._merge_anchor_results(anchor_results, top_k=top_k, strategy=strategy)
         if not enabled:
             return initial, False
         top_signal = max((item.rerank_score or item.semantic_score or item.lexical_score or 0.0) for item in initial) if initial else 0.0
@@ -167,3 +170,94 @@ class RetrievalEngine:
         for rank, item in enumerate(ranked, 1):
             item.rank = rank
         return ranked, True
+
+    def query_anchors(self, query: str) -> list[str]:
+        """Return explicit active-corpus entity/alias anchors mentioned in a query."""
+        return [target["label"] for target in self.query_anchor_targets(query)]
+
+    def query_anchor_targets(self, query: str) -> list[dict[str, str]]:
+        """Return deduplicated corpus targets and their source domain."""
+        normalized = query.casefold()
+        candidates: list[tuple[str, str]] = []
+        for chunk in self.chunks:
+            typed_values = [
+                *[(value, "herbal") for value in getattr(chunk, "herbs", [])],
+                *[(value, "syndrome") for value in getattr(chunk, "syndromes", [])],
+            ]
+            entity_name = getattr(chunk, "entity_name", "")
+            if entity_name:
+                domain = "herbal" if "herbal_medicine" in getattr(chunk, "topics", []) else "syndrome" if "syndrome" in getattr(chunk, "topics", []) else "general"
+                typed_values.append((entity_name, domain))
+            typed_values.extend((value, "general") for value in getattr(chunk, "aliases", []))
+            for value, domain in typed_values:
+                value = value.strip()
+                if len(value) >= 4 and value.casefold() in normalized:
+                    candidates.append((value, domain))
+        targets: list[dict[str, str]] = []
+        seen: set[str] = set()
+        for label, domain in sorted(candidates, key=lambda item: len(item[0]), reverse=True):
+            key = label.casefold()
+            nested_alias = any(key in target["label"].casefold() and domain == target["domain"] for target in targets)
+            if key not in seen and not nested_alias:
+                targets.append({"label": label, "domain": domain})
+                seen.add(key)
+        return targets
+
+    def multi_target_evidence_plan(self, query: str, evidence: list[RetrievalItem]) -> dict[str, object] | None:
+        """Partition shared evidence by requested corpus target without inventing relationships."""
+        targets = self.query_anchor_targets(query)
+        if len(targets) < 2:
+            return None
+        grouped: list[dict[str, object]] = []
+        for target in targets:
+            variants = self._anchor_variants(target["label"])
+            ids = [item.chunk_id for item in evidence if any(value in item.chunk_text.casefold() for value in variants)]
+            grouped.append({**target, "supporting_evidence_ids": ids})
+        relationship_ids = [
+            item.chunk_id
+            for item in evidence
+            if all(any(value in item.chunk_text.casefold() for value in self._anchor_variants(target["label"])) for target in targets)
+        ]
+        return {"requested_targets": grouped, "relationship_evidence_ids": relationship_ids}
+
+    @staticmethod
+    def _anchor_variants(anchor: str) -> set[str]:
+        normalized = anchor.casefold()
+        return {normalized, normalized.replace("deficiency of the ", ""), normalized.replace("deficiency of ", "")}
+
+    def unsupported_multi_entity_claim(self, query: str, text: str, evidence: list[RetrievalItem]) -> str | None:
+        """Reject a sentence that links multiple named corpus entities without co-occurring evidence."""
+        anchors = self.query_anchors(query)
+        if len(anchors) < 2:
+            return None
+        evidence_text = [item.chunk_text.casefold() for item in evidence]
+        variants = {anchor: self._anchor_variants(anchor) for anchor in anchors}
+        for sentence in re.split(r"(?<=[.!?])\s+", text):
+            mentioned = [anchor for anchor in anchors if any(value in sentence.casefold() for value in variants[anchor])]
+            if len(mentioned) >= 2 and not any(all(any(value in source for value in variants[anchor]) for anchor in mentioned) for source in evidence_text):
+                return "sentence links multiple requested entities without co-occurring supporting evidence"
+        return None
+
+    @staticmethod
+    def _merge_anchor_results(groups: list[list[RetrievalItem]], *, top_k: int, strategy: RetrievalStrategy) -> list[RetrievalItem]:
+        by_id: dict[str, RetrievalItem] = {}
+        for group in groups:
+            for item in group:
+                by_id.setdefault(item.chunk_id, item)
+        if not by_id:
+            return []
+        score_name = {RetrievalStrategy.R0: "lexical_score", RetrievalStrategy.R1: "semantic_score", RetrievalStrategy.R2: "fusion_score", RetrievalStrategy.R3: "rerank_score"}[strategy]
+        ordered = sorted(by_id.values(), key=lambda item: (getattr(item, score_name) or 0.0), reverse=True)
+        selected: list[RetrievalItem] = []
+        # Preserve at least one result from each anchor query before filling the shared top-k.
+        for group in groups[1:]:
+            if group and len(selected) < top_k and group[0].chunk_id not in {item.chunk_id for item in selected}:
+                selected.append(group[0])
+        for item in ordered:
+            if len(selected) >= top_k:
+                break
+            if item.chunk_id not in {entry.chunk_id for entry in selected}:
+                selected.append(item)
+        for rank, item in enumerate(selected, 1):
+            item.rank = rank
+        return selected

@@ -70,7 +70,8 @@ class QueryPlannerAgent:
         if not subdomains and scope.status == "supported":
             subdomains = ["syndrome"]
         state = RunState.SAFETY_CRITICAL if emergency.urgent else RunState(scope.status)
-        if state == RunState.EVIDENCE_INSUFFICIENT and subdomains:
+        corpus_entity_present = bool(_entity_subdomains(normalized))
+        if state in {RunState.EVIDENCE_INSUFFICIENT, RunState.INSUFFICIENT_INFORMATION} and subdomains and corpus_entity_present:
             state = RunState.SUPPORTED
         educational_terms = ("explain", "concept", "theory", "teaching", "educational", "解释", "概念", "理论", "教学", "설명", "개념", "이론", "교육")
         if state == RunState.INSUFFICIENT_INFORMATION and subdomains and any(term in normalized.casefold() for term in educational_terms):

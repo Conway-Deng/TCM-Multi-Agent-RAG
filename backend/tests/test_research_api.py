@@ -17,6 +17,7 @@ from main import app
 from orchestration import ResearchWorkbench
 from providers.base import GenerationResult
 from providers.factory import ProviderBundle
+from providers.openai_compatible import ProviderUnavailable
 from schemas.research import ConditionId, ResearchRequest, RetrievalStrategy
 
 
@@ -204,3 +205,26 @@ def test_c1_and_c2_track_actual_llm_calls_with_same_retrieval_and_model() -> Non
     assert c1.generation_mode == c2.generation_mode == "llm"
     assert c1.mock_mode is False and c2.mock_mode is False
     assert fake.calls == 3
+
+
+def test_provider_retry_telemetry_is_redacted_and_explains_retry() -> None:
+    class RetryLLM(_FakeSiliconFlowLLM):
+        async def generate(self, **kwargs) -> GenerationResult:
+            self.calls += 1
+            if self.calls == 1:
+                raise ProviderUnavailable("LLM request timed out", error_type="timeout")
+            return GenerationResult(text="This source-constrained educational specialist summary reports only the supplied evidence.", provider=self.name, model=self.model)
+
+    async def run_once():
+        workbench = ResearchWorkbench(force_mock=True)
+        fake = RetryLLM(); current = workbench.providers
+        workbench.providers = ProviderBundle(llm=fake, embedding=current.embedding, rerank=current.rerank, vector_store=current.vector_store, evaluator=fake, mock_mode=False)
+        workbench.settings = workbench.settings.model_copy(update={"llm_provider": "siliconflow", "llm_api_key": "unit-test-placeholder", "research_real_llm_enabled": True})
+        return await workbench.run(ResearchRequest(question="Explain herbal formula concepts for insomnia in TCM teaching.", condition_id=ConditionId.C1, retrieval_strategy=RetrievalStrategy.R2, top_k=4))
+
+    result = asyncio.run(run_once())
+    assert result.trace is not None
+    assert result.trace.provider_attempts[0].error_type == "timeout"
+    assert result.trace.provider_attempts[0].retry_performed is True
+    assert result.trace.provider_attempts[1].success is True
+    assert all("Authorization" not in str(item) and "unit-test-placeholder" not in str(item) for item in result.trace.provider_attempts)

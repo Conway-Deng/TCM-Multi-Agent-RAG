@@ -61,10 +61,11 @@ def test_evidence_prompt_is_clean_and_leaves_provenance_to_backend() -> None:
         "source_id": "symmap_v2",
         "chunk_text": "Red Ginseng is source-reported as sweet and slightly bitter.",
     })()]
-    system, prompt = _agent_prompt(agent, "What is Red Ginseng?", "en", baseline, evidence)
+    system, prompt, prompt_evidence_ids = _agent_prompt(agent, "What is Red Ginseng?", "en", baseline, evidence, None)
     decoded = json.loads(prompt)
     assert decoded["evidence"] == [{"label": "Evidence 1", "text": evidence[0].chunk_text}]
     assert "tcmv1-example" not in prompt
+    assert prompt_evidence_ids == ["tcmv1-example"]
     assert "symmap_v2" not in prompt
     assert "do not emit citations" in system
 

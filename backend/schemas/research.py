@@ -140,6 +140,18 @@ class StageTiming(BaseModel):
     latency_ms: int = Field(ge=0)
 
 
+class ProviderAttempt(BaseModel):
+    attempt: int = Field(ge=1)
+    provider: str = "unknown"
+    model: str = "unknown"
+    elapsed_ms: int = Field(default=0, ge=0)
+    success: bool = False
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    error_type: Literal["timeout", "rate_limit", "http_4xx", "http_5xx", "connectivity", "output_quality_rejection", "malformed_response", "unknown"] | None = None
+    error: str | None = None
+    retry_performed: bool = False
+
+
 class RunTrace(BaseModel):
     run_id: str
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -190,6 +202,7 @@ class RunTrace(BaseModel):
     token_usage: dict[str, int] = Field(default_factory=dict)
     provider_calls: int = 0
     provider_errors: list[str] = Field(default_factory=list)
+    provider_attempts: list[ProviderAttempt] = Field(default_factory=list)
     fallback_usage: bool = False
     iterative_retrieval_used: bool = False
     raw_query_stored: bool = False

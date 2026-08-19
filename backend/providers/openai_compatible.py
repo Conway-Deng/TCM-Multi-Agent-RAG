@@ -8,7 +8,10 @@ from .base import GenerationResult
 
 
 class ProviderUnavailable(RuntimeError):
-    pass
+    def __init__(self, message: str, *, error_type: str = "unknown", http_status: int | None = None) -> None:
+        super().__init__(message)
+        self.error_type = error_type
+        self.http_status = http_status
 
 
 def _supports_thinking_toggle(model: str) -> bool:
@@ -91,5 +94,15 @@ class OpenAICompatibleLLMProvider:
                 prompt_tokens=int(usage.get("prompt_tokens", 0)),
                 completion_tokens=int(usage.get("completion_tokens", 0)),
             )
-        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
-            raise ProviderUnavailable("OpenAI-compatible provider unavailable") from exc
+        except httpx.TimeoutException as exc:
+            raise ProviderUnavailable("LLM request timed out", error_type="timeout") from exc
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            error_type = "rate_limit" if status == 429 else "http_4xx" if 400 <= status < 500 else "http_5xx" if status >= 500 else "unknown"
+            raise ProviderUnavailable(f"LLM provider returned HTTP {status}", error_type=error_type, http_status=status) from exc
+        except (httpx.ConnectError, httpx.NetworkError, httpx.RemoteProtocolError) as exc:
+            raise ProviderUnavailable("LLM provider connectivity error", error_type="connectivity") from exc
+        except (KeyError, IndexError, TypeError, ValueError) as exc:
+            raise ProviderUnavailable("LLM provider returned a malformed response", error_type="malformed_response") from exc
+        except httpx.HTTPError as exc:
+            raise ProviderUnavailable("LLM provider unavailable", error_type="unknown") from exc

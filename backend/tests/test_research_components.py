@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 import sys
 
@@ -12,7 +13,7 @@ sys.path.insert(0, str(BACKEND))
 
 from agents import planner as planner_module
 from agents.planner import QueryPlannerAgent
-from agents.specialists import HerbalKnowledgeAgent, LifestyleYangshengAgent
+from agents.specialists import HerbalKnowledgeAgent, LifestyleYangshengAgent, SingleRAGAgent, SyndromeDifferentiationAgent
 from config import get_settings
 from corpus import corpus_version, load_chunks, validate_corpus
 from corpus import registry as corpus_registry
@@ -21,9 +22,21 @@ from evaluation.statistics import paired_comparison, summarize
 from ingestion.pipeline import deterministic_chunk_id, normalize_text
 from prompts import prompt_metadata
 from retrieval import RetrievalEngine
-from schemas.research import DatasetItem
+from orchestration.conditions import CONDITIONS
+from orchestration.debate import debate
+from orchestration.workbench import _agent_prompt, _synthesis
+from schemas.research import ConditionId, DatasetItem
 from schemas.research import RetrievalItem, RetrievalStrategy
 from research.run_experiment import load_config, load_dataset
+
+
+@pytest.fixture(autouse=True)
+def clear_corpus_caches_after_test():
+    yield
+    corpus_registry._v1_chunks.cache_clear()
+    corpus_registry.load_chunks.cache_clear()
+    corpus_registry.load_sources.cache_clear()
+    planner_module._corpus_entity_patterns.cache_clear()
 
 
 def test_planner_routes_tcm_subdomains() -> None:
@@ -151,3 +164,71 @@ def test_red_ginseng_r0_retrieval_and_herbal_selection(monkeypatch: pytest.Monke
         corpus_registry.load_chunks.cache_clear()
         corpus_registry.load_sources.cache_clear()
         planner_module._corpus_entity_patterns.cache_clear()
+
+
+def test_planner_routes_liver_yang_corpus_entity_before_context_abstention(monkeypatch: pytest.MonkeyPatch) -> None:
+    path = BACKEND.parent / "research" / "corpus" / "tcm_v1" / "chunks.jsonl"
+    if not path.exists():
+        pytest.skip("Restricted local Corpus v1 artifact is intentionally not distributed.")
+    monkeypatch.setenv("TCM_CORPUS_MODE", "required"); monkeypatch.setenv("TCM_CORPUS_PATH", str(path))
+    corpus_registry._v1_chunks.cache_clear(); corpus_registry.load_chunks.cache_clear(); corpus_registry.load_sources.cache_clear(); planner_module._corpus_entity_patterns.cache_clear()
+    plan = QueryPlannerAgent().plan("What does the TCM Research Corpus record about liver yang?")
+    assert plan.scope_state.value == "supported"
+    assert "syndrome" in plan.subdomains
+    assert "syndrome" in plan.required_agents
+
+
+def test_r0_multi_target_anchors_cover_both_targets_and_grounding_guard(monkeypatch: pytest.MonkeyPatch) -> None:
+    path = BACKEND.parent / "research" / "corpus" / "tcm_v1" / "chunks.jsonl"
+    if not path.exists():
+        pytest.skip("Restricted local Corpus v1 artifact is intentionally not distributed.")
+    monkeypatch.setenv("TCM_CORPUS_MODE", "required"); monkeypatch.setenv("TCM_CORPUS_PATH", str(path))
+    corpus_registry._v1_chunks.cache_clear(); corpus_registry.load_chunks.cache_clear(); corpus_registry.load_sources.cache_clear(); planner_module._corpus_entity_patterns.cache_clear()
+    question = "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?"
+    async def exercise():
+        engine = RetrievalEngine()
+        evidence, _ = await engine.search_with_reflection(question, strategy=RetrievalStrategy.R0, top_k=4, topics=["herbal", "syndrome"], enabled=False)
+        return engine, evidence
+    engine, evidence = asyncio.run(exercise())
+    ids = {item.chunk_id for item in evidence}
+    assert ids & {"tcmv1-010f829f0c703d4a98d24324", "tcmv1-0aaba1cbd4c4296e8ce6e234"}
+    assert ids & {"tcmv1-01b61fa93d54e8bdd1c408f6", "tcmv1-d643f3c47d062f033e552170"}
+    assert engine.unsupported_multi_entity_claim(question, "Red Ginseng is associated with kidney-yang deficiency.", evidence) is not None
+    assert engine.unsupported_multi_entity_claim(question, "Red Ginseng is described in one paragraph. Kidney-yang deficiency is described separately.", evidence) is None
+    assert engine.unsupported_multi_entity_claim(question, "Syndrome: deficiency of the kidney-yang. Herb: Red Ginseng. Properties are listed separately.", evidence) is None
+    target_plan = engine.multi_target_evidence_plan(question, evidence)
+    assert target_plan is not None
+    targets = {item["label"]: item for item in target_plan["requested_targets"]}
+    assert targets["Red Ginseng"]["supporting_evidence_ids"]
+    assert targets["deficiency of the kidney-yang"]["supporting_evidence_ids"]
+    assert target_plan["relationship_evidence_ids"] == []
+
+
+def test_c1_and_c2_prompts_preserve_multi_target_separation(monkeypatch: pytest.MonkeyPatch) -> None:
+    path = BACKEND.parent / "research" / "corpus" / "tcm_v1" / "chunks.jsonl"
+    if not path.exists():
+        pytest.skip("Restricted local Corpus v1 artifact is intentionally not distributed.")
+    monkeypatch.setenv("TCM_CORPUS_MODE", "required"); monkeypatch.setenv("TCM_CORPUS_PATH", str(path))
+    corpus_registry._v1_chunks.cache_clear(); corpus_registry.load_chunks.cache_clear(); corpus_registry.load_sources.cache_clear(); planner_module._corpus_entity_patterns.cache_clear()
+    question = "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?"
+
+    async def exercise():
+        engine = RetrievalEngine()
+        evidence, _ = await engine.search_with_reflection(question, strategy=RetrievalStrategy.R0, top_k=4, topics=["herbal", "syndrome"], enabled=False)
+        target_plan = engine.multi_target_evidence_plan(question, evidence)
+        single = SingleRAGAgent(); herbal = HerbalKnowledgeAgent(); syndrome = SyndromeDifferentiationAgent()
+        baselines = [await agent.answer(question, "en", evidence, provider="local", model="test") for agent in (single, herbal, syndrome)]
+        prompts = [_agent_prompt(agent, question, "en", baseline, evidence, target_plan) for agent, baseline in zip((single, herbal, syndrome), baselines)]
+        return target_plan, baselines, prompts
+
+    target_plan, baselines, prompts = asyncio.run(exercise())
+    assert target_plan is not None and target_plan["relationship_evidence_ids"] == []
+    single_payload = json.loads(prompts[0][1]); herbal_payload = json.loads(prompts[1][1]); syndrome_payload = json.loads(prompts[2][1])
+    assert {group["target"] for group in single_payload["requested_targets"]} >= {"Red Ginseng", "deficiency of the kidney-yang"}
+    assert {group["target"] for group in herbal_payload["requested_targets"]} == {"Red Ginseng"}
+    assert {group["target"] for group in syndrome_payload["requested_targets"]} == {"deficiency of the kidney-yang"}
+    assert "kidney-yang" not in herbal_payload["question"]
+    assert "Red Ginseng" not in syndrome_payload["question"]
+    assert single_payload["relationship_evidence"] == []
+    answer, *_ = _synthesis(baselines[:2], CONDITIONS[ConditionId.C2], debate(baselines[:2], 0), [], separate_targets=True)
+    assert "does not establish an explicit relationship" in answer

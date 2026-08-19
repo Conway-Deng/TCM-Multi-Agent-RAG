@@ -30,6 +30,7 @@ from schemas.research import (
     RunState,
     RunTrace,
     StageTiming,
+    ProviderAttempt,
 )
 
 from .conditions import CONDITIONS
@@ -67,7 +68,7 @@ def _agent_ids(request: ResearchRequest, required: list[str], multi_agent: bool)
     return selected
 
 
-def _synthesis(outputs, condition: dict, debate_trace: DebateTrace, judges) -> tuple[str, list[str], list[str], float]:
+def _synthesis(outputs, condition: dict, debate_trace: DebateTrace, judges, *, separate_targets: bool = False) -> tuple[str, list[str], list[str], float]:
     claims = [(output, claim) for output in outputs for claim in output.claims]
     if condition["aggregation"] == "deterministic_weighted":
         claims.sort(key=lambda pair: pair[0].confidence * pair[1].confidence, reverse=True)
@@ -87,6 +88,8 @@ def _synthesis(outputs, condition: dict, debate_trace: DebateTrace, judges) -> t
     if not parts:
         return "The system abstained because no evidence-linked claim passed the selected condition.", [], [], 0.0
     answer = "TCM educational synthesis: " + " ".join(parts)
+    if separate_targets:
+        answer += " The retrieved evidence describes these topics separately and does not establish an explicit relationship between them."
     agreements = debate_trace.agreements
     disagreements = debate_trace.disagreements
     if disagreements:
@@ -125,7 +128,7 @@ def _claim_with_citations(text: str, evidence_ids: list[str]) -> str:
     return " ".join(part for part in (text.strip(), " ".join(f"[{item}]" for item in missing)) if part)
 
 
-def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOutput, evidence, *, retry: bool = False) -> tuple[str, str]:
+def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOutput, evidence, target_plan, *, retry: bool = False) -> tuple[str, str, list[str]]:
     system = (
         f"You are the {agent.agent_name} in a TCM research workbench. Use only the supplied evidence. "
         "Write one concise educational paragraph of at most 120 words, preserve uncertainty, "
@@ -133,18 +136,61 @@ def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOu
         "Traditional claims must be framed as source-reported TCM content, not established biomedical fact. "
         "Return plain text only: do not emit citations, evidence IDs, source labels, Markdown, JSON, or backslashes; "
         "the application attaches provenance separately. Answer the named entity in the question directly and do not "
-        "merge properties from evidence about a different entity. Do not repeat a word consecutively or repeat phrases."
+        "merge properties from evidence about a different entity. Treat each named entity as a separate target: answer each target only from evidence assigned to it. "
+        "Only state a relationship between targets when relationship_evidence is non-empty. When it is empty, do not discuss any cross-target relationship; the deterministic synthesizer will report that status. "
+        "Do not infer a relationship from nearby herbs, similar terms, or related syndrome records. Do not repeat a word consecutively or repeat phrases."
     )
     if retry:
-        system += " This is a format retry: check the completed paragraph for repetition and formatting corruption before returning it."
+        system += " This is a grounding and format retry: keep target sections separate, verify that no sentence links targets without relationship evidence, and check for repetition or formatting corruption."
     selected = [item for item in evidence if item.chunk_id in baseline.evidence_ids]
-    prompt = json.dumps({
+    payload = {
         "question": question,
         "response_language": language,
         "specialist_scope": agent.subdomain,
-        "evidence": [{"label": f"Evidence {index}", "text": item.chunk_text} for index, item in enumerate(selected, start=1)],
-    }, ensure_ascii=False)
-    return system, prompt
+    }
+    if target_plan:
+        allowed_domains = {"general", "herbal", "syndrome"} if agent.agent_id == "single_rag" else {"general", "herbal" if agent.agent_id == "herbal" else "syndrome" if agent.agent_id == "syndrome" else agent.subdomain}
+        groups = []
+        assigned_ids: set[str] = set()
+        for target in target_plan["requested_targets"]:
+            if target["domain"] not in allowed_domains:
+                continue
+            ids = set(target["supporting_evidence_ids"]) & set(baseline.evidence_ids)
+            items = [item for item in selected if item.chunk_id in ids]
+            if items:
+                assigned_ids.update(ids)
+                groups.append({
+                    "target": target["label"],
+                    "evidence": [{"label": f"Evidence {index}", "text": item.chunk_text} for index, item in enumerate(items, start=1)],
+                })
+        if groups:
+            selected = [item for item in selected if item.chunk_id in assigned_ids]
+            payload["requested_targets"] = groups
+            relationship_ids = set(target_plan["relationship_evidence_ids"]) & set(baseline.evidence_ids)
+            payload["relationship_evidence"] = [
+                {"label": f"Relationship evidence {index}", "text": item.chunk_text}
+                for index, item in enumerate(selected, start=1)
+                if item.chunk_id in relationship_ids
+            ]
+            if len(groups) > 1:
+                labels = [group["target"] for group in groups]
+                system += (
+                    f" Write exactly {len(groups)} target-specific sentences, one sentence per target, in this order: "
+                    + "; ".join(labels)
+                    + ". Begin each sentence with its target label followed by a colon. Never mention two target labels in the same sentence. Do not add a relationship sentence."
+                )
+                payload["required_structure"] = [f"{label}: evidence-supported facts for this target only" for label in labels]
+            else:
+                label = groups[0]["target"]
+                system += f" Discuss only {label}. Do not mention any other requested target and do not discuss a cross-target relationship."
+                payload["question"] = f"What does the supplied evidence record about {label}?"
+                payload["required_structure"] = [f"{label}: evidence-supported facts for this target only"]
+        else:
+            payload["evidence"] = [{"label": f"Evidence {index}", "text": item.chunk_text} for index, item in enumerate(selected, start=1)]
+    else:
+        payload["evidence"] = [{"label": f"Evidence {index}", "text": item.chunk_text} for index, item in enumerate(selected, start=1)]
+    prompt = json.dumps(payload, ensure_ascii=False)
+    return system, prompt, [item.chunk_id for item in selected]
 
 
 class ResearchWorkbench:
@@ -154,7 +200,7 @@ class ResearchWorkbench:
         self.retriever = RetrievalEngine()
         self.planner = QueryPlannerAgent()
 
-    async def _run_agent(self, agent, request, plan, evidence, *, llm_enabled: bool):
+    async def _run_agent(self, agent, request, plan, evidence, target_plan, *, llm_enabled: bool):
         baseline = await agent.answer(
             request.question,
             plan.language,
@@ -163,13 +209,16 @@ class ResearchWorkbench:
             model="deterministic-evidence-mapper-v1",
         )
         if baseline.abstained or not llm_enabled:
-            return baseline, 0, 0, None
+            return baseline, 0, 0, None, []
         attempts = 0
         generated = None
+        generated_evidence_ids = baseline.evidence_ids
         rejection = None
+        attempt_trace: list[ProviderAttempt] = []
         for retry in (False, True):
-            system, prompt = _agent_prompt(agent, request.question, plan.language, baseline, evidence, retry=retry)
+            system, prompt, prompt_evidence_ids = _agent_prompt(agent, request.question, plan.language, baseline, evidence, target_plan, retry=retry)
             attempts += 1
+            attempt_started = time.perf_counter()
             try:
                 candidate = await self.providers.llm.generate(
                     system=system,
@@ -180,28 +229,64 @@ class ResearchWorkbench:
                 )
             except ProviderUnavailable as exc:
                 rejection = str(exc)
+                attempt_trace.append(ProviderAttempt(
+                    attempt=attempts,
+                    provider=self.providers.llm.name,
+                    model=self.providers.llm.model,
+                    elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
+                    success=False,
+                    http_status=exc.http_status,
+                    error_type=exc.error_type,
+                    error=str(exc),
+                    retry_performed=retry is False,
+                ))
                 continue
             rejection = runaway_output_reason(candidate.text)
             if rejection is None:
+                rejection = self.retriever.unsupported_multi_entity_claim(request.question, candidate.text, evidence)
+            if rejection is not None:
+                attempt_trace.append(ProviderAttempt(
+                    attempt=attempts,
+                    provider=candidate.provider,
+                    model=candidate.model,
+                    elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
+                    success=False,
+                    error_type="output_quality_rejection",
+                    error=rejection,
+                    retry_performed=retry is False,
+                ))
+                continue
+            attempt_trace.append(ProviderAttempt(
+                attempt=attempts,
+                provider=candidate.provider,
+                model=candidate.model,
+                elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
+                success=True,
+                retry_performed=False,
+            ))
+            if rejection is None:
                 generated = candidate
+                generated_evidence_ids = prompt_evidence_ids
                 break
         if generated is None:
             reason = f"Provider output rejected: {rejection}" if rejection else "Provider output rejected"
-            return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), attempts, 0, reason
+            return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), attempts, 0, reason, attempt_trace
         combined_claim = baseline.claims[0].model_copy(update={
             "text": generated.text.strip(),
-            "evidence_ids": baseline.evidence_ids,
+            "evidence_ids": generated_evidence_ids,
             "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
         })
         output = baseline.model_copy(update={
             "claims": [combined_claim],
+            "evidence_ids": generated_evidence_ids,
+            "citations": [citation for citation in baseline.citations if citation.evidence_id in generated_evidence_ids],
             "provider": generated.provider,
             "model": generated.model,
             "generation_mode": "llm",
             "token_usage": {"prompt_tokens": generated.prompt_tokens, "completion_tokens": generated.completion_tokens},
             "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
         })
-        return output, attempts, 1, None
+        return output, attempts, 1, None, attempt_trace
 
     async def run(self, request: ResearchRequest) -> ResearchRunResult:
         started = time.perf_counter()
@@ -238,10 +323,12 @@ class ResearchWorkbench:
                 enabled=request.iterative_retrieval,
             )
             timings.append(StageTiming(stage="retrieval", latency_ms=round((time.perf_counter() - stage) * 1000)))
+        target_plan = self.retriever.multi_target_evidence_plan(request.question, evidence)
 
         if request.condition_id == ConditionId.C0:
             stage = time.perf_counter()
             provider_errors: list[str] = []
+            provider_attempts: list[ProviderAttempt] = []
             provider_calls = 0
             successful_provider_calls = 0
             if llm_enabled:
@@ -291,12 +378,13 @@ class ResearchWorkbench:
             ids = _agent_ids(request, plan.required_agents, bool(condition["multi_agent"]))
             agents = build_agents(ids)
             executions = await asyncio.gather(*[
-                self._run_agent(agent, request, plan, evidence, llm_enabled=llm_enabled) for agent in agents
+                self._run_agent(agent, request, plan, evidence, target_plan, llm_enabled=llm_enabled) for agent in agents
             ])
             outputs = [item[0] for item in executions]
             provider_calls = sum(item[1] for item in executions)
             successful_provider_calls = sum(item[2] for item in executions)
             provider_errors = [item[3] for item in executions if item[3]]
+            provider_attempts = [attempt for item in executions for attempt in item[4]]
             timings.append(StageTiming(stage="agents", latency_ms=round((time.perf_counter() - stage) * 1000)))
             stage = time.perf_counter()
             debate_trace = debate(outputs, request.debate_rounds if condition["debate"] else 0)
@@ -304,7 +392,8 @@ class ResearchWorkbench:
             stage = time.perf_counter()
             judges = run_judges(outputs, evidence, debate_trace, request.active_judges) if condition["judges"] else []
             timings.append(StageTiming(stage="judges", latency_ms=round((time.perf_counter() - stage) * 1000)))
-            final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges)
+            separate_targets = bool(target_plan and not target_plan["relationship_evidence_ids"])
+            final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges, separate_targets=separate_targets)
             citations = list({(item.evidence_id, item.source_id): item for output in outputs for item in output.citations}.values())
             token_usage = {
                 "prompt_tokens": sum(output.token_usage.get("prompt_tokens", 0) for output in outputs),
@@ -372,6 +461,7 @@ class ResearchWorkbench:
             token_usage=token_usage,
             provider_calls=provider_calls,
             provider_errors=provider_errors,
+            provider_attempts=provider_attempts,
             fallback_usage=fallback_used,
             iterative_retrieval_used=iterative_used,
             raw_query_stored=False,
