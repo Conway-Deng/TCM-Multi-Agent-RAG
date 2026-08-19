@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCM Gold Benchmark v1 — Human Review</title>
+  <link rel="stylesheet" href="/reviewer.css">
+</head>
+<body>
+  <header class="topbar"><div><p class="eyebrow">SOURCE-GROUNDED REVIEW</p><h1>TCM Gold Benchmark v1</h1><p class="subtitle">Human review workspace · DRAFT_SOURCE_GROUNDED</p></div><div class="counter" id="progressText">Loading…</div></header>
+  <main>
+    <section class="guidance"><strong>Review guidance</strong><span>Approve only when the question is clear, every fact is directly supported by the excerpt, and no unsupported relationship is encoded. This checks source-grounded correctness, not clinical validation.</span></section>
+    <section class="toolbar"><label>Filter <select id="filter"><option value="ALL">All</option><option value="UNREVIEWED">Unreviewed</option><option value="herbal_medicine">Herbal</option><option value="syndrome_differentiation">Syndrome</option><option value="multi">Multi-target</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="REVISE">Revise</option></select></label><button id="prev">← Previous</button><button id="next">Next →</button><span class="position" id="position"></span></section>
+    <article id="questionCard" class="card"></article>
+  </main>
+  <script src="/reviewer.js"></script>
+</body>
+</html>
