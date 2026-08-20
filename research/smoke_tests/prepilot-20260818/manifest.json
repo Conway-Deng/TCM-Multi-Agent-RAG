@@ -1,0 +1,160 @@
+{
+  "purpose": "temporary pre-pilot stability smoke test",
+  "corpus": "TCM Research Corpus v1",
+  "chunk_count": 4461,
+  "questions": [
+    {
+      "smoke_id": "smoke-01",
+      "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "Red Ginseng"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0aaba1cbd4c4296e8ce6e234"
+      ],
+      "expected_source_names": [
+        "TCMBank"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-02",
+      "question": "What are the traditional TCM properties, meridian associations, and traditional class of flower bud of lobed kudzuvine (Gehua)?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "flower bud of lobed kudzuvine"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-ac5d4abffb0f5db5580bde0e"
+      ],
+      "expected_source_names": [
+        "TCMBank"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-03",
+      "question": "What source-recorded functions and indications are listed for Common Javatea?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "Common Javatea"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-000377132373045568267742"
+      ],
+      "expected_source_names": [
+        "TCMBank"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-04",
+      "question": "What source-recorded functions and indications are listed for Evergreen Mucuna?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "Evergreen Mucuna"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0000511a57d30d8bdf1b350f"
+      ],
+      "expected_source_names": [
+        "TCMBank"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-05",
+      "question": "What traditional properties, meridians, and class are recorded for Chinese Waxgourd Peel?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "Chinese Waxgourd Peel"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-3e939528354550bfa3a475cc"
+      ],
+      "expected_source_names": [
+        "TCMBank"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-06",
+      "question": "What source-recorded function and indication are listed for Polyporus grifolia, Umbellate pore-fungus?",
+      "expected_main_domain": "herbal_medicine",
+      "expected_entities": [
+        "Polyporus grifolia, Umbellate pore-fungus"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-a940e3f55280f0de8e5b1ff7"
+      ],
+      "expected_source_names": [
+        "SymMap v2"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-07",
+      "question": "What does the TCM Research Corpus record about deficiency of the kidney-yang?",
+      "expected_main_domain": "syndrome_differentiation",
+      "expected_entities": [
+        "deficiency of the kidney-yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-d643f3c47d062f033e552170"
+      ],
+      "expected_source_names": [
+        "SymMap v2"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-08",
+      "question": "What does the TCM Research Corpus record about liver yang?",
+      "expected_main_domain": "syndrome_differentiation",
+      "expected_entities": [
+        "liver yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0246978770d8f37c619dd636"
+      ],
+      "expected_source_names": [
+        "SymMap v2"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-09",
+      "question": "What does the TCM Research Corpus record about phlegm fire?",
+      "expected_main_domain": "syndrome_differentiation",
+      "expected_entities": [
+        "phlegm fire"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-107a2889e2902e72f08feaa2"
+      ],
+      "expected_source_names": [
+        "SymMap v2"
+      ],
+      "multiple_specialists_expected": false
+    },
+    {
+      "smoke_id": "smoke-10",
+      "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+      "expected_main_domain": "herbal_medicine + syndrome_differentiation",
+      "expected_entities": [
+        "Red Ginseng",
+        "deficiency of the kidney-yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0aaba1cbd4c4296e8ce6e234",
+        "tcmv1-d643f3c47d062f033e552170"
+      ],
+      "expected_source_names": [
+        "TCMBank",
+        "SymMap v2"
+      ],
+      "multiple_specialists_expected": true
+    }
+  ]
+}

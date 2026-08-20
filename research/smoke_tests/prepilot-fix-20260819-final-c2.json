@@ -1,0 +1,46 @@
+{
+  "condition": "C2",
+  "run_id": "run-744e918754ed45e8",
+  "generation": "llm",
+  "fallback": false,
+  "provider": "siliconflow",
+  "model": "Qwen/Qwen3-8B",
+  "attempted": 2,
+  "succeeded": 2,
+  "latency_ms": 31711,
+  "evidence_ids": [
+    "tcmv1-01b61fa93d54e8bdd1c408f6",
+    "tcmv1-010f829f0c703d4a98d24324",
+    "tcmv1-cc2d3a1098a2414c33f6b82c",
+    "tcmv1-a2ffcd023a52263871b65380"
+  ],
+  "agents": [
+    "syndrome",
+    "herbal"
+  ],
+  "provider_attempts": [
+    {
+      "attempt": 1,
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "elapsed_ms": 28044,
+      "success": true,
+      "http_status": null,
+      "error_type": null,
+      "error": null,
+      "retry_performed": false
+    },
+    {
+      "attempt": 1,
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "elapsed_ms": 26131,
+      "success": true,
+      "http_status": null,
+      "error_type": null,
+      "error": null,
+      "retry_performed": false
+    }
+  ],
+  "answer": "TCM educational synthesis: Syndrome Differentiation Agent: deficiency of the kidney-yang: evidence-supported facts for this target only  \nThe supplied evidence records that deficiency of the kidney-yang, or Shen Yang Xu, is characterized by kidney yang亏虚, leading to a lack of warmth in the body. This condition manifests through symptoms such as腰膝酸冷, 性欲减退, 夜尿多, and other yang deficiency signs. The evidence describes the syndrome as a state where the kidney's warming function is impaired, affecting overall vitality and physiological processes. [tcmv1-01b61fa93d54e8bdd1c408f6] Herbal Knowledge Agent: Red Ginseng is recorded in the supplied evidence as an herb with the pinyin name Hongshen and the Latin name Radix Ginseng Rubra, Ginseng Radix Et Rhizoma Rubra. It is traditionally classified as a Qi Reinforcing Drug and is associated with the Spleen, Lung, Heart, and Kidney meridians. The herb is described to have a sweet and slightly bitter taste, with a warm property. [tcmv1-010f829f0c703d4a98d24324] The retrieved evidence describes these topics separately and does not establish an explicit relationship between them."
+}

@@ -1,0 +1,12 @@
+﻿{
+    "total_runs":  20,
+    "passed_runs":  14,
+    "failed_runs":  6,
+    "fallback_runs":  0,
+    "provider_failures":  4,
+    "corrupted_outputs":  2,
+    "C1_mean_latency_ms":  23080.6,
+    "C1_median_latency_ms":  19584,
+    "C2_mean_latency_ms":  22804.8,
+    "C2_median_latency_ms":  24646
+}

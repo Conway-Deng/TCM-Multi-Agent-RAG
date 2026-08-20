@@ -1,0 +1,134 @@
+[
+  {
+    "case_id": "red-ginseng",
+    "condition": "C1",
+    "classification": "PASS_WITH_RETRY",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 2,
+    "succeeded": 1,
+    "latency_ms": 50949,
+    "evidence_ids": "tcmv1-010f829f0c703d4a98d24324;tcmv1-0aaba1cbd4c4296e8ce6e234;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-c8d5df0f2e242ac667a58918",
+    "agents": "single_rag",
+    "abstaining": "",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "TCM educational synthesis: Red Ginseng (Hongshen) is traditionally characterized as sweet, slightly bitter, and warm in TCM. It is associated with the Spleen, Lung, Heart, and Kidney meridians. Classified as a Qi Reinforcing Drug, it is traditionally used to replenish vital essence, promote blood circulation, and relieve collapse. It may also help reinforce qi and stanch bleeding, particularly in cases of collapse tendency due to asthenia, weak pulse, and qi inability to control blood. Traditional indications include uterine bleeding and conditions related to cardiac failure or cardiogenic shock. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-0aaba1cbd4c4296e8ce6e234] [tcmv1-3ba68a0db74bcfc59b8f96d8]",
+    "run_id": "run-677c5fa94bd14a74"
+  },
+  {
+    "case_id": "red-ginseng",
+    "condition": "C2",
+    "classification": "PASS",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 1,
+    "succeeded": 1,
+    "latency_ms": 25856,
+    "evidence_ids": "tcmv1-010f829f0c703d4a98d24324;tcmv1-0aaba1cbd4c4296e8ce6e234;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-c8d5df0f2e242ac667a58918",
+    "agents": "herbal",
+    "abstaining": "syndrome;acupuncture_meridian;constitution;dietary_therapy;lifestyle_yangsheng",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "TCM educational synthesis: Herbal Knowledge Agent: Red Ginseng (Hongshen) is traditionally characterized as sweet, slightly bitter, and warm in nature. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In TCM, it is classified as a Qi Reinforcing Drug and is reported to replenish vital essence, promote blood circulation, and relieve collapse. It is used to reinforce qi and stanch bleeding, particularly in cases of collapse tendency due to asthenia, weak pulse, and qi inability to control blood. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-0aaba1cbd4c4296e8ce6e234] [tcmv1-3ba68a0db74bcfc59b8f96d8]",
+    "run_id": "run-202dd125d7bb4111"
+  },
+  {
+    "case_id": "liver-yang",
+    "condition": "C1",
+    "classification": "CORRECT_ABSTENTION",
+    "generation_mode": "abstention",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "none",
+    "model": "none",
+    "attempted": 0,
+    "succeeded": 0,
+    "latency_ms": 76,
+    "evidence_ids": "",
+    "agents": "",
+    "abstaining": "",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "The system needs more context before evidence-grounded retrieval and has abstained.",
+    "run_id": "run-0a10054727cc47c2"
+  },
+  {
+    "case_id": "liver-yang",
+    "condition": "C2",
+    "classification": "CORRECT_ABSTENTION",
+    "generation_mode": "abstention",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "none",
+    "model": "none",
+    "attempted": 0,
+    "succeeded": 0,
+    "latency_ms": 73,
+    "evidence_ids": "",
+    "agents": "",
+    "abstaining": "",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "The system needs more context before evidence-grounded retrieval and has abstained.",
+    "run_id": "run-88651b8a04304b40"
+  },
+  {
+    "case_id": "multi-target",
+    "condition": "C1",
+    "classification": "PASS",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 1,
+    "succeeded": 1,
+    "latency_ms": 28335,
+    "evidence_ids": "tcmv1-cc2d3a1098a2414c33f6b82c;tcmv1-a2ffcd023a52263871b65380;tcmv1-01b61fa93d54e8bdd1c408f6;tcmv1-a17bf5d46e782f882556e342",
+    "agents": "single_rag",
+    "abstaining": "",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "TCM educational synthesis: In the TCM corpus, Red Ginseng is associated with treating impotence, premature ejaculation, infertility, and menstrual disorders, often combined with other herbs like Morinda root or Cistanche. Deficiency of the kidney-yang is described as a syndrome marked by symptoms such as cold sensation in the lower abdomen, soreness and weakness in the lower back and knees, and lassitude in the loins and legs. Evidence reports that Morinda root is used for these manifestations, while seal's genitals is noted for addressing impotence and cold sperm linked to kidney-yang deficiency. The specific combinations and functions are derived from traditional sources. [tcmv1-cc2d3a1098a2414c33f6b82c] [tcmv1-a2ffcd023a52263871b65380] [tcmv1-01b61fa93d54e8bdd1c408f6]",
+    "run_id": "run-41299166e649411f"
+  },
+  {
+    "case_id": "multi-target",
+    "condition": "C2",
+    "classification": "PASS_WITH_RETRY",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 3,
+    "succeeded": 2,
+    "latency_ms": 89602,
+    "evidence_ids": "tcmv1-cc2d3a1098a2414c33f6b82c;tcmv1-a2ffcd023a52263871b65380;tcmv1-01b61fa93d54e8bdd1c408f6;tcmv1-a17bf5d46e782f882556e342",
+    "agents": "syndrome;herbal",
+    "abstaining": "acupuncture_meridian;constitution;dietary_therapy;lifestyle_yangsheng",
+    "provider_attempts": [
+      null
+    ],
+    "answer": "TCM educational synthesis: Syndrome Differentiation Agent: In the TCM corpus, Red Ginseng is associated with replenishing kidney-yang, as noted in the treatment of deficiency of the kidney-yang (Shen Yang Xu), characterized by symptoms such as coldness in the lower back and knees, reduced sexual desire, frequent nighttime urination, and general yang deficiency. Evidence also records deficiency of both spleen-yang and kidney-yang (Pi Shen Yang Xu), marked by long-term diarrhea, edema, cold pain in the lower abdomen, and other yang deficiency signs. The evidence reports these syndromes without specifying Red Ginseng's direct role in their representation. [tcmv1-01b61fa93d54e8bdd1c408f6] [tcmv1-a17bf5d46e782f882556e342] Herbal Knowledge Agent: In the TCM corpus, Red Ginseng is associated with the treatment of impotence, seminal emission, infertility, and menstrual disorders. It is often combined with herbs like Morinda root and Cistanche to address these conditions. Deficiency of kidney-yang is represented through symptoms such as soreness and weakness in the lower back and knees, lassitude in the loins and legs, cold sensation in the lower abdomen, and pain. Evidence records that Morinda root is used alongside other herbs for these manifestations, while seal's genitals are noted for treating impotence and cold sperm linked to kidney-yang deficiency. The specific combinations and indications are derived from traditional sources. [tcmv1-cc2d3a1098a2414c33f6b82c] [tcmv1-a2ffcd023a52263871b65380]",
+    "run_id": "run-39164f19e91245cd"
+  }
+]

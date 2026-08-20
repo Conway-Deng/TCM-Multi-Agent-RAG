@@ -1,0 +1,115 @@
+[
+  {
+    "condition": "C1",
+    "run_id": "run-cef27d3a836547f6",
+    "generation": "deterministic_fallback",
+    "fallback": true,
+    "provider": "none",
+    "model": "none",
+    "attempted": 2,
+    "succeeded": 0,
+    "latency_ms": 61070,
+    "evidence_ids": [
+      "tcmv1-01b61fa93d54e8bdd1c408f6",
+      "tcmv1-010f829f0c703d4a98d24324",
+      "tcmv1-cc2d3a1098a2414c33f6b82c",
+      "tcmv1-a2ffcd023a52263871b65380"
+    ],
+    "agents": [
+      "single_rag"
+    ],
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 21704,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 35842,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. [tcmv1-cc2d3a1098a2414c33f6b82c] The retrieved evidence describes these topics separately and does not establish an explicit relationship between them."
+  },
+  {
+    "condition": "C2",
+    "run_id": "run-1765a54a5ff04bc1",
+    "generation": "deterministic_fallback",
+    "fallback": true,
+    "provider": "none",
+    "model": "none",
+    "attempted": 4,
+    "succeeded": 0,
+    "latency_ms": 47229,
+    "evidence_ids": [
+      "tcmv1-01b61fa93d54e8bdd1c408f6",
+      "tcmv1-010f829f0c703d4a98d24324",
+      "tcmv1-cc2d3a1098a2414c33f6b82c",
+      "tcmv1-a2ffcd023a52263871b65380"
+    ],
+    "agents": [
+      "syndrome",
+      "herbal"
+    ],
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 3845,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 35687,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": false
+      },
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 19235,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 27754,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Syndrome Differentiation Agent: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herbal Knowledge Agent: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herbal Knowledge Agent: Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. [tcmv1-cc2d3a1098a2414c33f6b82c] Herbal Knowledge Agent: Herb: seal's genitals. Pinyin: HAI GOU SHEN. Latin name: Penis et Testes Callorhini. Traditional properties: Hot; Salty. Meridians: Liver; Kidney. Source-recorded function: Treatment of consumptive diseases, impotence, cold sperm, lassitude in the loins and legs due to deficiency of the kidney-yang, etc.. Source-recorded indication: Treatment of consumptive diseases, impotence, cold sperm, lassitude in the loins and legs due to deficiency of the kidney-yang, etc.. [tcmv1-a2ffcd023a52263871b65380] The retrieved evidence describes these topics separately and does not establish an explicit relationship between them."
+  }
+]

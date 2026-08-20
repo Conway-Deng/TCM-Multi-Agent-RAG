@@ -1,0 +1,2302 @@
+[
+  {
+    "case_id": "red-ginseng",
+    "condition": "C1",
+    "classification": "PASS",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 1,
+    "succeeded": 1,
+    "latency_ms": 25928,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-010f829f0c703d4a98d24324;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-03fa25ec6d72b46199e74769;tcmv1-0aaba1cbd4c4296e8ce6e234",
+    "agents": "single_rag",
+    "abstaining": "",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 21688,
+        "success": true,
+        "http_status": null,
+        "error_type": null,
+        "error": null,
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Red Ginseng (Hongshen) is traditionally characterized as having sweet, slightly bitter, and warm properties. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In traditional TCM classification, it is categorized as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses distinct from its general classification. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-3ba68a0db74bcfc59b8f96d8] [tcmv1-03fa25ec6d72b46199e74769]",
+    "run_id": "run-88ba5989433041f8",
+    "trace": {
+      "run_id": "run-88ba5989433041f8",
+      "timestamp": "2026-08-19T16:05:29.303708+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C1",
+      "experiment_config": {
+        "condition_id": "C1",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "llm",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 1,
+      "failed_provider_calls": 0,
+      "participating_agents": [
+        "single_rag"
+      ],
+      "abstaining_agents": [],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files",
+        "TCMBank all-herb downloadable file"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "single_rag"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-3ba68a0db74bcfc59b8f96d8",
+        "tcmv1-03fa25ec6d72b46199e74769",
+        "tcmv1-0aaba1cbd4c4296e8ce6e234"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "single_rag",
+          "agent_name": "TCM Single RAG Baseline",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "general_tcm_rag",
+          "claims": [
+            {
+              "claim_id": "single_rag-6c51b0a970",
+              "text": "Red Ginseng (Hongshen) is traditionally characterized as having sweet, slightly bitter, and warm properties. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In traditional TCM classification, it is categorized as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses distinct from its general classification.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324",
+                "tcmv1-3ba68a0db74bcfc59b8f96d8",
+                "tcmv1-03fa25ec6d72b46199e74769"
+              ],
+              "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324",
+            "tcmv1-3ba68a0db74bcfc59b8f96d8",
+            "tcmv1-03fa25ec6d72b46199e74769"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-010f829f0c703d4a98d24324",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-3ba68a0db74bcfc59b8f96d8",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-03fa25ec6d72b46199e74769",
+              "source_id": "tcmbank_v1",
+              "title": "TCMBank all-herb downloadable file",
+              "locator": "Lv Q et al. TCMBank: bridges between the largest herbal medicines, chemical ingredients, target proteins, and associated diseases with intelligence text mining. Chem Sci. 2023;14:10684-10701. doi:10.1039/D3SC02139D.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.62,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "generation_mode": "llm",
+          "prompt_version": "v1",
+          "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
+          "token_usage": {
+            "prompt_tokens": 495,
+            "completion_tokens": 73
+          }
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: Red Ginseng (Hongshen) is traditionally characterized as having sweet, slightly bitter, and warm properties. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In traditional TCM classification, it is categorized as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses distinct from its general classification. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-3ba68a0db74bcfc59b8f96d8] [tcmv1-03fa25ec6d72b46199e74769]",
+      "confidence": 0.62,
+      "abstention": false,
+      "latency_ms": 25928,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 4107
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 123
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 21689
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 495,
+        "completion_tokens": 73
+      },
+      "provider_calls": 1,
+      "provider_errors": [],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 21688,
+          "success": true,
+          "http_status": null,
+          "error_type": null,
+          "error": null,
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": false,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  },
+  {
+    "case_id": "red-ginseng",
+    "condition": "C2",
+    "classification": "PASS_WITH_RETRY",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 2,
+    "succeeded": 1,
+    "latency_ms": 48957,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-010f829f0c703d4a98d24324;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-03fa25ec6d72b46199e74769;tcmv1-0aaba1cbd4c4296e8ce6e234",
+    "agents": "herbal",
+    "abstaining": "syndrome;acupuncture_meridian;constitution;dietary_therapy;lifestyle_yangsheng",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 45224,
+        "success": false,
+        "http_status": null,
+        "error_type": "timeout",
+        "error": "LLM request timed out",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 3549,
+        "success": true,
+        "http_status": null,
+        "error_type": null,
+        "error": null,
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Herbal Knowledge Agent: Red Ginseng (Hongshen) is traditionally characterized as sweet, slightly bitter, and warm. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In TCM, it is classified as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses for Red Ginseng beyond its properties and meridian associations. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-3ba68a0db74bcfc59b8f96d8] [tcmv1-03fa25ec6d72b46199e74769]",
+    "run_id": "run-1836b5907f0a4d66",
+    "trace": {
+      "run_id": "run-1836b5907f0a4d66",
+      "timestamp": "2026-08-19T16:06:18.560427+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C2",
+      "experiment_config": {
+        "condition_id": "C2",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "llm",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 1,
+      "failed_provider_calls": 1,
+      "participating_agents": [
+        "herbal"
+      ],
+      "abstaining_agents": [
+        "syndrome",
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files",
+        "TCMBank all-herb downloadable file"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "syndrome",
+        "herbal",
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-3ba68a0db74bcfc59b8f96d8",
+        "tcmv1-03fa25ec6d72b46199e74769",
+        "tcmv1-0aaba1cbd4c4296e8ce6e234"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "syndrome",
+          "agent_name": "Syndrome Differentiation Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "syndrome_differentiation",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for syndrome_differentiation; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "herbal",
+          "agent_name": "Herbal Knowledge Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "herbal_knowledge",
+          "claims": [
+            {
+              "claim_id": "herbal-6c51b0a970",
+              "text": "Red Ginseng (Hongshen) is traditionally characterized as sweet, slightly bitter, and warm. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In TCM, it is classified as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses for Red Ginseng beyond its properties and meridian associations.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324",
+                "tcmv1-3ba68a0db74bcfc59b8f96d8",
+                "tcmv1-03fa25ec6d72b46199e74769"
+              ],
+              "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324",
+            "tcmv1-3ba68a0db74bcfc59b8f96d8",
+            "tcmv1-03fa25ec6d72b46199e74769"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-010f829f0c703d4a98d24324",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-3ba68a0db74bcfc59b8f96d8",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-03fa25ec6d72b46199e74769",
+              "source_id": "tcmbank_v1",
+              "title": "TCMBank all-herb downloadable file",
+              "locator": "Lv Q et al. TCMBank: bridges between the largest herbal medicines, chemical ingredients, target proteins, and associated diseases with intelligence text mining. Chem Sci. 2023;14:10684-10701. doi:10.1039/D3SC02139D.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No dosing, individualized formula, or prescribing instruction is generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.62,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "generation_mode": "llm",
+          "prompt_version": "v1",
+          "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
+          "token_usage": {
+            "prompt_tokens": 509,
+            "completion_tokens": 75
+          }
+        },
+        {
+          "agent_id": "acupuncture_meridian",
+          "agent_name": "Acupuncture and Meridian Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "acupuncture_meridian",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No needling locations, depths, techniques, or procedural instructions are generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for acupuncture_meridian; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "constitution",
+          "agent_name": "Constitution Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "constitution",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for constitution; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "dietary_therapy",
+          "agent_name": "TCM Dietary Therapy Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "dietary_therapy",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Traditional food-property concepts are distinct from modern nutritional evidence."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for dietary_therapy; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "lifestyle_yangsheng",
+          "agent_name": "Lifestyle and Yangsheng Agent",
+          "agent_version": "1.0.0",
+          "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+          "language": "en",
+          "subdomain": "lifestyle_yangsheng",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Any lifestyle content is conservative educational information, not a clinical prescription."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for lifestyle_yangsheng; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: Herbal Knowledge Agent: Red Ginseng (Hongshen) is traditionally characterized as sweet, slightly bitter, and warm. It is associated with the Spleen, Lung, Heart, and Kidney meridians. In TCM, it is classified as a Qi Reinforcing Drug. The retrieved evidence does not provide specific traditional uses for Red Ginseng beyond its properties and meridian associations. [tcmv1-010f829f0c703d4a98d24324] [tcmv1-3ba68a0db74bcfc59b8f96d8] [tcmv1-03fa25ec6d72b46199e74769]",
+      "confidence": 0.1033,
+      "abstention": false,
+      "latency_ms": 48957,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 69
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 107
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 48774
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 509,
+        "completion_tokens": 75
+      },
+      "provider_calls": 2,
+      "provider_errors": [],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 45224,
+          "success": false,
+          "http_status": null,
+          "error_type": "timeout",
+          "error": "LLM request timed out",
+          "retry_performed": true
+        },
+        {
+          "attempt": 2,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 3549,
+          "success": true,
+          "http_status": null,
+          "error_type": null,
+          "error": null,
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": false,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  },
+  {
+    "case_id": "liver-yang",
+    "condition": "C1",
+    "classification": "PASS",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 1,
+    "succeeded": 1,
+    "latency_ms": 3619,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-0246978770d8f37c619dd636;tcmv1-dfbdd5ef0273a6ba1c631a49;tcmv1-148d30f7b4c12eeee9c8d20e;tcmv1-0febd68eb306a23cea4a99a4",
+    "agents": "single_rag",
+    "abstaining": "",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 3505,
+        "success": true,
+        "http_status": null,
+        "error_type": null,
+        "error": null,
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: The TCM Research Corpus records the syndrome of liver yang as \"Gan Yang.\" It does not provide further details on the characteristics or treatment of this syndrome. The corpus also includes entries for \"yang virulence\" and \"yang deficiency,\" but these are distinct syndromes with separate definitions. No evidence explicitly links liver yang to these other syndromes. The information provided is limited to the syndrome's name and classification. [tcmv1-0246978770d8f37c619dd636] [tcmv1-dfbdd5ef0273a6ba1c631a49] [tcmv1-148d30f7b4c12eeee9c8d20e]",
+    "run_id": "run-f196d262e9ca4cc5",
+    "trace": {
+      "run_id": "run-f196d262e9ca4cc5",
+      "timestamp": "2026-08-19T16:06:22.486217+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C1",
+      "experiment_config": {
+        "condition_id": "C1",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "llm",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 1,
+      "failed_provider_calls": 0,
+      "participating_agents": [
+        "single_rag"
+      ],
+      "abstaining_agents": [],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "single_rag"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-0246978770d8f37c619dd636",
+        "tcmv1-dfbdd5ef0273a6ba1c631a49",
+        "tcmv1-148d30f7b4c12eeee9c8d20e",
+        "tcmv1-0febd68eb306a23cea4a99a4"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "single_rag",
+          "agent_name": "TCM Single RAG Baseline",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "general_tcm_rag",
+          "claims": [
+            {
+              "claim_id": "single_rag-22a3897626",
+              "text": "The TCM Research Corpus records the syndrome of liver yang as \"Gan Yang.\" It does not provide further details on the characteristics or treatment of this syndrome. The corpus also includes entries for \"yang virulence\" and \"yang deficiency,\" but these are distinct syndromes with separate definitions. No evidence explicitly links liver yang to these other syndromes. The information provided is limited to the syndrome's name and classification.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-0246978770d8f37c619dd636",
+                "tcmv1-dfbdd5ef0273a6ba1c631a49",
+                "tcmv1-148d30f7b4c12eeee9c8d20e"
+              ],
+              "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-0246978770d8f37c619dd636",
+            "tcmv1-dfbdd5ef0273a6ba1c631a49",
+            "tcmv1-148d30f7b4c12eeee9c8d20e"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-0246978770d8f37c619dd636",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-dfbdd5ef0273a6ba1c631a49",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-148d30f7b4c12eeee9c8d20e",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.5783,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "generation_mode": "llm",
+          "prompt_version": "v1",
+          "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
+          "token_usage": {
+            "prompt_tokens": 379,
+            "completion_tokens": 85
+          }
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: The TCM Research Corpus records the syndrome of liver yang as \"Gan Yang.\" It does not provide further details on the characteristics or treatment of this syndrome. The corpus also includes entries for \"yang virulence\" and \"yang deficiency,\" but these are distinct syndromes with separate definitions. No evidence explicitly links liver yang to these other syndromes. The information provided is limited to the syndrome's name and classification. [tcmv1-0246978770d8f37c619dd636] [tcmv1-dfbdd5ef0273a6ba1c631a49] [tcmv1-148d30f7b4c12eeee9c8d20e]",
+      "confidence": 0.5783,
+      "abstention": false,
+      "latency_ms": 3619,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 40
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 66
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 3505
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 379,
+        "completion_tokens": 85
+      },
+      "provider_calls": 1,
+      "provider_errors": [],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 3505,
+          "success": true,
+          "http_status": null,
+          "error_type": null,
+          "error": null,
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": false,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  },
+  {
+    "case_id": "liver-yang",
+    "condition": "C2",
+    "classification": "PASS",
+    "generation_mode": "llm",
+    "fallback": false,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "siliconflow",
+    "model": "Qwen/Qwen3-8B",
+    "attempted": 1,
+    "succeeded": 1,
+    "latency_ms": 13235,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-0246978770d8f37c619dd636;tcmv1-dfbdd5ef0273a6ba1c631a49;tcmv1-148d30f7b4c12eeee9c8d20e;tcmv1-0febd68eb306a23cea4a99a4",
+    "agents": "syndrome",
+    "abstaining": "herbal;acupuncture_meridian;constitution;dietary_therapy;lifestyle_yangsheng",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 13109,
+        "success": true,
+        "http_status": null,
+        "error_type": null,
+        "error": null,
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Syndrome Differentiation Agent: The TCM Research Corpus records the syndrome \"liver yang\" as Gan Yang. It does not provide further details on this specific syndrome. The corpus also includes entries for \"yang virulence\" (Yang Du) and \"yang deficiency\" (Yang Xu), but these are distinct syndromes with separate definitions. There is no evidence provided that directly links liver yang to yang virulence or yang deficiency. The information available is limited to the name and general classification of the syndrome. [tcmv1-0246978770d8f37c619dd636] [tcmv1-dfbdd5ef0273a6ba1c631a49] [tcmv1-148d30f7b4c12eeee9c8d20e]",
+    "run_id": "run-c33be11cad7e4d31",
+    "trace": {
+      "run_id": "run-c33be11cad7e4d31",
+      "timestamp": "2026-08-19T16:06:35.941291+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C2",
+      "experiment_config": {
+        "condition_id": "C2",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "siliconflow",
+      "model": "Qwen/Qwen3-8B",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "llm",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 1,
+      "failed_provider_calls": 0,
+      "participating_agents": [
+        "syndrome"
+      ],
+      "abstaining_agents": [
+        "herbal",
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "syndrome",
+        "herbal",
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-0246978770d8f37c619dd636",
+        "tcmv1-dfbdd5ef0273a6ba1c631a49",
+        "tcmv1-148d30f7b4c12eeee9c8d20e",
+        "tcmv1-0febd68eb306a23cea4a99a4"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "syndrome",
+          "agent_name": "Syndrome Differentiation Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "syndrome_differentiation",
+          "claims": [
+            {
+              "claim_id": "syndrome-22a3897626",
+              "text": "The TCM Research Corpus records the syndrome \"liver yang\" as Gan Yang. It does not provide further details on this specific syndrome. The corpus also includes entries for \"yang virulence\" (Yang Du) and \"yang deficiency\" (Yang Xu), but these are distinct syndromes with separate definitions. There is no evidence provided that directly links liver yang to yang virulence or yang deficiency. The information available is limited to the name and general classification of the syndrome.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-0246978770d8f37c619dd636",
+                "tcmv1-dfbdd5ef0273a6ba1c631a49",
+                "tcmv1-148d30f7b4c12eeee9c8d20e"
+              ],
+              "reasoning_summary": "LLM specialist response constrained to the listed retrieved evidence IDs; confidence remains retrieval-derived.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-0246978770d8f37c619dd636",
+            "tcmv1-dfbdd5ef0273a6ba1c631a49",
+            "tcmv1-148d30f7b4c12eeee9c8d20e"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-0246978770d8f37c619dd636",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-dfbdd5ef0273a6ba1c631a49",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-148d30f7b4c12eeee9c8d20e",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.5783,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "generation_mode": "llm",
+          "prompt_version": "v1",
+          "reasoning_summary": "External specialist generation used only the visible evidence payload; no hidden reasoning is stored.",
+          "token_usage": {
+            "prompt_tokens": 376,
+            "completion_tokens": 96
+          }
+        },
+        {
+          "agent_id": "herbal",
+          "agent_name": "Herbal Knowledge Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "herbal_knowledge",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No dosing, individualized formula, or prescribing instruction is generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for herbal_knowledge; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "acupuncture_meridian",
+          "agent_name": "Acupuncture and Meridian Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "acupuncture_meridian",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No needling locations, depths, techniques, or procedural instructions are generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for acupuncture_meridian; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "constitution",
+          "agent_name": "Constitution Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "constitution",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for constitution; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "dietary_therapy",
+          "agent_name": "TCM Dietary Therapy Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "dietary_therapy",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Traditional food-property concepts are distinct from modern nutritional evidence."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for dietary_therapy; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "lifestyle_yangsheng",
+          "agent_name": "Lifestyle and Yangsheng Agent",
+          "agent_version": "1.0.0",
+          "question": "What does the TCM Research Corpus record about liver yang?",
+          "language": "en",
+          "subdomain": "lifestyle_yangsheng",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Any lifestyle content is conservative educational information, not a clinical prescription."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for lifestyle_yangsheng; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: Syndrome Differentiation Agent: The TCM Research Corpus records the syndrome \"liver yang\" as Gan Yang. It does not provide further details on this specific syndrome. The corpus also includes entries for \"yang virulence\" (Yang Du) and \"yang deficiency\" (Yang Xu), but these are distinct syndromes with separate definitions. There is no evidence provided that directly links liver yang to yang virulence or yang deficiency. The information available is limited to the name and general classification of the syndrome. [tcmv1-0246978770d8f37c619dd636] [tcmv1-dfbdd5ef0273a6ba1c631a49] [tcmv1-148d30f7b4c12eeee9c8d20e]",
+      "confidence": 0.0964,
+      "abstention": false,
+      "latency_ms": 13235,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 38
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 78
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 13109
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 376,
+        "completion_tokens": 96
+      },
+      "provider_calls": 1,
+      "provider_errors": [],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 13109,
+          "success": true,
+          "http_status": null,
+          "error_type": null,
+          "error": null,
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": false,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  },
+  {
+    "case_id": "multi-target",
+    "condition": "C1",
+    "classification": "FAIL_PROVIDER",
+    "generation_mode": "deterministic_fallback",
+    "fallback": true,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "none",
+    "model": "none",
+    "attempted": 2,
+    "succeeded": 0,
+    "latency_ms": 65751,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-01b61fa93d54e8bdd1c408f6;tcmv1-010f829f0c703d4a98d24324;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-cc2d3a1098a2414c33f6b82c",
+    "agents": "single_rag",
+    "abstaining": "",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 20307,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 45220,
+        "success": false,
+        "http_status": null,
+        "error_type": "timeout",
+        "error": "LLM request timed out",
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf. [tcmv1-3ba68a0db74bcfc59b8f96d8]",
+    "run_id": "run-fcacc4e720ab4e77",
+    "trace": {
+      "run_id": "run-fcacc4e720ab4e77",
+      "timestamp": "2026-08-19T16:07:41.93023+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C1",
+      "experiment_config": {
+        "condition_id": "C1",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "none",
+      "model": "none",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "deterministic_fallback",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 0,
+      "failed_provider_calls": 2,
+      "participating_agents": [
+        "single_rag"
+      ],
+      "abstaining_agents": [],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files",
+        "TCMBank all-herb downloadable file"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "single_rag"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-01b61fa93d54e8bdd1c408f6",
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-3ba68a0db74bcfc59b8f96d8",
+        "tcmv1-cc2d3a1098a2414c33f6b82c"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "single_rag",
+          "agent_name": "TCM Single RAG Baseline",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "general_tcm_rag",
+          "claims": [
+            {
+              "claim_id": "single_rag-33a16f0295",
+              "text": "Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-01b61fa93d54e8bdd1c408f6"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-01b61fa93d54e8bdd1c408f6 matched the general_tcm_rag scope.",
+              "confidence": 0.62
+            },
+            {
+              "claim_id": "single_rag-a6e8038515",
+              "text": "Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-010f829f0c703d4a98d24324 matched the general_tcm_rag scope.",
+              "confidence": 0.62
+            },
+            {
+              "claim_id": "single_rag-10c740abfd",
+              "text": "Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-3ba68a0db74bcfc59b8f96d8"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-3ba68a0db74bcfc59b8f96d8 matched the general_tcm_rag scope.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-01b61fa93d54e8bdd1c408f6",
+            "tcmv1-010f829f0c703d4a98d24324",
+            "tcmv1-3ba68a0db74bcfc59b8f96d8"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-01b61fa93d54e8bdd1c408f6",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-010f829f0c703d4a98d24324",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-3ba68a0db74bcfc59b8f96d8",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.62,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic_fallback",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for general_tcm_rag; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf. [tcmv1-3ba68a0db74bcfc59b8f96d8]",
+      "confidence": 0.62,
+      "abstention": false,
+      "latency_ms": 65751,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 84
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 129
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 65528
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0
+      },
+      "provider_calls": 2,
+      "provider_errors": [
+        "Provider output rejected: LLM request timed out"
+      ],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 20307,
+          "success": false,
+          "http_status": null,
+          "error_type": "output_quality_rejection",
+          "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+          "retry_performed": true
+        },
+        {
+          "attempt": 2,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 45220,
+          "success": false,
+          "http_status": null,
+          "error_type": "timeout",
+          "error": "LLM request timed out",
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": true,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  },
+  {
+    "case_id": "multi-target",
+    "condition": "C2",
+    "classification": "FAIL_PROVIDER",
+    "generation_mode": "deterministic_fallback",
+    "fallback": true,
+    "corpus": "TCM Research Corpus v1",
+    "chunks": 4461,
+    "provider": "none",
+    "model": "none",
+    "attempted": 4,
+    "succeeded": 0,
+    "latency_ms": 35253,
+    "termination": "completed",
+    "evidence_ids": "tcmv1-01b61fa93d54e8bdd1c408f6;tcmv1-010f829f0c703d4a98d24324;tcmv1-3ba68a0db74bcfc59b8f96d8;tcmv1-cc2d3a1098a2414c33f6b82c",
+    "agents": "syndrome;herbal",
+    "abstaining": "acupuncture_meridian;constitution;dietary_therapy;lifestyle_yangsheng",
+    "provider_attempts": [
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 30132,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 4871,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": false
+      },
+      {
+        "attempt": 1,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 5910,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": true
+      },
+      {
+        "attempt": 2,
+        "provider": "siliconflow",
+        "model": "Qwen/Qwen3-8B",
+        "elapsed_ms": 10517,
+        "success": false,
+        "http_status": null,
+        "error_type": "output_quality_rejection",
+        "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+        "retry_performed": false
+      }
+    ],
+    "answer": "TCM educational synthesis: Syndrome Differentiation Agent: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herbal Knowledge Agent: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herbal Knowledge Agent: Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf. [tcmv1-3ba68a0db74bcfc59b8f96d8] Herbal Knowledge Agent: Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. [tcmv1-cc2d3a1098a2414c33f6b82c]",
+    "run_id": "run-97386d55ffea4164",
+    "trace": {
+      "run_id": "run-97386d55ffea4164",
+      "timestamp": "2026-08-19T16:08:17.471349+08:00",
+      "git_commit": "0144ee170512cbaa0c74e53ce018901c58c5c89a",
+      "corpus_version": "tcm-research-corpus-v1",
+      "corpus_name": "TCM Research Corpus v1",
+      "corpus_chunk_count": 4461,
+      "corpus_source_count": 2,
+      "corpus_mode": "required",
+      "dataset_version": "ad-hoc",
+      "condition_id": "C2",
+      "experiment_config": {
+        "condition_id": "C2",
+        "retrieval_strategy": "R0",
+        "active_agents": [
+          "syndrome",
+          "herbal",
+          "acupuncture_meridian",
+          "constitution",
+          "dietary_therapy",
+          "lifestyle_yangsheng"
+        ],
+        "active_judges": [
+          "evidence",
+          "hallucination",
+          "safety",
+          "conflict",
+          "confidence",
+          "provenance"
+        ],
+        "top_k": 4,
+        "debate_rounds": 1,
+        "iterative_retrieval": false,
+        "include_trace": true,
+        "store_raw_query": false,
+        "random_seed": 20260815
+      },
+      "provider": "none",
+      "model": "none",
+      "provider_configured": "siliconflow",
+      "llm_execution_enabled": true,
+      "generation_mode": "deterministic_fallback",
+      "termination_stage": "completed",
+      "system_abstention_reason": null,
+      "support_score_formula": "mean selected-agent evidence-support scores including abstentions as zero; cap at 0.65 and at the minimum deterministic judge score when judges run",
+      "successful_provider_calls": 0,
+      "failed_provider_calls": 4,
+      "participating_agents": [
+        "syndrome",
+        "herbal"
+      ],
+      "abstaining_agents": [
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "debate_enabled": false,
+      "judges_enabled": false,
+      "retrieved_source_names": [
+        "SymMap v2 downloadable TCM entity files",
+        "TCMBank all-herb downloadable file"
+      ],
+      "embedding_provider": "none",
+      "embedding_model": "none",
+      "reranker_provider": "none",
+      "reranker": "none",
+      "prompt_versions": {
+        "planner": "v1",
+        "syndrome": "v1",
+        "herbs": "v1",
+        "acupuncture": "v1",
+        "constitution": "v1",
+        "dietary": "v1",
+        "lifestyle": "v1",
+        "debate": "v1",
+        "critic": "v1",
+        "revision": "v1",
+        "evidence_judge": "v1",
+        "hallucination_judge": "v1",
+        "safety_judge": "v1",
+        "conflict_judge": "v1",
+        "confidence_judge": "v1",
+        "provenance_judge": "v1",
+        "synthesis": "v1"
+      },
+      "prompt_hashes": {
+        "planner": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+        "syndrome": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+        "herbs": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+        "acupuncture": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+        "constitution": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+        "dietary": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+        "lifestyle": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+        "debate": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+        "critic": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+        "revision": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+        "evidence_judge": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+        "hallucination_judge": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+        "safety_judge": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+        "conflict_judge": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+        "confidence_judge": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+        "provenance_judge": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+        "synthesis": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8"
+      },
+      "temperature": 0.0,
+      "top_k": 4,
+      "random_seed": 20260815,
+      "active_agents": [
+        "syndrome",
+        "herbal",
+        "acupuncture_meridian",
+        "constitution",
+        "dietary_therapy",
+        "lifestyle_yangsheng"
+      ],
+      "active_judges": [],
+      "retrieval_strategy": "R0",
+      "retrieved_evidence_ids": [
+        "tcmv1-01b61fa93d54e8bdd1c408f6",
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-3ba68a0db74bcfc59b8f96d8",
+        "tcmv1-cc2d3a1098a2414c33f6b82c"
+      ],
+      "agent_outputs": [
+        {
+          "agent_id": "syndrome",
+          "agent_name": "Syndrome Differentiation Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "syndrome_differentiation",
+          "claims": [
+            {
+              "claim_id": "syndrome-33a16f0295",
+              "text": "Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-01b61fa93d54e8bdd1c408f6"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-01b61fa93d54e8bdd1c408f6 matched the syndrome_differentiation scope.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-01b61fa93d54e8bdd1c408f6"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-01b61fa93d54e8bdd1c408f6",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.62,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic_fallback",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for syndrome_differentiation; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "herbal",
+          "agent_name": "Herbal Knowledge Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "herbal_knowledge",
+          "claims": [
+            {
+              "claim_id": "herbal-a6e8038515",
+              "text": "Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-010f829f0c703d4a98d24324 matched the herbal_knowledge scope.",
+              "confidence": 0.62
+            },
+            {
+              "claim_id": "herbal-10c740abfd",
+              "text": "Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf.",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-3ba68a0db74bcfc59b8f96d8"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-3ba68a0db74bcfc59b8f96d8 matched the herbal_knowledge scope.",
+              "confidence": 0.62
+            },
+            {
+              "claim_id": "herbal-fb45ae473e",
+              "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs..",
+              "claim_type": "traditional_educational",
+              "evidence_ids": [
+                "tcmv1-cc2d3a1098a2414c33f6b82c"
+              ],
+              "reasoning_summary": "Selected because retrieved chunk tcmv1-cc2d3a1098a2414c33f6b82c matched the herbal_knowledge scope.",
+              "confidence": 0.62
+            }
+          ],
+          "evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324",
+            "tcmv1-3ba68a0db74bcfc59b8f96d8",
+            "tcmv1-cc2d3a1098a2414c33f6b82c"
+          ],
+          "citations": [
+            {
+              "evidence_id": "tcmv1-010f829f0c703d4a98d24324",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-3ba68a0db74bcfc59b8f96d8",
+              "source_id": "symmap_v2",
+              "title": "SymMap v2 downloadable TCM entity files",
+              "locator": "Wu Y et al. SymMap: an integrative database of traditional Chinese medicine enhanced by symptom mapping. Nucleic Acids Res. 2019;47(D1):D1110-D1117. doi:10.1093/nar/gky1021.",
+              "provenance_valid": true
+            },
+            {
+              "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+              "source_id": "tcmbank_v1",
+              "title": "TCMBank all-herb downloadable file",
+              "locator": "Lv Q et al. TCMBank: bridges between the largest herbal medicines, chemical ingredients, target proteins, and associated diseases with intelligence text mining. Chem Sci. 2023;14:10684-10701. doi:10.1039/D3SC02139D.",
+              "provenance_valid": true
+            }
+          ],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No dosing, individualized formula, or prescribing instruction is generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.62,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": false,
+          "abstention_reason": null,
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic_fallback",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for herbal_knowledge; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "acupuncture_meridian",
+          "agent_name": "Acupuncture and Meridian Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "acupuncture_meridian",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "No needling locations, depths, techniques, or procedural instructions are generated."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for acupuncture_meridian; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "constitution",
+          "agent_name": "Constitution Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "constitution",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for constitution; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "dietary_therapy",
+          "agent_name": "TCM Dietary Therapy Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "dietary_therapy",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Traditional food-property concepts are distinct from modern nutritional evidence."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for dietary_therapy; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        },
+        {
+          "agent_id": "lifestyle_yangsheng",
+          "agent_name": "Lifestyle and Yangsheng Agent",
+          "agent_version": "1.0.0",
+          "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+          "language": "en",
+          "subdomain": "lifestyle_yangsheng",
+          "claims": [],
+          "evidence_ids": [],
+          "citations": [],
+          "uncertainties": [
+            "A complete TCM assessment normally requires history and examination details not available here."
+          ],
+          "limitations": [
+            "The corpus is small, provisional, and not expert validated.",
+            "Traditional TCM concepts are reported as educational source content, not established biomedical fact.",
+            "This output is not a diagnosis, prescription, or treatment instruction.",
+            "Any lifestyle content is conservative educational information, not a clinical prescription."
+          ],
+          "safety_flags": [],
+          "confidence": 0.0,
+          "confidence_basis": "retrieval evidence support: mean(min(0.62, 0.30 + signal * 0.40)); signal is first nonzero rerank, semantic, then lexical score; zero when no scoped evidence matches",
+          "abstained": true,
+          "abstention_reason": "No retrieved evidence matched this specialist scope.",
+          "latency_ms": 0,
+          "provider": "local",
+          "model": "deterministic-evidence-mapper-v1",
+          "generation_mode": "deterministic",
+          "prompt_version": "v1",
+          "reasoning_summary": "Evidence selection and structured claim mapping for lifestyle_yangsheng; no hidden reasoning tokens are stored.",
+          "token_usage": {}
+        }
+      ],
+      "judge_outputs": [],
+      "final_answer": "TCM educational synthesis: Syndrome Differentiation Agent: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. [tcmv1-01b61fa93d54e8bdd1c408f6] Herbal Knowledge Agent: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. [tcmv1-010f829f0c703d4a98d24324] Herbal Knowledge Agent: Herb: Ginseng Leaf. Pinyin: Renshenye. Latin name: Ginseng Folium,Folium Ginseng. Traditional properties: Bitter,Sweet,Cold. Meridians: Lung,Stomach. Traditional class: Qi Reinforcing Drugs. Used part: leaf. [tcmv1-3ba68a0db74bcfc59b8f96d8] Herbal Knowledge Agent: Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. [tcmv1-cc2d3a1098a2414c33f6b82c]",
+      "confidence": 0.2067,
+      "abstention": false,
+      "latency_ms": 35253,
+      "stage_timings": [
+        {
+          "stage": "planning",
+          "latency_ms": 106
+        },
+        {
+          "stage": "retrieval",
+          "latency_ms": 132
+        },
+        {
+          "stage": "agents",
+          "latency_ms": 35004
+        },
+        {
+          "stage": "debate",
+          "latency_ms": 0
+        },
+        {
+          "stage": "judges",
+          "latency_ms": 0
+        }
+      ],
+      "token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0
+      },
+      "provider_calls": 4,
+      "provider_errors": [
+        "Provider output rejected: sentence links multiple requested entities without co-occurring supporting evidence",
+        "Provider output rejected: sentence links multiple requested entities without co-occurring supporting evidence"
+      ],
+      "provider_attempts": [
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 30132,
+          "success": false,
+          "http_status": null,
+          "error_type": "output_quality_rejection",
+          "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+          "retry_performed": true
+        },
+        {
+          "attempt": 2,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 4871,
+          "success": false,
+          "http_status": null,
+          "error_type": "output_quality_rejection",
+          "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+          "retry_performed": false
+        },
+        {
+          "attempt": 1,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 5910,
+          "success": false,
+          "http_status": null,
+          "error_type": "output_quality_rejection",
+          "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+          "retry_performed": true
+        },
+        {
+          "attempt": 2,
+          "provider": "siliconflow",
+          "model": "Qwen/Qwen3-8B",
+          "elapsed_ms": 10517,
+          "success": false,
+          "http_status": null,
+          "error_type": "output_quality_rejection",
+          "error": "sentence links multiple requested entities without co-occurring supporting evidence",
+          "retry_performed": false
+        }
+      ],
+      "fallback_usage": true,
+      "iterative_retrieval_used": false,
+      "raw_query_stored": false
+    }
+  }
+]

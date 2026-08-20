@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "commit_sha": "27e009e",
+    "corpus_name": "TCM Research Corpus v1",
+    "corpus_chunk_count": 4461,
+    "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+    "model": "Qwen/Qwen3-8B",
+    "retrieval": "R0",
+    "timestamp": "2026-08-19T12:34:56.317763Z",
+    "total_runs": 20
+  },
+  "PASS": 17,
+  "PASS_WITH_RETRY": 3,
+  "CORRECT_ABSTENTION": 0,
+  "COVERAGE_GAP": 0,
+  "FAIL_PROVIDER": 0,
+  "FAIL_OUTPUT_QUALITY": 0,
+  "FAIL_ROUTING": 0,
+  "FAIL_GROUNDING": 0,
+  "fallback": 0,
+  "corrupted": 0,
+  "C1_pass_rate": 1.0,
+  "C1_mean_latency_ms": 22283.6,
+  "C1_median_latency_ms": 19701.0,
+  "C2_pass_rate": 1.0,
+  "C2_mean_latency_ms": 27902.3,
+  "C2_median_latency_ms": 22528.0,
+  "retry_count": 3,
+  "retry_telemetry": [
+    {
+      "smoke_id": "smoke-01",
+      "condition": "C2",
+      "attempt": 1,
+      "error_type": "timeout",
+      "http_status": null,
+      "success": false,
+      "retry_performed": true,
+      "elapsed_ms": 45228
+    },
+    {
+      "smoke_id": "smoke-04",
+      "condition": "C2",
+      "attempt": 1,
+      "error_type": "timeout",
+      "http_status": null,
+      "success": false,
+      "retry_performed": true,
+      "elapsed_ms": 45250
+    },
+    {
+      "smoke_id": "smoke-05",
+      "condition": "C1",
+      "attempt": 1,
+      "error_type": "timeout",
+      "http_status": null,
+      "success": false,
+      "retry_performed": true,
+      "elapsed_ms": 45207
+    }
+  ],
+  "retry_error_counts": [
+    {
+      "error_type": "timeout",
+      "count": 3
+    }
+  ],
+  "liver_yang": {
+    "all_completed": true,
+    "evidence_ids": "tcmv1-0246978770d8f37c619dd636;tcmv1-dfbdd5ef0273a6ba1c631a49;tcmv1-148d30f7b4c12eeee9c8d20e;tcmv1-0febd68eb306a23cea4a99a4"
+  },
+  "multi_target": {
+    "all_completed": true,
+    "evidence_identical": true,
+    "c2_agents": "syndrome;herbal",
+    "unsupported_synthesis_prevented": true
+  }
+}
