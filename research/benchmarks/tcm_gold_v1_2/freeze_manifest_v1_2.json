@@ -1,0 +1,23 @@
+{
+  "benchmark_version": "v1.2",
+  "freeze_date": "2026-08-21",
+  "benchmark_status": "FROZEN_SOURCE_GROUNDED_V1_2",
+  "corpus_version": "TCM Research Corpus v1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "benchmark_v1_2_jsonl_sha256": "24077270355234c3e53226e22692c1c705daa10dea35f54dc40c7e6ba30224a1",
+  "heldout_manifest_v1_2_json_sha256": "5c640281e2a3e86339b83dfc8b586c3b1d3873ea530cd06500c4a6a3ca18c9fc",
+  "total_formal_questions": 50,
+  "gold_facts": 108,
+  "herbal": 30,
+  "syndrome": 12,
+  "multi_target": 8,
+  "easy": 20,
+  "medium": 20,
+  "hard": 10,
+  "development_regression_questions": 9,
+  "human_source_review": "completed",
+  "clinical_expert_review": "not performed",
+  "formal_c1_c2_experiments_run_before_freeze": false,
+  "freeze_invariant": "After this freeze, benchmark questions, Gold facts, and evidence mappings must not be changed during the formal C1-vs-C2 experiment.",
+  "prefreeze_content_invariant_sha256": "6f88a1ad219abb5dd21a75f853c66527f699a68e86155b6d8a5df80b1d4e6ff3"
+}

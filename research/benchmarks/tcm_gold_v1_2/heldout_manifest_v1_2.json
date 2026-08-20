@@ -1,0 +1,776 @@
+{
+  "benchmark_version": "1.2",
+  "status": "DRAFT_SOURCE_GROUNDED_V1_2",
+  "corpus_name": "TCM Research Corpus v1",
+  "corpus_chunk_count": 4461,
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "development_source": "research/smoke_tests/prepilot-20260818/manifest.json",
+  "development_question_count": 10,
+  "development_questions": [
+    {
+      "smoke_id": "smoke-01",
+      "question": "What are the traditional TCM properties, meridian associations, and traditional uses of Red Ginseng (Hongshen)?",
+      "entities": [
+        "Red Ginseng"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0aaba1cbd4c4296e8ce6e234"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-009",
+        "tcmg-v1-043"
+      ]
+    },
+    {
+      "smoke_id": "smoke-02",
+      "question": "What are the traditional TCM properties, meridian associations, and traditional class of flower bud of lobed kudzuvine (Gehua)?",
+      "entities": [
+        "flower bud of lobed kudzuvine"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-ac5d4abffb0f5db5580bde0e"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-001"
+      ]
+    },
+    {
+      "smoke_id": "smoke-03",
+      "question": "What source-recorded functions and indications are listed for Common Javatea?",
+      "entities": [
+        "Common Javatea"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-000377132373045568267742"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-014"
+      ]
+    },
+    {
+      "smoke_id": "smoke-04",
+      "question": "What source-recorded functions and indications are listed for Evergreen Mucuna?",
+      "entities": [
+        "Evergreen Mucuna"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0000511a57d30d8bdf1b350f"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-013"
+      ]
+    },
+    {
+      "smoke_id": "smoke-05",
+      "question": "What traditional properties, meridians, and class are recorded for Chinese Waxgourd Peel?",
+      "entities": [
+        "Chinese Waxgourd Peel"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-3e939528354550bfa3a475cc"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-008"
+      ]
+    },
+    {
+      "smoke_id": "smoke-06",
+      "question": "What source-recorded function and indication are listed for Polyporus grifolia, Umbellate pore-fungus?",
+      "entities": [
+        "Polyporus grifolia, Umbellate pore-fungus"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-a940e3f55280f0de8e5b1ff7"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-003"
+      ]
+    },
+    {
+      "smoke_id": "smoke-07",
+      "question": "What does the TCM Research Corpus record about deficiency of the kidney-yang?",
+      "entities": [
+        "deficiency of the kidney-yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-d643f3c47d062f033e552170"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-043"
+      ]
+    },
+    {
+      "smoke_id": "smoke-08",
+      "question": "What does the TCM Research Corpus record about liver yang?",
+      "entities": [
+        "liver yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0246978770d8f37c619dd636"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-033"
+      ]
+    },
+    {
+      "smoke_id": "smoke-09",
+      "question": "What does the TCM Research Corpus record about phlegm fire?",
+      "entities": [
+        "phlegm fire"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-107a2889e2902e72f08feaa2"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-049"
+      ]
+    },
+    {
+      "smoke_id": "smoke-10",
+      "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+      "entities": [
+        "Red Ginseng",
+        "deficiency of the kidney-yang"
+      ],
+      "expected_chunk_ids": [
+        "tcmv1-0aaba1cbd4c4296e8ce6e234",
+        "tcmv1-d643f3c47d062f033e552170"
+      ],
+      "overlapping_v1_1_items": [
+        "tcmg-v1-009",
+        "tcmg-v1-043"
+      ]
+    }
+  ],
+  "development_entities": [
+    "Red Ginseng",
+    "flower bud of lobed kudzuvine",
+    "Common Javatea",
+    "Evergreen Mucuna",
+    "Chinese Waxgourd Peel",
+    "Polyporus grifolia, Umbellate pore-fungus",
+    "deficiency of the kidney-yang",
+    "liver yang",
+    "phlegm fire"
+  ],
+  "excluded_benchmark_items": [
+    {
+      "excluded_item_id": "tcmg-v1-001",
+      "replacement_item_id": "tcmg-v1-051",
+      "excluded_entities": [
+        "flower bud of lobed kudzuvine"
+      ],
+      "replacement_entities": [
+        "Peach Seed"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-003",
+      "replacement_item_id": "tcmg-v1-052",
+      "excluded_entities": [
+        "Polyporus grifolia, Umbellate pore-fungus"
+      ],
+      "replacement_entities": [
+        "Odoriferous Rosewood"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-008",
+      "replacement_item_id": "tcmg-v1-053",
+      "excluded_entities": [
+        "Chinese Waxgourd Peel"
+      ],
+      "replacement_entities": [
+        "Vinegar"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-009",
+      "replacement_item_id": "tcmg-v1-054",
+      "excluded_entities": [
+        "Red Ginseng"
+      ],
+      "replacement_entities": [
+        "Dried Tangerine Peel"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-013",
+      "replacement_item_id": "tcmg-v1-055",
+      "excluded_entities": [
+        "Evergreen Mucuna"
+      ],
+      "replacement_entities": [
+        "Largeleaf Spicebush"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-014",
+      "replacement_item_id": "tcmg-v1-056",
+      "excluded_entities": [
+        "Common Javatea"
+      ],
+      "replacement_entities": [
+        "Silktree Albizia Bark"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-033",
+      "replacement_item_id": "tcmg-v1-057",
+      "excluded_entities": [
+        "liver yang"
+      ],
+      "replacement_entities": [
+        "Damp Phlegm"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-043",
+      "replacement_item_id": "tcmg-v1-058",
+      "excluded_entities": [
+        "Red Ginseng",
+        "deficiency of the kidney-yang"
+      ],
+      "replacement_entities": [
+        "Garden Millingtonia",
+        "indigestion with food retention"
+      ],
+      "reason": "previously used during system development/debugging"
+    },
+    {
+      "excluded_item_id": "tcmg-v1-049",
+      "replacement_item_id": "tcmg-v1-059",
+      "excluded_entities": [
+        "Hosie Ormosia",
+        "phlegm fire"
+      ],
+      "replacement_entities": [
+        "Creeping Skyflower Leaf",
+        "excessiveness of the stomach-fire"
+      ],
+      "reason": "previously used during system development/debugging"
+    }
+  ],
+  "development_regression_items": [
+    {
+      "question_id": "tcmg-v1-001",
+      "question": "What traditional properties, meridians, and class are recorded for flower bud of lobed kudzuvine?",
+      "domain": "herbal_medicine",
+      "difficulty": "easy",
+      "gold_facts": [
+        {
+          "fact": "The source records flower bud of lobed kudzuvine as having these traditional properties: Sweet,Cool.",
+          "preferred_evidence_ids": [
+            "tcmv1-000e94d3e3c2b6cb7c090c58"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics. Source text: Herb: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics."
+        },
+        {
+          "fact": "The source associates flower bud of lobed kudzuvine with these meridians: Spleen,Stomach.",
+          "preferred_evidence_ids": [
+            "tcmv1-000e94d3e3c2b6cb7c090c58"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics. Source text: Herb: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics."
+        },
+        {
+          "fact": "The source lists flower bud of lobed kudzuvine in this traditional class: Pungent Cool Diaphoretics.",
+          "preferred_evidence_ids": [
+            "tcmv1-000e94d3e3c2b6cb7c090c58"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics. Source text: Herb: flower bud of lobed kudzuvine. Pinyin: Gehua. Latin name: Flos Puerariae Lobatae. Traditional properties: Sweet,Cool. Meridians: Spleen,Stomach. Traditional class: Pungent Cool Diaphoretics."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-000e94d3e3c2b6cb7c090c58"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "flower bud of lobed kudzuvine"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-003",
+      "question": "What traditional properties, meridians, and class are recorded for Polyporus grifolia, Umbellate pore-fungus?",
+      "domain": "herbal_medicine",
+      "difficulty": "easy",
+      "gold_facts": [
+        {
+          "fact": "The source records Polyporus grifolia, Umbellate pore-fungus as having these traditional properties: Mild; Sweet; Neutral.",
+          "preferred_evidence_ids": [
+            "tcmv1-00a9308159de70617efcdc55"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Traditional class: Diuretic Dampness Excreting Drugs. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.. Source text: Herb: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.."
+        },
+        {
+          "fact": "The source associates Polyporus grifolia, Umbellate pore-fungus with these meridians: Bladder; Kidney.",
+          "preferred_evidence_ids": [
+            "tcmv1-00a9308159de70617efcdc55"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Traditional class: Diuretic Dampness Excreting Drugs. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.. Source text: Herb: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.."
+        },
+        {
+          "fact": "The source lists Polyporus grifolia, Umbellate pore-fungus in this traditional class: Diuretic Dampness Excreting Drugs.",
+          "preferred_evidence_ids": [
+            "tcmv1-00a9308159de70617efcdc55"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Traditional class: Diuretic Dampness Excreting Drugs. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.. Source text: Herb: Polyporus grifolia, Umbellate pore-fungus. Pinyin: ZHU LING. Latin name: polyporus umbellatus. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Kidney. Used part: sclerotium. Source-recorded function: To transform dampness and promote water metabolism. Source-recorded indication: Inhibited urination, edema, ascites, carcinoma of lung, carcinoma of esophagus, diarrhea, strangury-turbidity, vaginal discharge.."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-00a9308159de70617efcdc55"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Polyporus grifolia, Umbellate pore-fungus"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-008",
+      "question": "What traditional properties, meridians, and class are recorded for Chinese Waxgourd Peel?",
+      "domain": "herbal_medicine",
+      "difficulty": "easy",
+      "gold_facts": [
+        {
+          "fact": "The source records Chinese Waxgourd Peel as having these traditional properties: Sweet,Cool.",
+          "preferred_evidence_ids": [
+            "tcmv1-00f3757a5dd56620116815d4"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Source text: Herb: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Used part: exocarp."
+        },
+        {
+          "fact": "The source associates Chinese Waxgourd Peel with these meridians: Spleen,Small Intestine.",
+          "preferred_evidence_ids": [
+            "tcmv1-00f3757a5dd56620116815d4"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Source text: Herb: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Used part: exocarp."
+        },
+        {
+          "fact": "The source lists Chinese Waxgourd Peel in this traditional class: Diuretic Dampness Excreting Drugs.",
+          "preferred_evidence_ids": [
+            "tcmv1-00f3757a5dd56620116815d4"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Source text: Herb: Chinese Waxgourd Peel. Pinyin: Dongguapi. Latin name: Exocarpium Benincasae,Benincasae Exocarpium. Traditional properties: Sweet,Cool. Meridians: Spleen,Small Intestine. Traditional class: Diuretic Dampness Excreting Drugs. Used part: exocarp."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-00f3757a5dd56620116815d4"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Chinese Waxgourd Peel"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-009",
+      "question": "What traditional properties, meridians, and class are recorded for Red Ginseng?",
+      "domain": "herbal_medicine",
+      "difficulty": "easy",
+      "gold_facts": [
+        {
+          "fact": "The source records Red Ginseng as having these traditional properties: Sweet,Slightly Bitter,Warm.",
+          "preferred_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+        },
+        {
+          "fact": "The source associates Red Ginseng with these meridians: Spleen,Lung,Heart,Kidney.",
+          "preferred_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+        },
+        {
+          "fact": "The source lists Red Ginseng in this traditional class: Qi Reinforcing Drugs.",
+          "preferred_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-010f829f0c703d4a98d24324"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Red Ginseng"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-013",
+      "question": "What source-recorded functions and indications are listed for Evergreen Mucuna?",
+      "domain": "herbal_medicine",
+      "difficulty": "medium",
+      "gold_facts": [
+        {
+          "fact": "The source records this function for Evergreen Mucuna: To quicken blood and regulate menstruation, supplement blood and soothe sinews..",
+          "preferred_evidence_ids": [
+            "tcmv1-0000511a57d30d8bdf1b350f"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Evergreen Mucuna. Pinyin: CHANG CHUN YOU MA TENG. Latin name: Mucuna sempervirens. Used part: stem. Source-recorded function: To quicken blood and regulate menstruation, supplement blood and soothe sinews.. Source-recorded indication: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum anemia, blood vacuity, wind-damp impediment pain, numbness in limbs, knocks and falls.. Source text: Herb: Evergreen Mucuna. Pinyin: CHANG CHUN YOU MA TENG. Latin name: Mucuna sempervirens. Used part: stem. Source-recorded function: To quicken blood and regulate menstruation, supplement blood and soothe sinews.. Source-recorded indication: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum anemia, blood vacuity, wind-damp impediment pain, numbness in limbs, knocks and falls.."
+        },
+        {
+          "fact": "The source records these indications for Evergreen Mucuna: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum anemia, blood vacuity, wind-damp impediment pain, numbness in limbs, knocks and falls..",
+          "preferred_evidence_ids": [
+            "tcmv1-0000511a57d30d8bdf1b350f"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Evergreen Mucuna. Pinyin: CHANG CHUN YOU MA TENG. Latin name: Mucuna sempervirens. Used part: stem. Source-recorded function: To quicken blood and regulate menstruation, supplement blood and soothe sinews.. Source-recorded indication: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum anemia, blood vacuity, wind-damp impediment pain, numbness in limbs, knocks and falls.. Source text: Herb: Evergreen Mucuna. Pinyin: CHANG CHUN YOU MA TENG. Latin name: Mucuna sempervirens. Used part: stem. Source-recorded function: To quicken blood and regulate menstruation, supplement blood and soothe sinews.. Source-recorded indication: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum anemia, blood vacuity, wind-damp impediment pain, numbness in limbs, knocks and falls.."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-0000511a57d30d8bdf1b350f"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Evergreen Mucuna"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-014",
+      "question": "What source-recorded functions and indications are listed for Common Javatea?",
+      "domain": "herbal_medicine",
+      "difficulty": "medium",
+      "gold_facts": [
+        {
+          "fact": "The source records this function for Common Javatea: To dispel wind and disinhibit damp, quicken blood and free network vessels, kill worms and disperse accumulati on..",
+          "preferred_evidence_ids": [
+            "tcmv1-000377132373045568267742"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Common Javatea. Pinyin: JI JIAO SHEN. Latin name: Orthosiphon wulfenioides [Syn. Coleus wulfenioides]. Used part: root. Source-recorded function: To dispel wind and disinhibit damp, quicken blood and free network vessels, kill worms and disperse accumulati on.. Source-recorded indication: Wind-damp impediment pain, strangury, edema, knocks and falls, fracture, food accumulation abdominal distention, abdominal pain due to worm accumulation.. Source text: Herb: Common Javatea. Pinyin: JI JIAO SHEN. Latin name: Orthosiphon wulfenioides [Syn. Coleus wulfenioides]. Used part: root. Source-recorded function: To dispel wind and disinhibit damp, quicken blood and free network vessels, kill worms and disperse accumulati on.. Source-recorded indication: Wind-damp impediment pain, strangury, edema, knocks and falls, fracture, food accumulation abdominal distention, abdominal pain due to worm accumulation.."
+        },
+        {
+          "fact": "The source records these indications for Common Javatea: Wind-damp impediment pain, strangury, edema, knocks and falls, fracture, food accumulation abdominal distention, abdominal pain due to worm accumulation..",
+          "preferred_evidence_ids": [
+            "tcmv1-000377132373045568267742"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Common Javatea. Pinyin: JI JIAO SHEN. Latin name: Orthosiphon wulfenioides [Syn. Coleus wulfenioides]. Used part: root. Source-recorded function: To dispel wind and disinhibit damp, quicken blood and free network vessels, kill worms and disperse accumulati on.. Source-recorded indication: Wind-damp impediment pain, strangury, edema, knocks and falls, fracture, food accumulation abdominal distention, abdominal pain due to worm accumulation.. Source text: Herb: Common Javatea. Pinyin: JI JIAO SHEN. Latin name: Orthosiphon wulfenioides [Syn. Coleus wulfenioides]. Used part: root. Source-recorded function: To dispel wind and disinhibit damp, quicken blood and free network vessels, kill worms and disperse accumulati on.. Source-recorded indication: Wind-damp impediment pain, strangury, edema, knocks and falls, fracture, food accumulation abdominal distention, abdominal pain due to worm accumulation.."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-000377132373045568267742"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Common Javatea"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-033",
+      "question": "What does the TCM Research Corpus record about liver yang?",
+      "domain": "syndrome_differentiation",
+      "difficulty": "easy",
+      "gold_facts": [
+        {
+          "fact": "The source record names the syndrome liver yang and gives this source text: Syndrome: liver yang. Pinyin: Gan Yang.",
+          "preferred_evidence_ids": [
+            "tcmv1-0246978770d8f37c619dd636"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: liver yang. Pinyin: Gan Yang. Source text: Syndrome: liver yang. Pinyin: Gan Yang."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-0246978770d8f37c619dd636"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "syndrome"
+      ],
+      "unsupported_claim_constraints": [],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "liver yang"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-043",
+      "question": "How are Red Ginseng and deficiency of the kidney-yang represented in the TCM corpus, and what evidence is recorded for each?",
+      "domain": "herbal_medicine + syndrome_differentiation",
+      "difficulty": "hard",
+      "gold_facts": [
+        {
+          "fact": "The source records Red Ginseng as having these traditional properties: Sweet,Slightly Bitter,Warm.",
+          "preferred_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ],
+          "acceptable_alternate_evidence_ids": [
+            "tcmv1-0aaba1cbd4c4296e8ce6e234"
+          ],
+          "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+        },
+        {
+          "fact": "The source associates Red Ginseng with these meridians: Spleen,Lung,Heart,Kidney.",
+          "preferred_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ],
+          "acceptable_alternate_evidence_ids": [
+            "tcmv1-0aaba1cbd4c4296e8ce6e234"
+          ],
+          "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+        },
+        {
+          "fact": "The source defines deficiency of the kidney-yang as: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。.",
+          "preferred_evidence_ids": [
+            "tcmv1-01b61fa93d54e8bdd1c408f6"
+          ],
+          "acceptable_alternate_evidence_ids": [
+            "tcmv1-d643f3c47d062f033e552170"
+          ],
+          "evidence_excerpt": "Source entity: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. Source text: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-010f829f0c703d4a98d24324",
+        "tcmv1-01b61fa93d54e8bdd1c408f6"
+      ],
+      "acceptable_alternate_evidence_ids": [
+        "tcmv1-0aaba1cbd4c4296e8ce6e234",
+        "tcmv1-d643f3c47d062f033e552170"
+      ],
+      "expected_specialists": [
+        "syndrome",
+        "herbal"
+      ],
+      "requested_targets": [
+        {
+          "target": "Red Ginseng",
+          "domain": "herbal_medicine",
+          "gold_facts": [
+            {
+              "fact": "The source records Red Ginseng as having these traditional properties: Sweet,Slightly Bitter,Warm.",
+              "preferred_evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324"
+              ],
+              "acceptable_alternate_evidence_ids": [
+                "tcmv1-0aaba1cbd4c4296e8ce6e234"
+              ],
+              "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+            },
+            {
+              "fact": "The source associates Red Ginseng with these meridians: Spleen,Lung,Heart,Kidney.",
+              "preferred_evidence_ids": [
+                "tcmv1-010f829f0c703d4a98d24324"
+              ],
+              "acceptable_alternate_evidence_ids": [
+                "tcmv1-0aaba1cbd4c4296e8ce6e234"
+              ],
+              "evidence_excerpt": "Source entity: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs. Source text: Herb: Red Ginseng. Pinyin: Hongshen. Latin name: Radix Ginseng Rubra,Ginseng Radix Et Rhizoma Rubra. Traditional properties: Sweet,Slightly Bitter,Warm. Meridians: Spleen,Lung,Heart,Kidney. Traditional class: Qi Reinforcing Drugs."
+            }
+          ],
+          "supporting_evidence_ids": [
+            "tcmv1-010f829f0c703d4a98d24324"
+          ]
+        },
+        {
+          "target": "deficiency of the kidney-yang",
+          "domain": "syndrome_differentiation",
+          "gold_facts": [
+            {
+              "fact": "The source defines deficiency of the kidney-yang as: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。.",
+              "preferred_evidence_ids": [
+                "tcmv1-01b61fa93d54e8bdd1c408f6"
+              ],
+              "acceptable_alternate_evidence_ids": [
+                "tcmv1-d643f3c47d062f033e552170"
+              ],
+              "evidence_excerpt": "Source entity: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。. Source text: Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+            }
+          ],
+          "supporting_evidence_ids": [
+            "tcmv1-01b61fa93d54e8bdd1c408f6"
+          ]
+        }
+      ],
+      "relationship_gold_status": "not_established",
+      "unsupported_claim_constraints": [
+        "Do not infer an explicit relationship between Red Ginseng and deficiency of the kidney-yang; the selected evidence describes these targets separately."
+      ],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Red Ginseng",
+        "deficiency of the kidney-yang"
+      ],
+      "excluded_from_semantic_accuracy": true
+    },
+    {
+      "question_id": "tcmg-v1-049",
+      "question": "How are Hosie Ormosia and phlegm fire represented in the TCM corpus, and what evidence is recorded for each?",
+      "domain": "herbal_medicine + syndrome_differentiation",
+      "difficulty": "hard",
+      "gold_facts": [
+        {
+          "fact": "The source records this function for Hosie Ormosia: To rectify qi and quicken blood, clear heat and resolve toxin..",
+          "preferred_evidence_ids": [
+            "tcmv1-026c8f0359c1d444f2c84680"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.. Source text: Herb: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.."
+        },
+        {
+          "fact": "The source records these indications for Hosie Ormosia: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore..",
+          "preferred_evidence_ids": [
+            "tcmv1-026c8f0359c1d444f2c84680"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.. Source text: Herb: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.."
+        },
+        {
+          "fact": "The source defines phlegm fire as: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。.",
+          "preferred_evidence_ids": [
+            "tcmv1-107a2889e2902e72f08feaa2"
+          ],
+          "acceptable_alternate_evidence_ids": [],
+          "evidence_excerpt": "Source entity: phlegm fire. Pinyin: Tan Huo. Source definition: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。. Source text: Syndrome: phlegm fire. Pinyin: Tan Huo. Source definition: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。."
+        }
+      ],
+      "preferred_evidence_ids": [
+        "tcmv1-026c8f0359c1d444f2c84680",
+        "tcmv1-107a2889e2902e72f08feaa2"
+      ],
+      "acceptable_alternate_evidence_ids": [],
+      "expected_specialists": [
+        "syndrome",
+        "herbal"
+      ],
+      "unsupported_claim_constraints": [
+        "Do not infer an explicit relationship between Hosie Ormosia and phlegm fire; the selected evidence is target-specific unless a co-occurring relationship record is present."
+      ],
+      "status": "DRAFT_SOURCE_GROUNDED",
+      "requested_targets": [
+        {
+          "target": "Hosie Ormosia",
+          "domain": "herbal_medicine",
+          "gold_facts": [
+            {
+              "fact": "The source records this function for Hosie Ormosia: To rectify qi and quicken blood, clear heat and resolve toxin..",
+              "preferred_evidence_ids": [
+                "tcmv1-026c8f0359c1d444f2c84680"
+              ],
+              "acceptable_alternate_evidence_ids": [],
+              "evidence_excerpt": "Source entity: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.. Source text: Herb: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.."
+            },
+            {
+              "fact": "The source records these indications for Hosie Ormosia: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore..",
+              "preferred_evidence_ids": [
+                "tcmv1-026c8f0359c1d444f2c84680"
+              ],
+              "acceptable_alternate_evidence_ids": [],
+              "evidence_excerpt": "Source entity: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.. Source text: Herb: Hosie Ormosia. Pinyin: HONG DOU. Latin name: Ormosia hosiei. Used part: seed. Source-recorded function: To rectify qi and quicken blood, clear heat and resolve toxin.. Source-recorded indication: Mounting qi, qi pain in heart and stomach, amenorrhea due to blood stasis, innominate toxin swelling, clove sore.."
+            }
+          ],
+          "supporting_evidence_ids": [
+            "tcmv1-026c8f0359c1d444f2c84680"
+          ]
+        },
+        {
+          "target": "phlegm fire",
+          "domain": "syndrome_differentiation",
+          "gold_facts": [
+            {
+              "fact": "The source defines phlegm fire as: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。.",
+              "preferred_evidence_ids": [
+                "tcmv1-107a2889e2902e72f08feaa2"
+              ],
+              "acceptable_alternate_evidence_ids": [],
+              "evidence_excerpt": "Source entity: phlegm fire. Pinyin: Tan Huo. Source definition: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。. Source text: Syndrome: phlegm fire. Pinyin: Tan Huo. Source definition: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。."
+            }
+          ],
+          "supporting_evidence_ids": [
+            "tcmv1-107a2889e2902e72f08feaa2"
+          ]
+        }
+      ],
+      "relationship_gold_status": "not_established",
+      "benchmark_role": "development_regression",
+      "terminology_review": false,
+      "source_entity_names": [
+        "Hosie Ormosia",
+        "phlegm fire"
+      ],
+      "excluded_from_semantic_accuracy": true
+    }
+  ],
+  "replacement_selection": {
+    "used_c1_c2_outputs": false,
+    "called_c1_c2_during_construction": false,
+    "called_provider_or_llm_during_construction": false,
+    "used_external_medical_knowledge": false,
+    "confirmation": "Replacement items were selected only from unused, substantive Corpus v1 source records and were not run through C1 or C2 during benchmark construction."
+  }
+}

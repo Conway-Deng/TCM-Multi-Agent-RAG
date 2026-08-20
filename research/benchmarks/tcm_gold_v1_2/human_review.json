@@ -1,0 +1,316 @@
+{
+  "version": "1.2",
+  "benchmark_version": "v1.2",
+  "status": "FROZEN_SOURCE_GROUNDED_V1_2",
+  "review_date": "2026-08-21",
+  "review_type": "AI-assisted source-grounded review with final human confirmation",
+  "clinical_expert_validation": "NOT_PERFORMED",
+  "corpus": "TCM Research Corpus v1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "formal_questions": 50,
+  "approved_questions": 50,
+  "gold_facts": 108,
+  "approved_gold_facts": 108,
+  "decisions": {
+    "tcmg-v1-051": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-002": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-052": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-004": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-005": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-006": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-007": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-053": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-054": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-010": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-011": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-012": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-055": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-056": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-015": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-016": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-017": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-018": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-019": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-020": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-021": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-022": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-023": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-024": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-025": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-026": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-027": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-028": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-029": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-030": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-031": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-032": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-057": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-034": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-035": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-036": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-037": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-038": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-039": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-040": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-041": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-042": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-058": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-044": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-045": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-046": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-047": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-048": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-059": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    },
+    "tcmg-v1-050": {
+      "review_status": "APPROVED",
+      "review_type": "AI-assisted source-grounded review with final human confirmation",
+      "clinical_expert_validation": "NOT_PERFORMED",
+      "review_date": "2026-08-21"
+    }
+  }
+}
