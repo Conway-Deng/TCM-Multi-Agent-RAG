@@ -1,0 +1,64 @@
+{
+  "sample_size": 45,
+  "bootstrap_resamples": 10000,
+  "seed": 20260821,
+  "metrics": {
+    "retrieval": {
+      "c1_mean": 0.9777777777777777,
+      "c1_median": 1,
+      "c2_mean": 0.9777777777777777,
+      "c2_median": 1,
+      "mean_paired_difference": 0,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 0,
+        "p_value_two_sided": 0,
+        "zero_differences": 45,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "citation_recall": {
+      "c1_mean": 0.9555555555555556,
+      "c1_median": 1,
+      "c2_mean": 0.9555555555555556,
+      "c2_median": 1,
+      "mean_paired_difference": 0,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 0,
+        "p_value_two_sided": 0,
+        "zero_differences": 45,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "citation_precision": {
+      "c1_mean": 0.6444444444444443,
+      "c1_median": 0.6666666666666666,
+      "c2_mean": 0.6333333333333332,
+      "c2_median": 0.5,
+      "mean_paired_difference": -0.011111111111111112,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        -0.029629629629629634,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 2,
+        "p_value_two_sided": 0.3710933069555178,
+        "zero_differences": 43,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    }
+  }
+}

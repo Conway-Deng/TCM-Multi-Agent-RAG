@@ -1,0 +1,30 @@
+{
+  "sample_size": 45,
+  "bootstrap_resamples": 10000,
+  "seed": 20260821,
+  "paired_usable_pairs": {
+    "c1_mean_ms": 18754.022222222222,
+    "c1_median_ms": 15615,
+    "c2_mean_ms": 21180.844444444443,
+    "c2_median_ms": 14348,
+    "mean_difference_c2_minus_c1_ms": 2426.822222222222,
+    "median_difference_ms": -23,
+    "bootstrap_95ci_mean_difference_ms": [
+      -5430.355555555556,
+      10774.68888888889
+    ],
+    "wilcoxon": {
+      "statistic_w_plus": 522,
+      "nonzero_n": 45,
+      "p_value_two_sided": 0.9639874528645631,
+      "zero_differences": 0,
+      "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+    }
+  },
+  "all_run_summary": {
+    "C1_mean_ms": 19893.9,
+    "C1_median_ms": 17458.5,
+    "C2_mean_ms": 22327.1,
+    "C2_median_ms": 14401.5
+  }
+}

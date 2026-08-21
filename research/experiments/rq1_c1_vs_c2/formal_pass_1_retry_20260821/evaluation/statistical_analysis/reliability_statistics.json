@@ -1,0 +1,16 @@
+{
+  "paired_table": {
+    "both_usable": 45,
+    "c1_only": 2,
+    "c2_only": 0,
+    "neither_usable": 3
+  },
+  "c1_usable_rate": 0.94,
+  "c2_usable_rate": 0.9,
+  "difference": -0.039999999999999925,
+  "mcnemar": {
+    "discordant_c1_only": 2,
+    "discordant_c2_only": 0,
+    "exact_two_sided_p_value": 0.5
+  }
+}

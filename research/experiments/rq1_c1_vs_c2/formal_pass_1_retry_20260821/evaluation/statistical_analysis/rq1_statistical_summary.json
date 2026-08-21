@@ -1,0 +1,189 @@
+{
+  "question_pairs": 45,
+  "semantic": {
+    "full_recall": {
+      "c1_mean": 0.8814814814814814,
+      "c1_median": 1,
+      "c2_mean": 0.9074074074074073,
+      "c2_median": 1,
+      "mean_paired_difference": 0.025925925925925932,
+      "median_paired_difference": 0,
+      "c2_greater": 3,
+      "c1_greater": 1,
+      "tied": 41,
+      "bootstrap_95ci_mean_difference": [
+        -0.018518518518518517,
+        0.07777777777777779
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 8,
+        "nonzero_n": 4,
+        "p_value_two_sided": 0.3403557254973002,
+        "zero_differences": 41,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "partial_or_better": {
+      "c1_mean": 0.948148148148148,
+      "c1_median": 1,
+      "c2_mean": 0.9703703703703703,
+      "c2_median": 1,
+      "mean_paired_difference": 0.022222222222222223,
+      "median_paired_difference": 0,
+      "c2_greater": 3,
+      "c1_greater": 0,
+      "tied": 42,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0.051851851851851864
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 6,
+        "nonzero_n": 3,
+        "p_value_two_sided": 0.05878159137320993,
+        "zero_differences": 42,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "missing_rate": {
+      "c1_mean": 0.04444444444444444,
+      "c1_median": 0,
+      "c2_mean": 0.022222222222222223,
+      "c2_median": 0,
+      "mean_paired_difference": -0.022222222222222223,
+      "median_paired_difference": 0,
+      "c2_greater": 0,
+      "c1_greater": 3,
+      "tied": 42,
+      "bootstrap_95ci_mean_difference": [
+        -0.05185185185185184,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 3,
+        "p_value_two_sided": 0.05878159137320993,
+        "zero_differences": 42,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "contradiction_rate": {
+      "c1_mean": 0.007407407407407407,
+      "c1_median": 0,
+      "c2_mean": 0.007407407407407407,
+      "c2_median": 0,
+      "mean_paired_difference": 0,
+      "median_paired_difference": 0,
+      "c2_greater": 0,
+      "c1_greater": 0,
+      "tied": 45,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 0,
+        "p_value_two_sided": 0,
+        "zero_differences": 45,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    }
+  },
+  "objective": {
+    "retrieval": {
+      "c1_mean": 0.9777777777777777,
+      "c1_median": 1,
+      "c2_mean": 0.9777777777777777,
+      "c2_median": 1,
+      "mean_paired_difference": 0,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 0,
+        "p_value_two_sided": 0,
+        "zero_differences": 45,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "citation_recall": {
+      "c1_mean": 0.9555555555555556,
+      "c1_median": 1,
+      "c2_mean": 0.9555555555555556,
+      "c2_median": 1,
+      "mean_paired_difference": 0,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        0,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 0,
+        "p_value_two_sided": 0,
+        "zero_differences": 45,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    },
+    "citation_precision": {
+      "c1_mean": 0.6444444444444443,
+      "c1_median": 0.6666666666666666,
+      "c2_mean": 0.6333333333333332,
+      "c2_median": 0.5,
+      "mean_paired_difference": -0.011111111111111112,
+      "median_paired_difference": 0,
+      "bootstrap_95ci_mean_difference": [
+        -0.029629629629629634,
+        0
+      ],
+      "wilcoxon": {
+        "statistic_w_plus": 0,
+        "nonzero_n": 2,
+        "p_value_two_sided": 0.3710933069555178,
+        "zero_differences": 43,
+        "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+      }
+    }
+  },
+  "reliability": {
+    "paired_table": {
+      "both_usable": 45,
+      "c1_only": 2,
+      "c2_only": 0,
+      "neither_usable": 3
+    },
+    "c1_usable_rate": 0.94,
+    "c2_usable_rate": 0.9,
+    "difference": -0.039999999999999925,
+    "mcnemar": {
+      "discordant_c1_only": 2,
+      "discordant_c2_only": 0,
+      "exact_two_sided_p_value": 0.5
+    }
+  },
+  "latency": {
+    "c1_mean_ms": 18754.022222222222,
+    "c1_median_ms": 15615,
+    "c2_mean_ms": 21180.844444444443,
+    "c2_median_ms": 14348,
+    "mean_difference_c2_minus_c1_ms": 2426.822222222222,
+    "median_difference_ms": -23,
+    "bootstrap_95ci_mean_difference_ms": [
+      -5430.355555555556,
+      10774.68888888889
+    ],
+    "wilcoxon": {
+      "statistic_w_plus": 522,
+      "nonzero_n": 45,
+      "p_value_two_sided": 0.9639874528645631,
+      "zero_differences": 0,
+      "method": "Wilcoxon signed-rank, zero differences omitted; normal approximation with tie correction"
+    }
+  },
+  "recommendation": "REPEAT_PASSES_RECOMMENDED_WITH_METHODOLOGY_AND_RELIABILITY_REVIEW",
+  "human_validation": "NOT PERFORMED"
+}
