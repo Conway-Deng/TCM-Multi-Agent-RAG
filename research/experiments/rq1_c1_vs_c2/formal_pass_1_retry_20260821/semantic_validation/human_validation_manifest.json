@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "status": "PENDING_HUMAN_VALIDATION",
+  "random_seed": 20260821,
+  "sample_item_count": 60,
+  "source_packet_count": 92,
+  "source_atomic_comparisons": 204,
+  "blinding": {
+    "labels": [
+      "SYSTEM_A",
+      "SYSTEM_B"
+    ],
+    "condition_identity_withheld": true,
+    "presentation_order_randomized": true
+  },
+  "anonymized_system_label_counts": {
+    "SYSTEM_A": 32,
+    "SYSTEM_B": 28
+  },
+  "domain_distribution": {
+    "syndrome": 19,
+    "multi-target": 20,
+    "herbal": 21
+  },
+  "difficulty_distribution": {
+    "easy": 20,
+    "hard": 20,
+    "medium": 20
+  },
+  "fact_type_distribution": {
+    "definition": 22,
+    "functions": 16,
+    "uses": 17,
+    "meridians": 3,
+    "other": 1,
+    "class": 1
+  },
+  "multi_target_items": 20,
+  "labels_prefilled": false,
+  "judge_predictions_included": false,
+  "judge_model": "TO_BE_FROZEN"
+}
