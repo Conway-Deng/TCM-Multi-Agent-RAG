@@ -1,0 +1,61 @@
+item_id,anonymous_system_label,review_label,review_reason,confidence
+HV-001,SYSTEM_A,SUPPORTED,The answer fully expresses the Gold definition: heat pathogen or excessive yang/yin deficiency leading to heightened bodily functions.,HIGH
+HV-002,SYSTEM_B,SUPPORTED,"The answer covers the listed Damp Phlegm manifestations, including thick phlegm, easy expectoration, heaviness, chest/epigastric discomfort, appetite/mouth changes, tongue coating, and pulse.",HIGH
+HV-003,SYSTEM_B,SUPPORTED,The answer fully paraphrases the Gold definition of febrile symptoms and preserves the causal structure and heightened bodily functions.,HIGH
+HV-004,SYSTEM_A,SUPPORTED,The Sharpspur Corydalis section explicitly states both parts of the Gold function: quickening blood/relieving pain and clearing heat/resolving toxin.,HIGH
+HV-005,SYSTEM_B,SUPPORTED,The answer explicitly gives the Gold indication: swelling toxin of welling abscess and sore.,HIGH
+HV-006,SYSTEM_A,SUPPORTED,The answer directly paraphrases the Gold definition as excessive stomach heat transforming into fire.,HIGH
+HV-007,SYSTEM_B,SUPPORTED,"The answer states that dietary indiscretion damages the spleen and stomach and produces the syndrome, matching the Gold definition.",HIGH
+HV-008,SYSTEM_B,SUPPORTED,The answer includes both Gold-recorded indications/effects: antitussive-expectorant-antiasthmatic effects and hypotensive effect of alcoholic infusion in anesthetized animals.,HIGH
+HV-009,SYSTEM_A,SUPPORTED,"The answer expresses extreme yang deficiency, excess yin-cold, and the resulting pattern of true internal cold with false external heat.",HIGH
+HV-010,SYSTEM_A,SUPPORTED,"The answer reproduces the complete Gold indication list in substance, with only minor normalization of source wording.",HIGH
+HV-011,SYSTEM_A,SUPPORTED,"The answer includes spleen qi weakness with failure to raise, downward sinking, and all major manifestations listed in the Gold fact.",HIGH
+HV-012,SYSTEM_B,SUPPORTED,The answer fully states the Gold function: relieving cough/dispelling phlegm and loosening the chest/disinhibiting qi.,HIGH
+HV-013,SYSTEM_B,SUPPORTED,The answer explicitly covers all components of the Gold function for Bloodflower Milkweed.,HIGH
+HV-014,SYSTEM_A,SUPPORTED,"The answer states that dietary indiscretion damages the spleen and stomach and leads to the syndrome, matching the Gold definition.",HIGH
+HV-015,SYSTEM_B,SUPPORTED,"The answer explicitly associates Peach Seed with all three Gold meridians: Large Intestine, Liver, and Heart.",HIGH
+HV-016,SYSTEM_B,SUPPORTED,"The answer fully states the Gold function: dispelling stasis, dispersing swelling, killing worms, and resolving toxin.",HIGH
+HV-017,SYSTEM_B,SUPPORTED,"The answer fully expresses quieting the spirit, resolving depression, quickening blood, and dispersing welling abscesses.",HIGH
+HV-018,SYSTEM_A,SUPPORTED,"The answer captures gallbladder qi constraint/impaired descent causing right hypochondriac distending pain, which is the substance of the Gold definition.",HIGH
+HV-019,SYSTEM_A,SUPPORTED,The Garden Millingtonia section fully states all components of the Gold function.,HIGH
+HV-020,SYSTEM_A,SUPPORTED,"The answer includes the stage description and the major Gold manifestations: high fever, confusion/delirium, possible coma, cold limbs, and convulsions.",HIGH
+HV-021,SYSTEM_B,PARTIALLY_SUPPORTED,"The answer discusses phlegm accumulation/retention and includes dizziness, but omits most of the Gold-specific causal chain and manifestations such as heavy clouded head, white greasy coating, and soggy/slippery pulse.",MEDIUM
+HV-022,SYSTEM_A,SUPPORTED,The answer explicitly lists all Gold indications for Sharpspur Corydalis.,HIGH
+HV-023,SYSTEM_B,SUPPORTED,"The answer preserves the Gold causes and main manifestations of stomach-yin deficiency, including nausea/vomiting/hiccups, dryness, red scant-coated tongue, and fine rapid pulse.",HIGH
+HV-024,SYSTEM_A,SUPPORTED,"The answer explicitly gives all Gold properties: Warm, Sour, and Bitter.",HIGH
+HV-025,SYSTEM_A,SUPPORTED,The answer directly quotes the source wording and accurately paraphrases the Gold definition.,HIGH
+HV-026,SYSTEM_B,SUPPORTED,The answer fully states the Gold function for Garden Millingtonia.,HIGH
+HV-027,SYSTEM_B,SUPPORTED,The answer explicitly lists all Gold indications for Sharpspur Corydalis.,HIGH
+HV-028,SYSTEM_B,SUPPORTED,The answer includes the core definition and all major symptoms listed in the Gold fact.,HIGH
+HV-029,SYSTEM_A,SUPPORTED,The answer fully states all four components of the Gold function.,HIGH
+HV-030,SYSTEM_A,SUPPORTED,The answer includes the core definition and all major symptoms listed in the Gold fact.,HIGH
+HV-031,SYSTEM_B,SUPPORTED,"The answer fully states the Gold function: subduing liver hyperactivity, promoting blood circulation, dispelling wind, clearing eye opacity, and arresting itching.",HIGH
+HV-032,SYSTEM_A,SUPPORTED,The answer covers the substantive Damp Phlegm symptom set in the Gold definition.,HIGH
+HV-033,SYSTEM_B,SUPPORTED,The answer lists all Gold indications for Lily Magnolia Bark.,HIGH
+HV-034,SYSTEM_A,SUPPORTED,The answer explicitly places Luganshi in the Gold traditional class: External Medicinal for drawing out toxin and resolving putridity.,HIGH
+HV-035,SYSTEM_A,SUPPORTED,The answer fully states the Gold function of reinforcing qi and invigorating spleen and lung function.,HIGH
+HV-036,SYSTEM_A,SUPPORTED,The answer lists all Gold indications for Threeflower Clematis.,HIGH
+HV-037,SYSTEM_B,SUPPORTED,"The answer includes the Gold stage description and all major manifestations, with valid paraphrasing.",HIGH
+HV-038,SYSTEM_A,SUPPORTED,The answer captures the Gold etiologies and the main manifestations of stomach-yin deficiency.,HIGH
+HV-039,SYSTEM_B,SUPPORTED,"The answer lists all Gold indications, with 'swollen abscesses' as a reasonable paraphrase of 'swollen welling abscess'.",HIGH
+HV-040,SYSTEM_A,SUPPORTED,The answer fully states every component of the Gold function for Puncturevine Caltrop Fruit.,HIGH
+HV-041,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer discusses phlegm retention/accumulation and mentions dizziness, but it does not express most of the specific Gold etiology and characteristic manifestations.",MEDIUM
+HV-042,SYSTEM_A,SUPPORTED,The answer fully states all components of the Gold function for Hairy Willowweed.,HIGH
+HV-043,SYSTEM_B,PARTIALLY_SUPPORTED,The answer gives nearly the entire Gold indication list but omits 'bleeding due to external injury'.,HIGH
+HV-044,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer identifies fluid retention as cold-phlegm obstructing the lung and gives the main cough/asthma, white-phlegm, and cold-sign profile, but omits part of the Gold mechanism and aliases and also adds a different cold-syndrome definition.",MEDIUM
+HV-045,SYSTEM_A,SUPPORTED,The answer explicitly lists all Gold indications for Common Sinodielsia.,HIGH
+HV-046,SYSTEM_B,SUPPORTED,The answer exactly states both Gold indications for Creeping Skyflower Leaf.,HIGH
+HV-047,SYSTEM_B,SUPPORTED,"The answer fully expresses extreme yang deficiency, excess yin-cold, and true internal cold with false external heat.",HIGH
+HV-048,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer states clearing heat/resolving toxin and quickening blood/stanching bleeding, but omits the Gold components 'disperse swelling and relieve pain'.",HIGH
+HV-049,SYSTEM_A,SUPPORTED,The answer fully states the Gold function: relieving cough/dispelling phlegm and warming the stomach/relieving pain.,HIGH
+HV-050,SYSTEM_A,SUPPORTED,The answer lists all Gold indications for Silktree Albizia Bark.,HIGH
+HV-051,SYSTEM_B,SUPPORTED,The answer explicitly associates Coral with both Gold meridians: Liver and Heart.,HIGH
+HV-052,SYSTEM_B,SUPPORTED,The answer explicitly states the Gold meridians Liver and Kidney. The additional separate record does not erase that Gold fact.,HIGH
+HV-053,SYSTEM_B,PARTIALLY_SUPPORTED,"The answer includes clearing heat/resolving toxin, disinhibiting damp/checking diarrhea, and a version of quickening blood for joints, but omits 'disperse food and rectify qi'.",HIGH
+HV-054,SYSTEM_A,SUPPORTED,The answer lists all Gold indications for Lily Magnolia Bark.,HIGH
+HV-055,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer covers dispelling wind/eliminating damp, warming the center, moving qi, and relieving pain, but does not state the Gold component 'disperse swelling'.",HIGH
+HV-056,SYSTEM_A,SUPPORTED,The answer lists all Gold indications for Woods Lcaquertree Leaf.,HIGH
+HV-057,SYSTEM_B,SUPPORTED,"The answer covers the Gold indication set in substance, including septicemia, menstrual disorder, blood-vacuity/anemia presentations, numbness/paralysis, and wind-damp impediment pain.",MEDIUM
+HV-058,SYSTEM_B,SUPPORTED,"The answer includes the complete Gold definition and major manifestations, including the alternate name.",HIGH
+HV-059,SYSTEM_A,NOT_SUPPORTED,The answer gives Suberect Spatholobus properties and functions but does not state the Gold indication list.,HIGH
+HV-060,SYSTEM_B,SUPPORTED,The answer fully states the Gold function for Common Sinodielsia.,HIGH
