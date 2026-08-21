@@ -1,0 +1,20 @@
+{
+  "REPEAT_1": {
+    "C1_mean_ms": 19893.9,
+    "C1_median_ms": 17458.5,
+    "C2_mean_ms": 22327.1,
+    "C2_median_ms": 14401.5
+  },
+  "REPEAT_2": {
+    "C1_mean_ms": 16367.9,
+    "C1_median_ms": 9214,
+    "C2_mean_ms": 21258.9,
+    "C2_median_ms": 19099.5
+  },
+  "REPEAT_3": {
+    "C1_mean_ms": 22542.1,
+    "C1_median_ms": 14276.5,
+    "C2_mean_ms": 25649,
+    "C2_median_ms": 21712.5
+  }
+}

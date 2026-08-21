@@ -1,0 +1,36 @@
+{
+  "REPEAT_1": {
+    "C1": {
+      "usable": 47,
+      "total": 50
+    },
+    "C2": {
+      "usable": 45,
+      "total": 50
+    }
+  },
+  "REPEAT_2": {
+    "C1": {
+      "usable": 47,
+      "total": 50
+    },
+    "C2": {
+      "usable": 45,
+      "total": 50
+    }
+  },
+  "REPEAT_3": {
+    "C1": {
+      "usable": 46,
+      "total": 50
+    },
+    "C2": {
+      "usable": 45,
+      "total": 50
+    }
+  },
+  "overall": {
+    "C1_usable_rate": 0.9333333333333333,
+    "C2_usable_rate": 0.9
+  }
+}

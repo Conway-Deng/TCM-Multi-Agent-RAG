@@ -1,0 +1,4 @@
+repeat_id,paired_questions,full_recall_mean_difference,partial_or_better_mean_difference,missing_rate_mean_difference,contradiction_rate_mean_difference
+REPEAT_1,45,0.025925925925925932,0.022222222222222223,-0.022222222222222223,0
+REPEAT_2,45,0.00740740740740741,0,0,0
+REPEAT_3,44,0.011363636363636366,0,0,0

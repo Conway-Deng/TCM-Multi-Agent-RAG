@@ -1,0 +1,32 @@
+# REPEAT_2 semantic summary
+
+{
+  "repeat_id": "REPEAT_2",
+  "total_comparisons": 204,
+  "usable_comparisons": 204,
+  "C1": {
+    "comparison_count": 103,
+    "SUPPORTED": 93,
+    "PARTIALLY_SUPPORTED": 7,
+    "NOT_SUPPORTED": 2,
+    "CONTRADICTED": 1,
+    "UNRESOLVED": 0,
+    "full_recall": 0.9029126213592233,
+    "partial_or_better": 0.970873786407767,
+    "missing_rate": 0.019417475728155338,
+    "contradiction_rate": 0.009708737864077669
+  },
+  "C2": {
+    "comparison_count": 101,
+    "SUPPORTED": 93,
+    "PARTIALLY_SUPPORTED": 5,
+    "NOT_SUPPORTED": 2,
+    "CONTRADICTED": 1,
+    "UNRESOLVED": 0,
+    "full_recall": 0.9207920792079208,
+    "partial_or_better": 0.9702970297029703,
+    "missing_rate": 0.019801980198019802,
+    "contradiction_rate": 0.009900990099009901
+  },
+  "paired_question_count": 45
+}

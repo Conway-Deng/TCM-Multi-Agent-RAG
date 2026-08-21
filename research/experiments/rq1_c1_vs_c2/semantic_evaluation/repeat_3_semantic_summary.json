@@ -1,0 +1,30 @@
+{
+  "repeat_id": "REPEAT_3",
+  "total_comparisons": 201,
+  "usable_comparisons": 201,
+  "C1": {
+    "comparison_count": 100,
+    "SUPPORTED": 91,
+    "PARTIALLY_SUPPORTED": 6,
+    "NOT_SUPPORTED": 2,
+    "CONTRADICTED": 1,
+    "UNRESOLVED": 0,
+    "full_recall": 0.91,
+    "partial_or_better": 0.97,
+    "missing_rate": 0.02,
+    "contradiction_rate": 0.01
+  },
+  "C2": {
+    "comparison_count": 101,
+    "SUPPORTED": 94,
+    "PARTIALLY_SUPPORTED": 4,
+    "NOT_SUPPORTED": 2,
+    "CONTRADICTED": 1,
+    "UNRESOLVED": 0,
+    "full_recall": 0.9306930693069307,
+    "partial_or_better": 0.9702970297029703,
+    "missing_rate": 0.019801980198019802,
+    "contradiction_rate": 0.009900990099009901
+  },
+  "paired_question_count": 44
+}
