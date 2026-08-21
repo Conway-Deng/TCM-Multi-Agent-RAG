@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "status": "PENDING_OWNER_SPOT_CHECK",
+  "methodology": "AI-assisted semantic evaluation with project-owner spot-check",
+  "random_seed": 20260821,
+  "sample_size": 20,
+  "medium_confidence_included": 4,
+  "high_confidence_included": 16,
+  "source_review": "ai_semantic_review.json",
+  "choices": [
+    "AGREE",
+    "DISAGREE",
+    "UNSURE"
+  ],
+  "owner_labels_prefilled": false,
+  "external_gpt_review": "COMPLETED",
+  "independent_human_semantic_validation": "NOT PERFORMED",
+  "project_owner_spot_check": "PENDING",
+  "clinical_tcm_expert_validation": "NOT PERFORMED",
+  "distribution": {
+    "system_label": {
+      "SYSTEM_A": 10,
+      "SYSTEM_B": 10
+    },
+    "domain": {
+      "syndrome_differentiation": 8,
+      "herbal_medicine": 5,
+      "herbal_medicine + syndrome_differentiation": 7
+    },
+    "difficulty": {
+      "easy": 7,
+      "medium": 6,
+      "hard": 7
+    },
+    "gpt_label": {
+      "PARTIALLY_SUPPORTED": 5,
+      "SUPPORTED": 14,
+      "NOT_SUPPORTED": 1
+    }
+  }
+}
