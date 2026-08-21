@@ -1,0 +1,192 @@
+{
+  "methodology": "AI-assisted semantic evaluation using the same frozen source-grounded rubric as Formal Pass 1",
+  "mapping_source": "Pass 1 anonymous mapping where available; deterministic question mapping otherwise",
+  "mapping": {
+    "tcmg-v1-051": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-002": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-052": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-004": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-005": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-006": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-007": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-053": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-054": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-010": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-011": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-012": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-055": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-056": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-015": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-016": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-017": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-018": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-019": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-022": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-023": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-024": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-025": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-026": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-027": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-028": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-029": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-030": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-031": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-032": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-057": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-034": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-035": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-036": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-037": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-038": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-039": {
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-040": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-041": {
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-058": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-044": {
+      "C1": "SYSTEM_A",
+      "C2": "SYSTEM_A"
+    },
+    "tcmg-v1-045": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-046": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    },
+    "tcmg-v1-047": {
+      "C1": "SYSTEM_B",
+      "C2": "SYSTEM_B"
+    },
+    "tcmg-v1-048": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-059": {
+      "C2": "SYSTEM_B",
+      "C1": "SYSTEM_B"
+    },
+    "tcmg-v1-050": {
+      "C2": "SYSTEM_A",
+      "C1": "SYSTEM_A"
+    }
+  }
+}
