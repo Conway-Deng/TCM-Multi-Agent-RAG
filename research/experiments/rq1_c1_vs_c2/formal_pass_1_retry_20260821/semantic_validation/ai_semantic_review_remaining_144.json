@@ -1,0 +1,1020 @@
+{
+  "review_type": "external_gpt_semantic_review",
+  "reviewer": "GPT-5.6 Sol",
+  "review_date": "2026-08-21",
+  "rubric": "same frozen semantic rubric from commit 631ffbe",
+  "external_medical_knowledge_used": false,
+  "clinical_validation": false,
+  "human_validation": false,
+  "sample_size": 144,
+  "items": [
+    {
+      "item_id": "R144-001",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "PARTIALLY_SUPPORTED",
+      "review_reason": "The answer preserves Bitter and Sweet but gives Mild instead of the Gold property Calm, so only part of the complete property set is expressed.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-002",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-003",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "PARTIALLY_SUPPORTED",
+      "review_reason": "The answer preserves Bitter and Sweet but gives Mild instead of the Gold property Calm, so only part of the complete property set is expressed.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-004",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-005",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-006",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-007",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-008",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-009",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-010",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-011",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-012",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-013",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-014",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-015",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-016",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-017",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-018",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-019",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-020",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-021",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-022",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-023",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-024",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-025",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-026",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-027",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-028",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-029",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-030",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-031",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-032",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-033",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-034",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-035",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-036",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-037",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-038",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-039",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-040",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-041",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "CONTRADICTED",
+      "review_reason": "The Gold fact assigns Vinegar to Blood activation and stasis removal, while the answer explicitly assigns a different traditional class.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-042",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-043",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-044",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "CONTRADICTED",
+      "review_reason": "The Gold fact assigns Vinegar to Blood activation and stasis removal, while the answer explicitly assigns a different traditional class.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-045",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-046",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-047",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-048",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-049",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-050",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer explicitly states the same traditional class as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-051",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-052",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-053",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer mentions spirit calming as a function but explicitly says no traditional class is provided; it therefore does not assert the Gold class fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-054",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-055",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer mentions spirit calming as a function but explicitly says no traditional class is provided; it therefore does not assert the Gold class fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-056",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-057",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-058",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer gives properties and meridians but explicitly says Hairy Antler's traditional class is not mentioned, so the Gold class is not expressed.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-059",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-060",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-061",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer describes tonic use but explicitly says the traditional class is not mentioned; it does not state the Gold class 'For tonifying weakness'.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-062",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-063",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-064",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer explicitly says the traditional class is not mentioned and therefore does not express the Gold class Blood activation and stasis removal.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-065",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-066",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer states the same source-recorded meridian associations as the Gold fact.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-067",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The answer discusses blood-stagnation-related use but explicitly says the traditional class is not mentioned, so the Gold class is not stated.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-068",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "PARTIALLY_SUPPORTED",
+      "review_reason": "The answer includes only a limited part of the Gold indication set, such as lichen-related use, while several listed indications are missing.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-069",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "PARTIALLY_SUPPORTED",
+      "review_reason": "The answer covers dispelling wind/eliminating damp, warming the center, moving qi, and relieving pain, but omits the Gold component 'disperse swelling'.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-070",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "PARTIALLY_SUPPORTED",
+      "review_reason": "The answer includes only part of the Gold indication set and does not express several listed indications such as numbness, cold abdominal pain, and throat swelling pain.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-071",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-072",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-073",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-074",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-075",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-076",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-077",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-078",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-079",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-080",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-081",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-082",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer uses 'loss of appetite' as a reasonable paraphrase of the source phrase 'no thought of food and drink', while preserving the other indications.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-083",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-084",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer uses 'loss of appetite' as a reasonable paraphrase of the source phrase 'no thought of food and drink', while preserving the other indications.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-085",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-086",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-087",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-088",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-089",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-090",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-091",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-092",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-093",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-094",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-095",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-096",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-097",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-098",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-099",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-100",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-101",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-102",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-103",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-104",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-105",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-106",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-107",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-108",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-109",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-110",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-111",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-112",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-113",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-114",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-115",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-116",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-117",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-118",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-119",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-120",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-121",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-122",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-123",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-124",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-125",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-126",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-127",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer semantically paraphrases supplement blood, quicken blood, and free network vessels as enriching blood, activating blood circulation, and removing channel/collateral obstructions.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-128",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-129",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-130",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-131",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-132",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-133",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-134",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-135",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The Hairy Willowweed portion gives source-recorded functions but does not state the Gold indication list.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-136",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-137",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-138",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-139",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-140",
+      "anonymous_system_label": "SYSTEM_B",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-141",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "NOT_SUPPORTED",
+      "review_reason": "The Bloodflower Milkweed portion gives functions but does not state the Gold indication list.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-142",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer captures fluid deficiency, intestinal dryness/impaired function, difficulty passing stool, and fluid-deficiency signs, which expresses the substantive Gold definition.",
+      "confidence": "MEDIUM"
+    },
+    {
+      "item_id": "R144-143",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",
+      "confidence": "HIGH"
+    },
+    {
+      "item_id": "R144-144",
+      "anonymous_system_label": "SYSTEM_A",
+      "review_label": "SUPPORTED",
+      "review_reason": "The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.",
+      "confidence": "HIGH"
+    }
+  ]
+}

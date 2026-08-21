@@ -1,0 +1,145 @@
+item_id,anonymous_system_label,review_label,review_reason,confidence
+R144-001,SYSTEM_B,PARTIALLY_SUPPORTED,"The answer preserves Bitter and Sweet but gives Mild instead of the Gold property Calm, so only part of the complete property set is expressed.",MEDIUM
+R144-002,SYSTEM_B,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-003,SYSTEM_B,PARTIALLY_SUPPORTED,"The answer preserves Bitter and Sweet but gives Mild instead of the Gold property Calm, so only part of the complete property set is expressed.",MEDIUM
+R144-004,SYSTEM_B,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-005,SYSTEM_B,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-006,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-007,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-008,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-009,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-010,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-011,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-012,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-013,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-014,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-015,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-016,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-017,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-018,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-019,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-020,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-021,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-022,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-023,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-024,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-025,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-026,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-027,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-028,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-029,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-030,SYSTEM_B,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-031,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-032,SYSTEM_B,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-033,SYSTEM_B,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-034,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-035,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-036,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-037,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-038,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-039,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-040,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-041,SYSTEM_A,CONTRADICTED,"The Gold fact assigns Vinegar to Blood activation and stasis removal, while the answer explicitly assigns a different traditional class.",HIGH
+R144-042,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-043,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-044,SYSTEM_A,CONTRADICTED,"The Gold fact assigns Vinegar to Blood activation and stasis removal, while the answer explicitly assigns a different traditional class.",HIGH
+R144-045,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-046,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-047,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-048,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-049,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-050,SYSTEM_A,SUPPORTED,The answer explicitly states the same traditional class as the Gold fact.,HIGH
+R144-051,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-052,SYSTEM_B,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-053,SYSTEM_B,NOT_SUPPORTED,The answer mentions spirit calming as a function but explicitly says no traditional class is provided; it therefore does not assert the Gold class fact.,HIGH
+R144-054,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-055,SYSTEM_B,NOT_SUPPORTED,The answer mentions spirit calming as a function but explicitly says no traditional class is provided; it therefore does not assert the Gold class fact.,HIGH
+R144-056,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-057,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-058,SYSTEM_A,NOT_SUPPORTED,"The answer gives properties and meridians but explicitly says Hairy Antler's traditional class is not mentioned, so the Gold class is not expressed.",HIGH
+R144-059,SYSTEM_A,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-060,SYSTEM_A,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-061,SYSTEM_A,NOT_SUPPORTED,The answer describes tonic use but explicitly says the traditional class is not mentioned; it does not state the Gold class 'For tonifying weakness'.,MEDIUM
+R144-062,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-063,SYSTEM_B,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-064,SYSTEM_B,NOT_SUPPORTED,The answer explicitly says the traditional class is not mentioned and therefore does not express the Gold class Blood activation and stasis removal.,HIGH
+R144-065,SYSTEM_B,SUPPORTED,"The answer states the same source-recorded traditional properties as the Gold fact, allowing harmless wording/ordering differences.",HIGH
+R144-066,SYSTEM_B,SUPPORTED,The answer states the same source-recorded meridian associations as the Gold fact.,HIGH
+R144-067,SYSTEM_B,NOT_SUPPORTED,"The answer discusses blood-stagnation-related use but explicitly says the traditional class is not mentioned, so the Gold class is not stated.",MEDIUM
+R144-068,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer includes only a limited part of the Gold indication set, such as lichen-related use, while several listed indications are missing.",MEDIUM
+R144-069,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer covers dispelling wind/eliminating damp, warming the center, moving qi, and relieving pain, but omits the Gold component 'disperse swelling'.",MEDIUM
+R144-070,SYSTEM_A,PARTIALLY_SUPPORTED,"The answer includes only part of the Gold indication set and does not express several listed indications such as numbness, cold abdominal pain, and throat swelling pain.",MEDIUM
+R144-071,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-072,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-073,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-074,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-075,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-076,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-077,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-078,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-079,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-080,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-081,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-082,SYSTEM_B,SUPPORTED,"The answer uses 'loss of appetite' as a reasonable paraphrase of the source phrase 'no thought of food and drink', while preserving the other indications.",MEDIUM
+R144-083,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-084,SYSTEM_B,SUPPORTED,"The answer uses 'loss of appetite' as a reasonable paraphrase of the source phrase 'no thought of food and drink', while preserving the other indications.",MEDIUM
+R144-085,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-086,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-087,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-088,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-089,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-090,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-091,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-092,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-093,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-094,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-095,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-096,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-097,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-098,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-099,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-100,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-101,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-102,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-103,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-104,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-105,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-106,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-107,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-108,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-109,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-110,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-111,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-112,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-113,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-114,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-115,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-116,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-117,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-118,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-119,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-120,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-121,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-122,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-123,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-124,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-125,SYSTEM_A,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-126,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-127,SYSTEM_A,SUPPORTED,"The answer semantically paraphrases supplement blood, quicken blood, and free network vessels as enriching blood, activating blood circulation, and removing channel/collateral obstructions.",MEDIUM
+R144-128,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-129,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-130,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-131,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-132,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-133,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-134,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-135,SYSTEM_B,NOT_SUPPORTED,The Hairy Willowweed portion gives source-recorded functions but does not state the Gold indication list.,HIGH
+R144-136,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-137,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-138,SYSTEM_B,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-139,SYSTEM_B,SUPPORTED,"The answer expresses all substantive components of the source-recorded function in the Gold fact, with acceptable paraphrasing.",HIGH
+R144-140,SYSTEM_B,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
+R144-141,SYSTEM_A,NOT_SUPPORTED,The Bloodflower Milkweed portion gives functions but does not state the Gold indication list.,HIGH
+R144-142,SYSTEM_A,SUPPORTED,"The answer captures fluid deficiency, intestinal dryness/impaired function, difficulty passing stool, and fluid-deficiency signs, which expresses the substantive Gold definition.",MEDIUM
+R144-143,SYSTEM_A,SUPPORTED,"The answer expresses the source-recorded indication set in the Gold fact, with only harmless wording or formatting differences.",HIGH
+R144-144,SYSTEM_A,SUPPORTED,The answer preserves the substantive causal/clinical meaning of the Gold definition using an acceptable semantic paraphrase.,HIGH
