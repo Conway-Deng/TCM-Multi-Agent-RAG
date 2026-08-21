@@ -1,0 +1,87 @@
+{
+  "evaluation_id": "rq1_c1_vs_c2_formal_pass_1_objective_evaluation_20260821",
+  "experiment_id": "rq1_c1_vs_c2_formal_pass_1_retry_20260821",
+  "benchmark_sha256": "24077270355234c3e53226e22692c1c705daa10dea35f54dc40c7e6ba30224a1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "integrity": {
+    "benchmark_questions": 50,
+    "result_records": 100,
+    "c1": 50,
+    "c2": 50,
+    "unique_question_pairs": 50,
+    "gold_content_changed": false
+  },
+  "C1": {
+    "total": 50,
+    "usable_real_provider_outputs": 47,
+    "provider_failures": 3,
+    "PASS": 43,
+    "PASS_WITH_RETRY": 4,
+    "CORRECT_ABSTENTION": 0,
+    "COVERAGE_GAP": 0,
+    "FAIL_PROVIDER": 3,
+    "FAIL_OUTPUT_QUALITY": 0,
+    "FAIL_ROUTING": 0,
+    "FAIL_GROUNDING": 0,
+    "retry_rate": 0.14,
+    "retry_records": 7,
+    "mean_latency_ms": 19893.92,
+    "median_latency_ms": 17458.5,
+    "usable_mean_latency_ms": 19757.82978723404,
+    "usable_median_latency_ms": 19302,
+    "gold_evidence_retrieval_recall": 0.9787234042553191,
+    "gold_evidence_citation_recall": 0.9574468085106383,
+    "citation_precision": 0.631205673758865,
+    "multi_target_questions_usable": 8,
+    "multi_target_target_coverage": 1,
+    "multi_target_both_targets_retrieved": 1,
+    "routing_accuracy": null
+  },
+  "C2": {
+    "total": 50,
+    "usable_real_provider_outputs": 45,
+    "provider_failures": 5,
+    "PASS": 38,
+    "PASS_WITH_RETRY": 7,
+    "CORRECT_ABSTENTION": 0,
+    "COVERAGE_GAP": 0,
+    "FAIL_PROVIDER": 5,
+    "FAIL_OUTPUT_QUALITY": 0,
+    "FAIL_ROUTING": 0,
+    "FAIL_GROUNDING": 0,
+    "retry_rate": 0.24,
+    "retry_records": 12,
+    "mean_latency_ms": 22327.06,
+    "median_latency_ms": 14401.5,
+    "usable_mean_latency_ms": 21180.844444444443,
+    "usable_median_latency_ms": 14348,
+    "gold_evidence_retrieval_recall": 0.9777777777777777,
+    "gold_evidence_citation_recall": 0.9555555555555556,
+    "citation_precision": 0.6333333333333332,
+    "multi_target_questions_usable": 8,
+    "multi_target_target_coverage": 1,
+    "multi_target_both_targets_retrieved": 1,
+    "routing_accuracy": 1
+  },
+  "paired": {
+    "complete_usable_pairs": 45,
+    "mean_delta_c2_minus_c1": {
+      "gold_evidence_retrieval_recall": 0,
+      "gold_evidence_citation_recall": 0,
+      "citation_precision": -0.011111111111111112,
+      "latency_ms": 2426.822222222222
+    },
+    "statistical_preparation": [
+      "paired bootstrap confidence intervals",
+      "Wilcoxon signed-rank where appropriate",
+      "McNemar test for paired binary outcomes"
+    ],
+    "significance_tests_run": false
+  },
+  "semantic_gold": {
+    "resolved_atomic_facts": 0,
+    "unresolved_atomic_facts": 204,
+    "method": "No validated deterministic semantic comparison was available; all labels remain UNRESOLVED."
+  },
+  "no_generation_calls_during_evaluation": true
+}
