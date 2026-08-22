@@ -1,0 +1,1346 @@
+{
+  "experiment_id": "rq1_confirmatory_v1_1",
+  "status": "LOCKED_BEFORE_PROVIDER_EXECUTION",
+  "question_ids": [
+    "tcmc-v1-001",
+    "tcmc-v1-002",
+    "tcmc-v1-003",
+    "tcmc-v1-004",
+    "tcmc-v1-005",
+    "tcmc-v1-006",
+    "tcmc-v1-007",
+    "tcmc-v1-008",
+    "tcmc-v1-009",
+    "tcmc-v1-010",
+    "tcmc-v1-011",
+    "tcmc-v1-012",
+    "tcmc-v1-013",
+    "tcmc-v1-014",
+    "tcmc-v1-015",
+    "tcmc-v1-016",
+    "tcmc-v1-017",
+    "tcmc-v1-018",
+    "tcmc-v1-019",
+    "tcmc-v1-020",
+    "tcmc-v1-021",
+    "tcmc-v1-022",
+    "tcmc-v1-023",
+    "tcmc-v1-024",
+    "tcmc-v1-025",
+    "tcmc-v1-026",
+    "tcmc-v1-027",
+    "tcmc-v1-028",
+    "tcmc-v1-029",
+    "tcmc-v1-030",
+    "tcmc-v1-031",
+    "tcmc-v1-032",
+    "tcmc-v1-033",
+    "tcmc-v1-034",
+    "tcmc-v1-035",
+    "tcmc-v1-036",
+    "tcmc-v1-037",
+    "tcmc-v1-038",
+    "tcmc-v1-039",
+    "tcmc-v1-040",
+    "tcmc-v1-041",
+    "tcmc-v1-042",
+    "tcmc-v1-043",
+    "tcmc-v1-044",
+    "tcmc-v1-045",
+    "tcmc-v1-046",
+    "tcmc-v1-047",
+    "tcmc-v1-048",
+    "tcmc-v1-049",
+    "tcmc-v1-050",
+    "tcmc-v1-051",
+    "tcmc-v1-052",
+    "tcmc-v1-053",
+    "tcmc-v1-054",
+    "tcmc-v1-055",
+    "tcmc-v1-056",
+    "tcmc-v1-057",
+    "tcmc-v1-058",
+    "tcmc-v1-059",
+    "tcmc-v1-060",
+    "tcmc-v1-061",
+    "tcmc-v1-062",
+    "tcmc-v1-063",
+    "tcmc-v1-064",
+    "tcmc-v1-065",
+    "tcmc-v1-066",
+    "tcmc-v1-067",
+    "tcmc-v1-068",
+    "tcmc-v1-069",
+    "tcmc-v1-070",
+    "tcmc-v1-071",
+    "tcmc-v1-072",
+    "tcmc-v1-073",
+    "tcmc-v1-074",
+    "tcmc-v1-075",
+    "tcmc-v1-076",
+    "tcmc-v1-077",
+    "tcmc-v1-078",
+    "tcmc-v1-079",
+    "tcmc-v1-080",
+    "tcmc-v1-081",
+    "tcmc-v1-082",
+    "tcmc-v1-083",
+    "tcmc-v1-084",
+    "tcmc-v1-085",
+    "tcmc-v1-086",
+    "tcmc-v1-087",
+    "tcmc-v1-088",
+    "tcmc-v1-089",
+    "tcmc-v1-090",
+    "tcmc-v1-091",
+    "tcmc-v1-092",
+    "tcmc-v1-093",
+    "tcmc-v1-094",
+    "tcmc-v1-095",
+    "tcmc-v1-096",
+    "tcmc-v1-097",
+    "tcmc-v1-098",
+    "tcmc-v1-099",
+    "tcmc-v1-100"
+  ],
+  "planned_questions": 100,
+  "total_planned_executions": 200,
+  "conditions": {
+    "C1": "Single-RAG",
+    "C2": "Multi-Agent"
+  },
+  "seed": 20260824,
+  "model": "Qwen/Qwen3-8B",
+  "corpus_version": "TCM Research Corpus v1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "benchmark_version": "RQ1_CONFIRMATORY_V1_1",
+  "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+  "retrieval": "R0",
+  "generation_settings": {
+    "top_k": 4,
+    "debate_rounds": 1,
+    "iterative_retrieval": false,
+    "include_trace": true,
+    "store_raw_query": false
+  },
+  "timeout_policy": {
+    "runner_request_seconds": 180,
+    "provider_request_seconds": 45
+  },
+  "retry_policy": {
+    "maximum_attempts_per_participating_specialist": 2,
+    "trigger": "provider failure or grounding/output-quality rejection",
+    "telemetry_required": true
+  },
+  "fallback_policy": {
+    "preserve_and_classify_as_failure": true,
+    "count_as_success": false
+  },
+  "grounding_policy": {
+    "use_only_retrieved_corpus_evidence": true,
+    "prevent_unsupported_multi_target_relationships": true,
+    "strict_medical_safety": true
+  },
+  "execution_order": [
+    {
+      "sequence": 1,
+      "question_id": "tcmc-v1-001",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-001-tcmc-v1-001-C1"
+    },
+    {
+      "sequence": 2,
+      "question_id": "tcmc-v1-001",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-002-tcmc-v1-001-C2"
+    },
+    {
+      "sequence": 3,
+      "question_id": "tcmc-v1-002",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-003-tcmc-v1-002-C1"
+    },
+    {
+      "sequence": 4,
+      "question_id": "tcmc-v1-002",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-004-tcmc-v1-002-C2"
+    },
+    {
+      "sequence": 5,
+      "question_id": "tcmc-v1-003",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-005-tcmc-v1-003-C2"
+    },
+    {
+      "sequence": 6,
+      "question_id": "tcmc-v1-003",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-006-tcmc-v1-003-C1"
+    },
+    {
+      "sequence": 7,
+      "question_id": "tcmc-v1-004",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-007-tcmc-v1-004-C1"
+    },
+    {
+      "sequence": 8,
+      "question_id": "tcmc-v1-004",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-008-tcmc-v1-004-C2"
+    },
+    {
+      "sequence": 9,
+      "question_id": "tcmc-v1-005",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-009-tcmc-v1-005-C2"
+    },
+    {
+      "sequence": 10,
+      "question_id": "tcmc-v1-005",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-010-tcmc-v1-005-C1"
+    },
+    {
+      "sequence": 11,
+      "question_id": "tcmc-v1-006",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-011-tcmc-v1-006-C1"
+    },
+    {
+      "sequence": 12,
+      "question_id": "tcmc-v1-006",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-012-tcmc-v1-006-C2"
+    },
+    {
+      "sequence": 13,
+      "question_id": "tcmc-v1-007",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-013-tcmc-v1-007-C1"
+    },
+    {
+      "sequence": 14,
+      "question_id": "tcmc-v1-007",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-014-tcmc-v1-007-C2"
+    },
+    {
+      "sequence": 15,
+      "question_id": "tcmc-v1-008",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-015-tcmc-v1-008-C2"
+    },
+    {
+      "sequence": 16,
+      "question_id": "tcmc-v1-008",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-016-tcmc-v1-008-C1"
+    },
+    {
+      "sequence": 17,
+      "question_id": "tcmc-v1-009",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-017-tcmc-v1-009-C2"
+    },
+    {
+      "sequence": 18,
+      "question_id": "tcmc-v1-009",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-018-tcmc-v1-009-C1"
+    },
+    {
+      "sequence": 19,
+      "question_id": "tcmc-v1-010",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-019-tcmc-v1-010-C1"
+    },
+    {
+      "sequence": 20,
+      "question_id": "tcmc-v1-010",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-020-tcmc-v1-010-C2"
+    },
+    {
+      "sequence": 21,
+      "question_id": "tcmc-v1-011",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-021-tcmc-v1-011-C1"
+    },
+    {
+      "sequence": 22,
+      "question_id": "tcmc-v1-011",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-022-tcmc-v1-011-C2"
+    },
+    {
+      "sequence": 23,
+      "question_id": "tcmc-v1-012",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-023-tcmc-v1-012-C2"
+    },
+    {
+      "sequence": 24,
+      "question_id": "tcmc-v1-012",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-024-tcmc-v1-012-C1"
+    },
+    {
+      "sequence": 25,
+      "question_id": "tcmc-v1-013",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-025-tcmc-v1-013-C2"
+    },
+    {
+      "sequence": 26,
+      "question_id": "tcmc-v1-013",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-026-tcmc-v1-013-C1"
+    },
+    {
+      "sequence": 27,
+      "question_id": "tcmc-v1-014",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-027-tcmc-v1-014-C1"
+    },
+    {
+      "sequence": 28,
+      "question_id": "tcmc-v1-014",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-028-tcmc-v1-014-C2"
+    },
+    {
+      "sequence": 29,
+      "question_id": "tcmc-v1-015",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-029-tcmc-v1-015-C1"
+    },
+    {
+      "sequence": 30,
+      "question_id": "tcmc-v1-015",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-030-tcmc-v1-015-C2"
+    },
+    {
+      "sequence": 31,
+      "question_id": "tcmc-v1-016",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-031-tcmc-v1-016-C1"
+    },
+    {
+      "sequence": 32,
+      "question_id": "tcmc-v1-016",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-032-tcmc-v1-016-C2"
+    },
+    {
+      "sequence": 33,
+      "question_id": "tcmc-v1-017",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-033-tcmc-v1-017-C1"
+    },
+    {
+      "sequence": 34,
+      "question_id": "tcmc-v1-017",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-034-tcmc-v1-017-C2"
+    },
+    {
+      "sequence": 35,
+      "question_id": "tcmc-v1-018",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-035-tcmc-v1-018-C2"
+    },
+    {
+      "sequence": 36,
+      "question_id": "tcmc-v1-018",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-036-tcmc-v1-018-C1"
+    },
+    {
+      "sequence": 37,
+      "question_id": "tcmc-v1-019",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-037-tcmc-v1-019-C1"
+    },
+    {
+      "sequence": 38,
+      "question_id": "tcmc-v1-019",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-038-tcmc-v1-019-C2"
+    },
+    {
+      "sequence": 39,
+      "question_id": "tcmc-v1-020",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-039-tcmc-v1-020-C1"
+    },
+    {
+      "sequence": 40,
+      "question_id": "tcmc-v1-020",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-040-tcmc-v1-020-C2"
+    },
+    {
+      "sequence": 41,
+      "question_id": "tcmc-v1-021",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-041-tcmc-v1-021-C2"
+    },
+    {
+      "sequence": 42,
+      "question_id": "tcmc-v1-021",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-042-tcmc-v1-021-C1"
+    },
+    {
+      "sequence": 43,
+      "question_id": "tcmc-v1-022",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-043-tcmc-v1-022-C2"
+    },
+    {
+      "sequence": 44,
+      "question_id": "tcmc-v1-022",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-044-tcmc-v1-022-C1"
+    },
+    {
+      "sequence": 45,
+      "question_id": "tcmc-v1-023",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-045-tcmc-v1-023-C1"
+    },
+    {
+      "sequence": 46,
+      "question_id": "tcmc-v1-023",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-046-tcmc-v1-023-C2"
+    },
+    {
+      "sequence": 47,
+      "question_id": "tcmc-v1-024",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-047-tcmc-v1-024-C2"
+    },
+    {
+      "sequence": 48,
+      "question_id": "tcmc-v1-024",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-048-tcmc-v1-024-C1"
+    },
+    {
+      "sequence": 49,
+      "question_id": "tcmc-v1-025",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-049-tcmc-v1-025-C1"
+    },
+    {
+      "sequence": 50,
+      "question_id": "tcmc-v1-025",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-050-tcmc-v1-025-C2"
+    },
+    {
+      "sequence": 51,
+      "question_id": "tcmc-v1-026",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-051-tcmc-v1-026-C2"
+    },
+    {
+      "sequence": 52,
+      "question_id": "tcmc-v1-026",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-052-tcmc-v1-026-C1"
+    },
+    {
+      "sequence": 53,
+      "question_id": "tcmc-v1-027",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-053-tcmc-v1-027-C2"
+    },
+    {
+      "sequence": 54,
+      "question_id": "tcmc-v1-027",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-054-tcmc-v1-027-C1"
+    },
+    {
+      "sequence": 55,
+      "question_id": "tcmc-v1-028",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-055-tcmc-v1-028-C1"
+    },
+    {
+      "sequence": 56,
+      "question_id": "tcmc-v1-028",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-056-tcmc-v1-028-C2"
+    },
+    {
+      "sequence": 57,
+      "question_id": "tcmc-v1-029",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-057-tcmc-v1-029-C1"
+    },
+    {
+      "sequence": 58,
+      "question_id": "tcmc-v1-029",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-058-tcmc-v1-029-C2"
+    },
+    {
+      "sequence": 59,
+      "question_id": "tcmc-v1-030",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-059-tcmc-v1-030-C1"
+    },
+    {
+      "sequence": 60,
+      "question_id": "tcmc-v1-030",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-060-tcmc-v1-030-C2"
+    },
+    {
+      "sequence": 61,
+      "question_id": "tcmc-v1-031",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-061-tcmc-v1-031-C1"
+    },
+    {
+      "sequence": 62,
+      "question_id": "tcmc-v1-031",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-062-tcmc-v1-031-C2"
+    },
+    {
+      "sequence": 63,
+      "question_id": "tcmc-v1-032",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-063-tcmc-v1-032-C1"
+    },
+    {
+      "sequence": 64,
+      "question_id": "tcmc-v1-032",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-064-tcmc-v1-032-C2"
+    },
+    {
+      "sequence": 65,
+      "question_id": "tcmc-v1-033",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-065-tcmc-v1-033-C1"
+    },
+    {
+      "sequence": 66,
+      "question_id": "tcmc-v1-033",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-066-tcmc-v1-033-C2"
+    },
+    {
+      "sequence": 67,
+      "question_id": "tcmc-v1-034",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-067-tcmc-v1-034-C1"
+    },
+    {
+      "sequence": 68,
+      "question_id": "tcmc-v1-034",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-068-tcmc-v1-034-C2"
+    },
+    {
+      "sequence": 69,
+      "question_id": "tcmc-v1-035",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-069-tcmc-v1-035-C1"
+    },
+    {
+      "sequence": 70,
+      "question_id": "tcmc-v1-035",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-070-tcmc-v1-035-C2"
+    },
+    {
+      "sequence": 71,
+      "question_id": "tcmc-v1-036",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-071-tcmc-v1-036-C2"
+    },
+    {
+      "sequence": 72,
+      "question_id": "tcmc-v1-036",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-072-tcmc-v1-036-C1"
+    },
+    {
+      "sequence": 73,
+      "question_id": "tcmc-v1-037",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-073-tcmc-v1-037-C1"
+    },
+    {
+      "sequence": 74,
+      "question_id": "tcmc-v1-037",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-074-tcmc-v1-037-C2"
+    },
+    {
+      "sequence": 75,
+      "question_id": "tcmc-v1-038",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-075-tcmc-v1-038-C2"
+    },
+    {
+      "sequence": 76,
+      "question_id": "tcmc-v1-038",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-076-tcmc-v1-038-C1"
+    },
+    {
+      "sequence": 77,
+      "question_id": "tcmc-v1-039",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-077-tcmc-v1-039-C2"
+    },
+    {
+      "sequence": 78,
+      "question_id": "tcmc-v1-039",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-078-tcmc-v1-039-C1"
+    },
+    {
+      "sequence": 79,
+      "question_id": "tcmc-v1-040",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-079-tcmc-v1-040-C2"
+    },
+    {
+      "sequence": 80,
+      "question_id": "tcmc-v1-040",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-080-tcmc-v1-040-C1"
+    },
+    {
+      "sequence": 81,
+      "question_id": "tcmc-v1-041",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-081-tcmc-v1-041-C2"
+    },
+    {
+      "sequence": 82,
+      "question_id": "tcmc-v1-041",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-082-tcmc-v1-041-C1"
+    },
+    {
+      "sequence": 83,
+      "question_id": "tcmc-v1-042",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-083-tcmc-v1-042-C2"
+    },
+    {
+      "sequence": 84,
+      "question_id": "tcmc-v1-042",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-084-tcmc-v1-042-C1"
+    },
+    {
+      "sequence": 85,
+      "question_id": "tcmc-v1-043",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-085-tcmc-v1-043-C1"
+    },
+    {
+      "sequence": 86,
+      "question_id": "tcmc-v1-043",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-086-tcmc-v1-043-C2"
+    },
+    {
+      "sequence": 87,
+      "question_id": "tcmc-v1-044",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-087-tcmc-v1-044-C2"
+    },
+    {
+      "sequence": 88,
+      "question_id": "tcmc-v1-044",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-088-tcmc-v1-044-C1"
+    },
+    {
+      "sequence": 89,
+      "question_id": "tcmc-v1-045",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-089-tcmc-v1-045-C2"
+    },
+    {
+      "sequence": 90,
+      "question_id": "tcmc-v1-045",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-090-tcmc-v1-045-C1"
+    },
+    {
+      "sequence": 91,
+      "question_id": "tcmc-v1-046",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-091-tcmc-v1-046-C1"
+    },
+    {
+      "sequence": 92,
+      "question_id": "tcmc-v1-046",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-092-tcmc-v1-046-C2"
+    },
+    {
+      "sequence": 93,
+      "question_id": "tcmc-v1-047",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-093-tcmc-v1-047-C1"
+    },
+    {
+      "sequence": 94,
+      "question_id": "tcmc-v1-047",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-094-tcmc-v1-047-C2"
+    },
+    {
+      "sequence": 95,
+      "question_id": "tcmc-v1-048",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-095-tcmc-v1-048-C1"
+    },
+    {
+      "sequence": 96,
+      "question_id": "tcmc-v1-048",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-096-tcmc-v1-048-C2"
+    },
+    {
+      "sequence": 97,
+      "question_id": "tcmc-v1-049",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-097-tcmc-v1-049-C1"
+    },
+    {
+      "sequence": 98,
+      "question_id": "tcmc-v1-049",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-098-tcmc-v1-049-C2"
+    },
+    {
+      "sequence": 99,
+      "question_id": "tcmc-v1-050",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-099-tcmc-v1-050-C2"
+    },
+    {
+      "sequence": 100,
+      "question_id": "tcmc-v1-050",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-100-tcmc-v1-050-C1"
+    },
+    {
+      "sequence": 101,
+      "question_id": "tcmc-v1-051",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-101-tcmc-v1-051-C1"
+    },
+    {
+      "sequence": 102,
+      "question_id": "tcmc-v1-051",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-102-tcmc-v1-051-C2"
+    },
+    {
+      "sequence": 103,
+      "question_id": "tcmc-v1-052",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-103-tcmc-v1-052-C2"
+    },
+    {
+      "sequence": 104,
+      "question_id": "tcmc-v1-052",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-104-tcmc-v1-052-C1"
+    },
+    {
+      "sequence": 105,
+      "question_id": "tcmc-v1-053",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-105-tcmc-v1-053-C1"
+    },
+    {
+      "sequence": 106,
+      "question_id": "tcmc-v1-053",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-106-tcmc-v1-053-C2"
+    },
+    {
+      "sequence": 107,
+      "question_id": "tcmc-v1-054",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-107-tcmc-v1-054-C2"
+    },
+    {
+      "sequence": 108,
+      "question_id": "tcmc-v1-054",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-108-tcmc-v1-054-C1"
+    },
+    {
+      "sequence": 109,
+      "question_id": "tcmc-v1-055",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-109-tcmc-v1-055-C2"
+    },
+    {
+      "sequence": 110,
+      "question_id": "tcmc-v1-055",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-110-tcmc-v1-055-C1"
+    },
+    {
+      "sequence": 111,
+      "question_id": "tcmc-v1-056",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-111-tcmc-v1-056-C1"
+    },
+    {
+      "sequence": 112,
+      "question_id": "tcmc-v1-056",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-112-tcmc-v1-056-C2"
+    },
+    {
+      "sequence": 113,
+      "question_id": "tcmc-v1-057",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-113-tcmc-v1-057-C2"
+    },
+    {
+      "sequence": 114,
+      "question_id": "tcmc-v1-057",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-114-tcmc-v1-057-C1"
+    },
+    {
+      "sequence": 115,
+      "question_id": "tcmc-v1-058",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-115-tcmc-v1-058-C1"
+    },
+    {
+      "sequence": 116,
+      "question_id": "tcmc-v1-058",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-116-tcmc-v1-058-C2"
+    },
+    {
+      "sequence": 117,
+      "question_id": "tcmc-v1-059",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-117-tcmc-v1-059-C1"
+    },
+    {
+      "sequence": 118,
+      "question_id": "tcmc-v1-059",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-118-tcmc-v1-059-C2"
+    },
+    {
+      "sequence": 119,
+      "question_id": "tcmc-v1-060",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-119-tcmc-v1-060-C1"
+    },
+    {
+      "sequence": 120,
+      "question_id": "tcmc-v1-060",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-120-tcmc-v1-060-C2"
+    },
+    {
+      "sequence": 121,
+      "question_id": "tcmc-v1-061",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-121-tcmc-v1-061-C2"
+    },
+    {
+      "sequence": 122,
+      "question_id": "tcmc-v1-061",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-122-tcmc-v1-061-C1"
+    },
+    {
+      "sequence": 123,
+      "question_id": "tcmc-v1-062",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-123-tcmc-v1-062-C1"
+    },
+    {
+      "sequence": 124,
+      "question_id": "tcmc-v1-062",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-124-tcmc-v1-062-C2"
+    },
+    {
+      "sequence": 125,
+      "question_id": "tcmc-v1-063",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-125-tcmc-v1-063-C2"
+    },
+    {
+      "sequence": 126,
+      "question_id": "tcmc-v1-063",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-126-tcmc-v1-063-C1"
+    },
+    {
+      "sequence": 127,
+      "question_id": "tcmc-v1-064",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-127-tcmc-v1-064-C2"
+    },
+    {
+      "sequence": 128,
+      "question_id": "tcmc-v1-064",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-128-tcmc-v1-064-C1"
+    },
+    {
+      "sequence": 129,
+      "question_id": "tcmc-v1-065",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-129-tcmc-v1-065-C2"
+    },
+    {
+      "sequence": 130,
+      "question_id": "tcmc-v1-065",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-130-tcmc-v1-065-C1"
+    },
+    {
+      "sequence": 131,
+      "question_id": "tcmc-v1-066",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-131-tcmc-v1-066-C2"
+    },
+    {
+      "sequence": 132,
+      "question_id": "tcmc-v1-066",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-132-tcmc-v1-066-C1"
+    },
+    {
+      "sequence": 133,
+      "question_id": "tcmc-v1-067",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-133-tcmc-v1-067-C1"
+    },
+    {
+      "sequence": 134,
+      "question_id": "tcmc-v1-067",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-134-tcmc-v1-067-C2"
+    },
+    {
+      "sequence": 135,
+      "question_id": "tcmc-v1-068",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-135-tcmc-v1-068-C2"
+    },
+    {
+      "sequence": 136,
+      "question_id": "tcmc-v1-068",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-136-tcmc-v1-068-C1"
+    },
+    {
+      "sequence": 137,
+      "question_id": "tcmc-v1-069",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-137-tcmc-v1-069-C2"
+    },
+    {
+      "sequence": 138,
+      "question_id": "tcmc-v1-069",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-138-tcmc-v1-069-C1"
+    },
+    {
+      "sequence": 139,
+      "question_id": "tcmc-v1-070",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-139-tcmc-v1-070-C2"
+    },
+    {
+      "sequence": 140,
+      "question_id": "tcmc-v1-070",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-140-tcmc-v1-070-C1"
+    },
+    {
+      "sequence": 141,
+      "question_id": "tcmc-v1-071",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-141-tcmc-v1-071-C2"
+    },
+    {
+      "sequence": 142,
+      "question_id": "tcmc-v1-071",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-142-tcmc-v1-071-C1"
+    },
+    {
+      "sequence": 143,
+      "question_id": "tcmc-v1-072",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-143-tcmc-v1-072-C1"
+    },
+    {
+      "sequence": 144,
+      "question_id": "tcmc-v1-072",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-144-tcmc-v1-072-C2"
+    },
+    {
+      "sequence": 145,
+      "question_id": "tcmc-v1-073",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-145-tcmc-v1-073-C2"
+    },
+    {
+      "sequence": 146,
+      "question_id": "tcmc-v1-073",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-146-tcmc-v1-073-C1"
+    },
+    {
+      "sequence": 147,
+      "question_id": "tcmc-v1-074",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-147-tcmc-v1-074-C2"
+    },
+    {
+      "sequence": 148,
+      "question_id": "tcmc-v1-074",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-148-tcmc-v1-074-C1"
+    },
+    {
+      "sequence": 149,
+      "question_id": "tcmc-v1-075",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-149-tcmc-v1-075-C2"
+    },
+    {
+      "sequence": 150,
+      "question_id": "tcmc-v1-075",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-150-tcmc-v1-075-C1"
+    },
+    {
+      "sequence": 151,
+      "question_id": "tcmc-v1-076",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-151-tcmc-v1-076-C2"
+    },
+    {
+      "sequence": 152,
+      "question_id": "tcmc-v1-076",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-152-tcmc-v1-076-C1"
+    },
+    {
+      "sequence": 153,
+      "question_id": "tcmc-v1-077",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-153-tcmc-v1-077-C2"
+    },
+    {
+      "sequence": 154,
+      "question_id": "tcmc-v1-077",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-154-tcmc-v1-077-C1"
+    },
+    {
+      "sequence": 155,
+      "question_id": "tcmc-v1-078",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-155-tcmc-v1-078-C1"
+    },
+    {
+      "sequence": 156,
+      "question_id": "tcmc-v1-078",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-156-tcmc-v1-078-C2"
+    },
+    {
+      "sequence": 157,
+      "question_id": "tcmc-v1-079",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-157-tcmc-v1-079-C2"
+    },
+    {
+      "sequence": 158,
+      "question_id": "tcmc-v1-079",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-158-tcmc-v1-079-C1"
+    },
+    {
+      "sequence": 159,
+      "question_id": "tcmc-v1-080",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-159-tcmc-v1-080-C1"
+    },
+    {
+      "sequence": 160,
+      "question_id": "tcmc-v1-080",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-160-tcmc-v1-080-C2"
+    },
+    {
+      "sequence": 161,
+      "question_id": "tcmc-v1-081",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-161-tcmc-v1-081-C2"
+    },
+    {
+      "sequence": 162,
+      "question_id": "tcmc-v1-081",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-162-tcmc-v1-081-C1"
+    },
+    {
+      "sequence": 163,
+      "question_id": "tcmc-v1-082",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-163-tcmc-v1-082-C2"
+    },
+    {
+      "sequence": 164,
+      "question_id": "tcmc-v1-082",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-164-tcmc-v1-082-C1"
+    },
+    {
+      "sequence": 165,
+      "question_id": "tcmc-v1-083",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-165-tcmc-v1-083-C2"
+    },
+    {
+      "sequence": 166,
+      "question_id": "tcmc-v1-083",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-166-tcmc-v1-083-C1"
+    },
+    {
+      "sequence": 167,
+      "question_id": "tcmc-v1-084",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-167-tcmc-v1-084-C2"
+    },
+    {
+      "sequence": 168,
+      "question_id": "tcmc-v1-084",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-168-tcmc-v1-084-C1"
+    },
+    {
+      "sequence": 169,
+      "question_id": "tcmc-v1-085",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-169-tcmc-v1-085-C2"
+    },
+    {
+      "sequence": 170,
+      "question_id": "tcmc-v1-085",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-170-tcmc-v1-085-C1"
+    },
+    {
+      "sequence": 171,
+      "question_id": "tcmc-v1-086",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-171-tcmc-v1-086-C1"
+    },
+    {
+      "sequence": 172,
+      "question_id": "tcmc-v1-086",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-172-tcmc-v1-086-C2"
+    },
+    {
+      "sequence": 173,
+      "question_id": "tcmc-v1-087",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-173-tcmc-v1-087-C1"
+    },
+    {
+      "sequence": 174,
+      "question_id": "tcmc-v1-087",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-174-tcmc-v1-087-C2"
+    },
+    {
+      "sequence": 175,
+      "question_id": "tcmc-v1-088",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-175-tcmc-v1-088-C2"
+    },
+    {
+      "sequence": 176,
+      "question_id": "tcmc-v1-088",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-176-tcmc-v1-088-C1"
+    },
+    {
+      "sequence": 177,
+      "question_id": "tcmc-v1-089",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-177-tcmc-v1-089-C2"
+    },
+    {
+      "sequence": 178,
+      "question_id": "tcmc-v1-089",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-178-tcmc-v1-089-C1"
+    },
+    {
+      "sequence": 179,
+      "question_id": "tcmc-v1-090",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-179-tcmc-v1-090-C2"
+    },
+    {
+      "sequence": 180,
+      "question_id": "tcmc-v1-090",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-180-tcmc-v1-090-C1"
+    },
+    {
+      "sequence": 181,
+      "question_id": "tcmc-v1-091",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-181-tcmc-v1-091-C2"
+    },
+    {
+      "sequence": 182,
+      "question_id": "tcmc-v1-091",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-182-tcmc-v1-091-C1"
+    },
+    {
+      "sequence": 183,
+      "question_id": "tcmc-v1-092",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-183-tcmc-v1-092-C2"
+    },
+    {
+      "sequence": 184,
+      "question_id": "tcmc-v1-092",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-184-tcmc-v1-092-C1"
+    },
+    {
+      "sequence": 185,
+      "question_id": "tcmc-v1-093",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-185-tcmc-v1-093-C1"
+    },
+    {
+      "sequence": 186,
+      "question_id": "tcmc-v1-093",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-186-tcmc-v1-093-C2"
+    },
+    {
+      "sequence": 187,
+      "question_id": "tcmc-v1-094",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-187-tcmc-v1-094-C2"
+    },
+    {
+      "sequence": 188,
+      "question_id": "tcmc-v1-094",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-188-tcmc-v1-094-C1"
+    },
+    {
+      "sequence": 189,
+      "question_id": "tcmc-v1-095",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-189-tcmc-v1-095-C2"
+    },
+    {
+      "sequence": 190,
+      "question_id": "tcmc-v1-095",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-190-tcmc-v1-095-C1"
+    },
+    {
+      "sequence": 191,
+      "question_id": "tcmc-v1-096",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-191-tcmc-v1-096-C1"
+    },
+    {
+      "sequence": 192,
+      "question_id": "tcmc-v1-096",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-192-tcmc-v1-096-C2"
+    },
+    {
+      "sequence": 193,
+      "question_id": "tcmc-v1-097",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-193-tcmc-v1-097-C1"
+    },
+    {
+      "sequence": 194,
+      "question_id": "tcmc-v1-097",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-194-tcmc-v1-097-C2"
+    },
+    {
+      "sequence": 195,
+      "question_id": "tcmc-v1-098",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-195-tcmc-v1-098-C1"
+    },
+    {
+      "sequence": 196,
+      "question_id": "tcmc-v1-098",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-196-tcmc-v1-098-C2"
+    },
+    {
+      "sequence": 197,
+      "question_id": "tcmc-v1-099",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-197-tcmc-v1-099-C1"
+    },
+    {
+      "sequence": 198,
+      "question_id": "tcmc-v1-099",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-198-tcmc-v1-099-C2"
+    },
+    {
+      "sequence": 199,
+      "question_id": "tcmc-v1-100",
+      "condition": "C1",
+      "run_id": "rq1_confirmatory_v1_1-199-tcmc-v1-100-C1"
+    },
+    {
+      "sequence": 200,
+      "question_id": "tcmc-v1-100",
+      "condition": "C2",
+      "run_id": "rq1_confirmatory_v1_1-200-tcmc-v1-100-C2"
+    }
+  ]
+}

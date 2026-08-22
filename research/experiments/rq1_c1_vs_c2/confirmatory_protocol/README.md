@@ -1,6 +1,6 @@
 # RQ1 confirmatory study automation
 
-Current checkpoint: `BENCHMARK_SOURCE_REVIEW_REQUIRED`. The v1.1 candidate incorporates 23 design revisions from the first external source review and is awaiting a complete second external source-grounded review. No formal run is authorized until that review is imported, adjudicated, and the benchmark/config hashes are explicitly frozen.
+Current status: benchmark and protocol frozen before provider execution. The immutable execution manifest is prepared for 200 interleaved C1/C2 runs. The automated pipeline must stop at `SEMANTIC_REVIEW_REQUIRED` after objective evaluation and packet export; it must not fabricate semantic labels or a final semantic conclusion.
 
 Preflight:
 

@@ -1,0 +1,10 @@
+research/corpus/tcm_v1/chunks.jsonl -text
+research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl -text
+research/benchmarks/tcm_gold_rq1_confirmatory_v1/external_source_review_v1_1_final_completed.csv -text
+research/benchmarks/tcm_gold_rq1_confirmatory_v1/heldout_manifest_confirmatory_v1_1_frozen.json -text
+research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md -text
+research/experiments/rq1_c1_vs_c2/confirmatory_protocol/analysis_plan.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/execution_order.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/formal_execution_manifest.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/manifest.json -text

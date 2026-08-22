@@ -1,3 +1,3 @@
 # RQ1 confirmatory benchmark
 
-Current candidate status: DRAFT_SOURCE_GROUNDED_CONFIRMATORY_V1_1. The original v1 draft is preserved. External source review approved 77 questions and requested 23 benchmark-design revisions. The v1.1 candidate remains unfrozen and blocked pending a complete second external source-grounded review. No provider or LLM calls were made during revision.
+Current status: `FROZEN_SOURCE_GROUNDED_RQ1_CONFIRMATORY_V1_1`. The frozen benchmark is `benchmark_confirmatory_v1_1_frozen.jsonl`. The full audit trail is preserved: original v1 draft, first external review, 23 revisions, v1.1 candidate, second external review, and final freeze. The final review approved 100/100 questions and 223/223 atomic Gold facts at HIGH confidence. This is source-grounded reference Gold, not clinical truth or medical/TCM expert validation. No provider runs occurred before freeze.

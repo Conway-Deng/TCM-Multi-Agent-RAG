@@ -1,0 +1,31 @@
+{
+  "experiment_id": "rq1_confirmatory_v1_1",
+  "status": "PREPARED_FROZEN",
+  "checks": {
+    "benchmark_status": "FROZEN_SOURCE_GROUNDED_RQ1_CONFIRMATORY_V1_1",
+    "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+    "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+    "question_count": 100,
+    "model": "Qwen/Qwen3-8B",
+    "retrieval": "R0",
+    "conditions": [
+      "C1",
+      "C2"
+    ],
+    "provider_configured": "siliconflow",
+    "provider_ready": true,
+    "llm_execution_required_on_launch": true,
+    "mock": false,
+    "protocol_locked": true,
+    "freeze_manifest_valid": true
+  },
+  "model": "Qwen/Qwen3-8B",
+  "retrieval": "R0",
+  "conditions": [
+    "C1",
+    "C2"
+  ],
+  "planned_runs": 200,
+  "seed": 20260824,
+  "benchmark_source_review_status": "APPROVED_AND_FROZEN"
+}

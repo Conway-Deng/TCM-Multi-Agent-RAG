@@ -1,7 +1,10 @@
 experiment_id: rq1_confirmatory_v1_1
-benchmark_path: research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1.jsonl
-benchmark_sha256: f938ec9b3e3d31c0f04983951dc6de2c6edc7b411bdd3f0501f0e8e12e23559e
-benchmark_source_review_status: SECOND_EXTERNAL_REVIEW_PENDING
+benchmark_version: RQ1_CONFIRMATORY_V1_1
+benchmark_path: research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl
+benchmark_sha256: 2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0
+benchmark_source_review_status: APPROVED_AND_FROZEN
+freeze_manifest_path: research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json
+protocol_path: research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md
 corpus_path: research/corpus/tcm_v1/chunks.jsonl
 corpus_sha256: 316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9
 model: Qwen/Qwen3-8B
@@ -12,4 +15,24 @@ planned_questions: 100
 planned_runs: 200
 api_url: http://127.0.0.1:8002/api/research/run
 timeout_seconds: 180
+generation_settings:
+  top_k: 4
+  debate_rounds: 1
+  iterative_retrieval: false
+  include_trace: true
+  store_raw_query: false
+timeout_policy:
+  runner_request_seconds: 180
+  provider_request_seconds: 45
+retry_policy:
+  maximum_attempts_per_participating_specialist: 2
+  trigger: provider failure or grounding/output-quality rejection
+  telemetry_required: true
+fallback_policy:
+  preserve_and_classify_as_failure: true
+  count_as_success: false
+grounding_policy:
+  use_only_retrieved_corpus_evidence: true
+  prevent_unsupported_multi_target_relationships: true
+  strict_medical_safety: true
 output_dir: research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1

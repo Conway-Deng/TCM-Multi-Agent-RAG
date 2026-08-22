@@ -1,0 +1,26 @@
+{
+  "benchmark_version": "RQ1_CONFIRMATORY_V1_1",
+  "candidate_benchmark_sha256": "f938ec9b3e3d31c0f04983951dc6de2c6edc7b411bdd3f0501f0e8e12e23559e",
+  "method": "external GPT source-grounded review",
+  "scope": "source grounding and benchmark design only; not clinical or TCM expert validation",
+  "questions": 100,
+  "atomic_gold_facts": 223,
+  "question_level": {
+    "APPROVE": 100,
+    "REVISE": 0,
+    "REMOVE": 0,
+    "UNRESOLVED": 0
+  },
+  "row_level": {
+    "APPROVE": 223,
+    "REVISE": 0,
+    "REMOVE": 0,
+    "UNRESOLVED": 0
+  },
+  "confidence": {
+    "HIGH": 223,
+    "MEDIUM": 0,
+    "LOW": 0
+  },
+  "completed_csv_sha256": "013cd12ae7463624dfda8158f69738d3373614e613bcef6b7f691a9689f4ca96"
+}
