@@ -60,3 +60,8 @@ def test_pipeline_stops_for_external_semantic_review():
     source=(ROOT/'research/experiment_pipeline/rq1_confirmatory.py').read_text(encoding='utf-8')
     assert "'status':'SEMANTIC_REVIEW_REQUIRED'" in source
     assert "if not (out/'semantic_review_imported.json').exists()" in source
+
+def test_completed_pipeline_state_is_terminal():
+    state=json.loads((ROOT/'research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/pipeline_state.json').read_text(encoding='utf-8'))
+    assert state['status']=='RQ1_CONFIRMATORY_COMPLETE'
+    assert state['provider_calls_during_analysis']==0

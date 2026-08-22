@@ -1,0 +1,54 @@
+{
+  "c1_mean": 6384.695652173913,
+  "c1_median": 4157.0,
+  "c2_mean": 7649.891304347826,
+  "c2_median": 4410.0,
+  "mean_paired_difference_c2_minus_c1": 1265.195652173913,
+  "median_paired_difference_c2_minus_c1": 346.0,
+  "bootstrap_95ci_mean_difference": [
+    -906.7179347826086,
+    3415.4997282608674
+  ],
+  "c2_greater": 54,
+  "c1_greater": 38,
+  "ties": 0,
+  "nonzero_paired_questions": 92,
+  "wilcoxon": {
+    "w_plus": 2439.0,
+    "w_minus": 1839.0,
+    "nonzero_n": 92,
+    "zero_differences": 0,
+    "z": 1.1681688556959198,
+    "p_value_two_sided": 0.24273866044276377,
+    "informative": true,
+    "method": "Wilcoxon signed-rank; zero differences omitted; normal approximation with tie correction; no continuity correction"
+  },
+  "complete_paired_usable_runs": 92,
+  "units": "milliseconds",
+  "provider_status_by_condition": {
+    "C1": {
+      "PASS": 93,
+      "FAIL_PROVIDER": 6,
+      "PASS_WITH_RETRY": 1
+    },
+    "C2": {
+      "PASS": 91,
+      "FAIL_PROVIDER": 5,
+      "PASS_WITH_RETRY": 4
+    }
+  },
+  "provider_telemetry_by_condition": {
+    "C1": {
+      "attempted_calls": 107,
+      "successful_calls": 94,
+      "pass_with_retry_runs": 1,
+      "failed_provider_runs": 6
+    },
+    "C2": {
+      "attempted_calls": 124,
+      "successful_calls": 110,
+      "pass_with_retry_runs": 4,
+      "failed_provider_runs": 5
+    }
+  }
+}

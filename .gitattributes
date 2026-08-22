@@ -8,3 +8,8 @@ research/experiments/rq1_c1_vs_c2/confirmatory_protocol/analysis_plan.json -text
 research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/execution_order.json -text
 research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/formal_execution_manifest.json -text
 research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/manifest.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/results.jsonl -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/objective_scores.jsonl -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/semantic_review_for_gpt.csv -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/semantic_review_imported.json -text
+research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/semantic_review_imported.csv -text

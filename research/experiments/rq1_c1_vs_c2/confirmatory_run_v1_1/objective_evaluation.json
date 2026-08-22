@@ -1,0 +1,6 @@
+{
+  "records": 200,
+  "usable_real_provider_outputs": 189,
+  "failures": 11,
+  "objective_scores": "objective_scores.jsonl"
+}

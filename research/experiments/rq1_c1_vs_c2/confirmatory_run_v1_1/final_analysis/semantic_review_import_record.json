@@ -1,0 +1,24 @@
+{
+  "methodology": "AI-assisted semantic evaluation using the frozen source-grounded rubric",
+  "not_independent_human_validation": true,
+  "not_clinical_or_tcm_expert_validation": true,
+  "rows": 422,
+  "unique_item_ids": 422,
+  "unique_questions_represented": 97,
+  "labels": {
+    "SUPPORTED": 374,
+    "PARTIALLY_SUPPORTED": 7,
+    "NOT_SUPPORTED": 36,
+    "CONTRADICTED": 5,
+    "UNRESOLVED": 0
+  },
+  "strict_identity_validation": "PASSED",
+  "review_sha256": "08a2df29d9577a5184b251d56423f26aa0e920cd00f3ac24872ebcb06ca4ff7c",
+  "packet_sha256": "51e72cc18e45a9ab9dff71ccc75f2fa0de70ef867ab1dae5babf76da29c48c50",
+  "unblinding": {
+    "SYSTEM_A": "C1 Single-RAG",
+    "SYSTEM_B": "C2 Multi-Agent",
+    "source": "locked export mapping in research/experiment_pipeline/rq1_confirmatory.py at frozen revision f9b0a77, verified by exact answer linkage to results.jsonl and formal_execution_manifest.json"
+  },
+  "provider_or_llm_calls": 0
+}

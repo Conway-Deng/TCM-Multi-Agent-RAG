@@ -1,0 +1,82 @@
+{
+  "scope": "Pipeline-generated objective metrics, analyzed on the same 92 complete usable pairs",
+  "metrics": {
+    "gold_evidence_retrieval_recall": {
+      "c1_mean": 0.9293478260869565,
+      "c1_median": 1.0,
+      "c2_mean": 0.9293478260869565,
+      "c2_median": 1.0,
+      "mean_paired_difference_c2_minus_c1": 0.0,
+      "median_paired_difference_c2_minus_c1": 0.0,
+      "bootstrap_95ci_mean_difference": [
+        0.0,
+        0.0
+      ],
+      "c2_greater": 0,
+      "c1_greater": 0,
+      "ties": 92,
+      "nonzero_paired_questions": 0,
+      "wilcoxon": {
+        "w_plus": 0.0,
+        "w_minus": 0.0,
+        "nonzero_n": 0,
+        "zero_differences": 92,
+        "p_value_two_sided": null,
+        "informative": false,
+        "method": "not informative; all paired differences tied"
+      }
+    },
+    "gold_evidence_citation_recall": {
+      "c1_mean": 0.9239130434782609,
+      "c1_median": 1.0,
+      "c2_mean": 0.9293478260869565,
+      "c2_median": 1.0,
+      "mean_paired_difference_c2_minus_c1": 0.005434782608695652,
+      "median_paired_difference_c2_minus_c1": 0.0,
+      "bootstrap_95ci_mean_difference": [
+        0.0,
+        0.016304347826086956
+      ],
+      "c2_greater": 1,
+      "c1_greater": 0,
+      "ties": 91,
+      "nonzero_paired_questions": 1,
+      "wilcoxon": {
+        "w_plus": 1.0,
+        "w_minus": 0,
+        "nonzero_n": 1,
+        "zero_differences": 91,
+        "z": 1.0,
+        "p_value_two_sided": 0.31731050786291415,
+        "informative": true,
+        "method": "Wilcoxon signed-rank; zero differences omitted; normal approximation with tie correction; no continuity correction"
+      }
+    },
+    "citation_precision": {
+      "c1_mean": 0.6503623188405797,
+      "c1_median": 0.6666666666666666,
+      "c2_mean": 0.657608695652174,
+      "c2_median": 0.6666666666666666,
+      "mean_paired_difference_c2_minus_c1": 0.007246376811594204,
+      "median_paired_difference_c2_minus_c1": 0.0,
+      "bootstrap_95ci_mean_difference": [
+        -0.005434782608695652,
+        0.025362318840579712
+      ],
+      "c2_greater": 3,
+      "c1_greater": 2,
+      "ties": 87,
+      "nonzero_paired_questions": 5,
+      "wilcoxon": {
+        "w_plus": 10.0,
+        "w_minus": 5.0,
+        "nonzero_n": 5,
+        "zero_differences": 87,
+        "z": 0.6804138174397717,
+        "p_value_two_sided": 0.49624247444426295,
+        "informative": true,
+        "method": "Wilcoxon signed-rank; zero differences omitted; normal approximation with tie correction; no continuity correction"
+      }
+    }
+  }
+}

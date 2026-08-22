@@ -1,0 +1,326 @@
+{
+  "rq": "RQ1",
+  "status": "RQ1 COMPLETE — CONFIRMATORY EXTENSION COMPLETE",
+  "study_1A": {
+    "rq": "RQ1",
+    "status": "COMPLETE",
+    "condition_1": "C1 Single-RAG",
+    "condition_2": "C2 Multi-Agent",
+    "retrieval": "R0",
+    "model": "Qwen/Qwen3-8B",
+    "benchmark_version": "TCM Gold Benchmark v1.2",
+    "benchmark_sha256": "24077270355234c3e53226e22692c1c705daa10dea35f54dc40c7e6ba30224a1",
+    "corpus_version": "TCM Research Corpus v1",
+    "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+    "total_questions": 50,
+    "repeats": 3,
+    "total_formal_runs": 300,
+    "final_semantic_metrics": {
+      "full_recall": {
+        "C1": 0.9037,
+        "C2": 0.9235,
+        "difference_pp": 1.98,
+        "bootstrap_ci_pp": [
+          -2.72,
+          7.41
+        ],
+        "p_value": 0.5505
+      },
+      "partial_or_better_recall": {
+        "C1": 0.9667,
+        "C2": 0.9753,
+        "difference_pp": 0.86,
+        "bootstrap_ci_pp": [
+          -0.99,
+          2.96
+        ],
+        "p_value": 0.5839
+      },
+      "missing_gold_rate": {
+        "C1": 0.0259,
+        "C2": 0.0173,
+        "difference_pp": -0.86,
+        "bootstrap_ci_pp": [
+          -2.96,
+          0.99
+        ],
+        "p_value": 0.5839
+      },
+      "contradiction_rate": {
+        "C1": 0.0074,
+        "C2": 0.0074,
+        "difference_pp": 0.0
+      }
+    },
+    "reliability": {
+      "C1_usable": 140,
+      "C1_total": 150,
+      "C1_rate": 0.9333,
+      "C2_usable": 135,
+      "C2_total": 150,
+      "C2_rate": 0.9
+    },
+    "statistical_method": "Question-level paired analysis; 10000 bootstrap resamples; seed 20260821; Wilcoxon signed-rank where informative",
+    "methodology_limitations": [
+      "same 50 questions repeated across three passes",
+      "R0 only",
+      "Qwen/Qwen3-8B only",
+      "Corpus v1 only",
+      "AI-assisted semantic evaluation using frozen source-grounded rubric",
+      "independent human semantic validation not performed",
+      "clinical/TCM expert validation not performed",
+      "RQ2 human-vs-LLM Judge validation not completed",
+      "Repeat 2/3 retrieval/citation objective metrics not recomputed"
+    ],
+    "artifact_paths": {
+      "repeat_1": "research/experiments/rq1_c1_vs_c2/formal_pass_1_retry_20260821/",
+      "repeat_2": "research/experiments/rq1_c1_vs_c2/formal_repeat_2_20260822/",
+      "repeat_3": "research/experiments/rq1_c1_vs_c2/formal_repeat_3_20260823/",
+      "repeat_1_semantic": "research/experiments/rq1_c1_vs_c2/formal_pass_1_retry_20260821/semantic_validation/",
+      "repeat_2_3_semantic": "research/experiments/rq1_c1_vs_c2/semantic_evaluation/",
+      "final_statistics": "research/experiments/rq1_c1_vs_c2/evaluation/final_three_repeat_analysis/",
+      "closeout": "research/experiments/rq1_c1_vs_c2/rq1_closeout/"
+    },
+    "git_revisions": {
+      "runner": "635c5db",
+      "objective_evaluation": "9c73bb6",
+      "semantic_protocol": "631ffbe",
+      "final_analysis": "2da82df"
+    },
+    "closeout_date": "2026-08-21"
+  },
+  "study_1B": {
+    "benchmark_version": "RQ1_CONFIRMATORY_V1_1",
+    "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+    "questions": 100,
+    "formal_runs": 200,
+    "complete_usable_pairs": 92,
+    "semantic_rows": 422,
+    "full_recall": {
+      "c1_mean": 0.907608695652174,
+      "c1_median": 1.0,
+      "c2_mean": 0.9057971014492754,
+      "c2_median": 1.0,
+      "mean_paired_difference_c2_minus_c1": -0.0018115942028985516,
+      "median_paired_difference_c2_minus_c1": 0.0,
+      "bootstrap_95ci_mean_difference": [
+        -0.01811594202898551,
+        0.016304347826086956
+      ],
+      "c2_greater": 2,
+      "c1_greater": 3,
+      "ties": 87,
+      "nonzero_paired_questions": 5,
+      "wilcoxon": {
+        "w_plus": 7.5,
+        "w_minus": 7.5,
+        "nonzero_n": 5,
+        "zero_differences": 87,
+        "z": 0.0,
+        "p_value_two_sided": 1.0,
+        "informative": true,
+        "method": "Wilcoxon signed-rank; zero differences omitted; normal approximation with tie correction; no continuity correction"
+      },
+      "practical_threshold": 0.05,
+      "ci_includes_zero": true,
+      "ci_supports_at_least_5pp": false,
+      "ci_rules_out_at_least_5pp": true
+    },
+    "reliability": {
+      "planned_questions": 100,
+      "C1": {
+        "usable": 94,
+        "total": 100,
+        "rate": 0.94
+      },
+      "C2": {
+        "usable": 95,
+        "total": 100,
+        "rate": 0.95
+      },
+      "both_usable": 92,
+      "C1_only": 2,
+      "C2_only": 3,
+      "neither_usable": 3,
+      "question_sets": {
+        "both_usable": [
+          "tcmc-v1-001",
+          "tcmc-v1-002",
+          "tcmc-v1-003",
+          "tcmc-v1-004",
+          "tcmc-v1-005",
+          "tcmc-v1-006",
+          "tcmc-v1-007",
+          "tcmc-v1-008",
+          "tcmc-v1-010",
+          "tcmc-v1-011",
+          "tcmc-v1-012",
+          "tcmc-v1-013",
+          "tcmc-v1-014",
+          "tcmc-v1-015",
+          "tcmc-v1-016",
+          "tcmc-v1-017",
+          "tcmc-v1-018",
+          "tcmc-v1-019",
+          "tcmc-v1-020",
+          "tcmc-v1-021",
+          "tcmc-v1-022",
+          "tcmc-v1-024",
+          "tcmc-v1-025",
+          "tcmc-v1-026",
+          "tcmc-v1-027",
+          "tcmc-v1-028",
+          "tcmc-v1-029",
+          "tcmc-v1-031",
+          "tcmc-v1-032",
+          "tcmc-v1-034",
+          "tcmc-v1-035",
+          "tcmc-v1-036",
+          "tcmc-v1-037",
+          "tcmc-v1-038",
+          "tcmc-v1-040",
+          "tcmc-v1-041",
+          "tcmc-v1-042",
+          "tcmc-v1-043",
+          "tcmc-v1-044",
+          "tcmc-v1-045",
+          "tcmc-v1-046",
+          "tcmc-v1-047",
+          "tcmc-v1-048",
+          "tcmc-v1-049",
+          "tcmc-v1-050",
+          "tcmc-v1-051",
+          "tcmc-v1-052",
+          "tcmc-v1-053",
+          "tcmc-v1-054",
+          "tcmc-v1-055",
+          "tcmc-v1-056",
+          "tcmc-v1-057",
+          "tcmc-v1-058",
+          "tcmc-v1-059",
+          "tcmc-v1-060",
+          "tcmc-v1-062",
+          "tcmc-v1-063",
+          "tcmc-v1-064",
+          "tcmc-v1-065",
+          "tcmc-v1-066",
+          "tcmc-v1-067",
+          "tcmc-v1-068",
+          "tcmc-v1-069",
+          "tcmc-v1-070",
+          "tcmc-v1-071",
+          "tcmc-v1-072",
+          "tcmc-v1-073",
+          "tcmc-v1-074",
+          "tcmc-v1-075",
+          "tcmc-v1-076",
+          "tcmc-v1-077",
+          "tcmc-v1-078",
+          "tcmc-v1-079",
+          "tcmc-v1-080",
+          "tcmc-v1-081",
+          "tcmc-v1-082",
+          "tcmc-v1-084",
+          "tcmc-v1-085",
+          "tcmc-v1-086",
+          "tcmc-v1-088",
+          "tcmc-v1-089",
+          "tcmc-v1-090",
+          "tcmc-v1-091",
+          "tcmc-v1-092",
+          "tcmc-v1-093",
+          "tcmc-v1-094",
+          "tcmc-v1-095",
+          "tcmc-v1-096",
+          "tcmc-v1-097",
+          "tcmc-v1-098",
+          "tcmc-v1-099",
+          "tcmc-v1-100"
+        ],
+        "C1_only": [
+          "tcmc-v1-030",
+          "tcmc-v1-039"
+        ],
+        "C2_only": [
+          "tcmc-v1-061",
+          "tcmc-v1-083",
+          "tcmc-v1-087"
+        ],
+        "neither_usable": [
+          "tcmc-v1-009",
+          "tcmc-v1-023",
+          "tcmc-v1-033"
+        ]
+      },
+      "neither_usable_reason": "For tcmc-v1-009, tcmc-v1-023, and tcmc-v1-033, both C1 and C2 ended FAIL_PROVIDER after 2 attempted and 0 successful provider calls, with deterministic fallback recorded; fallback outputs were excluded from semantic review as pre-registered.",
+      "mcnemar": {
+        "discordant_pairs": 5,
+        "discordant_c1_only": 2,
+        "discordant_c2_only": 3,
+        "p_value_two_sided": 1.0,
+        "informative": true,
+        "method": "McNemar exact two-sided binomial test"
+      },
+      "interpretation": "Provider reliability is distinct from semantic accuracy; no reliability difference was established."
+    },
+    "latency": {
+      "c1_mean": 6384.695652173913,
+      "c1_median": 4157.0,
+      "c2_mean": 7649.891304347826,
+      "c2_median": 4410.0,
+      "mean_paired_difference_c2_minus_c1": 1265.195652173913,
+      "median_paired_difference_c2_minus_c1": 346.0,
+      "bootstrap_95ci_mean_difference": [
+        -906.7179347826086,
+        3415.4997282608674
+      ],
+      "c2_greater": 54,
+      "c1_greater": 38,
+      "ties": 0,
+      "nonzero_paired_questions": 92,
+      "wilcoxon": {
+        "w_plus": 2439.0,
+        "w_minus": 1839.0,
+        "nonzero_n": 92,
+        "zero_differences": 0,
+        "z": 1.1681688556959198,
+        "p_value_two_sided": 0.24273866044276377,
+        "informative": true,
+        "method": "Wilcoxon signed-rank; zero differences omitted; normal approximation with tie correction; no continuity correction"
+      },
+      "complete_paired_usable_runs": 92,
+      "units": "milliseconds",
+      "provider_status_by_condition": {
+        "C1": {
+          "PASS": 93,
+          "FAIL_PROVIDER": 6,
+          "PASS_WITH_RETRY": 1
+        },
+        "C2": {
+          "PASS": 91,
+          "FAIL_PROVIDER": 5,
+          "PASS_WITH_RETRY": 4
+        }
+      },
+      "provider_telemetry_by_condition": {
+        "C1": {
+          "attempted_calls": 107,
+          "successful_calls": 94,
+          "pass_with_retry_runs": 1,
+          "failed_provider_runs": 6
+        },
+        "C2": {
+          "attempted_calls": 124,
+          "successful_calls": 110,
+          "pass_with_retry_runs": 4,
+          "failed_provider_runs": 5
+        }
+      }
+    },
+    "analysis_manifest": "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/confirmatory_analysis_manifest.json"
+  },
+  "synthesis": "The small favorable Full Recall direction for C2 in the original study did not replicate on the independent confirmatory benchmark: C2 was essentially tied with, and slightly below, C1. Statistical superiority was not established, and the confirmatory 95% CI rules out a >=5-percentage-point C2 benefit under this tested setup without constituting a formal equivalence claim. Confirmatory reliability was similar (slightly higher for C2 by one usable answer), while C2 again had higher mean and median latency, although the paired latency difference was uncertain.",
+  "naive_pooled_inference_performed": false,
+  "provider_or_llm_calls_during_final_analysis": 0,
+  "closeout_date": "2026-08-23"
+}

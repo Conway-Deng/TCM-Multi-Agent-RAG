@@ -14,4 +14,13 @@
 | Latency | Three-repeat latency summaries | same final statistics directory | `latency_three_repeat.json` |
 | Progress note | Research log | external `D:\project\AI-Second-Brain\30-Research-MediRAG\2026-08-21 TCM Research Progress.md` | dated RQ1 entries |
 
+## Confirmatory extension (Study 1B)
+
+| Area | Purpose | Repository-relative path | Important files |
+|---|---|---|---|
+| Frozen confirmatory benchmark | 100 new held-out questions | `research/benchmarks/tcm_gold_rq1_confirmatory_v1/` | `benchmark_confirmatory_v1_1_frozen.jsonl`, `freeze_manifest_confirmatory_v1_1.json` |
+| Confirmatory raw run | 200 locked C1/C2 executions | `research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/` | `results.jsonl`, `formal_execution_manifest.json`, `summary.json` |
+| Confirmatory semantic analysis | Imported 422-row external review and paired analysis | `research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/` | `confirmatory_final_results.md`, `confirmatory_paired_statistics.json`, `confirmatory_analysis_manifest.json` |
+| Final combined closeout | Study 1A/1B synthesis without naive pooling | `research/experiments/rq1_c1_vs_c2/rq1_closeout/` | `rq1_final_results_with_confirmatory.md`, `rq1_final_manifest_with_confirmatory.json`, `rq1_final_conclusion.md` |
+
 Relevant revisions: frozen runner `635c5db`; objective evaluation `9c73bb6`; semantic protocol `631ffbe`; formal pass 1 analysis `e56f209`; repeat packet preparation `f2ee29e`; final three-repeat analysis `2da82df`.

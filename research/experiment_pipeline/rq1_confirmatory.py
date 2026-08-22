@@ -149,13 +149,17 @@ def import_semantic(c,semantic_file):
 def analyze(c):
     out=ROOT/c['output_dir']; p=out/'semantic_review_imported.json'
     if not p.exists(): raise SystemExit('SEMANTIC_REVIEW_REQUIRED')
+    final_manifest=out/'final_analysis/confirmatory_analysis_manifest.json'
+    if final_manifest.exists():
+        completed=json.loads(final_manifest.read_text(encoding='utf-8'))
+        return {'status':completed['status'],'complete_usable_pairs':completed['sample']['complete_usable_pairs']}
     rows=json.loads(p.read_text(encoding='utf-8')); counts={k:sum(x['review_label']==k for x in rows) for k in ['SUPPORTED','PARTIALLY_SUPPORTED','NOT_SUPPORTED','CONTRADICTED','UNRESOLVED']}
     result={'methodology':'AI-assisted semantic evaluation using frozen source-grounded rubric','atomic_counts':counts,'status':'ANALYSIS_READY_FOR_PAIRED_QUESTION_IMPLEMENTATION'}
     atomic_write(out/'analysis.json',json.dumps(result,indent=2)+'\n'); return result
 def closeout(c):
     out=ROOT/c['output_dir'];
-    if not (out/'analysis.json').exists(): raise SystemExit('ANALYSIS_REQUIRED')
-    state={'status':'CONFIRMATORY_RQ1_COMPLETE'};atomic_write(out/'pipeline_state.json',json.dumps(state,indent=2)+'\n');return state
+    if not (out/'analysis.json').exists() and not (out/'final_analysis/confirmatory_analysis_manifest.json').exists(): raise SystemExit('ANALYSIS_REQUIRED')
+    state={'status':'RQ1_CONFIRMATORY_COMPLETE'};atomic_write(out/'pipeline_state.json',json.dumps(state,indent=2)+'\n');return state
 def simulate_resume():
     with tempfile.TemporaryDirectory() as d:
         p=Path(d)/'results.jsonl'; planned=[{'execution_sequence':i,'question_id':f'q{i//2:03d}','condition':'C1' if i%2 else 'C2','run_id':f'fixed-{i:03d}'} for i in range(1,201)]
@@ -170,10 +174,14 @@ def main():
     if a.stage=='prepare': print(prepare(c));return
     checks=preflight(c)
     if a.stage=='preflight' or a.dry_run:
-        print(json.dumps({'status':'READY_FOR_LOCAL_FORMAL_RQ1_CONFIRMATORY_RUN','preflight':checks,'provider_calls':0}));return
+        state_path=ROOT/c['output_dir']/'pipeline_state.json'
+        status='RQ1_CONFIRMATORY_COMPLETE' if state_path.exists() and json.loads(state_path.read_text(encoding='utf-8')).get('status')=='RQ1_CONFIRMATORY_COMPLETE' else 'READY_FOR_LOCAL_FORMAL_RQ1_CONFIRMATORY_RUN'
+        print(json.dumps({'status':status,'preflight':checks,'provider_calls':0}));return
     if a.stage=='auto':
         if c['benchmark_source_review_status']!='APPROVED_AND_FROZEN': print(json.dumps({'status':'BENCHMARK_SOURCE_REVIEW_REQUIRED','preflight':checks,'provider_calls':0}));return
         out=ROOT/c['output_dir']
+        state_path=out/'pipeline_state.json'
+        if state_path.exists() and json.loads(state_path.read_text(encoding='utf-8')).get('status')=='RQ1_CONFIRMATORY_COMPLETE': print(state_path.read_text(encoding='utf-8'));return
         if not (out/'results.jsonl').exists() or len(jsonl(out/'results.jsonl'))<200: run(c)
         objective_evaluate(c); packet=export_semantic(c)
         if not (out/'semantic_review_imported.json').exists(): print(json.dumps({'status':'SEMANTIC_REVIEW_REQUIRED','packet':str(packet)}));return

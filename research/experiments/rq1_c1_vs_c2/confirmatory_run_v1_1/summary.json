@@ -1,0 +1,12 @@
+{
+  "records": 200,
+  "unique_pairs": 200,
+  "C1": 100,
+  "C2": 100,
+  "statuses": {
+    "FAIL_PROVIDER": 11,
+    "PASS": 184,
+    "PASS_WITH_RETRY": 5
+  },
+  "valid": true
+}
