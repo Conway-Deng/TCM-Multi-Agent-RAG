@@ -1,0 +1,19 @@
+{
+  "status": "PRE_REGISTERED",
+  "primary_comparison": "C2 Multi-Agent minus C1 Single-RAG",
+  "primary_metric": "question_level_gold_fact_full_recall",
+  "secondary_metrics": ["partial_or_better_recall", "missing_gold_rate", "contradiction_rate", "usable_answer_reliability", "latency"],
+  "primary_estimand": "mean paired difference C2-C1",
+  "statistical_unit": "question",
+  "planned_questions": 100,
+  "formal_passes": 1,
+  "planned_runs": 200,
+  "bootstrap_resamples": 10000,
+  "bootstrap_seed": 20260821,
+  "confidence_interval": 0.95,
+  "paired_test": "Wilcoxon signed-rank where informative",
+  "meaningful_full_recall_difference_percentage_points": 5,
+  "model": "Qwen/Qwen3-8B",
+  "retrieval": "R0",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9"
+}

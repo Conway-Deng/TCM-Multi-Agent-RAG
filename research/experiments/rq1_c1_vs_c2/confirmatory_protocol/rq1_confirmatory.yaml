@@ -1,0 +1,15 @@
+experiment_id: rq1_confirmatory_v1
+benchmark_path: research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1.jsonl
+benchmark_sha256: 5d8d1cb1174576701f44c954c06c48852c1758bf65828d9538ff26da2efdb01b
+benchmark_source_review_status: PENDING
+corpus_path: research/corpus/tcm_v1/chunks.jsonl
+corpus_sha256: 316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9
+model: Qwen/Qwen3-8B
+retrieval: R0
+conditions: [C1, C2]
+random_seed: 20260824
+planned_questions: 100
+planned_runs: 200
+api_url: http://127.0.0.1:8002/api/research/run
+timeout_seconds: 180
+output_dir: research/experiments/rq1_c1_vs_c2/confirmatory_run_v1
