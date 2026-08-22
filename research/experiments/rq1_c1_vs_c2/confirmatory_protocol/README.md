@@ -1,6 +1,6 @@
 # RQ1 confirmatory study automation
 
-Current checkpoint: `BENCHMARK_SOURCE_REVIEW_REQUIRED`. No formal run is authorized until the external source review is imported, adjudicated, and the benchmark/config hashes are frozen.
+Current checkpoint: `BENCHMARK_SOURCE_REVIEW_REQUIRED`. The v1.1 candidate incorporates 23 design revisions from the first external source review and is awaiting a complete second external source-grounded review. No formal run is authorized until that review is imported, adjudicated, and the benchmark/config hashes are explicitly frozen.
 
 Preflight:
 

@@ -1,0 +1,378 @@
+{
+  "status": "DRAFT_SOURCE_GROUNDED_CONFIRMATORY_V1_1",
+  "version": "confirmatory_v1_1",
+  "original_draft": {
+    "status": "DRAFT_SOURCE_GROUNDED_CONFIRMATORY_V1",
+    "benchmark_sha256": "5d8d1cb1174576701f44c954c06c48852c1758bf65828d9538ff26da2efdb01b"
+  },
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "question_count": 100,
+  "atomic_gold_fact_count": 223,
+  "distributions": {
+    "domain": {
+      "herbal": 60,
+      "syndrome": 25,
+      "multi_target": 15
+    },
+    "difficulty": {
+      "easy": 40,
+      "medium": 40,
+      "hard": 20
+    }
+  },
+  "external_source_review_v1": {
+    "method": "external GPT source-grounded review",
+    "approved_unchanged": 77,
+    "revised": 23,
+    "cross_reference_only": 13,
+    "prompt_gold_completeness_mismatch": 10,
+    "remove": 0,
+    "unresolved": 0
+  },
+  "revisions": [
+    {
+      "original_question_id": "tcmc-v1-001",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Narrowbambooleaf Thorowax"
+      ],
+      "replacement_entity_or_question": "Rosemary",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Rosemary?"
+    },
+    {
+      "original_question_id": "tcmc-v1-002",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "Heartleaf Tubergourd"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and used part are listed for Heartleaf Tubergourd?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for Heartleaf Tubergourd?",
+      "replacement_question": "What source-recorded function and used part are listed for Heartleaf Tubergourd?"
+    },
+    {
+      "original_question_id": "tcmc-v1-003",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Denne Denrdobium"
+      ],
+      "replacement_entity_or_question": "seed of Cluster Mallow",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for seed of Cluster Mallow?"
+    },
+    {
+      "original_question_id": "tcmc-v1-004",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "British Inula Herb;Flos Inulae Britanniae"
+      ],
+      "replacement_entity_or_question": "Largeleaf Chinese Ash Bark Equivalent plant: Fraxinus szaboana , Fraxinus chinensis, Fraxinus stylosa, Fraxinus bungeana , Fraxinus paxiana",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Largeleaf Chinese Ash Bark Equivalent plant: Fraxinus szaboana , Fraxinus chinensis, Fraxinus stylosa, Fraxinus bungeana , Fraxinus paxiana?"
+    },
+    {
+      "original_question_id": "tcmc-v1-005",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "Leafless Anabasis"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and used part are listed for Leafless Anabasis?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for Leafless Anabasis?",
+      "replacement_question": "What source-recorded function and used part are listed for Leafless Anabasis?"
+    },
+    {
+      "original_question_id": "tcmc-v1-008",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "fruit of Siberian Cockleblur;Xanthium sibiricum"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and indication are listed for fruit of Siberian Cockleblur;Xanthium sibiricum?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for fruit of Siberian Cockleblur;Xanthium sibiricum?",
+      "replacement_question": "What source-recorded function and indication are listed for fruit of Siberian Cockleblur;Xanthium sibiricum?"
+    },
+    {
+      "original_question_id": "tcmc-v1-009",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "DI BIE CHONG"
+      ],
+      "replacement_entity_or_question": "What source-recorded function are listed for DI BIE CHONG?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for DI BIE CHONG?",
+      "replacement_question": "What source-recorded function are listed for DI BIE CHONG?"
+    },
+    {
+      "original_question_id": "tcmc-v1-010",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Chinese Pink"
+      ],
+      "replacement_entity_or_question": "Snow Azalea",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Snow Azalea?"
+    },
+    {
+      "original_question_id": "tcmc-v1-015",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Rosthorn Yam"
+      ],
+      "replacement_entity_or_question": "Threeleaf Chastetree Leaf Equivalent plant: DAN YE MAN JING YE",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Threeleaf Chastetree Leaf Equivalent plant: DAN YE MAN JING YE?"
+    },
+    {
+      "original_question_id": "tcmc-v1-017",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Grassleaf Sweetflag"
+      ],
+      "replacement_entity_or_question": "all-grass of Cudweed",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for all-grass of Cudweed?"
+    },
+    {
+      "original_question_id": "tcmc-v1-018",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "Pomegranate Heartwood"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and used part are listed for Pomegranate Heartwood?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for Pomegranate Heartwood?",
+      "replacement_question": "What source-recorded function and used part are listed for Pomegranate Heartwood?"
+    },
+    {
+      "original_question_id": "tcmc-v1-020",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "fruit of Ulmus macrocarpa"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and used part are listed for fruit of Ulmus macrocarpa?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for fruit of Ulmus macrocarpa?",
+      "replacement_question": "What source-recorded function and used part are listed for fruit of Ulmus macrocarpa?"
+    },
+    {
+      "original_question_id": "tcmc-v1-024",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "rhizome of Giant Typhonium"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and indication are listed for rhizome of Giant Typhonium?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for rhizome of Giant Typhonium?",
+      "replacement_question": "What source-recorded function and indication are listed for rhizome of Giant Typhonium?"
+    },
+    {
+      "original_question_id": "tcmc-v1-025",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "Sikkim Microula"
+      ],
+      "replacement_entity_or_question": "What source-recorded function and used part are listed for Sikkim Microula?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for Sikkim Microula?",
+      "replacement_question": "What source-recorded function and used part are listed for Sikkim Microula?"
+    },
+    {
+      "original_question_id": "tcmc-v1-028",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Dahurian Bugbane"
+      ],
+      "replacement_entity_or_question": "Japanese Galangal",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Japanese Galangal?"
+    },
+    {
+      "original_question_id": "tcmc-v1-032",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "mole cricket"
+      ],
+      "replacement_entity_or_question": "What source-recorded function are listed for mole cricket?",
+      "original_question": "What source-recorded functions, indications, and used part are listed for mole cricket?",
+      "replacement_question": "What source-recorded function are listed for mole cricket?"
+    },
+    {
+      "original_question_id": "tcmc-v1-033",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Royal Paulownia"
+      ],
+      "replacement_entity_or_question": "Songaria Cynomorium;Cynomorium songaricum",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Songaria Cynomorium;Cynomorium songaricum?"
+    },
+    {
+      "original_question_id": "tcmc-v1-034",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Tibet Gentian"
+      ],
+      "replacement_entity_or_question": "Manchurian Walnet",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Manchurian Walnet?"
+    },
+    {
+      "original_question_id": "tcmc-v1-042",
+      "reason": "prompt_gold_completeness_mismatch",
+      "action": "rewritten",
+      "original_entities": [
+        "Abrus Precatorius L."
+      ],
+      "replacement_entity_or_question": "What traditional properties and traditional class are recorded for Abrus Precatorius L.?",
+      "original_question": "What traditional properties, meridians, and class are recorded for Abrus Precatorius L.?",
+      "replacement_question": "What traditional properties and traditional class are recorded for Abrus Precatorius L.?"
+    },
+    {
+      "original_question_id": "tcmc-v1-052",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Sprenger Magnolia"
+      ],
+      "replacement_entity_or_question": "Intermediate Peashrub",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Intermediate Peashrub?"
+    },
+    {
+      "original_question_id": "tcmc-v1-054",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Fischer Euphorbia"
+      ],
+      "replacement_entity_or_question": "Longtube Ground Ivy",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Longtube Ground Ivy?"
+    },
+    {
+      "original_question_id": "tcmc-v1-057",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Austral Akebia"
+      ],
+      "replacement_entity_or_question": "Trichosanthes root, Skegourd root",
+      "replacement_question": "What source-recorded functions, indications, and used part are listed for Trichosanthes root, Skegourd root?"
+    },
+    {
+      "original_question_id": "tcmc-v1-100",
+      "reason": "cross_reference_only_primary_gold",
+      "action": "replaced",
+      "original_entities": [
+        "Austral Akebia Root",
+        "failure of qi to govern blood;qi failing to failure of qi to contain blood"
+      ],
+      "replacement_entity_or_question": "Aquatic-sunflower Inula",
+      "replacement_question": "How are Aquatic-sunflower Inula and failure of qi to govern blood;qi failing to failure of qi to contain blood represented separately in TCM Research Corpus v1, and what evidence is recorded for each?"
+    }
+  ],
+  "exclusions": [
+    "accumulation of cold and stasis of qi",
+    "be affected by summer-head-dampness",
+    "bloodflower milkweed",
+    "body fluid with dryness in the intestines as",
+    "capitate rhododendron",
+    "catnip",
+    "chinese waxgourd peel",
+    "cold and stasis of qi as",
+    "colored mistletoe herb",
+    "common buckwheat stem",
+    "common javatea",
+    "common sinodielsia",
+    "coral",
+    "creeping oxalis",
+    "creeping skyflower leaf",
+    "damp phlegm",
+    "deficiency as",
+    "deficiency of body fluid with dryness in the intestines",
+    "deficiency of the kidney-yang",
+    "deficiency of the stomach-yin",
+    "distending pain of the hypochondrium due to gallblsdder disorder",
+    "dockleaf goldenray",
+    "dried tangerine peel",
+    "evergreen mucuna",
+    "excessiveness of the stomach-fire",
+    "exteriat syndrome of deficiency",
+    "febrile symptoms",
+    "fengla",
+    "floating of weak yang",
+    "flower bud of lobed kudzuvine",
+    "fluid retention",
+    "garden millingtonia",
+    "gehua",
+    "hairy antler",
+    "hairy willowweed",
+    "heat in lung",
+    "hongshen",
+    "hosie ormosia",
+    "indigestion with food retention",
+    "japanese ampelopsis as having these traditional properties",
+    "japanese ampelopsis in this traditional class",
+    "japanese ampelopsis with these meridians",
+    "japanese sapium",
+    "largeleaf spicebush",
+    "lemon pericarp equivalent plant",
+    "lemon pericarp equivalent plant: citrus limonia;lemon pericarp",
+    "lily magnolia bark",
+    "liver yang",
+    "lobed kudzuvine as having these traditional properties",
+    "lobed kudzuvine in this traditional class",
+    "lobed kudzuvine with these meridians",
+    "luganshi",
+    "myrrhtree gum resin",
+    "odoriferous rosewood",
+    "peach seed",
+    "phlegm as",
+    "phlegm fire",
+    "phlegm in the interior as",
+    "phlegm-damoness obstructing lung",
+    "polyporus grifolia, umbellate pore-fungus",
+    "puncturevine caltrop fruit;tribulus terrestris",
+    "red ginseng",
+    "retention of phlegm",
+    "retention of phlegm in the interior",
+    "root of japanese ampelopsis",
+    "root pilose asiabell; pilose asiabell",
+    "root-tuber cremanthodium",
+    "sharpspur corydalis",
+    "siegesbeckiae herba",
+    "silktree albizia bark",
+    "sinking of the middle qi",
+    "spiked loosestrife equivalent plant",
+    "spiked loosestrife equivalent plant: lythrum anceps",
+    "suberect spatholobus",
+    "the heat attacts the pericardium",
+    "the hypochondrium due to gallblsdder disorder as",
+    "the kidney-yang as",
+    "the middle qi as",
+    "the stomach-yin as",
+    "threeflower clematis",
+    "thunberg knotweed",
+    "tuberose",
+    "vinegar",
+    "weak spleen and stomach",
+    "weak yang as",
+    "woods lcaquertree leaf",
+    "yang exhaustion",
+    "yellow toadflax"
+  ],
+  "leakage_checks": {
+    "old_benchmark_entity_overlap": 0,
+    "development_entity_overlap": 0,
+    "smoke_debug_entity_overlap": 0,
+    "duplicate_questions": 0,
+    "duplicate_targets": 0,
+    "invalid_evidence_ids": 0,
+    "cross_reference_only_primary_gold": 0,
+    "prompt_gold_completeness_mismatch": 0,
+    "unsupported_relationships": 0
+  },
+  "source_review": "SECOND_EXTERNAL_REVIEW_PENDING",
+  "provider_llm_calls_during_revision": 0
+}

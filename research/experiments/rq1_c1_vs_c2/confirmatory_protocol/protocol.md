@@ -1,6 +1,6 @@
 # RQ1 confirmatory protocol
 
-Status: PRE-REGISTERED — BENCHMARK SOURCE REVIEW REQUIRED.
+Status: PRE-REGISTERED — REVISED BENCHMARK SECOND SOURCE REVIEW REQUIRED.
 
 Primary comparison: C1 Single-RAG versus C2 Multi-Agent under fixed Qwen/Qwen3-8B, Corpus v1, and R0 retrieval.
 
@@ -12,4 +12,6 @@ Analysis uses 10,000 paired question-level bootstrap resamples, seed `20260821`,
 
 The system, model, corpus, retrieval, generation parameters, retry/timeout/fallback policies, grounding rules, and benchmark may not be tuned from formal outputs.
 
-Checkpoints: `BENCHMARK_SOURCE_REVIEW_REQUIRED` before any provider run, then `SEMANTIC_REVIEW_REQUIRED` after formal execution and objective evaluation/export.
+The initial 100-question draft received external source-grounded review: 77 questions were approved unchanged and 23 benchmark-design issues were revised (13 cross-reference-only replacements and 10 prompt/Gold completeness corrections). The resulting v1.1 candidate is not frozen.
+
+Checkpoints: `BENCHMARK_SOURCE_REVIEW_REQUIRED` remains in force before any provider run, then `SEMANTIC_REVIEW_REQUIRED` after formal execution and objective evaluation/export.
