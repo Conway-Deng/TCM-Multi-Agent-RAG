@@ -79,7 +79,10 @@ def test_formal_order_is_paired_counterbalanced_and_not_executed():
     assert not (FORMAL / "results.jsonl").exists()
 
 
-def test_state_stops_at_real_smoke_gate_before_provider_execution():
+def test_state_never_advances_to_formal_during_smoke_gates():
     state = json.loads((RQ4 / "rq4_state.json").read_text(encoding="utf-8"))
-    assert state["state"] in {"REAL_SMOKE_TEST_REQUIRED", "SMOKE_TEST_RUNNING", "SMOKE_TEST_PASSED", "READY_FOR_FORMAL_RQ4_RUN"}
+    assert state["state"] in {
+        "REAL_SMOKE_TEST_REQUIRED", "SMOKE_TEST_RUNNING", "SMOKE_TEST_FAILED",
+        "SMOKE_TEST_PASSED", "READY_FOR_FORMAL_RQ4_RUN",
+    }
     assert state.get("formal_execution_records", 0) == 0

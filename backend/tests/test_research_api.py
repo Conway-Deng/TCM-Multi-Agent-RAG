@@ -138,6 +138,8 @@ def test_public_health_and_corpus_stats_disclose_legacy_fixture() -> None:
     assert health["corpus_chunk_count"] == 16
     assert health["active_corpus"] == "legacy_provisional_fixture"
     assert health["llm_execution_enabled"] is False
+    assert len(health["workbench_sha256"]) == 64
+    assert len(health["c4_implementation_sha256"]) == 64
     assert stats["corpus_mode"] == "legacy"
     assert stats["chunk_count"] == 16
 

@@ -13,6 +13,7 @@ import math
 import os
 import random
 import re
+import socket
 import statistics
 import subprocess
 import sys
@@ -71,7 +72,7 @@ TRANSITIONS = {
 REVIEW_LABELS = {"SUPPORTED", "PARTIALLY_SUPPORTED", "NOT_SUPPORTED", "CONTRADICTED", "UNRESOLVED"}
 SOURCE_LABELS = {"APPROVE", "REVISE", "REMOVE", "UNRESOLVED"}
 RELEVANT_PATHS = (
-    "backend/orchestration", "backend/schemas/research.py", "research/experiment_pipeline/rq4_platform.py",
+    "backend/main.py", "backend/orchestration", "backend/schemas/research.py", "research/experiment_pipeline/rq4_platform.py",
     "research/experiment_pipeline/rq4_dashboard.py", "research/experiment_pipeline/build_rq4_benchmark.py",
     "research/benchmarks/tcm_gold_rq4_v1", "research/experiments/rq4_debate_vs_multiagent/protocol",
     "research/experiments/rq4_debate_vs_multiagent/c4_audit", "scripts/rq4.cmd", "scripts/rq4.ps1",
@@ -368,37 +369,66 @@ def import_source_review(path: Path) -> dict[str, Any]:
     }
 
 
-def backend_health() -> dict[str, Any] | None:
+def backend_health(api_url: str = API_URL) -> dict[str, Any] | None:
     try:
-        with urllib.request.urlopen("http://127.0.0.1:8002/health", timeout=2) as response:
+        health_url = api_url.rsplit("/api/research/run", 1)[0] + "/health"
+        with urllib.request.urlopen(health_url, timeout=2) as response:
             return json.loads(response.read().decode())
     except Exception:
         return None
 
 
+def backend_matches_current_implementation(health: dict[str, Any] | None) -> bool:
+    return bool(
+        health
+        and health.get("workbench_sha256") == sha(ROOT / "backend/orchestration/workbench.py")
+        and health.get("c4_implementation_sha256") == sha(ROOT / "backend/orchestration/genuine_debate.py")
+    )
+
+
+def available_backend_port(start: int = 8003, attempts: int = 20) -> int:
+    for port in range(start, start + attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            try:
+                probe.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+        return port
+    raise RuntimeError("RQ4_NO_AVAILABLE_LOCAL_BACKEND_PORT")
+
+
 @contextmanager
 def backend_process(artifact_root: Path = FORMAL):
     existing = backend_health()
+    api_url = API_URL
+    reused = backend_matches_current_implementation(existing)
     process = None
     stdout = None
     stderr = None
-    if existing is None:
+    if not reused:
+        port = available_backend_port()
+        api_url = f"http://127.0.0.1:{port}/api/research/run"
+        existing = None
         artifact_root.mkdir(parents=True, exist_ok=True)
         env = os.environ.copy(); env.update({"PYTHONPATH": str(ROOT / "backend"), "TCM_CORPUS_MODE": "required", "TCM_CORPUS_PATH": str(CORPUS), "RESEARCH_REAL_LLM_ENABLED": "true"})
         stdout = (artifact_root / "logs/backend.stdout.log"); stdout.parent.mkdir(parents=True, exist_ok=True); stdout = stdout.open("ab")
         stderr = (artifact_root / "logs/backend.stderr.log").open("ab")
-        process = subprocess.Popen([sys.executable, "-m", "uvicorn", "main:app", "--app-dir", "backend", "--host", "127.0.0.1", "--port", "8002"], cwd=ROOT, env=env, stdout=stdout, stderr=stderr, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        write_json(artifact_root / "runtime/backend_process.json", {"pid": process.pid, "started_by_rq4": True, "started_at": utcnow()})
+        process = subprocess.Popen([sys.executable, "-m", "uvicorn", "main:app", "--app-dir", "backend", "--host", "127.0.0.1", "--port", str(port)], cwd=ROOT, env=env, stdout=stdout, stderr=stderr, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        write_json(artifact_root / "runtime/backend_process.json", {
+            "pid": process.pid, "port": port, "api_url": api_url,
+            "started_by_rq4": True, "started_at": utcnow(),
+            "reason": "no current implementation-compatible backend was available",
+        })
         for _ in range(60):
-            existing = backend_health()
+            existing = backend_health(api_url)
             if existing is not None: break
             time.sleep(2)
         if existing is None:
             process.terminate(); raise RuntimeError("RQ4_BACKEND_START_TIMEOUT_120_SECONDS")
     try:
-        required = existing and existing.get("status") == "ok" and existing.get("provider_ready") is True and existing.get("llm_execution_enabled") is True and existing.get("mock_mode") is False and existing.get("corpus_chunk_count") == 4461 and existing.get("corpus_mode") == "required"
+        required = existing and existing.get("status") == "ok" and existing.get("provider_ready") is True and existing.get("llm_execution_enabled") is True and existing.get("mock_mode") is False and existing.get("corpus_chunk_count") == 4461 and existing.get("corpus_mode") == "required" and backend_matches_current_implementation(existing)
         if not required: raise RuntimeError("RQ4_BACKEND_FROZEN_CONFIG_MISMATCH")
-        yield existing
+        yield {**existing, "_api_url": api_url, "_reused": reused}
     finally:
         if process is not None:
             process.terminate()
@@ -449,9 +479,9 @@ def _heartbeat(stop: threading.Event, shared: dict[str, Any]) -> None:
         shared["heartbeat_at"] = utcnow(); write_json(RUNTIME_PATH, shared)
 
 
-def request_execution(item: dict[str, Any], entry: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+def request_execution(item: dict[str, Any], entry: dict[str, Any], runtime: dict[str, Any], *, api_url: str = API_URL) -> dict[str, Any]:
     payload = {"question": item["question"], "condition_id": entry["condition"], "retrieval_strategy": "R0", "top_k": 4, "debate_rounds": 1, "iterative_retrieval": False, "random_seed": SEED}
-    request = urllib.request.Request(API_URL, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"})
+    request = urllib.request.Request(api_url, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"})
     started = time.perf_counter(); stop = threading.Event(); worker = threading.Thread(target=_heartbeat, args=(stop, runtime), daemon=True); worker.start()
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
@@ -536,14 +566,14 @@ def objective_and_semantic_export(records: list[dict[str, Any]]) -> Path:
 def run_formal() -> dict[str, Any]:
     checks = formal_integrity_guard(); machine = StateMachine()
     if machine.read()["state"] in {"READY_FOR_FORMAL_RQ4_RUN", "FORMAL_STALLED"}: machine.transition("FORMAL_RUNNING")
-    with PidLock(), backend_process():
+    with PidLock(), backend_process() as backend:
         order = json.loads((FORMAL / "execution_order.json").read_text(encoding="utf-8"))["order"]
         results_path = FORMAL / "results.jsonl"; records = jsonl(results_path); validate_results(order, records)
         completed = {x["execution_id"] for x in records}; benchmark = {x["question_id"]: x for x in jsonl(BENCH / "benchmark_rq4_v1_frozen.jsonl")}; started = utcnow()
         for entry in order:
             if entry["execution_id"] in completed: continue
             runtime = _runtime(records, entry, started); write_json(RUNTIME_PATH, runtime)
-            record = request_execution(benchmark[entry["question_id"]], entry, runtime)
+            record = request_execution(benchmark[entry["question_id"]], entry, runtime, api_url=backend["_api_url"])
             durable_append(results_path, record)
             for attempt in record["provider_attempts"]: durable_append(FORMAL / "provider_attempts.jsonl", {"execution_id": entry["execution_id"], **attempt})
             if entry["condition"] == "C4": durable_append(FORMAL / "debate_traces.jsonl", {"execution_id": entry["execution_id"], "question_id": entry["question_id"], **record["debate"]})
@@ -717,6 +747,16 @@ def run_smoke() -> dict[str, Any]:
     pass_number = int(previous_manifest.get("smoke_pass_number", 0)) + 1
     if pass_number > 2:
         raise RuntimeError("RQ4_SMOKE_MAXIMUM_TWO_COMPLETE_PASSES_EXCEEDED")
+    if pass_number == 2:
+        for source_name, preserved_name in (
+            ("smoke_manifest.json", "smoke_manifest_pass_1.json"),
+            ("smoke_validation.json", "smoke_validation_pass_1.json"),
+            ("smoke_validation_report.md", "smoke_validation_report_pass_1.md"),
+        ):
+            source = SMOKE / source_name
+            preserved = SMOKE / preserved_name
+            if source.exists() and not preserved.exists():
+                preserved.write_bytes(source.read_bytes())
     questions = load_smoke_questions()
     order = smoke_execution_order(questions, pass_number)
     if pass_number == 1 and any((SMOKE / name).exists() for name in (
@@ -736,12 +776,12 @@ def run_smoke() -> dict[str, Any]:
     })
     records = []
     try:
-        with PidLock(), backend_process(SMOKE):
+        with PidLock(), backend_process(SMOKE) as backend:
             question_by_id = {item["question_id"]: item for item in questions}
             for entry in order:
                 runtime = _smoke_runtime(records, entry, started, pass_number)
                 write_json(RUNTIME_PATH, runtime)
-                record = request_execution(question_by_id[entry["question_id"]], entry, runtime)
+                record = request_execution(question_by_id[entry["question_id"]], entry, runtime, api_url=backend["_api_url"])
                 durable_append(SMOKE / "smoke_results.jsonl", record)
                 for attempt in record["provider_attempts"]:
                     durable_append(SMOKE / "smoke_provider_attempts.jsonl", {"execution_id": entry["execution_id"], **attempt})
@@ -797,6 +837,7 @@ def prepare_ready_after_smoke() -> dict[str, Any]:
         "protocol_sha256": formal_manifest["protocol_sha256"],
         "c2_implementation_sha256": formal_manifest["c2_implementation_sha256"],
         "c4_implementation_sha256": formal_manifest["c4_implementation_sha256"],
+        "backend_entrypoint_sha256": sha(ROOT / "backend/main.py"),
         "formal_code_commit": commit, "execution_order_sha256": sha(execution_path),
         "smoke_pass_record": "smoke/smoke_validation.json",
         "generation_parameters": formal_manifest["generation_parameters"],

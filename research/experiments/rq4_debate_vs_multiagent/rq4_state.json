@@ -1,9 +1,6 @@
 {
-  "state": "REAL_SMOKE_TEST_REQUIRED",
-  "previous_state": "BENCHMARK_FROZEN",
-  "updated_at": "2026-08-23T12:03:03.005115+00:00",
-  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
-  "source_candidate": "RQ4_CANDIDATE_V1_2",
-  "final_source_review": "COMPLETED",
-  "formal_execution_records": 0
+  "state": "SMOKE_TEST_FAILED",
+  "previous_state": "SMOKE_TEST_RUNNING",
+  "updated_at": "2026-08-23T12:32:32.560507+00:00",
+  "error": "REAL_SMOKE_REQUIREMENTS_NOT_MET"
 }

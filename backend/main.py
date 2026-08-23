@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import perf_counter
@@ -23,6 +24,10 @@ from tcm.schemas import TCMConsultRequest, TCMConsultResponse
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 settings = get_settings()
+
+
+def _implementation_sha256(relative_path: str) -> str:
+    return hashlib.sha256((Path(__file__).parent / relative_path).read_bytes()).hexdigest()
 
 
 @asynccontextmanager
@@ -89,6 +94,8 @@ async def health() -> dict[str, object]:
         "corpus_mode": corpus["corpus_mode"],
         "active_corpus": corpus["active_corpus"],
         "runtime_profile": corpus["runtime_profile"],
+        "workbench_sha256": _implementation_sha256("orchestration/workbench.py"),
+        "c4_implementation_sha256": _implementation_sha256("orchestration/genuine_debate.py"),
     }
 
 

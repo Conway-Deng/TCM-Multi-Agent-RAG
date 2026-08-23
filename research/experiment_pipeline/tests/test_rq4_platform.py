@@ -147,6 +147,14 @@ def test_smoke_order_pairs_both_conditions_and_counterbalances():
     assert [order[index]["condition"] for index in range(0, 20, 2)].count("C2") == 5
 
 
+def test_stale_backend_without_current_implementation_fingerprints_is_rejected():
+    assert not platform.backend_matches_current_implementation({"status": "ok"})
+    assert platform.backend_matches_current_implementation({
+        "workbench_sha256": platform.sha(ROOT / "backend/orchestration/workbench.py"),
+        "c4_implementation_sha256": platform.sha(ROOT / "backend/orchestration/genuine_debate.py"),
+    })
+
+
 def test_operational_smoke_validation_requires_genuine_single_and_multi_c4():
     questions = platform.load_smoke_questions()
     by_id = {item["question_id"]: item for item in questions}
