@@ -1,7 +1,7 @@
 {
   "status": "FAIL",
-  "smoke_pass_number": 2,
-  "started_at": "2026-08-23T12:37:10.428636+00:00",
+  "smoke_pass_number": 1,
+  "started_at": "2026-08-23T12:29:25.758138+00:00",
   "development_questions": [
     {
       "question_id": "rq4-dev-01",
@@ -102,121 +102,121 @@
   "order": [
     {
       "sequence": 1,
-      "execution_id": "rq4-smoke-p2-01-rq4-dev-01-C2",
+      "execution_id": "rq4-smoke-p1-01-rq4-dev-01-C2",
       "question_id": "rq4-dev-01",
       "condition": "C2"
     },
     {
       "sequence": 2,
-      "execution_id": "rq4-smoke-p2-02-rq4-dev-01-C4",
+      "execution_id": "rq4-smoke-p1-02-rq4-dev-01-C4",
       "question_id": "rq4-dev-01",
       "condition": "C4"
     },
     {
       "sequence": 3,
-      "execution_id": "rq4-smoke-p2-03-rq4-dev-02-C4",
+      "execution_id": "rq4-smoke-p1-03-rq4-dev-02-C4",
       "question_id": "rq4-dev-02",
       "condition": "C4"
     },
     {
       "sequence": 4,
-      "execution_id": "rq4-smoke-p2-04-rq4-dev-02-C2",
+      "execution_id": "rq4-smoke-p1-04-rq4-dev-02-C2",
       "question_id": "rq4-dev-02",
       "condition": "C2"
     },
     {
       "sequence": 5,
-      "execution_id": "rq4-smoke-p2-05-rq4-dev-03-C2",
+      "execution_id": "rq4-smoke-p1-05-rq4-dev-03-C2",
       "question_id": "rq4-dev-03",
       "condition": "C2"
     },
     {
       "sequence": 6,
-      "execution_id": "rq4-smoke-p2-06-rq4-dev-03-C4",
+      "execution_id": "rq4-smoke-p1-06-rq4-dev-03-C4",
       "question_id": "rq4-dev-03",
       "condition": "C4"
     },
     {
       "sequence": 7,
-      "execution_id": "rq4-smoke-p2-07-rq4-dev-04-C4",
+      "execution_id": "rq4-smoke-p1-07-rq4-dev-04-C4",
       "question_id": "rq4-dev-04",
       "condition": "C4"
     },
     {
       "sequence": 8,
-      "execution_id": "rq4-smoke-p2-08-rq4-dev-04-C2",
+      "execution_id": "rq4-smoke-p1-08-rq4-dev-04-C2",
       "question_id": "rq4-dev-04",
       "condition": "C2"
     },
     {
       "sequence": 9,
-      "execution_id": "rq4-smoke-p2-09-rq4-dev-05-C2",
+      "execution_id": "rq4-smoke-p1-09-rq4-dev-05-C2",
       "question_id": "rq4-dev-05",
       "condition": "C2"
     },
     {
       "sequence": 10,
-      "execution_id": "rq4-smoke-p2-10-rq4-dev-05-C4",
+      "execution_id": "rq4-smoke-p1-10-rq4-dev-05-C4",
       "question_id": "rq4-dev-05",
       "condition": "C4"
     },
     {
       "sequence": 11,
-      "execution_id": "rq4-smoke-p2-11-rq4-dev-06-C4",
+      "execution_id": "rq4-smoke-p1-11-rq4-dev-06-C4",
       "question_id": "rq4-dev-06",
       "condition": "C4"
     },
     {
       "sequence": 12,
-      "execution_id": "rq4-smoke-p2-12-rq4-dev-06-C2",
+      "execution_id": "rq4-smoke-p1-12-rq4-dev-06-C2",
       "question_id": "rq4-dev-06",
       "condition": "C2"
     },
     {
       "sequence": 13,
-      "execution_id": "rq4-smoke-p2-13-rq4-dev-07-C2",
+      "execution_id": "rq4-smoke-p1-13-rq4-dev-07-C2",
       "question_id": "rq4-dev-07",
       "condition": "C2"
     },
     {
       "sequence": 14,
-      "execution_id": "rq4-smoke-p2-14-rq4-dev-07-C4",
+      "execution_id": "rq4-smoke-p1-14-rq4-dev-07-C4",
       "question_id": "rq4-dev-07",
       "condition": "C4"
     },
     {
       "sequence": 15,
-      "execution_id": "rq4-smoke-p2-15-rq4-dev-08-C4",
+      "execution_id": "rq4-smoke-p1-15-rq4-dev-08-C4",
       "question_id": "rq4-dev-08",
       "condition": "C4"
     },
     {
       "sequence": 16,
-      "execution_id": "rq4-smoke-p2-16-rq4-dev-08-C2",
+      "execution_id": "rq4-smoke-p1-16-rq4-dev-08-C2",
       "question_id": "rq4-dev-08",
       "condition": "C2"
     },
     {
       "sequence": 17,
-      "execution_id": "rq4-smoke-p2-17-rq4-dev-09-C2",
+      "execution_id": "rq4-smoke-p1-17-rq4-dev-09-C2",
       "question_id": "rq4-dev-09",
       "condition": "C2"
     },
     {
       "sequence": 18,
-      "execution_id": "rq4-smoke-p2-18-rq4-dev-09-C4",
+      "execution_id": "rq4-smoke-p1-18-rq4-dev-09-C4",
       "question_id": "rq4-dev-09",
       "condition": "C4"
     },
     {
       "sequence": 19,
-      "execution_id": "rq4-smoke-p2-19-rq4-dev-10-C4",
+      "execution_id": "rq4-smoke-p1-19-rq4-dev-10-C4",
       "question_id": "rq4-dev-10",
       "condition": "C4"
     },
     {
       "sequence": 20,
-      "execution_id": "rq4-smoke-p2-20-rq4-dev-10-C2",
+      "execution_id": "rq4-smoke-p1-20-rq4-dev-10-C2",
       "question_id": "rq4-dev-10",
       "condition": "C2"
     }
@@ -229,25 +229,25 @@
   "formal_evidence_overlap": 0,
   "runner_timeout_seconds": 120,
   "maximum_attempts_per_required_stage": 2,
-  "completed_at": "2026-08-23T12:47:28.609515+00:00",
+  "completed_at": "2026-08-23T12:32:32.555924+00:00",
   "validation": {
     "status": "FAIL",
-    "smoke_pass_number": 2,
+    "smoke_pass_number": 1,
     "distinct_development_questions": 10,
     "condition_executions": 20,
     "c2_executions": 10,
     "c4_executions": 10,
     "c2_usable": 10,
-    "c4_usable": 2,
-    "c4_full_genuine_sequences": 2,
-    "provider_failures": 17,
-    "retries": 9,
+    "c4_usable": 10,
+    "c4_full_genuine_sequences": 0,
+    "provider_failures": 0,
+    "retries": 0,
     "peer_outputs_observed": false,
     "real_critique_calls_observed": true,
     "revisions_observed": true,
-    "consensus_calls_observed": true,
-    "grounding_critic_tested": true,
-    "multi_specialist_debate_tested": true,
+    "consensus_calls_observed": false,
+    "grounding_critic_tested": false,
+    "multi_specialist_debate_tested": false,
     "evidence_validation": true,
     "silent_c2_fallback": false,
     "max_debate_rounds_observed": 1,

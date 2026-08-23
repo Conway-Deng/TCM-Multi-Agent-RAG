@@ -1,22 +1,22 @@
 # RQ4 real development smoke validation
 
 - status: FAIL
-- smoke_pass_number: 2
+- smoke_pass_number: 1
 - distinct_development_questions: 10
 - condition_executions: 20
 - c2_executions: 10
 - c4_executions: 10
 - c2_usable: 10
-- c4_usable: 2
-- c4_full_genuine_sequences: 2
-- provider_failures: 17
-- retries: 9
+- c4_usable: 10
+- c4_full_genuine_sequences: 0
+- provider_failures: 0
+- retries: 0
 - peer_outputs_observed: False
 - real_critique_calls_observed: True
 - revisions_observed: True
-- consensus_calls_observed: True
-- grounding_critic_tested: True
-- multi_specialist_debate_tested: True
+- consensus_calls_observed: False
+- grounding_critic_tested: False
+- multi_specialist_debate_tested: False
 - evidence_validation: True
 - silent_c2_fallback: False
 - max_debate_rounds_observed: 1
