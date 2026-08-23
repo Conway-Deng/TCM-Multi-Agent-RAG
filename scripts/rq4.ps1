@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('status','prepare','import-benchmark','smoke','formal','resume','dashboard','finalize','synthetic-test')]
+    [ValidateSet('status','prepare','import-benchmark','smoke','post-fix-smoke','formal','resume','dashboard','finalize','synthetic-test')]
     [string]$Action = 'status',
     [string]$Path = ''
 )

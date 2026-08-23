@@ -1629,14 +1629,19 @@
     "debate_rounds": 1
   },
   "timeout_policy": {
-    "runner_request_timeout_seconds": 120,
-    "provider_timeout": "backend configured hard timeout"
+    "c2_runner_request_timeout_seconds": 120,
+    "c4_runner_request_timeout_seconds": 420,
+    "provider_configured_timeout_seconds": 45,
+    "provider_stage_wrapper_timeout_seconds": 50,
+    "whole_debate_timeout_seconds": 300
   },
   "retry_policy": {
     "maximum_retries_per_required_stage": 1,
     "maximum_attempts_per_required_stage": 2
   },
   "c2_implementation_sha256": "22aecd65d00052694a81239e6fd8a898dec193114e7de2e5b82a0a8c0613a249",
-  "c4_implementation_sha256": "74c26e3396393934b597b19c8977a2b0bd3dcf6877cfe3b77883a05a9fcc8029",
+  "c4_implementation_sha256": "761d9839cc3f5e0c34d19d483161abebf6e3c68bb7df058af734808817449bea",
+  "workbench_runtime_sha256": "1eba26852f7b679b07f3a88e2542af91f8d4f2ba8a3a52c8efd236c790186e8a",
+  "implementation_amendment": "protocol/implementation_amendment_post_fix_validation_v1.md",
   "formal_code_commit": "37d852863e70e45a588018da99b0b3a3e1e3aed4"
 }

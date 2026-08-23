@@ -426,7 +426,7 @@ class ResearchWorkbench:
                         successful_provider_calls += sum(item.success for item in exc.attempts)
                         provider_attempts.extend(exc.attempts)
                         provider_errors.append(str(exc))
-                        debate_trace = DebateTrace(
+                        debate_trace = exc.trace or DebateTrace(
                             enabled=True, rounds=1, architecture="genuine_llm_structured_debate",
                             selected_agents=[output.agent_id for output in outputs],
                             initial_outputs=[output.model_dump(mode="json") for output in outputs],

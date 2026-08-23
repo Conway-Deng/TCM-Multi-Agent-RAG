@@ -148,6 +148,7 @@ class StageTiming(BaseModel):
 
 
 class ProviderAttempt(BaseModel):
+    stage: str | None = None
     attempt: int = Field(ge=1)
     provider: str = "unknown"
     model: str = "unknown"

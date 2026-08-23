@@ -31,6 +31,7 @@ RQ4 = ROOT / "research/experiments/rq4_debate_vs_multiagent"
 BENCH = ROOT / "research/benchmarks/tcm_gold_rq4_v1"
 FORMAL = RQ4 / "formal_run_v1"
 SMOKE = RQ4 / "smoke"
+POST_FIX_SMOKE = SMOKE / "post_fix_validation_v1"
 SMOKE_QUESTIONS = SMOKE / "development_questions.json"
 STATE_PATH = RQ4 / "rq4_state.json"
 RUNTIME_PATH = FORMAL / "runtime/runtime_state.json"
@@ -40,13 +41,15 @@ CORPUS_SHA = "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9"
 MODEL = "Qwen/Qwen3-8B"
 SEED = 20260824
 API_URL = "http://127.0.0.1:8002/api/research/run"
-TIMEOUT_SECONDS = 120
+C2_TIMEOUT_SECONDS = 120
+C4_TIMEOUT_SECONDS = 420
+TIMEOUT_SECONDS = C2_TIMEOUT_SECONDS
 
 STATES = (
     "C4_AUDIT_COMPLETE", "RQ4_PLATFORM_BUILT", "BENCHMARK_DRAFT_READY",
     "BENCHMARK_SOURCE_REVIEW_REQUIRED", "BENCHMARK_REVISION_REQUIRED",
     "BENCHMARK_FROZEN", "REAL_SMOKE_TEST_REQUIRED", "SMOKE_TEST_RUNNING",
-    "SMOKE_TEST_FAILED", "SMOKE_TEST_PASSED", "READY_FOR_FORMAL_RQ4_RUN",
+    "SMOKE_TEST_FAILED", "POST_FIX_VALIDATION_SMOKE_RUNNING", "SMOKE_TEST_PASSED", "READY_FOR_FORMAL_RQ4_RUN",
     "FORMAL_RUNNING", "FORMAL_STALLED", "SEMANTIC_REVIEW_REQUIRED",
     "SEMANTIC_REVIEW_IMPORTED", "FINAL_ANALYSIS_COMPLETE", "RQ4_COMPLETE",
 )
@@ -59,7 +62,8 @@ TRANSITIONS = {
     "BENCHMARK_FROZEN": {"REAL_SMOKE_TEST_REQUIRED"},
     "REAL_SMOKE_TEST_REQUIRED": {"SMOKE_TEST_RUNNING"},
     "SMOKE_TEST_RUNNING": {"SMOKE_TEST_FAILED", "SMOKE_TEST_PASSED"},
-    "SMOKE_TEST_FAILED": {"SMOKE_TEST_RUNNING"},
+    "SMOKE_TEST_FAILED": {"SMOKE_TEST_RUNNING", "POST_FIX_VALIDATION_SMOKE_RUNNING"},
+    "POST_FIX_VALIDATION_SMOKE_RUNNING": {"SMOKE_TEST_FAILED", "SMOKE_TEST_PASSED"},
     "SMOKE_TEST_PASSED": {"READY_FOR_FORMAL_RQ4_RUN"},
     "READY_FOR_FORMAL_RQ4_RUN": {"FORMAL_RUNNING"},
     "FORMAL_RUNNING": {"FORMAL_STALLED", "SEMANTIC_REVIEW_REQUIRED"},
@@ -458,10 +462,11 @@ def formal_integrity_guard(*, allow_smoke_passed: bool = False) -> dict[str, Any
     if (
         protocol_manifest["protocol_sha256"] != sha(RQ4 / "protocol/protocol.md")
         or protocol_manifest["config_sha256"] != sha(RQ4 / "protocol/rq4_config.json")
-        or protocol_manifest["workbench_sha256_at_protocol_freeze"] != sha(ROOT / "backend/orchestration/workbench.py")
+        or protocol_manifest.get("workbench_runtime_sha256_after_amendment", protocol_manifest["workbench_sha256_at_protocol_freeze"]) != sha(ROOT / "backend/orchestration/workbench.py")
         or protocol_manifest["c4_implementation_sha256"] != sha(ROOT / "backend/orchestration/genuine_debate.py")
         or manifest["protocol_sha256"] != protocol_manifest["protocol_sha256"]
-        or manifest["c2_implementation_sha256"] != protocol_manifest["workbench_sha256_at_protocol_freeze"]
+        or manifest["c2_implementation_sha256"] != protocol_manifest.get("c2_implementation_sha256", protocol_manifest["workbench_sha256_at_protocol_freeze"])
+        or manifest.get("workbench_runtime_sha256") != protocol_manifest.get("workbench_runtime_sha256_after_amendment")
         or manifest["c4_implementation_sha256"] != protocol_manifest["c4_implementation_sha256"]
     ):
         raise RuntimeError("RQ4_PROTOCOL_OR_IMPLEMENTATION_HASH_MISMATCH")
@@ -482,9 +487,10 @@ def _heartbeat(stop: threading.Event, shared: dict[str, Any]) -> None:
 def request_execution(item: dict[str, Any], entry: dict[str, Any], runtime: dict[str, Any], *, api_url: str = API_URL) -> dict[str, Any]:
     payload = {"question": item["question"], "condition_id": entry["condition"], "retrieval_strategy": "R0", "top_k": 4, "debate_rounds": 1, "iterative_retrieval": False, "random_seed": SEED}
     request = urllib.request.Request(api_url, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"})
+    request_timeout = C4_TIMEOUT_SECONDS if entry["condition"] == "C4" else C2_TIMEOUT_SECONDS
     started = time.perf_counter(); stop = threading.Event(); worker = threading.Thread(target=_heartbeat, args=(stop, runtime), daemon=True); worker.start()
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=request_timeout) as response:
             body, http_status, error = json.loads(response.read().decode()), response.status, None
     except Exception as exc:
         body, http_status, error = {}, 0, f"{type(exc).__name__}: {exc}"
@@ -503,6 +509,7 @@ def request_execution(item: dict[str, Any], entry: dict[str, Any], runtime: dict
         "participating_agents": trace.get("participating_agents", []), "debate": body.get("debate", {}), "error": error,
         "completed_at": utcnow(),
         "benchmark_sha256": sha(BENCH / "benchmark_rq4_v1_frozen.jsonl"), "corpus_sha256": CORPUS_SHA, "retrieval": "R0",
+        "runner_timeout_seconds": request_timeout,
     }
 
 
@@ -663,7 +670,35 @@ def _smoke_runtime(records: list[dict[str, Any]], entry: dict[str, Any] | None, 
     }
 
 
-def validate_smoke(records: list[dict[str, Any]], questions: list[dict[str, Any]], pass_number: int) -> dict[str, Any]:
+def _multi_peer_trace_is_proven(debate: dict[str, Any]) -> bool:
+    selected = set(debate.get("selected_agents", []))
+    if len(selected) < 2:
+        return False
+    critiques = debate.get("critiques", [])
+    revisions = debate.get("revisions", [])
+    consensus = debate.get("final_consensus", {})
+    critique_by_reviewer = {item.get("reviewer_id"): item for item in critiques}
+    revision_by_agent = {item.get("agent_id"): item for item in revisions}
+    for agent_id in selected:
+        expected_peers = selected - {agent_id}
+        critique = critique_by_reviewer.get(agent_id, {})
+        revision = revision_by_agent.get(agent_id, {})
+        critique_peer_ids = {item.get("agent_id") for item in critique.get("reviewed_peer_outputs", [])}
+        revision_peer_ids = {item.get("agent_id") for item in revision.get("peer_outputs", [])}
+        if critique_peer_ids != expected_peers or revision_peer_ids != expected_peers:
+            return False
+        if any(not item.get("claims") for item in critique.get("reviewed_peer_outputs", [])):
+            return False
+    return set(consensus.get("revised_positions_received", [])) == selected and bool(consensus.get("revisions_input"))
+
+
+def validate_smoke(
+    records: list[dict[str, Any]],
+    questions: list[dict[str, Any]],
+    pass_number: int | None,
+    *,
+    validation_id: str | None = None,
+) -> dict[str, Any]:
     c2 = [record for record in records if record["condition"] == "C2"]
     c4 = [record for record in records if record["condition"] == "C4"]
     c2_usable = sum(record["run_status"] in {"PASS", "PASS_WITH_RETRY"} for record in c2)
@@ -680,7 +715,7 @@ def validate_smoke(records: list[dict[str, Any]], questions: list[dict[str, Any]
             and debate.get("architecture") == "genuine_llm_structured_debate"
             and debate.get("rounds") == 1 and debate.get("initial_outputs")
             and debate.get("critiques") and debate.get("revisions")
-            and consensus.get("final_answer") and "consensus" in stages
+            and (consensus.get("answer") or consensus.get("final_answer")) and "consensus" in stages
             and any(stage.startswith("critique:") for stage in stages)
             and any(stage.startswith("revision:") for stage in stages)
             and not record.get("fallback")
@@ -690,14 +725,11 @@ def validate_smoke(records: list[dict[str, Any]], questions: list[dict[str, Any]
         evidence_sets.extend(set(revision.get("evidence_ids", [])) for revision in debate.get("revisions", []))
         if any(not evidence_ids <= retrieved for evidence_ids in evidence_sets):
             evidence_valid = False
-    critic_tested = any(record.get("debate", {}).get("critic_invoked") is True for record in c4)
-    multi_tested = any(len(record.get("debate", {}).get("selected_agents", [])) > 1 for record in c4)
-    peer_outputs = any(
-        len(record.get("debate", {}).get("selected_agents", [])) > 1
-        and len(record.get("debate", {}).get("initial_outputs", [])) > 1
-        and len(record.get("debate", {}).get("critiques", [])) > 1
-        for record in c4
-    )
+    successful_c4 = [record for record, complete in zip(c4, full_c4) if complete]
+    critic_tested = any(record.get("debate", {}).get("critic_invoked") is True for record in successful_c4)
+    successful_multi = [record for record in successful_c4 if len(record.get("debate", {}).get("selected_agents", [])) > 1]
+    multi_tested = bool(successful_multi)
+    peer_outputs = bool(successful_multi) and all(_multi_peer_trace_is_proven(record.get("debate", {})) for record in successful_multi)
     retries = sum(
         1 for record in records for attempt in record.get("provider_attempts", [])
         if attempt.get("retry_performed")
@@ -715,6 +747,7 @@ def validate_smoke(records: list[dict[str, Any]], questions: list[dict[str, Any]
     )
     return {
         "status": "PASS" if passed else "FAIL", "smoke_pass_number": pass_number,
+        "validation_id": validation_id,
         "distinct_development_questions": len({item["question_id"] for item in questions}),
         "condition_executions": len(records), "c2_executions": len(c2), "c4_executions": len(c4),
         "c2_usable": c2_usable, "c4_usable": c4_usable,
@@ -729,7 +762,11 @@ def validate_smoke(records: list[dict[str, Any]], questions: list[dict[str, Any]
         "max_debate_rounds_observed": max((record.get("debate", {}).get("rounds", 0) for record in c4), default=0),
         "execution_ids_unique": len({record["execution_id"] for record in records}) == len(records),
         "question_condition_pairs_unique": len(unique_pairs) == len(records),
-        "bounded_timeout_seconds": TIMEOUT_SECONDS, "maximum_attempts_per_required_stage": 2,
+        "c2_runner_timeout_seconds": C2_TIMEOUT_SECONDS,
+        "c4_runner_timeout_seconds": C4_TIMEOUT_SECONDS,
+        "per_stage_timeout_seconds": 50,
+        "whole_debate_timeout_seconds": 300,
+        "maximum_attempts_per_required_stage": 2,
     }
 
 
@@ -811,11 +848,86 @@ def run_smoke() -> dict[str, Any]:
     return {"status": "SMOKE_TEST_PASSED", "records": 20, "validation": validation}
 
 
+def post_fix_execution_order(questions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    order: list[dict[str, Any]] = []
+    for index, item in enumerate(questions, 1):
+        pair = ("C2", "C4") if index % 2 else ("C4", "C2")
+        for condition in pair:
+            sequence = len(order) + 1
+            order.append({
+                "sequence": sequence,
+                "execution_id": f"rq4-postfix-v1-{sequence:02d}-{item['question_id']}-{condition}",
+                "question_id": item["question_id"], "condition": condition,
+            })
+    return order
+
+
+def run_post_fix_validation_smoke() -> dict[str, Any]:
+    """Run the one explicitly amended validation; never a third original pass."""
+    machine = StateMachine()
+    if machine.read()["state"] != "SMOKE_TEST_FAILED":
+        raise RuntimeError("POST_FIX_VALIDATION_REQUIRES_FAILED_SMOKE_STATE")
+    if (POST_FIX_SMOKE / "smoke_manifest.json").exists():
+        raise RuntimeError("POST_FIX_VALIDATION_SMOKE_V1_ALREADY_ATTEMPTED")
+    questions = load_smoke_questions()
+    order = post_fix_execution_order(questions)
+    machine.transition("POST_FIX_VALIDATION_SMOKE_RUNNING", validation_id="POST_FIX_VALIDATION_SMOKE_V1")
+    started = utcnow()
+    write_json(POST_FIX_SMOKE / "smoke_manifest.json", {
+        "status": "RUNNING", "validation_id": "POST_FIX_VALIDATION_SMOKE_V1",
+        "development_amendment": "protocol/implementation_amendment_post_fix_validation_v1.md",
+        "started_at": started, "development_questions": questions, "distinct_questions": 10,
+        "planned_c2_executions": 10, "planned_c4_executions": 10, "planned_condition_executions": 20,
+        "order": order, "benchmark_sha256": sha(BENCH / "benchmark_rq4_v1_frozen.jsonl"),
+        "corpus_sha256": CORPUS_SHA, "model": MODEL, "retrieval": "R0",
+        "formal_question_overlap": 0, "formal_evidence_overlap": 0,
+        "c2_runner_timeout_seconds": C2_TIMEOUT_SECONDS, "c4_runner_timeout_seconds": C4_TIMEOUT_SECONDS,
+        "per_stage_timeout_seconds": 50, "whole_debate_timeout_seconds": 300,
+        "maximum_attempts_per_required_stage": 2,
+    })
+    records: list[dict[str, Any]] = []
+    try:
+        with PidLock(), backend_process(POST_FIX_SMOKE) as backend:
+            question_by_id = {item["question_id"]: item for item in questions}
+            for entry in order:
+                runtime = _smoke_runtime(records, entry, started, "POST_FIX_VALIDATION_SMOKE_V1")
+                runtime["phase"] = "POST_FIX_VALIDATION_SMOKE_RUNNING"
+                write_json(RUNTIME_PATH, runtime)
+                record = request_execution(question_by_id[entry["question_id"]], entry, runtime, api_url=backend["_api_url"])
+                durable_append(POST_FIX_SMOKE / "smoke_results.jsonl", record)
+                for attempt in record["provider_attempts"]:
+                    durable_append(POST_FIX_SMOKE / "smoke_provider_attempts.jsonl", {"execution_id": entry["execution_id"], **attempt})
+                if entry["condition"] == "C4":
+                    durable_append(POST_FIX_SMOKE / "smoke_debate_traces.jsonl", {"execution_id": entry["execution_id"], "question_id": entry["question_id"], **record["debate"]})
+                records.append(record)
+                write_json(RUNTIME_PATH, {**_smoke_runtime(records, None, started, "POST_FIX_VALIDATION_SMOKE_V1"), "phase": "POST_FIX_VALIDATION_SMOKE_RUNNING"})
+        validation = validate_smoke(records, questions, None, validation_id="POST_FIX_VALIDATION_SMOKE_V1")
+        write_json(POST_FIX_SMOKE / "smoke_validation.json", validation)
+        report = ["# RQ4 post-fix validation smoke", ""] + [f"- {key}: {value}" for key, value in validation.items()]
+        (POST_FIX_SMOKE / "smoke_validation_report.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+        manifest = json.loads((POST_FIX_SMOKE / "smoke_manifest.json").read_text(encoding="utf-8"))
+        write_json(POST_FIX_SMOKE / "smoke_manifest.json", {**manifest, "status": validation["status"], "completed_at": utcnow(), "validation": validation})
+        if validation["status"] != "PASS":
+            raise RuntimeError("POST_FIX_VALIDATION_REQUIREMENTS_NOT_MET")
+    except Exception as exc:
+        manifest = json.loads((POST_FIX_SMOKE / "smoke_manifest.json").read_text(encoding="utf-8"))
+        write_json(POST_FIX_SMOKE / "smoke_manifest.json", {**manifest, "status": "FAIL", "completed_at": utcnow(), "error": f"{type(exc).__name__}: {exc}"})
+        write_json(RUNTIME_PATH, {**_smoke_runtime(records, None, started, "POST_FIX_VALIDATION_SMOKE_V1"), "phase": "SMOKE_TEST_FAILED", "status": "FAIL"})
+        machine.transition("SMOKE_TEST_FAILED", error=str(exc), validation_id="POST_FIX_VALIDATION_SMOKE_V1")
+        raise
+    write_json(RUNTIME_PATH, {**_smoke_runtime(records, None, started, "POST_FIX_VALIDATION_SMOKE_V1"), "phase": "SMOKE_TEST_PASSED", "status": "PASS"})
+    machine.transition("SMOKE_TEST_PASSED", records=20, validation_id="POST_FIX_VALIDATION_SMOKE_V1", validation="smoke/post_fix_validation_v1/smoke_validation.json")
+    return {"status": "SMOKE_TEST_PASSED", "records": 20, "validation": validation}
+
+
 def prepare_ready_after_smoke() -> dict[str, Any]:
     machine = StateMachine()
     if machine.read()["state"] != "SMOKE_TEST_PASSED":
         raise RuntimeError("RQ4_READY_PREPARATION_REQUIRES_PASSED_SMOKE")
-    validation = json.loads((SMOKE / "smoke_validation.json").read_text(encoding="utf-8"))
+    state_record = machine.read()
+    validation_record = state_record.get("validation", "smoke/smoke_validation.json")
+    validation_path = SMOKE / validation_record.removeprefix("smoke/")
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
     if validation.get("status") != "PASS" or validation.get("condition_executions") != 20:
         raise RuntimeError("RQ4_SMOKE_VALIDATION_NOT_READY")
     checks = formal_integrity_guard(allow_smoke_passed=True)
@@ -825,8 +937,8 @@ def prepare_ready_after_smoke() -> dict[str, Any]:
     formal_manifest = json.loads(formal_manifest_path.read_text(encoding="utf-8"))
     formal_manifest.update({
         "formal_code_commit": commit, "execution_order_sha256": sha(execution_path),
-        "smoke_pass_record": "smoke/smoke_validation.json", "smoke_validation_sha256": sha(SMOKE / "smoke_validation.json"),
-        "smoke_pass_number": validation["smoke_pass_number"], "smoke_status": "PASS",
+        "smoke_pass_record": validation_record, "smoke_validation_sha256": sha(validation_path),
+        "smoke_pass_number": validation.get("smoke_pass_number"), "smoke_validation_id": validation.get("validation_id"), "smoke_status": "PASS",
         "formal_provider_calls_completed": 0,
     })
     write_json(formal_manifest_path, formal_manifest)
@@ -839,7 +951,7 @@ def prepare_ready_after_smoke() -> dict[str, Any]:
         "c4_implementation_sha256": formal_manifest["c4_implementation_sha256"],
         "backend_entrypoint_sha256": sha(ROOT / "backend/main.py"),
         "formal_code_commit": commit, "execution_order_sha256": sha(execution_path),
-        "smoke_pass_record": "smoke/smoke_validation.json",
+        "smoke_pass_record": validation_record,
         "generation_parameters": formal_manifest["generation_parameters"],
         "timeout_policy": formal_manifest["timeout_policy"], "retry_policy": formal_manifest["retry_policy"],
         "planned_c2_executions": 100, "planned_c4_executions": 100,
@@ -849,7 +961,7 @@ def prepare_ready_after_smoke() -> dict[str, Any]:
     machine.transition(
         "READY_FOR_FORMAL_RQ4_RUN", formal_code_commit=commit,
         benchmark_sha256=checks["benchmark_sha256"], execution_order_sha256=sha(execution_path),
-        smoke_pass_number=validation["smoke_pass_number"], formal_execution_records=0,
+        smoke_pass_number=validation.get("smoke_pass_number"), smoke_validation_id=validation.get("validation_id"), formal_execution_records=0,
     )
     return preflight
 
@@ -962,7 +1074,7 @@ def synthetic_e2e() -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(); parser.add_argument("action", nargs="?", default="status", choices=["status", "prepare", "import-benchmark", "smoke", "formal", "resume", "dashboard", "finalize", "synthetic-test"]); parser.add_argument("path", nargs="?"); parser.add_argument("--dry-run", action="store_true"); parser.add_argument("--no-llm", action="store_true"); args = parser.parse_args()
+    parser = argparse.ArgumentParser(); parser.add_argument("action", nargs="?", default="status", choices=["status", "prepare", "import-benchmark", "smoke", "post-fix-smoke", "formal", "resume", "dashboard", "finalize", "synthetic-test"]); parser.add_argument("path", nargs="?"); parser.add_argument("--dry-run", action="store_true"); parser.add_argument("--no-llm", action="store_true"); args = parser.parse_args()
     if args.action == "status": print(json.dumps(status(), indent=2)); return
     if args.action == "prepare":
         current = StateMachine().read()["state"]
@@ -972,6 +1084,7 @@ def main() -> None:
     if args.action == "synthetic-test": print(json.dumps(synthetic_e2e(), indent=2)); return
     if args.dry_run or args.no_llm: print(json.dumps({"status": status(), "provider_calls": 0, "mode": "dry-run/no-llm"}, indent=2)); return
     if args.action == "smoke": print(json.dumps(run_smoke(), indent=2)); return
+    if args.action == "post-fix-smoke": print(json.dumps(run_post_fix_validation_smoke(), indent=2)); return
     if args.action in {"formal", "resume"}: print(json.dumps(run_formal_with_stall_guard(), indent=2)); return
     if args.action == "finalize": print(json.dumps(finalize(Path(args.path or "")), indent=2)); return
     if args.action == "dashboard":

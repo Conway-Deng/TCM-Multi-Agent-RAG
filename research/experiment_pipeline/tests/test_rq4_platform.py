@@ -15,7 +15,12 @@ sys.path.insert(0, str(ROOT / "research/experiment_pipeline"))
 
 import rq4_platform as platform
 from rq4_dashboard import dashboard_payload, render
-from orchestration.genuine_debate import DebateStageFailure, run_genuine_debate
+from orchestration.genuine_debate import (
+    CritiquePayload,
+    DebateStageFailure,
+    _json_payload,
+    run_genuine_debate,
+)
 from providers.base import GenerationResult
 from providers.openai_compatible import ProviderUnavailable
 from schemas.research import ResearchAgentOutput, RetrievalItem, StructuredClaim
@@ -35,12 +40,12 @@ class FixtureProvider:
         if self.always_fail or (self.fail_first and len(self.calls) == 1):
             raise ProviderUnavailable("bounded timeout", error_type="timeout")
         value = json.loads(prompt)
-        if "Return JSON with reviewer_id" in system:
-            text = json.dumps({"reviewer_id": value["reviewer_id"], "agreements": ["grounded"], "challenges": [], "unsupported_claims": [], "missing_evidence": [], "citation_issues": []})
+        if "agreements" in system:
+            text = json.dumps({"agreements": ["grounded"], "challenges": [], "unsupported_claims": [], "missing_evidence": [], "evidence_issues": []})
         elif "Revise" in system:
-            text = json.dumps({"agent_id": value["agent_id"], "revised_position": "Revised grounded position.", "evidence_ids": [value["evidence"][0]["evidence_id"]]})
+            text = json.dumps({"revised_claims": ["Revised grounded position."], "evidence_ids": [value["evidence"][0]["evidence_id"]], "changes_made": ["Used critique"]})
         else:
-            text = json.dumps({"final_answer": "Final grounded consensus.", "evidence_ids": [value["evidence"][0]["evidence_id"]], "agreements": ["grounded"], "disagreements": [], "unresolved_conflicts": []})
+            text = json.dumps({"answer": "Final grounded consensus.", "evidence_ids": [value["evidence"][0]["evidence_id"]]})
         return GenerationResult(text=text, provider=self.name, model=self.model, prompt_tokens=2, completion_tokens=3)
 
 
@@ -67,8 +72,75 @@ def test_single_specialist_grounding_critic_path():
 
 
 def test_multi_specialist_peer_interaction():
-    result = asyncio.run(run_genuine_debate(FixtureProvider(), question="q", evidence=evidence(), outputs=[agent("herbal"), agent("syndrome")], rounds=1))
+    provider = FixtureProvider()
+    result = asyncio.run(run_genuine_debate(provider, question="q", evidence=evidence(), outputs=[agent("herbal"), agent("syndrome")], rounds=1))
     assert len(result.trace.critiques) == 2 and result.trace.critic_invoked is False
+    critique_payloads = [json.loads(prompt) for system, prompt in provider.calls if "agreements" in system]
+    revision_payloads = [json.loads(prompt) for system, prompt in provider.calls if "Revise" in system]
+    assert all(len(payload["reviewed_outputs"]) == 1 for payload in critique_payloads)
+    assert all(len(payload["peer_outputs"]) == 1 for payload in revision_payloads)
+    assert platform._multi_peer_trace_is_proven(result.trace.model_dump(mode="json"))
+    assert result.trace.final_consensus["revised_positions_received"] == ["herbal", "syndrome"]
+
+
+def test_json_parser_accepts_fence_and_one_wrapped_object():
+    assert _json_payload('```json\n{"a": 1}\n```') == {"a": 1}
+    assert _json_payload('Result follows: {"a": 1} end.') == {"a": 1}
+
+
+def test_json_parser_rejects_truncation_and_ambiguous_objects():
+    with pytest.raises(ValueError, match="no complete JSON object"):
+        _json_payload('{"agreements": ["truncated]')
+    with pytest.raises(ValueError, match="multiple JSON objects"):
+        _json_payload('{"a": 1} {"b": 2}')
+
+
+def test_actual_object_in_string_array_pattern_is_rejected():
+    malformed = {"agreements": [{"claim": "grounded", "evidence_ids": ["tcmv1-a"]}], "challenges": [], "unsupported_claims": [], "missing_evidence": [], "evidence_issues": []}
+    with pytest.raises(Exception, match="valid string"):
+        CritiquePayload.model_validate(malformed)
+
+
+def test_missing_required_critique_field_is_rejected():
+    with pytest.raises(Exception, match="evidence_issues"):
+        CritiquePayload.model_validate({"agreements": [], "challenges": [], "unsupported_claims": [], "missing_evidence": []})
+
+
+class InvalidEvidenceProvider(FixtureProvider):
+    async def generate(self, *, system, prompt, **kwargs):
+        result = await super().generate(system=system, prompt=prompt, **kwargs)
+        if "Revise" in system:
+            value = json.loads(result.text); value["evidence_ids"] = ["not-retrieved"]
+            return GenerationResult(text=json.dumps(value), provider=self.name, model=self.model)
+        return result
+
+
+def test_malformed_evidence_ids_are_rejected_after_one_retry():
+    provider = InvalidEvidenceProvider()
+    with pytest.raises(DebateStageFailure) as caught:
+        asyncio.run(run_genuine_debate(provider, question="q", evidence=evidence(), outputs=[agent()], rounds=1))
+    assert caught.value.stage == "revision:herbal"
+    assert len([attempt for attempt in caught.value.attempts if attempt.stage == "revision:herbal"]) == 2
+
+
+class SleepingProvider(FixtureProvider):
+    async def generate(self, **kwargs):
+        await asyncio.sleep(0.05)
+        return await super().generate(**kwargs)
+
+
+def test_explicit_per_stage_timeout_is_bounded():
+    provider = SleepingProvider()
+    with pytest.raises(DebateStageFailure) as caught:
+        asyncio.run(run_genuine_debate(provider, question="q", evidence=evidence(), outputs=[agent()], stage_timeout_seconds=.01, whole_debate_timeout_seconds=1))
+    assert caught.value.stage == "critique:grounding_critic"
+    assert len(caught.value.attempts) == 2 and all(item.error_type == "timeout" for item in caught.value.attempts)
+
+
+def test_explicit_whole_debate_timeout_is_bounded():
+    with pytest.raises(DebateStageFailure) as caught:
+        asyncio.run(run_genuine_debate(SleepingProvider(), question="q", evidence=evidence(), outputs=[agent()], stage_timeout_seconds=1, whole_debate_timeout_seconds=.01))
+    assert caught.value.stage == "debate_total"
 
 
 def test_max_one_debate_round():
@@ -168,9 +240,9 @@ def test_operational_smoke_validation_requires_genuine_single_and_multi_c4():
                 "architecture": "genuine_llm_structured_debate", "rounds": 1,
                 "selected_agents": selected, "critic_invoked": len(selected) == 1,
                 "initial_outputs": [{"agent_id": agent_id} for agent_id in selected],
-                "critiques": [{"reviewer_id": agent_id} for agent_id in selected],
-                "revisions": [{"agent_id": agent_id, "revised_position": "grounded", "evidence_ids": source_ids} for agent_id in selected],
-                "final_consensus": {"final_answer": "grounded", "evidence_ids": source_ids},
+                "critiques": [{"reviewer_id": agent_id, "reviewed_peer_outputs": ([{"agent_id": peer, "claims": [{"text": "peer"}]} for peer in selected if peer != agent_id])} for agent_id in selected],
+                "revisions": [{"agent_id": agent_id, "revised_claims": ["grounded"], "evidence_ids": source_ids, "peer_outputs": ([{"agent_id": peer, "claims": [{"text": "peer"}]} for peer in selected if peer != agent_id])} for agent_id in selected],
+                "final_consensus": {"answer": "grounded", "evidence_ids": source_ids, "revised_positions_received": selected, "revisions_input": [{"agent_id": agent_id} for agent_id in selected]},
                 "stage_statuses": [
                     *[{"stage": f"critique:{agent_id}", "status": "PASS"} for agent_id in selected],
                     *[{"stage": f"revision:{agent_id}", "status": "PASS"} for agent_id in selected],
