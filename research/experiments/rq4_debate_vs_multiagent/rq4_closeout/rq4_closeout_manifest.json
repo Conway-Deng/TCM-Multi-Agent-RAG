@@ -1,0 +1,39 @@
+{
+  "status": "RQ4_COMPLETE",
+  "protocol": "RQ4_PROTOCOL_V1",
+  "protocol_sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "model": "Qwen/Qwen3-8B",
+  "retrieval": "R0",
+  "planned_questions": 100,
+  "formal_records": 200,
+  "semantic_review_rows": 412,
+  "semantic_questions": 90,
+  "complete_usable_pairs": 80,
+  "provider_calls_during_finalization": 0,
+  "review_import_record": "semantic_review_import_record.json",
+  "artifacts": [
+    ".gitkeep",
+    "README.md",
+    "rq4_debate_diagnostics.json",
+    "rq4_final_manifest.json",
+    "rq4_final_results.md",
+    "rq4_latency_analysis.json",
+    "rq4_objective_metrics.json",
+    "rq4_paired_statistics.json",
+    "rq4_question_level_metrics.csv",
+    "rq4_reliability_analysis.json",
+    "rq4_semantic_review_imported.csv",
+    "semantic_review_import_record.json"
+  ],
+  "final_analysis_directory": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\formal_run_v1\\final_analysis",
+  "closeout_directory": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\rq4_closeout",
+  "artifact_sha256": {
+    "README.md": "9a1577295618fc6f8be10a9c072d3fcac839684fecac4924ff89c0ac24fa6675",
+    "rq4_artifact_index.md": "f50c5efb65122502f655652c5aa53230a9dc4ead29b11e3dfa228b52d46ca03b",
+    "rq4_closeout_manifest.json": "44853396904aae5fde3739f128aced9652c574a6b931fca069612c930fc4d58a",
+    "rq4_final_conclusion.md": "0d7f7394cb7aa279d4dd3062f3a843608df4618dbaeb1855dc81a8203770a59a",
+    "rq4_final_results.md": "a19aa22f1d41f4dce7da5272b3433d85ca604d02b9dca90ea1cd8b1d4c6512e4"
+  }
+}

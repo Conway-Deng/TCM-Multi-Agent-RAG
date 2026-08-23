@@ -1,0 +1,1420 @@
+{
+  "source": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\formal_run_v1\\objective_metrics.json",
+  "source_sha256": "8f24c8024a19cb0ae7d1d02b9613a3e99c55f2f0ce49c91bf70ce72bd58d6bc8",
+  "question_condition_means": {
+    "retrieval_recall": {
+      "C2": 0.9,
+      "C4": 0.9
+    },
+    "citation_recall": {
+      "C2": 0.89,
+      "C4": 0.74
+    },
+    "citation_precision": {
+      "C2": 0.6116666666666667,
+      "C4": 0.5891666666666666
+    }
+  },
+  "scores": [
+    {
+      "question_id": "rq4-v1-012",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-012",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-019",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-019",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-044",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-044",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-021",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-021",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-037",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-037",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-046",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-046",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-038",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-038",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-049",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-049",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-077",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-077",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-022",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-022",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-064",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-064",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-095",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-095",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-030",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-030",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-072",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-072",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-098",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-098",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-063",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-063",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-085",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-085",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-052",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-052",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-061",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-061",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-081",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-081",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-016",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-016",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-090",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-090",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-015",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-015",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-033",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-033",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-057",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-057",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-097",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-097",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-092",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-092",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-010",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-010",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-068",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-068",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-084",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-084",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-003",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-003",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-034",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-034",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-007",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-007",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-054",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-054",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-079",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-079",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-075",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-075",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-020",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-020",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-040",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-040",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-045",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-045",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-006",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-006",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-018",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-018",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-002",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-002",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-048",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-048",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-001",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-001",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-039",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-039",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-009",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-009",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-091",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-091",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-078",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-078",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-036",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-036",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-070",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-070",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-014",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-014",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-096",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-096",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-032",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-032",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-017",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-017",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-042",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-042",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-067",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-067",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-028",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-028",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-069",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-069",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-025",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-025",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-087",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-087",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-053",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-053",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-043",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-043",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-055",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-055",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-093",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-093",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.6666666666666666
+    },
+    {
+      "question_id": "rq4-v1-047",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-047",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-065",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-065",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-083",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-083",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-029",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-029",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-026",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-026",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-080",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-080",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-073",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-073",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-050",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-050",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-011",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-011",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-066",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-066",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-031",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-031",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-088",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-088",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-035",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-035",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-071",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.25
+    },
+    {
+      "question_id": "rq4-v1-071",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-024",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-024",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-082",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-082",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-094",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-094",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-060",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-060",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-099",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-099",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-076",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-076",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-008",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-008",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-027",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-027",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-100",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-100",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-056",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-056",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-023",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-023",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-089",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-089",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.5
+    },
+    {
+      "question_id": "rq4-v1-074",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-074",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-004",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-004",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-062",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-062",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 0.3333333333333333
+    },
+    {
+      "question_id": "rq4-v1-058",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-058",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-013",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-013",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-051",
+      "condition": "C4",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-051",
+      "condition": "C2",
+      "retrieval_recall": 0.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0.0
+    },
+    {
+      "question_id": "rq4-v1-005",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-005",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-086",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-086",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-041",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-041",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    },
+    {
+      "question_id": "rq4-v1-059",
+      "condition": "C4",
+      "retrieval_recall": 1.0,
+      "citation_recall": 0.0,
+      "citation_precision": 0
+    },
+    {
+      "question_id": "rq4-v1-059",
+      "condition": "C2",
+      "retrieval_recall": 1.0,
+      "citation_recall": 1.0,
+      "citation_precision": 1.0
+    }
+  ]
+}

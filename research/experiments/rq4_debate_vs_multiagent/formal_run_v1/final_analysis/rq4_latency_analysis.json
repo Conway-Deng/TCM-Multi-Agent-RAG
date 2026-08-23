@@ -1,0 +1,18 @@
+{
+  "difference_c4_minus_c2": 32381.3125,
+  "difference_pp": 3238131.25,
+  "bootstrap_95_ci": [
+    25053.0125,
+    40865.5375
+  ],
+  "wilcoxon_p": 7.999532481409402e-15,
+  "n": 80,
+  "nonzero_paired_questions": 80,
+  "c2_mean_ms": 7278.525,
+  "c4_mean_ms": 39659.8375,
+  "c2_median_ms": 3913.0,
+  "c4_median_ms": 20397.0,
+  "paired_difference_ms": 32381.3125,
+  "provider_attempts_c2": 125,
+  "provider_attempts_c4": 431
+}

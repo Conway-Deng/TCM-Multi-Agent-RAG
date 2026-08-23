@@ -1,0 +1,26 @@
+{
+  "traces": 100,
+  "peer_interaction": 15,
+  "critique_completion": 88,
+  "revision_completion": 86,
+  "consensus_completion": 80,
+  "grounding_critic_invoked": 75,
+  "multi_specialist_debate": 15,
+  "failures_by_debate_stage": {
+    "initial_specialists": 9,
+    "revision:syndrome": 2,
+    "consensus": 4,
+    "revision:herbal": 2
+  },
+  "stage_counts": {
+    "critique:grounding_critic": 75,
+    "revision:herbal": 66,
+    "consensus": 84,
+    "initial_specialists": 9,
+    "revision:syndrome": 35,
+    "critique:herbal": 13,
+    "critique:syndrome": 13
+  },
+  "mean_internal_provider_calls": 3.07,
+  "max_debate_rounds": 1
+}

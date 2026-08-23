@@ -1,0 +1,30 @@
+{
+  "status": "RQ4_COMPLETE",
+  "protocol": "RQ4_PROTOCOL_V1",
+  "protocol_sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "model": "Qwen/Qwen3-8B",
+  "retrieval": "R0",
+  "planned_questions": 100,
+  "formal_records": 200,
+  "semantic_review_rows": 412,
+  "semantic_questions": 90,
+  "complete_usable_pairs": 80,
+  "provider_calls_during_finalization": 0,
+  "review_import_record": "semantic_review_import_record.json",
+  "artifacts": [
+    ".gitkeep",
+    "README.md",
+    "rq4_debate_diagnostics.json",
+    "rq4_final_manifest.json",
+    "rq4_final_results.md",
+    "rq4_latency_analysis.json",
+    "rq4_objective_metrics.json",
+    "rq4_paired_statistics.json",
+    "rq4_question_level_metrics.csv",
+    "rq4_reliability_analysis.json",
+    "rq4_semantic_review_imported.csv",
+    "semantic_review_import_record.json"
+  ]
+}

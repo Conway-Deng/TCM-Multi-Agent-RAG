@@ -1,0 +1,234 @@
+{
+  "planned_questions": 100,
+  "C2_usable": 88,
+  "C4_usable": 80,
+  "both_usable": 80,
+  "C2_only_usable": 8,
+  "C4_only_usable": 0,
+  "neither_usable": 12,
+  "status_counts": {
+    "C2": {
+      "PASS": 84,
+      "PASS_WITH_RETRY": 4,
+      "FAIL_PROVIDER": 12
+    },
+    "C4": {
+      "PASS": 70,
+      "PASS_WITH_RETRY": 10,
+      "FAIL_PROVIDER": 20
+    }
+  },
+  "fallback_counts": {
+    "C2": {
+      "False": 91,
+      "True": 9
+    },
+    "C4": {
+      "False": 100
+    }
+  },
+  "failure_retry_breakdown": {
+    "C2": {
+      "attempts": 125,
+      "successful_attempts": 103,
+      "failed_attempts": 22,
+      "retries": 13,
+      "error_types": {
+        "output_quality_rejection": 20,
+        "timeout": 2
+      }
+    },
+    "C4": {
+      "attempts": 431,
+      "successful_attempts": 381,
+      "failed_attempts": 50,
+      "retries": 33,
+      "error_types": {
+        "output_quality_rejection": 27,
+        "timeout": 17,
+        "malformed_response": 6
+      }
+    }
+  },
+  "mcnemar": {
+    "c2_only": 8,
+    "c4_only": 0,
+    "both": 80,
+    "neither": 12,
+    "exact_two_sided_p": 0.0078125
+  },
+  "absent_semantic_questions": [
+    "rq4-v1-014",
+    "rq4-v1-015",
+    "rq4-v1-020",
+    "rq4-v1-022",
+    "rq4-v1-023",
+    "rq4-v1-043",
+    "rq4-v1-044",
+    "rq4-v1-067",
+    "rq4-v1-077",
+    "rq4-v1-082"
+  ],
+  "absent_reasons": {
+    "rq4-v1-014": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-015": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-020": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-022": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-023": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-043": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-044": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "deterministic_fallback",
+        "fallback": true,
+        "provider_attempted": 2,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "fail_provider",
+        "fallback": false,
+        "provider_attempted": 2,
+        "error": null
+      }
+    },
+    "rq4-v1-067": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      }
+    },
+    "rq4-v1-077": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      }
+    },
+    "rq4-v1-082": {
+      "C2": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      },
+      "C4": {
+        "run_status": "FAIL_PROVIDER",
+        "generation_mode": "abstention",
+        "fallback": false,
+        "provider_attempted": 0,
+        "error": null
+      }
+    }
+  }
+}

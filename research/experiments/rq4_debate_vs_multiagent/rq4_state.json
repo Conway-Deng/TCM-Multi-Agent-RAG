@@ -1,11 +1,22 @@
 {
-  "state": "READY_FOR_FORMAL_RQ4_RUN",
-  "previous_state": "SMOKE_TEST_PASSED",
-  "updated_at": "2026-08-23T13:28:03.777579+00:00",
-  "formal_code_commit": "a0a14104dca2e6b3c69e2afa58967f82057679a7",
-  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
-  "execution_order_sha256": "48e92f723cbf1d095b225acffe8712d78b4ed2f579f31666093dd48a0555a3b4",
-  "smoke_pass_number": null,
-  "smoke_validation_id": "POST_FIX_VALIDATION_SMOKE_V1",
-  "formal_execution_records": 0
+  "state": "RQ4_COMPLETE",
+  "previous_state": "RQ4_COMPLETE",
+  "updated_at": "2026-08-23T15:40:58.921375+00:00",
+  "packet": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\formal_run_v1\\rq4_semantic_review_for_gpt.csv",
+  "formal_execution": {
+    "planned_questions": 100,
+    "records": 200,
+    "complete_usable_pairs": 80,
+    "c2_usable": 88,
+    "c4_usable": 80
+  },
+  "semantic_review": {
+    "rows": 412,
+    "unique_questions": 90,
+    "source_sha256": "68dc41febd96aeb443a2ffc40cfa26e6685d5363eb96108a5f46bbcae149b53e",
+    "protected_field_validation": "PASS"
+  },
+  "final_analysis": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\formal_run_v1\\final_analysis",
+  "closeout": "D:\\project\\multi_agent_rag_research\\code_git\\research\\experiments\\rq4_debate_vs_multiagent\\rq4_closeout",
+  "provider_calls_during_finalization": 0
 }
