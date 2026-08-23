@@ -78,11 +78,14 @@ def test_leakage_report_is_zero_for_forbidden_material():
     assert "replaced_first_rq4_entity_overlap: 0" in report and "replaced_first_rq4_evidence_overlap: 0" in report
 
 
-def test_candidate_is_not_frozen_and_state_requires_second_review():
+def test_v1_1_candidate_is_not_frozen_and_current_state_requires_source_review():
     manifest = json.loads((BENCH / "heldout_manifest_rq4_v1_1_draft.json").read_text(encoding="utf-8"))
     state = json.loads((ROOT / "research/experiments/rq4_debate_vs_multiagent/rq4_state.json").read_text(encoding="utf-8"))
     assert manifest["frozen"] is False and manifest["source_review"] == "SECOND_REVIEW_PENDING"
-    assert state["state"] == "BENCHMARK_SOURCE_REVIEW_REQUIRED" and state["second_source_review"] == "PENDING"
+    assert state["state"] == "BENCHMARK_SOURCE_REVIEW_REQUIRED"
+    assert state["second_source_review"] in {"PENDING", "COMPLETED"}
+    if state["second_source_review"] == "COMPLETED":
+        assert state["final_source_review"] == "PENDING"
 
 
 def test_revision_ledger_has_twenty_rows_and_actions():

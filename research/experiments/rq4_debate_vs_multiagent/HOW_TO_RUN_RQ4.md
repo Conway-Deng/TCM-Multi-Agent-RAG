@@ -6,7 +6,7 @@
 
 ## What it means
 
-The platform is ready, but the new source-grounded benchmark is a draft. Formal execution is blocked until every Question ↔ Gold ↔ source row is externally reviewed and approved.
+The platform is ready, but the RQ4 v1.2 source-grounded benchmark is a draft. Formal execution is blocked until every Question ↔ Gold ↔ source row in `external_source_review_v1_2_for_gpt.csv` is externally reviewed and approved.
 
 ## What command to run
 

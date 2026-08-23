@@ -1,0 +1,90 @@
+{
+  "status": "DRAFT_SOURCE_GROUNDED_RQ4_V1_2",
+  "candidate_version": "RQ4_CANDIDATE_V1_2",
+  "candidate_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_name": "TCM Research Corpus v1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "question_count": 100,
+  "gold_fact_count": 232,
+  "domain": {
+    "herbal": 60,
+    "syndrome": 25,
+    "multi_target": 15
+  },
+  "difficulty": {
+    "easy": 40,
+    "medium": 40,
+    "hard": 20
+  },
+  "held_out": true,
+  "frozen": false,
+  "provider_calls": 0,
+  "source_review": {
+    "first_external_review": "COMPLETED",
+    "first_revision": "COMPLETED",
+    "second_external_review": "COMPLETED",
+    "second_revision": "COMPLETED",
+    "final_external_review": "PENDING"
+  },
+  "second_review": {
+    "rows": 232,
+    "unique_row_ids": 232,
+    "questions": 100,
+    "status_counts": {
+      "REVISE": 45,
+      "APPROVE": 187
+    },
+    "approved_questions": 83,
+    "questions_requiring_revision": 17,
+    "revised_question_ids": [
+      "rq4-v1-001",
+      "rq4-v1-004",
+      "rq4-v1-007",
+      "rq4-v1-008",
+      "rq4-v1-015",
+      "rq4-v1-018",
+      "rq4-v1-026",
+      "rq4-v1-044",
+      "rq4-v1-045",
+      "rq4-v1-048",
+      "rq4-v1-050",
+      "rq4-v1-051",
+      "rq4-v1-055",
+      "rq4-v1-057",
+      "rq4-v1-086",
+      "rq4-v1-088",
+      "rq4-v1-097"
+    ],
+    "protected_fields_unchanged": true
+  },
+  "revision": {
+    "preserved_unchanged": 83,
+    "replaced": 17
+  },
+  "validation": {
+    "approved_questions_unchanged": 83,
+    "changed_question_ids": [
+      "rq4-v1-001",
+      "rq4-v1-004",
+      "rq4-v1-007",
+      "rq4-v1-008",
+      "rq4-v1-015",
+      "rq4-v1-018",
+      "rq4-v1-026",
+      "rq4-v1-044",
+      "rq4-v1-045",
+      "rq4-v1-048",
+      "rq4-v1-050",
+      "rq4-v1-051",
+      "rq4-v1-055",
+      "rq4-v1-057",
+      "rq4-v1-086",
+      "rq4-v1-088",
+      "rq4-v1-097"
+    ],
+    "valid_source_evidence": true,
+    "cross_reference_issues": 0,
+    "prompt_gold_mismatches": 0
+  },
+  "duplicate_audit": "PASS"
+}

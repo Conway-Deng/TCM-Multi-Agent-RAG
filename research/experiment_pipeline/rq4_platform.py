@@ -201,7 +201,14 @@ def execution_order(question_ids: list[str], seed: int = SEED) -> list[dict[str,
 
 
 def next_action(state: str) -> str:
-    review_packet = BENCH / ("external_source_review_v1_1_for_gpt.csv" if (BENCH / "external_source_review_v1_1_for_gpt.csv").exists() else "external_source_review_for_gpt.csv")
+    review_packet = next(
+        (BENCH / name for name in (
+            "external_source_review_v1_2_for_gpt.csv",
+            "external_source_review_v1_1_for_gpt.csv",
+            "external_source_review_for_gpt.csv",
+        ) if (BENCH / name).exists()),
+        BENCH / "external_source_review_for_gpt.csv",
+    )
     return {
         "BENCHMARK_SOURCE_REVIEW_REQUIRED": str(review_packet),
         "BENCHMARK_REVISION_REQUIRED": "revise benchmark and generate a new source-review cycle",
@@ -225,10 +232,16 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def import_source_review(path: Path) -> dict[str, Any]:
-    revised_candidate = BENCH / "benchmark_rq4_v1_1_draft.jsonl"
-    expected_path = BENCH / ("external_source_review_v1_1_for_gpt.csv" if revised_candidate.exists() else "external_source_review_for_gpt.csv")
+    candidates = (
+        ("v1_2", BENCH / "benchmark_rq4_v1_2_draft.jsonl", BENCH / "external_source_review_v1_2_for_gpt.csv"),
+        ("v1_1", BENCH / "benchmark_rq4_v1_1_draft.jsonl", BENCH / "external_source_review_v1_1_for_gpt.csv"),
+        ("v1", BENCH / "benchmark_rq4_v1_draft.jsonl", BENCH / "external_source_review_for_gpt.csv"),
+    )
+    version, revised_candidate, expected_path = next(
+        candidate for candidate in candidates if candidate[2].exists()
+    )
     expected, returned = _read_csv(expected_path), _read_csv(path)
-    protected = ["row_id", "question_id", "question", "domain", "difficulty", "gold_fact_index", "gold_atomic_fact", "preferred_evidence_id", "acceptable_alternate_evidence_ids", "evidence_excerpt", "source_entity_names", "source_review_revision_status"]
+    protected = set(expected[0]) - {"source_review_status", "review_reason", "confidence"}
     by_id = {row["row_id"]: row for row in expected}
     if len(returned) != len(expected) or len({row.get("row_id") for row in returned}) != len(expected) or set(by_id) != {row.get("row_id") for row in returned}:
         raise RuntimeError("SOURCE_REVIEW_ROW_SET_MISMATCH")
@@ -244,8 +257,8 @@ def import_source_review(path: Path) -> dict[str, Any]:
         write_json(BENCH / "source_review_revision_report.json", {"status": "BENCHMARK_REVISION_REQUIRED", "rows": unresolved})
         machine.transition("BENCHMARK_REVISION_REQUIRED", unresolved_rows=len(unresolved))
         return {"status": "BENCHMARK_REVISION_REQUIRED", "unresolved_rows": len(unresolved)}
-    draft = revised_candidate if revised_candidate.exists() else BENCH / "benchmark_rq4_v1_draft.jsonl"
-    draft_csv = BENCH / ("benchmark_rq4_v1_1_draft.csv" if revised_candidate.exists() else "benchmark_rq4_v1_draft.csv")
+    draft = revised_candidate
+    draft_csv = BENCH / f"benchmark_rq4_{version}_draft.csv"
     frozen = BENCH / "benchmark_rq4_v1_frozen.jsonl"
     frozen.write_bytes(draft.read_bytes())
     (BENCH / "benchmark_rq4_v1_frozen.csv").write_bytes(draft_csv.read_bytes())
@@ -258,18 +271,21 @@ def import_source_review(path: Path) -> dict[str, Any]:
         "corpus_sha256": CORPUS_SHA, "final_benchmark_sha256": benchmark_sha,
         "source_review": "100_PERCENT_APPROVED", "frozen_at": utcnow(),
     })
-    draft_manifest = json.loads((BENCH / ("heldout_manifest_rq4_v1_1_draft.json" if revised_candidate.exists() else "heldout_manifest_rq4_v1_draft.json")).read_text(encoding="utf-8"))
+    draft_manifest = json.loads((BENCH / f"heldout_manifest_rq4_{version}_draft.json").read_text(encoding="utf-8"))
     write_json(BENCH / "heldout_manifest_rq4_v1_frozen.json", {
         **draft_manifest, "status": "FROZEN_SOURCE_GROUNDED_RQ4_V1",
         "source_review": "100_PERCENT_APPROVED", "frozen": True,
         "benchmark_sha256": benchmark_sha,
     })
-    (BENCH / "coverage_report_rq4_v1_frozen.md").write_text(
-        (BENCH / "coverage_report_rq4_v1_draft.md").read_text(encoding="utf-8")
-        .replace("BENCHMARK_SOURCE_REVIEW_REQUIRED", "FROZEN_SOURCE_GROUNDED_RQ4_V1")
-        .replace("Source review: pending", "Source review: 100% approved"),
-        encoding="utf-8",
-    )
+    coverage = (BENCH / f"coverage_report_rq4_{version}_draft.md").read_text(encoding="utf-8")
+    for draft_status in (
+        "BENCHMARK_SOURCE_REVIEW_REQUIRED", "DRAFT_SOURCE_GROUNDED_RQ4_V1_1",
+        "DRAFT_SOURCE_GROUNDED_RQ4_V1_2",
+    ):
+        coverage = coverage.replace(draft_status, "FROZEN_SOURCE_GROUNDED_RQ4_V1")
+    coverage = coverage.replace("Source review: pending", "Source review: 100% approved")
+    coverage = coverage.replace("Final external source review: pending", "Final external source review: 100% approved")
+    (BENCH / "coverage_report_rq4_v1_frozen.md").write_text(coverage, encoding="utf-8")
     protocol_manifest = json.loads((RQ4 / "protocol/protocol_manifest.json").read_text(encoding="utf-8"))
     order = execution_order([item["question_id"] for item in values])
     write_json(FORMAL / "execution_order.json", {"seed": SEED, "order": order})

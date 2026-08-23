@@ -1,0 +1,28 @@
+{
+  "question_count": 100,
+  "unique_question_ids": 100,
+  "unique_normalized_questions": 100,
+  "raw_question_duplicates": [],
+  "normalized_question_duplicates": [],
+  "entity_material_target_conflicts": [],
+  "evidence_id_conflicts": [],
+  "gold_target_signature_conflicts": [],
+  "replacement_to_approved_entity_overlap": [],
+  "replacement_to_approved_evidence_overlap": [],
+  "replacement_to_external_question_overlap": [],
+  "replacement_to_external_entity_overlap": [],
+  "replacement_to_external_evidence_overlap": [],
+  "replacement_to_replacement_entity_conflicts": [],
+  "replacement_to_replacement_evidence_conflicts": [],
+  "deterministic_limitation": "Exact, normalized-text, entity/alias, evidence-ID, requested-field, and deterministic Gold-target signatures are checked. This does not prove semantic independence beyond those deterministic representations.",
+  "status": "PASS",
+  "reserved_set_counts_before_selection": {
+    "reserved_question_normalized": 380,
+    "reserved_entities": 698,
+    "reserved_evidence_ids": 366,
+    "reserved_gold_targets": 121
+  },
+  "approved_questions_checked": 83,
+  "replacement_questions_checked": 17,
+  "provider_calls": 0
+}
