@@ -1,0 +1,67 @@
+{
+  "status": "DRAFT_SOURCE_GROUNDED_RQ4_V1_1",
+  "candidate_version": "RQ4_CANDIDATE_V1_1",
+  "source_review": "SECOND_REVIEW_PENDING",
+  "first_source_review": {
+    "rows": 232,
+    "status_counts": {
+      "REVISE": 37,
+      "APPROVE": 195
+    },
+    "approved_questions": 80,
+    "revised_questions": 20,
+    "revised_question_ids": [
+      "rq4-v1-001",
+      "rq4-v1-002",
+      "rq4-v1-004",
+      "rq4-v1-007",
+      "rq4-v1-008",
+      "rq4-v1-015",
+      "rq4-v1-018",
+      "rq4-v1-019",
+      "rq4-v1-026",
+      "rq4-v1-039",
+      "rq4-v1-044",
+      "rq4-v1-045",
+      "rq4-v1-048",
+      "rq4-v1-050",
+      "rq4-v1-051",
+      "rq4-v1-055",
+      "rq4-v1-057",
+      "rq4-v1-086",
+      "rq4-v1-088",
+      "rq4-v1-097"
+    ],
+    "methodology": "external AI-assisted source-grounded review"
+  },
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "draft_sha256": "59b32770f6286c695e856de9ebc86d188a6f7f6969834e2423cc25551da6ac60",
+  "question_count": 100,
+  "gold_fact_count": 232,
+  "domain": {
+    "herbal": 60,
+    "syndrome": 25,
+    "multi_target": 15
+  },
+  "difficulty": {
+    "easy": 40,
+    "medium": 40,
+    "hard": 20
+  },
+  "revision_counts": {
+    "preserved_approved": 80,
+    "rewritten": 3,
+    "replaced": 17
+  },
+  "leakage": {
+    "exact_question_overlap": 0,
+    "normalized_question_overlap": 0,
+    "entity_overlap": 0,
+    "evidence_id_overlap": 0,
+    "replaced_first_rq4_entity_overlap": 0,
+    "replaced_first_rq4_evidence_overlap": 0,
+    "scope": "deterministic exact/normalized/entity/evidence checks; retained approved rows are intentionally unchanged and are not treated as leakage; this does not prove absolute semantic independence"
+  },
+  "frozen": false,
+  "provider_calls": 0
+}

@@ -201,8 +201,9 @@ def execution_order(question_ids: list[str], seed: int = SEED) -> list[dict[str,
 
 
 def next_action(state: str) -> str:
+    review_packet = BENCH / ("external_source_review_v1_1_for_gpt.csv" if (BENCH / "external_source_review_v1_1_for_gpt.csv").exists() else "external_source_review_for_gpt.csv")
     return {
-        "BENCHMARK_SOURCE_REVIEW_REQUIRED": str(BENCH / "external_source_review_for_gpt.csv"),
+        "BENCHMARK_SOURCE_REVIEW_REQUIRED": str(review_packet),
         "BENCHMARK_REVISION_REQUIRED": "revise benchmark and generate a new source-review cycle",
         "REAL_SMOKE_TEST_REQUIRED": "scripts\\rq4.cmd smoke",
         "SMOKE_TEST_FAILED": "scripts\\rq4.cmd smoke",
@@ -224,9 +225,10 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def import_source_review(path: Path) -> dict[str, Any]:
-    expected_path = BENCH / "external_source_review_for_gpt.csv"
+    revised_candidate = BENCH / "benchmark_rq4_v1_1_draft.jsonl"
+    expected_path = BENCH / ("external_source_review_v1_1_for_gpt.csv" if revised_candidate.exists() else "external_source_review_for_gpt.csv")
     expected, returned = _read_csv(expected_path), _read_csv(path)
-    protected = ["row_id", "question_id", "question", "domain", "difficulty", "gold_fact_index", "gold_atomic_fact", "preferred_evidence_id", "acceptable_alternate_evidence_ids", "evidence_excerpt"]
+    protected = ["row_id", "question_id", "question", "domain", "difficulty", "gold_fact_index", "gold_atomic_fact", "preferred_evidence_id", "acceptable_alternate_evidence_ids", "evidence_excerpt", "source_entity_names", "source_review_revision_status"]
     by_id = {row["row_id"]: row for row in expected}
     if len(returned) != len(expected) or len({row.get("row_id") for row in returned}) != len(expected) or set(by_id) != {row.get("row_id") for row in returned}:
         raise RuntimeError("SOURCE_REVIEW_ROW_SET_MISMATCH")
@@ -242,10 +244,11 @@ def import_source_review(path: Path) -> dict[str, Any]:
         write_json(BENCH / "source_review_revision_report.json", {"status": "BENCHMARK_REVISION_REQUIRED", "rows": unresolved})
         machine.transition("BENCHMARK_REVISION_REQUIRED", unresolved_rows=len(unresolved))
         return {"status": "BENCHMARK_REVISION_REQUIRED", "unresolved_rows": len(unresolved)}
-    draft = BENCH / "benchmark_rq4_v1_draft.jsonl"
+    draft = revised_candidate if revised_candidate.exists() else BENCH / "benchmark_rq4_v1_draft.jsonl"
+    draft_csv = BENCH / ("benchmark_rq4_v1_1_draft.csv" if revised_candidate.exists() else "benchmark_rq4_v1_draft.csv")
     frozen = BENCH / "benchmark_rq4_v1_frozen.jsonl"
     frozen.write_bytes(draft.read_bytes())
-    (BENCH / "benchmark_rq4_v1_frozen.csv").write_bytes((BENCH / "benchmark_rq4_v1_draft.csv").read_bytes())
+    (BENCH / "benchmark_rq4_v1_frozen.csv").write_bytes(draft_csv.read_bytes())
     review_record = BENCH / "external_source_review_approved.csv"
     review_record.write_bytes(path.read_bytes())
     values = jsonl(frozen)
@@ -255,7 +258,7 @@ def import_source_review(path: Path) -> dict[str, Any]:
         "corpus_sha256": CORPUS_SHA, "final_benchmark_sha256": benchmark_sha,
         "source_review": "100_PERCENT_APPROVED", "frozen_at": utcnow(),
     })
-    draft_manifest = json.loads((BENCH / "heldout_manifest_rq4_v1_draft.json").read_text(encoding="utf-8"))
+    draft_manifest = json.loads((BENCH / ("heldout_manifest_rq4_v1_1_draft.json" if revised_candidate.exists() else "heldout_manifest_rq4_v1_draft.json")).read_text(encoding="utf-8"))
     write_json(BENCH / "heldout_manifest_rq4_v1_frozen.json", {
         **draft_manifest, "status": "FROZEN_SOURCE_GROUNDED_RQ4_V1",
         "source_review": "100_PERCENT_APPROVED", "frozen": True,

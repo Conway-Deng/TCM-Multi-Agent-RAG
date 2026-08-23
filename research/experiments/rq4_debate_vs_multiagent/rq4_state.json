@@ -1,6 +1,12 @@
 {
   "state": "BENCHMARK_SOURCE_REVIEW_REQUIRED",
   "previous_state": "BENCHMARK_DRAFT_READY",
-  "updated_at": "2026-08-23T09:41:19.981908+00:00",
-  "provider_calls_during_build": 0
+  "updated_at": "2026-08-23T10:23:36.692789+00:00",
+  "provider_calls_during_build": 0,
+  "first_source_review": "COMPLETED",
+  "revision_cycle": "COMPLETED",
+  "second_source_review": "PENDING",
+  "candidate": "RQ4_CANDIDATE_V1_1",
+  "candidate_sha256": "59b32770f6286c695e856de9ebc86d188a6f7f6969834e2423cc25551da6ac60",
+  "provider_calls_during_revision": 0
 }

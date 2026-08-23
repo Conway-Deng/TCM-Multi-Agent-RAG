@@ -1,3 +1,3 @@
-# TCM Gold RQ4 v1 candidate
+# TCM Gold RQ4 v1.1 candidate
 
-Status: **BENCHMARK_SOURCE_REVIEW_REQUIRED**. This draft is source-grounded but externally unreviewed and is not frozen or eligible for formal execution.
+Status: **DRAFT_SOURCE_GROUNDED_RQ4_V1_1**. The first external AI-assisted source-grounded review is complete; 20 questions were revised. This candidate is not frozen and requires a second complete source review.
