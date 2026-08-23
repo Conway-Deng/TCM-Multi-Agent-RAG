@@ -1,0 +1,28 @@
+{
+  "status": "FROZEN_SOURCE_GROUNDED_RQ4_V1",
+  "benchmark_version": "RQ4_V1",
+  "source_candidate": "RQ4_CANDIDATE_V1_2",
+  "question_count": 100,
+  "gold_fact_count": 232,
+  "domain": {
+    "herbal": 60,
+    "syndrome": 25,
+    "multi_target": 15
+  },
+  "difficulty": {
+    "easy": 40,
+    "medium": 40,
+    "hard": 20
+  },
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "final_benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "source_review": "232_OF_232_APPROVED",
+  "source_review_questions": "100_OF_100_APPROVED",
+  "source_review_import_record": "final_source_review/external_source_review_v1_2_completed.csv",
+  "held_out_manifest": "heldout_manifest_rq4_v1_frozen.json",
+  "duplicate_audit": "duplicate_audit_rq4_v1_2.json:PASS",
+  "protocol_version": "RQ4_PROTOCOL_V1",
+  "freeze_implementation_revision": "37d852863e70e45a588018da99b0b3a3e1e3aed4",
+  "frozen_at": "2026-08-23T12:03:02.878550+00:00",
+  "source_grounded_validation_only": true
+}

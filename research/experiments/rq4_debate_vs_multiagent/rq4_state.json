@@ -1,16 +1,9 @@
 {
-  "state": "BENCHMARK_SOURCE_REVIEW_REQUIRED",
-  "previous_state": "BENCHMARK_REVISION_REQUIRED",
-  "updated_at": "2026-08-23T11:07:09.726202+00:00",
-  "provider_calls_during_build": 0,
-  "first_source_review": "COMPLETED",
-  "revision_cycle": "COMPLETED",
-  "second_source_review": "COMPLETED",
-  "candidate": "RQ4_CANDIDATE_V1_2",
-  "candidate_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
-  "provider_calls_during_revision": 0,
-  "first_revision": "COMPLETED",
-  "second_revision": "COMPLETED",
-  "final_source_review": "PENDING",
-  "provider_calls_during_second_revision": 0
+  "state": "REAL_SMOKE_TEST_REQUIRED",
+  "previous_state": "BENCHMARK_FROZEN",
+  "updated_at": "2026-08-23T12:03:03.005115+00:00",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "source_candidate": "RQ4_CANDIDATE_V1_2",
+  "final_source_review": "COMPLETED",
+  "formal_execution_records": 0
 }

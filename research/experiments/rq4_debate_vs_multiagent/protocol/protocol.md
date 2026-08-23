@@ -1,6 +1,6 @@
 # Frozen RQ4 platform protocol
 
-Platform protocol status: `FROZEN_BEFORE_PROVIDER_EXECUTION`. The benchmark remains independently gated and is not frozen until its source review is 100% approved.
+Platform protocol status: `FROZEN_BEFORE_PROVIDER_EXECUTION`. The independent benchmark gate is complete: RQ4 candidate v1.2 received 232/232 source-grounded Gold-row approvals and is frozen as `FROZEN_SOURCE_GROUNDED_RQ4_V1` with SHA-256 `744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4`.
 
 ## Question and controlled comparison
 

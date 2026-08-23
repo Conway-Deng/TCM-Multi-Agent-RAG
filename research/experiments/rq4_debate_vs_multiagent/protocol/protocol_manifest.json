@@ -1,8 +1,8 @@
 {
   "status": "FROZEN_BEFORE_PROVIDER_EXECUTION",
-  "protocol_sha256": "e1838360b08cb45d8f7332844b618d14170905756e95c7fae258ff898e49033e",
+  "protocol_sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
   "config_sha256": "91eb5c980d6f722a849af45b725ee5195a8e57203280d2108497bb84edb92d37",
-  "base_commit": "400475f26d8cc903498792cd14b12f50220bc97a",
+  "base_commit": "37d852863e70e45a588018da99b0b3a3e1e3aed4",
   "c2": "ordinary_multi_agent_unchanged",
   "c4": "genuine_llm_structured_debate_one_round",
   "c4_implementation_sha256": "74c26e3396393934b597b19c8977a2b0bd3dcf6877cfe3b77883a05a9fcc8029",
@@ -19,5 +19,9 @@
   "primary_metric": "question-level Gold Fact Full Recall",
   "practical_threshold": 0.05,
   "bootstrap_resamples": 10000,
-  "benchmark_gate": "BENCHMARK_SOURCE_REVIEW_REQUIRED"
+  "benchmark_gate": "FROZEN_SOURCE_GROUNDED_RQ4_V1",
+  "source_candidate": "RQ4_CANDIDATE_V1_2",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "source_review": "232_OF_232_APPROVED",
+  "formal_execution_status": "NOT_RUN"
 }

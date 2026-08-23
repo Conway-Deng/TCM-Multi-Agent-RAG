@@ -146,11 +146,13 @@ def test_revision_ledger_has_all_17_replacements_and_audit_fields():
     assert all(row["why_genuinely_unused"] and row["replacement_gold_signature"] for row in ledger)
 
 
-def test_state_remains_review_required_and_provider_calls_are_zero():
+def test_v1_2_draft_remains_unfrozen_and_pipeline_never_skips_review_gate():
     state = json.loads((revision.RQ4 / "rq4_state.json").read_text(encoding="utf-8"))
     manifest = json.loads((BENCH / "heldout_manifest_rq4_v1_2_draft.json").read_text(encoding="utf-8"))
-    assert state["state"] == "BENCHMARK_SOURCE_REVIEW_REQUIRED"
-    assert state["final_source_review"] == "PENDING"
     assert manifest["frozen"] is False and manifest["provider_calls"] == 0
     assert manifest["source_review"]["final_external_review"] == "PENDING"
-    assert platform.next_action("BENCHMARK_SOURCE_REVIEW_REQUIRED").endswith("external_source_review_v1_2_for_gpt.csv")
+    if state["state"] == "BENCHMARK_SOURCE_REVIEW_REQUIRED":
+        assert platform.next_action(state["state"]).endswith("external_source_review_v1_2_for_gpt.csv")
+    else:
+        frozen = json.loads((BENCH / "freeze_manifest_rq4_v1.json").read_text(encoding="utf-8"))
+        assert frozen["source_review"] == "232_OF_232_APPROVED"
