@@ -1,0 +1,30 @@
+# RQ4 post-fix validation smoke
+
+- status: PASS
+- smoke_pass_number: None
+- validation_id: POST_FIX_VALIDATION_SMOKE_V1
+- distinct_development_questions: 10
+- condition_executions: 20
+- c2_executions: 10
+- c4_executions: 10
+- c2_usable: 10
+- c4_usable: 10
+- c4_full_genuine_sequences: 10
+- provider_failures: 1
+- retries: 1
+- peer_outputs_observed: True
+- real_critique_calls_observed: True
+- revisions_observed: True
+- consensus_calls_observed: True
+- grounding_critic_tested: True
+- multi_specialist_debate_tested: True
+- evidence_validation: True
+- silent_c2_fallback: False
+- max_debate_rounds_observed: 1
+- execution_ids_unique: True
+- question_condition_pairs_unique: True
+- c2_runner_timeout_seconds: 120
+- c4_runner_timeout_seconds: 420
+- per_stage_timeout_seconds: 50
+- whole_debate_timeout_seconds: 300
+- maximum_attempts_per_required_stage: 2
