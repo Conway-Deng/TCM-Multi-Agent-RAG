@@ -1643,5 +1643,5 @@
   "c4_implementation_sha256": "761d9839cc3f5e0c34d19d483161abebf6e3c68bb7df058af734808817449bea",
   "workbench_runtime_sha256": "1eba26852f7b679b07f3a88e2542af91f8d4f2ba8a3a52c8efd236c790186e8a",
   "implementation_amendment": "protocol/implementation_amendment_post_fix_validation_v1.md",
-  "formal_code_commit": "37d852863e70e45a588018da99b0b3a3e1e3aed4"
+  "formal_code_commit": "4f8134f20439f8888a0e2836295c1eb2a7cbfe9a"
 }

@@ -2,6 +2,8 @@
 
 Status: approved implementation-validity amendment before further provider execution.
 
+Implementation repair commit: `4f8134f20439f8888a0e2836295c1eb2a7cbfe9a`.
+
 Smoke passes 1 and 2 remain final under their original two-pass limit. Pass 1 exposed stale-backend reuse; pass 2 exercised the intended C4 implementation but exposed structured-output and timing defects that prevented C4 from reliably instantiating the frozen experimental condition.
 
 This amendment authorizes exactly one development-only validation named `POST_FIX_VALIDATION_SMOKE_V1`, using the unchanged 10 development questions once under C2 and once under C4. It is not “Smoke Pass 3” and is not an attempt to improve semantic scores. It may only verify the repaired condition's operational validity.
