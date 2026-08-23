@@ -1,8 +1,11 @@
 {
-  "state": "SMOKE_TEST_PASSED",
-  "previous_state": "POST_FIX_VALIDATION_SMOKE_RUNNING",
-  "updated_at": "2026-08-23T13:27:05.821912+00:00",
-  "records": 20,
-  "validation_id": "POST_FIX_VALIDATION_SMOKE_V1",
-  "validation": "smoke/post_fix_validation_v1/smoke_validation.json"
+  "state": "READY_FOR_FORMAL_RQ4_RUN",
+  "previous_state": "SMOKE_TEST_PASSED",
+  "updated_at": "2026-08-23T13:28:03.777579+00:00",
+  "formal_code_commit": "a0a14104dca2e6b3c69e2afa58967f82057679a7",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "execution_order_sha256": "48e92f723cbf1d095b225acffe8712d78b4ed2f579f31666093dd48a0555a3b4",
+  "smoke_pass_number": null,
+  "smoke_validation_id": "POST_FIX_VALIDATION_SMOKE_V1",
+  "formal_execution_records": 0
 }

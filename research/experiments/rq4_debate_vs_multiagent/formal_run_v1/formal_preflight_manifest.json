@@ -1,0 +1,35 @@
+{
+  "status": "READY_FOR_FORMAL_RQ4_RUN",
+  "recorded_at": "2026-08-23T13:28:03.774701+00:00",
+  "frozen_benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "model": "Qwen/Qwen3-8B",
+  "retrieval": "R0",
+  "protocol_version": "RQ4_PROTOCOL_V1",
+  "protocol_sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
+  "c2_implementation_sha256": "22aecd65d00052694a81239e6fd8a898dec193114e7de2e5b82a0a8c0613a249",
+  "c4_implementation_sha256": "761d9839cc3f5e0c34d19d483161abebf6e3c68bb7df058af734808817449bea",
+  "backend_entrypoint_sha256": "1cfccd0dfc0cfa3d825081a31a797caaedae07a723b55526989bc6879dfa5394",
+  "formal_code_commit": "a0a14104dca2e6b3c69e2afa58967f82057679a7",
+  "execution_order_sha256": "48e92f723cbf1d095b225acffe8712d78b4ed2f579f31666093dd48a0555a3b4",
+  "smoke_pass_record": "smoke/post_fix_validation_v1/smoke_validation.json",
+  "generation_parameters": {
+    "top_k": 4,
+    "iterative_retrieval": false,
+    "debate_rounds": 1
+  },
+  "timeout_policy": {
+    "c2_runner_request_timeout_seconds": 120,
+    "c4_runner_request_timeout_seconds": 420,
+    "provider_configured_timeout_seconds": 45,
+    "provider_stage_wrapper_timeout_seconds": 50,
+    "whole_debate_timeout_seconds": 300
+  },
+  "retry_policy": {
+    "maximum_retries_per_required_stage": 1,
+    "maximum_attempts_per_required_stage": 2
+  },
+  "planned_c2_executions": 100,
+  "planned_c4_executions": 100,
+  "formal_provider_calls_completed": 0
+}
