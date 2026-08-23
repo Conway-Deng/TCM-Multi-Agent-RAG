@@ -1,0 +1,31 @@
+{
+  "status": "BENCHMARK_SOURCE_REVIEW_REQUIRED",
+  "source_review": "PENDING",
+  "corpus_name": "TCM Research Corpus v1",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "question_count": 100,
+  "gold_fact_count": 232,
+  "domain": {
+    "herbal": 60,
+    "syndrome": 25,
+    "multi_target": 15
+  },
+  "difficulty": {
+    "easy": 40,
+    "medium": 40,
+    "hard": 20
+  },
+  "draft_sha256": "0670c6692b1152ae29ade2662c2027ca1b2b530208f9be57bcfcf4d05938ab54",
+  "leakage": {
+    "scope": "deterministic exact/normalized/entity/evidence-ID checks; not a claim of absolute semantic independence",
+    "prior_benchmark_files_checked": 6,
+    "exact_question_overlap": 0,
+    "normalized_question_overlap": 0,
+    "source_entity_overlap": 0,
+    "source_evidence_id_overlap": 0,
+    "excluded_entity_count": 254,
+    "excluded_evidence_id_count": 198
+  },
+  "held_out": true,
+  "frozen": false
+}

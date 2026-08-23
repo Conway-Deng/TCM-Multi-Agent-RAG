@@ -40,7 +40,7 @@ def research_payload(condition: str = "C6") -> dict:
 def test_research_registries_are_complete() -> None:
     conditions = client.get("/api/research/conditions").json()
     assert {item["id"] for item in conditions} == {f"C{i}" for i in range(7)}
-    assert next(item for item in conditions if item["id"] == "C4")["debate"] == "deterministic"
+    assert next(item for item in conditions if item["id"] == "C4")["debate"] == "genuine_llm_one_round"
     assert next(item for item in conditions if item["id"] == "C5")["judges"] == "deterministic"
     assert {item["id"] for item in client.get("/api/research/retrievers").json()} == {f"R{i}" for i in range(4)}
     assert {item["id"] for item in client.get("/api/research/judges").json()} == {"evidence", "hallucination", "safety", "conflict", "confidence", "provenance"}

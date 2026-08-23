@@ -35,6 +35,7 @@ from schemas.research import (
 
 from .conditions import CONDITIONS
 from .debate import debate
+from .genuine_debate import DebateStageFailure, run_genuine_debate
 
 
 _RUN_CACHE: dict[str, ResearchRunResult] = {}
@@ -324,6 +325,8 @@ class ResearchWorkbench:
             )
             timings.append(StageTiming(stage="retrieval", latency_ms=round((time.perf_counter() - stage) * 1000)))
         target_plan = self.retriever.multi_target_evidence_plan(request.question, evidence)
+        c4_execution = None
+        c4_failure = None
 
         if request.condition_id == ConditionId.C0:
             stage = time.perf_counter()
@@ -375,7 +378,15 @@ class ResearchWorkbench:
         else:
             provider_errors = []
             stage = time.perf_counter()
-            ids = _agent_ids(request, plan.required_agents, bool(condition["multi_agent"]))
+            # C2 is intentionally unchanged. C4 preserves the planner's routed set so
+            # a genuine single-specialist case is reviewed by the Grounding Critic.
+            ids = (
+                list(dict.fromkeys(request.active_agents or plan.required_agents))
+                if request.condition_id == ConditionId.C4
+                else _agent_ids(request, plan.required_agents, bool(condition["multi_agent"]))
+            )
+            if not ids:
+                ids = ["herbal"] if request.condition_id == ConditionId.C4 else _agent_ids(request, [], bool(condition["multi_agent"]))
             agents = build_agents(ids)
             executions = await asyncio.gather(*[
                 self._run_agent(agent, request, plan, evidence, target_plan, llm_enabled=llm_enabled) for agent in agents
@@ -387,7 +398,50 @@ class ResearchWorkbench:
             provider_attempts = [attempt for item in executions for attempt in item[4]]
             timings.append(StageTiming(stage="agents", latency_ms=round((time.perf_counter() - stage) * 1000)))
             stage = time.perf_counter()
-            debate_trace = debate(outputs, request.debate_rounds if condition["debate"] else 0)
+            if request.condition_id == ConditionId.C4 and llm_enabled:
+                if provider_errors:
+                    c4_failure = "initial_specialists: a required specialist provider stage failed"
+                    debate_trace = DebateTrace(
+                        enabled=True, rounds=0, architecture="genuine_llm_structured_debate",
+                        selected_agents=[output.agent_id for output in outputs],
+                        initial_outputs=[output.model_dump(mode="json") for output in outputs],
+                        stage_statuses=[{"stage": "initial_specialists", "status": "FAIL_PROVIDER"}],
+                    )
+                else:
+                    try:
+                        c4_execution = await run_genuine_debate(
+                            self.providers.llm, question=request.question, evidence=evidence,
+                            outputs=outputs, rounds=1,
+                            answer_validator=lambda answer: self.retriever.unsupported_multi_entity_claim(
+                                request.question, answer, evidence
+                            ),
+                        )
+                        debate_trace = c4_execution.trace
+                        provider_calls += c4_execution.provider_calls
+                        successful_provider_calls += c4_execution.successful_provider_calls
+                        provider_attempts.extend(ProviderAttempt.model_validate(item) for item in debate_trace.provider_attempts)
+                    except DebateStageFailure as exc:
+                        c4_failure = str(exc)
+                        provider_calls += len(exc.attempts)
+                        successful_provider_calls += sum(item.success for item in exc.attempts)
+                        provider_attempts.extend(exc.attempts)
+                        provider_errors.append(str(exc))
+                        debate_trace = DebateTrace(
+                            enabled=True, rounds=1, architecture="genuine_llm_structured_debate",
+                            selected_agents=[output.agent_id for output in outputs],
+                            initial_outputs=[output.model_dump(mode="json") for output in outputs],
+                            stage_statuses=[{"stage": exc.stage, "status": "FAIL_PROVIDER"}],
+                            provider_attempts=[item.model_dump(mode="json") for item in exc.attempts],
+                        )
+            elif request.condition_id == ConditionId.C4:
+                debate_trace = DebateTrace(
+                    enabled=False, rounds=0, architecture="genuine_llm_structured_debate",
+                    selected_agents=[output.agent_id for output in outputs],
+                    initial_outputs=[output.model_dump(mode="json") for output in outputs],
+                    stage_statuses=[{"stage": "debate", "status": "LLM_DISABLED"}],
+                )
+            else:
+                debate_trace = debate(outputs, request.debate_rounds if condition["debate"] else 0)
             timings.append(StageTiming(stage="debate", latency_ms=round((time.perf_counter() - stage) * 1000)))
             stage = time.perf_counter()
             judges = run_judges(outputs, evidence, debate_trace, request.active_judges) if condition["judges"] else []
@@ -395,12 +449,22 @@ class ResearchWorkbench:
             separate_targets = bool(target_plan and not target_plan["relationship_evidence_ids"])
             final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges, separate_targets=separate_targets)
             citations = list({(item.evidence_id, item.source_id): item for output in outputs for item in output.citations}.values())
+            if c4_execution is not None:
+                final_answer = _claim_with_citations(c4_execution.final_answer, c4_execution.evidence_ids)
+                citations = [item for item in citations if item.evidence_id in c4_execution.evidence_ids]
+            elif c4_failure is not None:
+                final_answer = "C4 execution failed because a required LLM debate stage did not complete."
+                confidence = 0.0
             token_usage = {
                 "prompt_tokens": sum(output.token_usage.get("prompt_tokens", 0) for output in outputs),
                 "completion_tokens": sum(output.token_usage.get("completion_tokens", 0) for output in outputs),
             }
-            fallback_used = bool(provider_errors)
+            if c4_execution is not None:
+                token_usage["prompt_tokens"] += c4_execution.prompt_tokens
+                token_usage["completion_tokens"] += c4_execution.completion_tokens
+            fallback_used = bool(provider_errors) and request.condition_id != ConditionId.C4
             generation_mode = (
+                "fail_provider" if c4_failure else
                 "mixed" if successful_provider_calls and provider_errors else
                 "llm" if successful_provider_calls else
                 "deterministic_fallback" if provider_errors else
@@ -432,6 +496,7 @@ class ResearchWorkbench:
             provider_configured=self.settings.llm_provider,
             llm_execution_enabled=llm_enabled,
             generation_mode=generation_mode,
+            termination_stage="c4_required_stage_failure" if request.condition_id == ConditionId.C4 and c4_failure else "completed",
             successful_provider_calls=successful_provider_calls,
             failed_provider_calls=provider_calls - successful_provider_calls,
             participating_agents=[output.agent_id for output in outputs if not output.abstained],

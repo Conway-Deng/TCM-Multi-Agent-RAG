@@ -128,8 +128,15 @@ class JudgeResult(BaseModel):
 class DebateTrace(BaseModel):
     enabled: bool = False
     rounds: int = 0
-    critiques: list[dict[str, str]] = Field(default_factory=list)
-    revisions: list[dict[str, str]] = Field(default_factory=list)
+    architecture: str = "none"
+    selected_agents: list[str] = Field(default_factory=list)
+    critic_invoked: bool = False
+    initial_outputs: list[dict[str, Any]] = Field(default_factory=list)
+    critiques: list[dict[str, Any]] = Field(default_factory=list)
+    revisions: list[dict[str, Any]] = Field(default_factory=list)
+    final_consensus: dict[str, Any] = Field(default_factory=dict)
+    stage_statuses: list[dict[str, Any]] = Field(default_factory=list)
+    provider_attempts: list[dict[str, Any]] = Field(default_factory=list)
     agreements: list[str] = Field(default_factory=list)
     disagreements: list[str] = Field(default_factory=list)
     unresolved_conflicts: list[str] = Field(default_factory=list)

@@ -1,0 +1,23 @@
+{
+  "status": "FROZEN_BEFORE_PROVIDER_EXECUTION",
+  "protocol_sha256": "e1838360b08cb45d8f7332844b618d14170905756e95c7fae258ff898e49033e",
+  "config_sha256": "91eb5c980d6f722a849af45b725ee5195a8e57203280d2108497bb84edb92d37",
+  "base_commit": "400475f26d8cc903498792cd14b12f50220bc97a",
+  "c2": "ordinary_multi_agent_unchanged",
+  "c4": "genuine_llm_structured_debate_one_round",
+  "c4_implementation_sha256": "74c26e3396393934b597b19c8977a2b0bd3dcf6877cfe3b77883a05a9fcc8029",
+  "workbench_sha256_at_protocol_freeze": "22aecd65d00052694a81239e6fd8a898dec193114e7de2e5b82a0a8c0613a249",
+  "model": "Qwen/Qwen3-8B",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "retrieval": "R0",
+  "planned_questions": 100,
+  "planned_executions": 200,
+  "seed": 20260824,
+  "debate_rounds": 1,
+  "max_attempts_per_provider_stage": 2,
+  "runner_timeout_seconds": 120,
+  "primary_metric": "question-level Gold Fact Full Recall",
+  "practical_threshold": 0.05,
+  "bootstrap_resamples": 10000,
+  "benchmark_gate": "BENCHMARK_SOURCE_REVIEW_REQUIRED"
+}
