@@ -1,0 +1,79 @@
+{
+  "status": "DEVELOPMENT_ONLY_NOT_FORMAL",
+  "selection": "Deterministic Corpus v1 targets excluded from every repository benchmark JSONL by question, entity, and evidence ID.",
+  "questions": [
+    {
+      "question_id": "rq4-dev-01",
+      "domain": "herbal_medicine",
+      "expected_route": "single",
+      "question": "What source-recorded functions, indications, and used part are listed for Polyporus grifolia, Umbellate pore-fungus?",
+      "source_evidence_ids": ["tcmv1-00a9308159de70617efcdc55"]
+    },
+    {
+      "question_id": "rq4-dev-02",
+      "domain": "herbal_medicine",
+      "expected_route": "single",
+      "question": "What traditional properties, meridians, and class does Corpus v1 record for Chinese Waxgourd Peel?",
+      "source_evidence_ids": ["tcmv1-00f3757a5dd56620116815d4"]
+    },
+    {
+      "question_id": "rq4-dev-03",
+      "domain": "herbal_medicine",
+      "expected_route": "single",
+      "question": "What source-recorded functions, indications, and used part are listed for Caesalpinia?",
+      "source_evidence_ids": ["tcmv1-0b6ef1e39d58c224e5bcbb56"]
+    },
+    {
+      "question_id": "rq4-dev-04",
+      "domain": "herbal_medicine",
+      "expected_route": "single",
+      "question": "What traditional properties, meridians, and class does Corpus v1 record for Puncturevine Caltrop Fruit?",
+      "source_evidence_ids": ["tcmv1-0dc7d48269606003043f0d85"]
+    },
+    {
+      "question_id": "rq4-dev-05",
+      "domain": "herbal_medicine",
+      "expected_route": "single",
+      "question": "What source-recorded functions, indications, and used part are listed for Threeleaf Akebia Root?",
+      "source_evidence_ids": ["tcmv1-0e89e0b7a662d378d1961d57"]
+    },
+    {
+      "question_id": "rq4-dev-06",
+      "domain": "syndrome_differentiation",
+      "expected_route": "single",
+      "question": "What does TCM Research Corpus v1 record about indigestion?",
+      "source_evidence_ids": ["tcmv1-5ab15f2ef401d563fdbf3ec2"]
+    },
+    {
+      "question_id": "rq4-dev-07",
+      "domain": "syndrome_differentiation",
+      "expected_route": "single",
+      "question": "What does TCM Research Corpus v1 record about dry lungs?",
+      "source_evidence_ids": ["tcmv1-931605efc586b3f73f7395ea"]
+    },
+    {
+      "question_id": "rq4-dev-08",
+      "domain": "syndrome_differentiation",
+      "expected_route": "single",
+      "question": "What does TCM Research Corpus v1 record about fire toxic?",
+      "source_evidence_ids": ["tcmv1-966dbf77ecf55ae353a6611e"]
+    },
+    {
+      "question_id": "rq4-dev-09",
+      "domain": "syndrome_differentiation",
+      "expected_route": "single",
+      "question": "What does TCM Research Corpus v1 record about Dampness and Heat in Liver and Gallbladder?",
+      "source_evidence_ids": ["tcmv1-967f40261c307edb09134a5f"]
+    },
+    {
+      "question_id": "rq4-dev-10",
+      "domain": "herbal_medicine + syndrome_differentiation",
+      "expected_route": "multi",
+      "question": "How are Trogopterus Dung and insufficiency of qi and yin represented separately in TCM Research Corpus v1, and what evidence is recorded for each?",
+      "source_evidence_ids": [
+        "tcmv1-0f1109598dfaaa72a8f81a09",
+        "tcmv1-a22071e55ad0cb385ceee2ef"
+      ]
+    }
+  ]
+}

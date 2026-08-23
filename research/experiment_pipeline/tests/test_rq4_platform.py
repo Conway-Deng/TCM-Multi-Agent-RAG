@@ -129,6 +129,57 @@ def test_execution_order_counterbalancing():
     assert first.count("C2") == first.count("C4") == 50
 
 
+def test_smoke_set_is_10_distinct_development_only_questions():
+    questions = platform.load_smoke_questions()
+    assert len(questions) == len({item["question_id"] for item in questions}) == 10
+    assert len({platform.normalize_text(item["question"]) for item in questions}) == 10
+    assert any(item["expected_route"] == "single" for item in questions)
+    assert any(item["expected_route"] == "multi" for item in questions)
+
+
+def test_smoke_order_pairs_both_conditions_and_counterbalances():
+    questions = platform.load_smoke_questions()
+    order = platform.smoke_execution_order(questions, 1)
+    assert len(order) == len({item["execution_id"] for item in order}) == 20
+    assert {(item["question_id"], item["condition"]) for item in order} == {
+        (question["question_id"], condition) for question in questions for condition in ("C2", "C4")
+    }
+    assert [order[index]["condition"] for index in range(0, 20, 2)].count("C2") == 5
+
+
+def test_operational_smoke_validation_requires_genuine_single_and_multi_c4():
+    questions = platform.load_smoke_questions()
+    by_id = {item["question_id"]: item for item in questions}
+    records = []
+    for entry in platform.smoke_execution_order(questions, 1):
+        source_ids = by_id[entry["question_id"]]["source_evidence_ids"]
+        selected = ["herbal", "syndrome"] if by_id[entry["question_id"]]["expected_route"] == "multi" else ["herbal"]
+        debate = {}
+        if entry["condition"] == "C4":
+            debate = {
+                "architecture": "genuine_llm_structured_debate", "rounds": 1,
+                "selected_agents": selected, "critic_invoked": len(selected) == 1,
+                "initial_outputs": [{"agent_id": agent_id} for agent_id in selected],
+                "critiques": [{"reviewer_id": agent_id} for agent_id in selected],
+                "revisions": [{"agent_id": agent_id, "revised_position": "grounded", "evidence_ids": source_ids} for agent_id in selected],
+                "final_consensus": {"final_answer": "grounded", "evidence_ids": source_ids},
+                "stage_statuses": [
+                    *[{"stage": f"critique:{agent_id}", "status": "PASS"} for agent_id in selected],
+                    *[{"stage": f"revision:{agent_id}", "status": "PASS"} for agent_id in selected],
+                    {"stage": "consensus", "status": "PASS"},
+                ],
+            }
+        records.append({
+            **entry, "run_status": "PASS", "retrieved_evidence_ids": source_ids,
+            "provider_attempts": [], "fallback": False, "debate": debate,
+        })
+    validation = platform.validate_smoke(records, questions, 1)
+    assert validation["status"] == "PASS"
+    assert validation["c2_executions"] == validation["c4_executions"] == 10
+    assert validation["c4_full_genuine_sequences"] == 10
+    assert validation["grounding_critic_tested"] and validation["multi_specialist_debate_tested"]
+
+
 def test_benchmark_leakage_exclusion():
     report = (platform.BENCH / "leakage_report_rq4_v1.md").read_text(encoding="utf-8")
     assert "normalized_question_overlap: 0" in report and "source_evidence_id_overlap: 0" in report
