@@ -9,9 +9,161 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://tcm-multi-agent-rag-api.onrender.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260723-fix">
+  <link rel="stylesheet" href="styles.css?v=20260828-supervisor-dashboard">
 </head>
 <body>
+  <div id="supervisor-dashboard" class="research-dashboard">
+    <header class="research-dashboard-header">
+      <a class="research-brand" href="#overview" aria-label="TCM research dashboard overview">
+        <img src="nottingham-brand-blue-horizontal.png" alt="University of Nottingham">
+        <span><strong>TCM Multi-Agent RAG</strong><small>Research dashboard</small></span>
+      </a>
+      <nav aria-label="Research dashboard">
+        <a href="#overview" data-view="home" aria-selected="true">Overview</a>
+        <a href="#live-demo" data-view="workbench" aria-selected="false">Live Demo</a>
+        <a href="#formal-results">Formal Results</a>
+        <a href="#methodology">Methodology</a>
+      </nav>
+      <span id="dashboard-api-status" class="dashboard-status is-checking">Checking local API</span>
+    </header>
+
+    <main>
+      <section id="overview" class="dashboard-section dashboard-overview">
+        <div class="dashboard-title-block">
+          <p class="dashboard-eyebrow">University of Nottingham · Research Internship</p>
+          <h1>TCM Multi-Agent RAG Research</h1>
+          <p class="dashboard-lead">A controlled study of whether specialist agents and structured debate improve source-grounded answer quality over a conventional RAG baseline.</p>
+          <div class="status-row" aria-label="Research completion status">
+            <span class="status-pill is-complete">RQ1 · Complete</span>
+            <span class="status-pill is-complete">RQ4 · Complete</span>
+            <span class="status-pill is-neutral">Educational research</span>
+          </div>
+        </div>
+        <div class="overview-metadata" aria-label="Project metadata">
+          <article><span>Research corpus</span><strong>4,461 chunks</strong><small>TCM Research Corpus v1</small></article>
+          <article><span>Scope</span><strong>Herbal + syndrome</strong><small>Source-grounded knowledge</small></article>
+          <article><span>Model</span><strong>Qwen/Qwen3-8B</strong><small>SiliconFlow API</small></article>
+          <article><span>Formal retrieval</span><strong>R0 lexical</strong><small>RQ1 and RQ4</small></article>
+        </div>
+        <div class="research-separation-note">
+          <strong>Interactive demo ≠ formal benchmark runner.</strong>
+          <span>The webpage demonstrates the process on 1–5 questions. Frozen formal experiments were executed by the reproducible local pipeline and are not changed by this interface.</span>
+        </div>
+      </section>
+
+      <section id="live-demo" class="dashboard-section dashboard-live-demo">
+        <div class="section-heading">
+          <div><p class="dashboard-eyebrow">Live experiment demo</p><h2>Watch two research conditions run</h2></div>
+          <span class="status-pill is-warning">Demo run · not formal benchmark data</span>
+        </div>
+        <p class="section-intro">This small sequential run calls the configured local FastAPI backend and shows execution reliability, latency, and available objective metrics. It never writes to frozen RQ1 or RQ4 directories.</p>
+
+        <div id="demo-local-only-note" class="local-only-note" hidden>
+          <strong>Live demo is local only.</strong> The public page intentionally does not launch provider-backed experiments.
+        </div>
+
+        <div class="demo-layout">
+          <form id="live-demo-form" class="demo-control-panel">
+            <fieldset>
+              <legend>Comparison mode</legend>
+              <label class="mode-choice"><input type="radio" name="demo-mode" value="rq1" checked><span><strong>RQ1 Demo</strong><small>C1 Single-RAG vs C2 Multi-Agent</small></span></label>
+              <label class="mode-choice"><input type="radio" name="demo-mode" value="rq4"><span><strong>RQ4 Demo</strong><small>C2 Multi-Agent vs C4 Debate Multi-Agent</small></span></label>
+            </fieldset>
+            <fieldset>
+              <legend>Question count</legend>
+              <div class="count-selector" role="radiogroup" aria-label="Question count">
+                <label><input type="radio" name="question-count" value="1"><span>1</span></label>
+                <label><input type="radio" name="question-count" value="3" checked><span>3</span></label>
+                <label><input type="radio" name="question-count" value="5"><span>5</span></label>
+              </div>
+            </fieldset>
+            <button id="start-live-demo" class="primary-demo-button" type="submit">Start live demo</button>
+            <p class="demo-security-note">The SiliconFlow credential remains server-side in <code>backend/.env</code> and is never sent to the browser.</p>
+          </form>
+
+          <aside class="formal-reference-card">
+            <p class="dashboard-eyebrow">Formal research result</p>
+            <h3>Frozen evidence, shown for context</h3>
+            <div><span>RQ1 Full Recall</span><strong>C1 90.76% · C2 90.58%</strong></div>
+            <div><span>RQ4 Full Recall</span><strong>C2 83.75% · C4 81.25%</strong></div>
+            <small>Live operational metrics below are not Full Recall. Formal Full Recall requires frozen Gold semantic evaluation.</small>
+          </aside>
+        </div>
+
+        <section id="live-progress-panel" class="live-progress-panel" aria-live="polite" hidden>
+          <div class="progress-heading"><div><p class="dashboard-eyebrow">Experiment progress</p><h3 id="live-progress-title">0 / 6 completed</h3></div><strong id="live-progress-percent">0%</strong></div>
+          <div class="live-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="live-progress-bar"></span></div>
+          <dl class="live-progress-details">
+            <div><dt>Current question</dt><dd id="live-current-question">Waiting</dd></div>
+            <div><dt>Current condition</dt><dd id="live-current-condition">Waiting</dd></div>
+            <div><dt>Current stage</dt><dd id="live-current-stage">Waiting</dd></div>
+            <div><dt>Elapsed</dt><dd id="live-elapsed">0.0 s</dd></div>
+          </dl>
+          <p id="live-demo-message" class="live-demo-message"></p>
+        </section>
+
+        <section id="live-results-panel" class="live-results-panel" hidden>
+          <div class="section-subheading"><div><p class="dashboard-eyebrow">Live results</p><h3>Execution-by-execution status</h3></div><small>Operational demo metrics only</small></div>
+          <div class="table-scroll"><table class="research-table live-table"><thead><tr><th>Question</th><th id="live-condition-a-head">C1 status</th><th id="live-condition-a-latency">C1 latency</th><th id="live-condition-b-head">C2 status</th><th id="live-condition-b-latency">C2 latency</th></tr></thead><tbody id="live-result-rows"></tbody></table></div>
+          <div id="live-aggregate-cards" class="live-aggregate-grid"></div>
+          <details class="demo-details"><summary>Latest completed execution</summary><div class="latest-run-grid"><div><h4>User question</h4><p id="latest-question">—</p></div><div><h4>Specialist path</h4><p id="latest-agent-path">—</p></div></div><h4>Final answer</h4><p id="latest-answer">—</p><h4>Retrieved evidence and citations</h4><div id="latest-evidence" class="latest-evidence"></div><div class="result-actions"><button type="button" id="live-download-json">Download JSON</button><button type="button" id="live-download-csv">Download CSV</button></div><p><strong>Active-agent evidence support:</strong> <span id="latest-evidence-support">available after a run</span> · research metric, not medical correctness.</p></details>
+        </section>
+      </section>
+
+      <section id="experiments" class="dashboard-section experiment-explainer">
+        <div class="section-heading"><div><p class="dashboard-eyebrow">Experimental conditions</p><h2>What C1, C2, and C4 change</h2></div></div>
+        <div class="rq-architecture-grid">
+          <article>
+            <span class="rq-label">RQ1</span><h3>Single-RAG versus ordinary Multi-Agent</h3>
+            <div class="condition-flow"><strong>C1 · Single-RAG baseline</strong><p>Question <b>→</b> Retrieval <b>→</b> LLM <b>→</b> Answer</p></div>
+            <div class="versus">versus</div>
+            <div class="condition-flow"><strong>C2 · Ordinary Multi-Agent</strong><p>Question <b>→</b> Planner / specialists <b>→</b> Answer</p></div>
+            <p class="research-question">Does ordinary Multi-Agent improve source-grounded answer quality over Single-RAG?</p>
+          </article>
+          <article>
+            <span class="rq-label">RQ4</span><h3>Ordinary Multi-Agent versus genuine debate</h3>
+            <div class="condition-flow"><strong>C2 · Ordinary Multi-Agent</strong><p>Independent evidence-scoped specialist outputs</p></div>
+            <div class="versus">versus</div>
+            <div class="condition-flow"><strong>C4 · One-round structured debate</strong><p>Initial specialists <b>→</b> critique <b>→</b> revision <b>→</b> consensus</p><small>Single-specialist cases use a Grounding Critic.</small></div>
+            <p class="research-question">Does genuine critique, revision, and consensus improve answer quality?</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="formal-results" class="dashboard-section formal-results-section">
+        <div class="section-heading"><div><p class="dashboard-eyebrow">Final formal results</p><h2>Frozen RQ1 and RQ4 evidence</h2></div><span id="results-provenance-status" class="status-pill is-neutral">Loading verified aggregates</span></div>
+        <p class="section-intro">Values are loaded from a presentation-safe JSON generated from the committed final manifests. The frozen artifacts remain authoritative.</p>
+        <div id="formal-result-summary" class="formal-summary-grid"></div>
+        <div id="result-charts" class="chart-dashboard" aria-live="polite"></div>
+        <div class="table-scroll"><table class="research-table"><caption>RQ4 formal comparison · 80 complete usable pairs</caption><thead><tr><th>Metric</th><th>C2</th><th>C4</th></tr></thead><tbody id="rq4-result-table"></tbody></table></div>
+        <div class="primary-result-note"><strong>Primary result:</strong> C4 did not establish superior Full Recall. <span>Preregistered meaningful-improvement threshold: +5 pp · observed: −2.50 pp.</span></div>
+      </section>
+
+      <section id="methodology" class="dashboard-section methodology-section">
+        <div class="section-heading"><div><p class="dashboard-eyebrow">Methodology</p><h2>How the research works</h2></div></div>
+        <div class="method-flow" aria-label="Formal research workflow">
+          <div><strong>TCM Corpus</strong><span>4,461 chunks</span></div><b>↓</b>
+          <div><strong>Frozen benchmark</strong><span>Source-grounded questions and Gold facts</span></div><b>↓</b>
+          <div><strong>Automated experiment runner</strong><span>Frozen order, retries, timeouts, persistence</span></div><b>↓</b>
+          <div><strong>C1 / C2 / C4</strong><span>Controlled architecture comparison</span></div><b>↓</b>
+          <div><strong>SiliconFlow Qwen3-8B API</strong><span>Provider calls and execution traces</span></div><b>↓</b>
+          <div><strong>Durable raw results</strong><span>Failures, retries, latency, evidence IDs</span></div><b>↓</b>
+          <div><strong>Gold atomic-fact review</strong><span>AI-assisted source-grounded semantic review</span></div><b>↓</b>
+          <div><strong>Question-level metrics</strong><span>Paired condition outcomes</span></div><b>↓</b>
+          <div><strong>10,000 paired bootstrap + tests</strong><span>Confidence intervals and statistical comparison</span></div><b>↓</b>
+          <div class="is-final"><strong>Final research conclusion</strong><span>Transparent findings and limitations</span></div>
+        </div>
+        <p class="method-note">The website is an interactive demonstration interface. Large formal experiments were run by the automated local pipeline—not by manually clicking the webpage.</p>
+
+        <div class="method-bottom-grid">
+          <aside class="limitations-box"><h3>Important limitations</h3><ul><li>One base model: Qwen/Qwen3-8B</li><li>One frozen TCM Corpus v1</li><li>Mainly herbal and syndrome scope</li><li>R0 retrieval for RQ1/RQ4</li><li>One specific one-round C4 debate design</li><li>Gold is a source-grounded reference, not clinical truth</li><li>Semantic evaluation is AI-assisted source-grounded review</li><li>No independent TCM expert or clinical validation</li></ul></aside>
+          <aside class="next-study-box"><span class="status-pill is-proposed">Proposed · not formally run</span><h3>Proposed next study</h3><p>If additional agent complexity does not improve Full Recall, retrieval quality may be the more important bottleneck.</p><div class="retrieval-study-flow"><strong>Fixed model + corpus + architecture</strong><span>R0 lexical</span><span>R1 dense</span><span>R2 hybrid</span><span>R3 hybrid + reranking</span></div></aside>
+        </div>
+      </section>
+    </main>
+    <footer class="research-dashboard-footer"><span>TCM Multi-Agent RAG Research · University of Nottingham</span><span>Research demonstration only · not clinical advice</span></footer>
+  </div>
+
   <div class="bg-gradient" aria-hidden="true"></div>
   <div class="bg-orbs" aria-hidden="true">
     <span class="orb orb-1"></span>
@@ -694,5 +846,6 @@
   <script src="diagram.js"></script>
   <!-- The obsolete Western/TCM/Both runtime was removed; this TCM-only workbench is the active UI. -->
   <script src="research-app.js?v=20260816-run-progress"></script>
+  <script src="supervisor-dashboard.js?v=20260828"></script>
 </body>
 </html>

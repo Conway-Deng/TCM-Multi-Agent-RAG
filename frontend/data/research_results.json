@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "frontend/build_research_results.py",
+  "public_safety": {
+    "aggregate_results_only": true,
+    "contains_raw_corpus": false,
+    "contains_raw_experiment_outputs": false,
+    "contains_secrets": false
+  },
+  "project": {
+    "title": "TCM Multi-Agent RAG Research",
+    "corpus_name": "TCM Research Corpus v1",
+    "corpus_chunks": 4461,
+    "corpus_scope": "Herbal medicine + syndrome knowledge",
+    "model": "Qwen/Qwen3-8B",
+    "formal_retrieval": "R0",
+    "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9"
+  },
+  "rq1": {
+    "status": "RQ1 COMPLETE — CONFIRMATORY EXTENSION COMPLETE",
+    "study": "Independent confirmatory extension (Study 1B)",
+    "question": "Does ordinary Multi-Agent improve source-grounded answer quality over Single-RAG?",
+    "conditions": {
+      "C1": "Single-RAG",
+      "C2": "Ordinary Multi-Agent specialists"
+    },
+    "complete_usable_pairs": 92,
+    "full_recall_pct": {
+      "C1": 90.76,
+      "C2": 90.58
+    },
+    "difference_c2_minus_c1_pp": -0.18,
+    "bootstrap_95_ci_pp": [
+      -1.81,
+      1.63
+    ],
+    "wilcoxon_p": 1.0,
+    "meaningful_improvement_threshold_pp": 5.0,
+    "conclusion": "Ordinary Multi-Agent did not demonstrate a robust meaningful advantage over Single-RAG under the tested setup.",
+    "provenance": {
+      "source_artifact": "research/experiments/rq1_c1_vs_c2/rq1_closeout/rq1_final_manifest_with_confirmatory.json",
+      "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+      "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+      "source_commit": "400475f26d8cc903498792cd14b12f50220bc97a"
+    }
+  },
+  "rq4": {
+    "status": "RQ4_COMPLETE",
+    "question": "Does genuine critique, revision, and consensus improve answer quality over ordinary Multi-Agent?",
+    "conditions": {
+      "C2": "Ordinary Multi-Agent",
+      "C4": "One-round structured debate"
+    },
+    "complete_usable_pairs": 80,
+    "full_recall_pct": {
+      "C2": 83.75,
+      "C4": 81.25
+    },
+    "difference_c4_minus_c2_pp": -2.5,
+    "bootstrap_95_ci_pp": [
+      -8.12,
+      2.5
+    ],
+    "full_recall_wilcoxon_p": 0.3139380937749148,
+    "partial_or_better_pct": {
+      "C2": 91.25,
+      "C4": 93.75
+    },
+    "missing_pct": {
+      "C2": 5.83,
+      "C4": 4.17
+    },
+    "contradiction_pct": {
+      "C2": 2.92,
+      "C4": 2.08
+    },
+    "reliability_usable": {
+      "C2": 88,
+      "C4": 80
+    },
+    "reliability_total": 100,
+    "reliability_mcnemar_p": 0.0078125,
+    "mean_latency_seconds": {
+      "C2": 7.2785,
+      "C4": 39.6598
+    },
+    "latency_paired_wilcoxon_p": 7.999532481409402e-15,
+    "meaningful_improvement_threshold_pp": 5.0,
+    "conclusion": "C4 did not establish superior Full Recall and incurred materially lower usable execution rate and higher latency.",
+    "provenance": {
+      "source_artifacts": [
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_paired_statistics.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_reliability_analysis.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_latency_analysis.json"
+      ],
+      "protocol_sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
+      "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+      "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+      "source_commit": "2a3d6db8df7a00ad6984b9924df252958364bd14"
+    }
+  }
+}
