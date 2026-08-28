@@ -19,6 +19,33 @@ def test_supervisor_dashboard_has_required_sections_and_local_demo() -> None:
     assert "value=\"3\" checked" in HTML
 
 
+def test_research_notation_reference_card_is_present() -> None:
+    for label in (
+        "RQ = Research Question",
+        "C = Architecture Condition",
+        "R = Retrieval Condition",
+        "C1",
+        "Single-RAG baseline",
+        "C2",
+        "Ordinary Multi-Agent specialists",
+        "C4",
+        "One-round Debate Multi-Agent",
+        "critique → revision → consensus",
+        "R0",
+        "Lexical retrieval",
+        "R1",
+        "Dense retrieval",
+        "R2",
+        "Hybrid retrieval",
+        "R3",
+        "Hybrid + reranking",
+        "RQ1",
+        "RQ4",
+        "R0 fixed",
+    ):
+        assert label in HTML
+
+
 def test_presentation_results_match_frozen_display_values() -> None:
     assert RESULTS["rq1"]["full_recall_pct"] == {"C1": 90.76, "C2": 90.58}
     assert RESULTS["rq1"]["difference_c2_minus_c1_pp"] == -0.18

@@ -4201,3 +4201,38 @@ body {
 .demo-option { cursor: pointer; }
 .legacy-warning { border-color: rgba(196,126,38,.35); background: rgba(255,248,233,.72); }
 @media (max-width: 760px) { .research-control-row, .metric-panel, .run-summary-grid, .judge-grid { grid-template-columns: 1fr; } .result-section-heading { flex-direction: column; } .result-actions { width: 100%; } .secondary-action { flex: 1; } .abstained-row { flex-direction: column; gap: .25rem; } }
+
+.research-notation-card {
+  margin-top: .8rem;
+  padding: 1rem 1.15rem;
+  background: #fff;
+  border: 1px solid var(--dash-border);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(16,42,67,.04);
+}
+.notation-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; }
+.notation-heading h2 { margin: 0; color: var(--dash-navy); font-size: 1.25rem; }
+.notation-key { margin: 0; color: var(--dash-muted); font-size: .75rem; text-align: right; }
+.notation-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 1rem; margin-top: .85rem; }
+.research-notation-card h3 { margin: 0 0 .45rem; color: #31485d; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+.research-notation-card dl { display: grid; gap: .3rem; margin: 0; }
+.research-notation-card dl div { display: grid; grid-template-columns: 2.25rem 1fr; gap: .45rem; align-items: start; }
+.research-notation-card dt { color: var(--dash-blue); font-size: .78rem; font-weight: 900; }
+.research-notation-card dd { margin: 0; color: #435363; font-size: .78rem; }
+.notation-flow { color: var(--dash-muted); font-size: .7rem; }
+.notation-study { padding-left: 1rem; border-left: 1px solid #e2e8ed; }
+.notation-study p { display: grid; grid-template-columns: 2.5rem 1fr auto; gap: .45rem; align-items: baseline; margin: .35rem 0; color: #435363; font-size: .78rem; }
+.notation-study p strong { color: var(--dash-blue); }
+.notation-study p small { color: var(--dash-muted); font-size: .68rem; }
+@media (max-width: 980px) {
+  .notation-grid { grid-template-columns: 1fr 1fr; }
+  .notation-study { grid-column: 1 / -1; padding: .7rem 0 0; border-left: 0; border-top: 1px solid #e2e8ed; }
+}
+@media (max-width: 680px) {
+  .notation-heading { display: grid; gap: .25rem; }
+  .notation-key { text-align: left; line-height: 1.4; }
+  .notation-grid { grid-template-columns: 1fr; gap: .8rem; }
+  .notation-study { grid-column: auto; }
+  .notation-study p { grid-template-columns: 2.5rem 1fr; }
+  .notation-study p small { grid-column: 2; }
+}

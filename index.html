@@ -49,6 +49,39 @@
           <strong>Interactive demo ≠ formal benchmark runner.</strong>
           <span>The webpage demonstrates the process on 1–5 questions. Frozen formal experiments were executed by the reproducible local pipeline and are not changed by this interface.</span>
         </div>
+        <aside class="research-notation-card" aria-labelledby="research-notation-title">
+          <div class="notation-heading">
+            <div>
+              <p class="dashboard-eyebrow">Quick reference</p>
+              <h2 id="research-notation-title">Research notation</h2>
+            </div>
+            <p class="notation-key">RQ = Research Question · C = Architecture Condition · R = Retrieval Condition</p>
+          </div>
+          <div class="notation-grid">
+            <div>
+              <h3>Architecture conditions</h3>
+              <dl>
+                <div><dt>C1</dt><dd>Single-RAG baseline</dd></div>
+                <div><dt>C2</dt><dd>Ordinary Multi-Agent specialists</dd></div>
+                <div><dt>C4</dt><dd>One-round Debate Multi-Agent <span class="notation-flow">(critique → revision → consensus)</span></dd></div>
+              </dl>
+            </div>
+            <div>
+              <h3>Retrieval conditions</h3>
+              <dl>
+                <div><dt>R0</dt><dd>Lexical retrieval</dd></div>
+                <div><dt>R1</dt><dd>Dense retrieval</dd></div>
+                <div><dt>R2</dt><dd>Hybrid retrieval</dd></div>
+                <div><dt>R3</dt><dd>Hybrid + reranking</dd></div>
+              </dl>
+            </div>
+            <div class="notation-study">
+              <h3>Formal comparisons</h3>
+              <p><strong>RQ1</strong><span>C1 vs C2</span><small>R0 fixed</small></p>
+              <p><strong>RQ4</strong><span>C2 vs C4</span><small>R0 fixed</small></p>
+            </div>
+          </div>
+        </aside>
       </section>
 
       <section id="live-demo" class="dashboard-section dashboard-live-demo">
