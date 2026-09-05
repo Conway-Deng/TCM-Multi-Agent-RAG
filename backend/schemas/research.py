@@ -125,6 +125,79 @@ class JudgeResult(BaseModel):
     latency_ms: int = Field(default=0, ge=0)
 
 
+class EvidenceSupportSummary(BaseModel):
+    judge_version: str = "safejudge-evidence-adapter-v0.1"
+    eligible_claim_count: int = Field(default=0, ge=0)
+    supported_claim_ids: list[str] = Field(default_factory=list)
+    partially_supported_claim_ids: list[str] = Field(default_factory=list)
+    unsupported_claim_ids: list[str] = Field(default_factory=list)
+    missing_citation_ids: list[str] = Field(default_factory=list)
+    evidence_coverage: float = Field(default=0.0, ge=0, le=1)
+    citation_coverage: float = Field(default=0.0, ge=0, le=1)
+    retrieval_sufficiency: float = Field(default=0.0, ge=0, le=1)
+    verified_evidence_ratio: float = Field(default=0.0, ge=0, le=1)
+    interpretation: str = "Evidence support derived from structured claims, supplied evidence, citations, and retrieval metadata."
+
+
+class SourceGroundedSafetyFinding(BaseModel):
+    code: Literal[
+        "unsupported_treatment_certainty",
+        "absolute_medical_claim",
+        "unsupported_dosage_or_use",
+        "source_caution_not_preserved",
+        "conflict_overresolution",
+        "unsupported_diagnostic_certainty",
+    ]
+    severity: Literal["low", "medium", "high"]
+    claim_ids: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
+    explanation: str
+    rule_id: Literal["SJ-01", "SJ-02", "SJ-03", "SJ-04", "SJ-05", "SJ-06"]
+
+
+class EvidenceSupportedCautionAssessment(BaseModel):
+    judge_version: str = "safejudge-deterministic-v0.1"
+    assessment: Literal["no_flags_detected", "flags_detected", "insufficient_input"] = "insufficient_input"
+    source_grounded_safety_score: float = Field(default=0.0, ge=0, le=1)
+    findings: list[SourceGroundedSafetyFinding] = Field(default_factory=list)
+    deterministic: bool = True
+    interpretation: str = "Source-grounded safety flags and an evidence-supported caution assessment only."
+
+
+class ConflictStatus(BaseModel):
+    has_unresolved_conflict: bool = False
+    conflict_score: float = Field(default=0.0, ge=0, le=1)
+    agreements: list[str] = Field(default_factory=list)
+    disagreements: list[str] = Field(default_factory=list)
+    unresolved_conflicts: list[str] = Field(default_factory=list)
+
+
+class ConfidenceSignalContribution(BaseModel):
+    signal: str
+    observed_value: float = Field(ge=0, le=1)
+    weight: float = Field(ge=0, le=1)
+    contribution: float = Field(ge=0, le=1)
+
+
+class ConfidenceSignalPenalty(BaseModel):
+    signal: str
+    observed_value: float = Field(ge=0, le=1)
+    maximum_penalty: float = Field(ge=0, le=1)
+    applied_penalty: float = Field(ge=0, le=1)
+
+
+class EvidenceConfidenceSummary(BaseModel):
+    judge_version: str = "confidence-deterministic-v0.1"
+    score: float = Field(default=0.0, ge=0, le=1)
+    band: Literal["insufficient", "limited", "moderate", "strong"] = "insufficient"
+    signal_contributions: list[ConfidenceSignalContribution] = Field(default_factory=list)
+    penalties: list[ConfidenceSignalPenalty] = Field(default_factory=list)
+    caps_applied: list[str] = Field(default_factory=list)
+    missing_or_weak_signals: list[str] = Field(default_factory=list)
+    deterministic: bool = True
+    interpretation: str = "Evidence confidence expressed as a response reliability indicator derived from observable evidence signals."
+
+
 class DebateTrace(BaseModel):
     enabled: bool = False
     rounds: int = 0
@@ -250,6 +323,10 @@ class ResearchRunResult(BaseModel):
     agent_outputs: list[ResearchAgentOutput] = Field(default_factory=list)
     debate: DebateTrace = Field(default_factory=DebateTrace)
     judge_outputs: list[JudgeResult] = Field(default_factory=list)
+    evidence_support: EvidenceSupportSummary | None = None
+    conflict_status: ConflictStatus | None = None
+    safety_assessment: EvidenceSupportedCautionAssessment | None = None
+    evidence_confidence: EvidenceConfidenceSummary | None = None
     final_answer: str
     citations: list[ResearchCitation] = Field(default_factory=list)
     agreements: list[str] = Field(default_factory=list)

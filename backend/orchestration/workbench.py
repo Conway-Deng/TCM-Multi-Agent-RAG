@@ -9,7 +9,7 @@ import uuid
 from agents import QueryPlannerAgent, build_agents
 from config import get_settings
 from corpus import corpus_stats, corpus_version
-from judges import run_judges
+from judges import run_integrated_judges
 from prompts import prompt_metadata
 from providers import get_provider_bundle
 from providers.base import GenerationResult
@@ -327,6 +327,7 @@ class ResearchWorkbench:
         target_plan = self.retriever.multi_target_evidence_plan(request.question, evidence)
         c4_execution = None
         c4_failure = None
+        judge_bundle = None
 
         if request.condition_id == ConditionId.C0:
             stage = time.perf_counter()
@@ -443,11 +444,25 @@ class ResearchWorkbench:
             else:
                 debate_trace = debate(outputs, request.debate_rounds if condition["debate"] else 0)
             timings.append(StageTiming(stage="debate", latency_ms=round((time.perf_counter() - stage) * 1000)))
-            stage = time.perf_counter()
-            judges = run_judges(outputs, evidence, debate_trace, request.active_judges) if condition["judges"] else []
-            timings.append(StageTiming(stage="judges", latency_ms=round((time.perf_counter() - stage) * 1000)))
             separate_targets = bool(target_plan and not target_plan["relationship_evidence_ids"])
+            preliminary_answer, _, _, _ = _synthesis(outputs, condition, debate_trace, [], separate_targets=separate_targets)
+            stage = time.perf_counter()
+            judge_bundle = (
+                run_integrated_judges(
+                    outputs,
+                    evidence,
+                    debate_trace,
+                    request.active_judges,
+                    response_text=preliminary_answer,
+                    model_failure_count=max(0, provider_calls - successful_provider_calls),
+                )
+                if condition["judges"] else None
+            )
+            judges = judge_bundle.judge_outputs if judge_bundle else []
+            timings.append(StageTiming(stage="judges", latency_ms=round((time.perf_counter() - stage) * 1000)))
             final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges, separate_targets=separate_targets)
+            if judge_bundle:
+                confidence = judge_bundle.evidence_confidence.score
             citations = list({(item.evidence_id, item.source_id): item for output in outputs for item in output.citations}.values())
             if c4_execution is not None:
                 final_answer = _claim_with_citations(c4_execution.final_answer, c4_execution.evidence_ids)
@@ -480,6 +495,11 @@ class ResearchWorkbench:
             "RQ6 requires actual human evaluation data and is not answered by automated metrics.",
         ]
         safety_flags = list(dict.fromkeys(flag for output in outputs for flag in output.safety_flags))
+        if judge_bundle:
+            safety_flags = list(dict.fromkeys([
+                *safety_flags,
+                *(finding.code for finding in judge_bundle.safety_assessment.findings),
+            ]))
         total_latency = round((time.perf_counter() - started) * 1000)
         trace = RunTrace(
             run_id=run_id,
@@ -542,6 +562,10 @@ class ResearchWorkbench:
             agent_outputs=outputs,
             debate=debate_trace,
             judge_outputs=judges,
+            evidence_support=judge_bundle.evidence_support if judge_bundle else None,
+            conflict_status=judge_bundle.conflict_status if judge_bundle else None,
+            safety_assessment=judge_bundle.safety_assessment if judge_bundle else None,
+            evidence_confidence=judge_bundle.evidence_confidence if judge_bundle else None,
             final_answer=final_answer,
             citations=citations,
             agreements=debate_trace.agreements,
