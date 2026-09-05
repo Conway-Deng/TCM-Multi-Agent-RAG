@@ -4182,6 +4182,9 @@ body {
 .evidence-details p { max-width: 85ch; line-height: 1.6; }
 .evidence-citation { color: var(--accent, #275f83); font-weight: 700; text-decoration: underline; text-decoration-style: dotted; }
 .judge-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; }
+.integrated-judge-row { padding: .38rem 0; border-bottom: 1px solid rgba(15,23,42,.08); line-height: 1.45; }
+.integrated-judge-row:last-child { border-bottom: 0; }
+.muted-note { color: var(--muted); margin: .25rem 0; }
 .judge-card { padding: .85rem; border: 1px solid rgba(25,52,72,.12); border-radius: .55rem; }
 .judge-card p { margin-bottom: 0; line-height: 1.55; }
 .research-progress { margin-top: 1rem; padding: .8rem; border: 1px solid rgba(39,95,131,.18); border-radius: .55rem; background: rgba(39,95,131,.04); }

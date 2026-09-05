@@ -4,8 +4,7 @@
   const root = document.querySelector('#supervisor-dashboard');
   if (!root) return;
 
-  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const API = window.MEDIRAG_API_BASE_URL || (isLocal ? 'http://127.0.0.1:8001' : 'https://tcm-multi-agent-rag-api.onrender.com');
+  const API = window.MEDIRAG_API_BASE_URL;
   const QUESTIONS = [
     'What are the traditional properties, functions, and source-grounded uses of Ren Shen (Ginseng)?',
     'What are the traditional functions and indications of Huang Qi (Astragalus) in the TCM corpus?',

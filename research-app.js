@@ -1,8 +1,7 @@
 (function () {
   'use strict';
 
-  const isLocalDevelopment = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const API = window.MEDIRAG_API_BASE_URL || (isLocalDevelopment ? 'http://localhost:8000' : 'https://tcm-multi-agent-rag-api.onrender.com');
+  const API = window.MEDIRAG_API_BASE_URL;
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
   let language = 'en';
@@ -320,6 +319,38 @@
     });
     setText('#evidence-count-badge', (data.retrieval || []).length + ' item' + ((data.retrieval || []).length === 1 ? '' : 's'));
   }
+  function renderIntegratedJudges(data) {
+    const support = data.evidence_support;
+    const conflict = data.conflict_status;
+    const safety = data.safety_assessment;
+    const confidence = data.evidence_confidence;
+    const unavailable = 'Not available for this condition';
+    const pct = (value) => typeof value === 'number' ? Math.round(value * 100) + '%' : '—';
+    const supportNode = $('#integrated-evidence-support'); supportNode.replaceChildren();
+    if (support) {
+      [['Evidence coverage', support.evidence_coverage], ['Citation coverage', support.citation_coverage], ['Retrieval sufficiency', support.retrieval_sufficiency], ['Verified evidence ratio', support.verified_evidence_ratio]].forEach(([label, value]) => supportNode.append(element('div', 'integrated-judge-row', label + ': ' + pct(value))));
+    } else supportNode.append(element('p', 'muted-note', unavailable));
+    const conflictNode = $('#integrated-conflict'); conflictNode.replaceChildren();
+    if (conflict) {
+      conflictNode.append(element('div', 'integrated-judge-row', 'Status: ' + (conflict.has_unresolved_conflict ? 'Unresolved conflict' : 'No unresolved conflict')));
+      conflictNode.append(element('div', 'integrated-judge-row', 'Score: ' + pct(conflict.conflict_score)));
+      [...(conflict.unresolved_conflicts || [])].forEach((item) => conflictNode.append(element('div', 'integrated-judge-row', item)));
+    } else conflictNode.append(element('p', 'muted-note', unavailable));
+    const safetyNode = $('#integrated-safety'); safetyNode.replaceChildren();
+    if (safety) {
+      safetyNode.append(element('div', 'integrated-judge-row', 'Evidence-supported caution assessment: ' + safety.assessment));
+      safetyNode.append(element('div', 'integrated-judge-row', 'Safety score: ' + pct(safety.source_grounded_safety_score)));
+      if (safety.findings?.length) safety.findings.forEach((finding) => safetyNode.append(element('div', 'integrated-judge-row', finding.rule_id + ' · ' + finding.severity + ' · ' + finding.explanation)));
+      else safetyNode.append(element('div', 'integrated-judge-row', 'No source-grounded safety flags'));
+    } else safetyNode.append(element('p', 'muted-note', unavailable));
+    const confidenceNode = $('#integrated-confidence'); confidenceNode.replaceChildren();
+    if (confidence) {
+      confidenceNode.append(element('div', 'integrated-judge-row', 'Evidence confidence: ' + pct(confidence.score) + ' · band: ' + confidence.band));
+      (confidence.signal_contributions || []).forEach((signal) => confidenceNode.append(element('div', 'integrated-judge-row', 'Signal · ' + signal.signal + ': +' + pct(signal.contribution))));
+      (confidence.penalties || []).forEach((penalty) => confidenceNode.append(element('div', 'integrated-judge-row', 'Penalty · ' + penalty.signal + ': −' + pct(penalty.applied_penalty))));
+      (confidence.caps_applied || []).forEach((cap) => confidenceNode.append(element('div', 'integrated-judge-row', 'Cap · ' + cap)));
+    } else confidenceNode.append(element('p', 'muted-note', unavailable));
+  }
   function renderResearchRun(data) {
     currentResearchRun = data; const traceData = data.trace || {}; const outputs = data.agent_outputs || []; const active = outputs.filter((agent) => !agent.abstained); const abstained = outputs.filter((agent) => agent.abstained);
     const selectedCount = (traceData.active_agents || outputs).length || 1; const coverage = Math.round((active.length / selectedCount) * 100); const activeSupport = active.length ? Math.round(active.reduce((sum, agent) => sum + (agent.confidence || 0), 0) / active.length * 100) : 0;
@@ -331,7 +362,7 @@
     const abstainDetails = $('#abstained-specialists'); abstainDetails.hidden = !abstained.length; setText('#abstained-count', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); const abstainList = $('#consensus-abstaining-list'); abstainList.replaceChildren(); abstained.forEach((agent) => { const row = element('div', 'abstained-row'); row.append(element('strong', '', readableAgent(agent.agent_id, agent.agent_name))); row.append(element('span', '', agent.abstention_reason || 'No scoped evidence matched.')); abstainList.append(row); });
     const debateVisible = Boolean(traceData.debate_enabled) || (data.agreements || []).length || (data.disagreements || []).length; $('#consensus-debate-section').hidden = !debateVisible; if (debateVisible) { renderList($('#consensus-agreements'), data.agreements || [], 'No explicit agreement detected.'); renderList($('#consensus-disagreements'), data.disagreements || [], 'No explicit disagreement detected.'); }
     const judgesVisible = Boolean(traceData.judges_enabled) || (data.judge_outputs || []).length; $('#consensus-judge-section').hidden = !judgesVisible; const judges = $('#consensus-judges'); judges.replaceChildren(); (data.judge_outputs || []).forEach((judge) => { const card = element('article', 'judge-card'); card.append(element('strong', '', judge.judge_name + ' · ' + Math.round((judge.score || 0) * 100) + '%')); card.append(element('p', '', (judge.findings || []).join(' ') || judge.reasoning_summary)); judges.append(card); });
-    renderList($('#consensus-safety'), data.safety_flags || [], 'No structured safety flag.'); renderList($('#consensus-limitations'), data.limitations || [], 'No additional limitation.'); renderEvidence(data);
+    renderList($('#consensus-safety'), data.safety_flags || [], 'No structured safety flag.'); renderList($('#consensus-limitations'), data.limitations || [], 'No additional limitation.'); renderEvidence(data); renderIntegratedJudges(data);
     setText('#consensus-latency', (traceData.latency_ms || 0) + ' ms'); setText('#consensus-api-calls', (traceData.provider_calls || 0) + ' attempted · ' + (traceData.successful_provider_calls || 0) + ' succeeded'); setText('#consensus-call-failures', (traceData.failed_provider_calls || 0) + ' failed · fallback=' + Boolean(traceData.fallback_usage)); setText('#consensus-generation-mode', traceData.generation_mode || data.generation_mode || 'deterministic'); setText('#consensus-corpus', (traceData.corpus_name || 'unknown') + ' · ' + (traceData.corpus_chunk_count || 0) + ' chunks · mode=' + (traceData.corpus_mode || 'unknown')); setText('#consensus-provider', traceData.provider_configured || 'unknown'); setText('#consensus-model', traceData.model || 'none'); setText('#consensus-fixture-used', traceData.retrieval_strategy || 'not run'); setText('#consensus-embedding', (traceData.embedding_provider || 'none') + ' · ' + (traceData.embedding_model || 'none')); setText('#consensus-reranker', (traceData.reranker_provider || 'none') + ' · ' + (traceData.reranker || 'none')); const systemAbstained = traceData.termination_stage === 'planner_scope_gate'; setText('#consensus-participating', (traceData.participating_agents || []).map((id) => readableAgent(id)).join(', ') || (systemAbstained ? 'none · system stopped before specialists' : 'none')); setText('#consensus-abstaining', (traceData.abstaining_agents || []).map((id) => readableAgent(id)).join(', ') || (systemAbstained ? 'not run · system-level abstention' : 'none')); setText('#consensus-stages', 'termination=' + (traceData.termination_stage || 'completed') + ' · debate=' + Boolean(traceData.debate_enabled) + ' · judges=' + Boolean(traceData.judges_enabled)); setText('#consensus-score-formula', traceData.support_score_formula || 'Evidence support across selected agents; not medical correctness'); $('#consensus-trace').textContent = JSON.stringify(safeRunExport(data), null, 2);
     $('#consensus-results').hidden = false; $('#consensus-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
