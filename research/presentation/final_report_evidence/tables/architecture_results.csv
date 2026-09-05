@@ -1,0 +1,7 @@
+study,metric,condition,value,difference,ci_or_p,latency_or_usability
+RQ1 confirmatory,Full Recall,C1,90.76%,C2-C1 -0.18 pp,95% CI -1.81 to +1.63; p=1.0000,C1 94/100 usable; C2 95/100
+RQ1 confirmatory,Full Recall,C2,90.58%,,,
+RQ4,Full Recall,C2,83.75%,C4-C2 -2.50 pp,95% CI -8.12 to +2.50; Wilcoxon p=0.313938,88/100 usable
+RQ4,Full Recall,C4,81.25%,,,80/100 usable
+RQ4,Partial-or-Better,C2,91.25%,C4-C2 +2.50 pp,95% CI +0.42 to +5.42,C2 7.28 s mean latency
+RQ4,Partial-or-Better,C4,93.75%,,,C4 39.66 s mean latency

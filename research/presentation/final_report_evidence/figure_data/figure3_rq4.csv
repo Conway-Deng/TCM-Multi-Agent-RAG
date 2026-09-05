@@ -1,0 +1,7 @@
+figure,series,condition,value,unit,source
+figure3a_rq4_quality_reliability,Full Recall,C2,83.75,percent,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md
+figure3a_rq4_quality_reliability,Full Recall,C4,81.25,percent,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md
+figure3a_rq4_quality_reliability,Usable,C2,88,percent,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md
+figure3a_rq4_quality_reliability,Usable,C4,80,percent,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md
+figure3b_rq4_latency,Mean latency,C2,7.2785,seconds,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md
+figure3b_rq4_latency,Mean latency,C4,39.6598,seconds,experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_results.md

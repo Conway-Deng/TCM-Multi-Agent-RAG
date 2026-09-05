@@ -1,0 +1,7 @@
+figure,series,condition,value,unit,source
+figure2a_retrieval_selection,Recall@4,R0,95,percent,retrieval_ablation/formal_stage1/stage1_summary.json
+figure2a_retrieval_selection,Recall@4,R1,95,percent,retrieval_ablation/formal_stage1/stage1_summary.json
+figure2a_retrieval_selection,Recall@4,R2,97.5,percent,retrieval_ablation/formal_stage1/stage1_summary.json
+figure2a_retrieval_selection,Recall@4,R3,100,percent,retrieval_ablation/formal_stage1/stage1_summary.json
+figure2b_retrieval_downstream,Full Recall,R0,80,percent,retrieval_ablation/RETRIEVAL_ABLATION_FINAL_SUMMARY.md
+figure2b_retrieval_downstream,Full Recall,R3,76.67,percent,retrieval_ablation/RETRIEVAL_ABLATION_FINAL_SUMMARY.md

@@ -1,0 +1,7 @@
+figure,series,condition,value,unit,source
+figure5_a3_quality_usability,Strict Full Recall,M1,73.7,percent,multi_model_debate/formal_v1_3/FINAL_RESULTS.md
+figure5_a3_quality_usability,Strict Full Recall,M2,81.6,percent,multi_model_debate/formal_v1_3/FINAL_RESULTS.md
+figure5_a3_quality_usability,Usability,M1,96,percent,multi_model_debate/formal_v1_3/FINAL_RESULTS.md
+figure5_a3_quality_usability,Usability,M2,78,percent,multi_model_debate/formal_v1_3/FINAL_RESULTS.md
+figure5_a3_latency,Mean latency,M1,115.12,seconds,multi_model_debate/formal_v1_3/FINAL_RESULTS.md
+figure5_a3_latency,Mean latency,M2,391.46,seconds,multi_model_debate/formal_v1_3/FINAL_RESULTS.md

@@ -1,0 +1,7 @@
+study,benchmark_or_corpus,N,conditions,model_or_setup,notes
+RQ1 confirmatory,100 held-out TCM questions,100,C1 vs C2,Qwen/Qwen3-8B,source-grounded Full Recall
+RQ4,TCM benchmark / 80 complete usable pairs (90 represented questions),80,C2 vs C4,same-model structured debate,semantic quality conditional on usable pairs
+Research B,Frozen 4-class benchmark,240,J1 vs J2,LLM judge claim-only vs claim+evidence,480 executions
+Research C,Conflict benchmark,132,K1 vs K2,conflict classification,12 direct-conflict cases
+A3 v1.3,Frozen benchmark,76 complete usable pairs / 100 executions per condition,M1 vs M2,M1 Qwen/Qwen3-8B; M2 tested three-checkpoint configuration,quality conditional on complete pairs
+TCM Corpus v1,source-derived corpus,4461 chunks,shared corpus,TCM-focused,not clinical validation

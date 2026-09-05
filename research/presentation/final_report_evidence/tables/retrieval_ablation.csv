@@ -1,0 +1,7 @@
+stage,metric,condition,value,difference,ci_or_p,source_note
+selection,Recall@4,R0,95.00%,,,40-question selection set
+selection,Recall@4,R1,95.00%,,,40-question selection set
+selection,Recall@4,R2,97.50%,,,40-question selection set
+selection,Recall@4,R3,100.00%,,,40-question selection set
+confirmation,Full Recall,R0,80.00%,R3-R0 -3.33 pp,95% CI -15.00 to +8.33; McNemar p=0.7744,60-question confirmation
+confirmation,Full Recall,R3,76.67%,,,60-question confirmation

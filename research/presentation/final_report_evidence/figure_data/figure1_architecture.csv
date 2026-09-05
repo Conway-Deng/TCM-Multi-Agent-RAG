@@ -1,0 +1,11 @@
+stage,component,terminology
+1,Question,TCM-focused input
+2,Planner,scope and retrieval planning
+3,Retrieval,source-grounded evidence retrieval
+4,Specialist Agents,evidence-scoped contributions
+5,Debate / Consensus,structured agreement and disagreement
+6,Evidence Judge,evidence support
+7,Safety Judge,source-grounded safety flags; evidence-supported caution assessment
+8,Conflict Judge,conflict status
+9,Confidence Judge,evidence confidence; response reliability indicator
+10,Integrated Response,final cited response

@@ -1,0 +1,7 @@
+study,metric,condition,value,difference,ci_or_p,latency_or_coverage
+Research B,Accuracy,J1 claim-only,35.56%,J2-J1 +47.36 pp,95% CI +41.00 to +53.97; McNemar p=5.5852e-33,mean 37.55 s
+Research B,Accuracy,J2 claim+evidence,82.92%,,,mean 24.84 s
+Research B,Macro-F1,J1 claim-only,29.03%,J2-J1 +50.72 pp,95% CI +43.50 to +57.77,usable 239/240
+Research B,Macro-F1,J2 claim+evidence,79.75%,,,usable 240/240
+Research C,Macro-F1,K1,77.97%,K2-K1 -2.09 pp,95% bootstrap CI -9.12 to +4.90; McNemar p=0.6476,30.00 s mean
+Research C,Macro-F1,K2,75.89%,,,36.56 s mean; citation coverage 73.48%

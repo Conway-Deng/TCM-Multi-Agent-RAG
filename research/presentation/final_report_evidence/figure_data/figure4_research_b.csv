@@ -1,0 +1,5 @@
+figure,series,condition,value,unit,source
+figure4_evidence_judge,Accuracy,J1,35.56,percent,research_b/formal_run_v1/final_analysis/research_b_final_results.md
+figure4_evidence_judge,Accuracy,J2,82.92,percent,research_b/formal_run_v1/final_analysis/research_b_final_results.md
+figure4_evidence_judge,Macro-F1,J1,29.03,percent,research_b/formal_run_v1/final_analysis/research_b_final_results.md
+figure4_evidence_judge,Macro-F1,J2,79.75,percent,research_b/formal_run_v1/final_analysis/research_b_final_results.md
