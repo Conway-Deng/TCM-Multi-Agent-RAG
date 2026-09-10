@@ -2,6 +2,7 @@
   'use strict';
 
   const API = window.MEDIRAG_API_BASE_URL;
+  const isLocalDevelopment = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
   let language = 'en';
@@ -312,12 +313,23 @@
     const container = $('#consensus-evidence'); container.replaceChildren();
     (data.retrieval || []).forEach((item) => {
       const card = element('article', 'evidence-row'); card.id = item.chunk_id;
-      const header = element('div', 'evidence-row-header'); header.append(element('strong', '', '#' + item.rank)); header.append(element('span', 'muted-badge', item.source_metadata?.title || item.source_id || 'Source')); header.append(element('code', '', item.chunk_id)); card.append(header);
-      const meta = element('div', 'evidence-row-meta'); meta.append(element('span', '', 'Method: ' + (item.retrieval_method || '—'))); meta.append(element('span', '', 'Score: ' + (item.lexical_score ?? item.rerank_score ?? item.semantic_score ?? item.fusion_score ?? '—'))); meta.append(element('span', '', 'Category: ' + ((item.topics || []).join(', ') || '—'))); card.append(meta);
-      const details = element('details', 'evidence-details'); const summary = element('summary', '', 'View excerpt'); details.append(summary); details.append(element('p', '', item.chunk_text || 'Evidence excerpt unavailable.')); card.append(details);
-      const copy = element('button', 'text-action', 'Copy Chunk ID'); copy.type = 'button'; copy.addEventListener('click', () => navigator.clipboard?.writeText(item.chunk_id)); card.append(copy); container.append(card);
+      const score = item.rerank_score ?? item.fusion_score ?? item.semantic_score ?? item.lexical_score;
+      const header = element('div', 'evidence-row-header'); header.append(element('strong', 'evidence-rank', '#' + item.rank)); header.append(element('span', 'evidence-source', item.source_metadata?.title || item.source_id || 'Source')); card.append(header);
+      const meta = element('div', 'evidence-row-meta'); meta.append(element('span', '', item.retrieval_method || 'retrieval')); meta.append(element('span', '', typeof score === 'number' ? 'Relevance ' + Math.round(score * 100) + '%' : 'Relevance —')); card.append(meta);
+      card.append(element('p', 'evidence-excerpt', item.chunk_text || 'Evidence excerpt unavailable.'));
+      const details = element('details', 'evidence-details'); const summary = element('summary', '', 'Evidence details'); details.append(summary);
+      const technical = element('div', 'evidence-technical'); technical.append(element('div', '', 'Chunk ID: ' + item.chunk_id)); technical.append(element('div', '', 'Source ID: ' + (item.source_id || '—'))); technical.append(element('div', '', 'Retrieval method: ' + (item.retrieval_method || '—'))); technical.append(element('div', '', 'Technical score: ' + (score ?? '—'))); technical.append(element('div', '', 'Topics: ' + ((item.topics || []).join(', ') || '—'))); technical.append(element('p', '', item.chunk_text || 'Evidence excerpt unavailable.'));
+      const copy = element('button', 'text-action', 'Copy Chunk ID'); copy.type = 'button'; copy.addEventListener('click', async () => { try { await navigator.clipboard?.writeText(item.chunk_id); copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy Chunk ID'; }, 1400); } catch (_) { copy.textContent = 'Copy unavailable'; } }); technical.append(copy); details.append(technical); card.append(details); container.append(card);
     });
     setText('#evidence-count-badge', (data.retrieval || []).length + ' item' + ((data.retrieval || []).length === 1 ? '' : 's'));
+  }
+
+  function researchRunPresentation(traceData, data) {
+    const generationMode = traceData.generation_mode || data.generation_mode || 'deterministic';
+    const fallback = traceData.fallback_usage === true;
+    if (fallback) return { label: 'Fallback', badge: 'Deterministic fallback', className: 'research-alert-warning', title: 'Live model output was unavailable or rejected.', detail: 'Deterministic fallback was used.' };
+    if (generationMode === 'llm') return { label: 'Live LLM', badge: 'Live LLM response', className: 'research-alert-success', title: 'Live LLM response', detail: 'The configured model completed this run without fallback.' };
+    return { label: 'Deterministic', badge: 'Deterministic mode', className: 'research-alert-neutral', title: 'Deterministic mode', detail: 'This run intentionally used deterministic processing; no failed live-model fallback is implied.' };
   }
   function renderIntegratedJudges(data) {
     const support = data.evidence_support;
@@ -348,21 +360,29 @@
       confidenceNode.append(element('div', 'integrated-judge-row', 'Evidence confidence: ' + pct(confidence.score) + ' · band: ' + confidence.band));
       (confidence.signal_contributions || []).forEach((signal) => confidenceNode.append(element('div', 'integrated-judge-row', 'Signal · ' + signal.signal + ': +' + pct(signal.contribution))));
       (confidence.penalties || []).forEach((penalty) => confidenceNode.append(element('div', 'integrated-judge-row', 'Penalty · ' + penalty.signal + ': −' + pct(penalty.applied_penalty))));
-      (confidence.caps_applied || []).forEach((cap) => confidenceNode.append(element('div', 'integrated-judge-row', 'Cap · ' + cap)));
+      const caps = confidence.caps_applied || [];
+      caps.forEach((cap) => confidenceNode.append(element('div', 'integrated-judge-row', 'Cap · ' + cap)));
+      if (!caps.length) confidenceNode.append(element('div', 'integrated-judge-row', 'Caps applied: none'));
     } else confidenceNode.append(element('p', 'muted-note', unavailable));
   }
   function renderResearchRun(data) {
     currentResearchRun = data; const traceData = data.trace || {}; const outputs = data.agent_outputs || []; const active = outputs.filter((agent) => !agent.abstained); const abstained = outputs.filter((agent) => agent.abstained);
     const selectedCount = (traceData.active_agents || outputs).length || 1; const coverage = Math.round((active.length / selectedCount) * 100); const activeSupport = active.length ? Math.round(active.reduce((sum, agent) => sum + (agent.confidence || 0), 0) / active.length * 100) : 0;
+    const presentation = researchRunPresentation(traceData, data);
+    const runProvider = traceData.provider_configured || traceData.provider || 'Provider not reported';
+    const runModel = traceData.model && traceData.model !== 'none' ? traceData.model : 'Not called';
+    setText('#runtime-provider', runProvider === 'siliconflow' ? 'SiliconFlow' : runProvider); setText('#runtime-model', runModel); setText('#runtime-llm', presentation.label === 'Live LLM' ? 'Live LLM' : presentation.label === 'Fallback' ? 'Fallback' : 'Deterministic mode'); $('#runtime-llm').classList.toggle('is-success', presentation.label === 'Live LLM');
     setText('#consensus-strategy-badge', data.condition_id + ' · ' + data.condition_name); setText('#consensus-run-id', data.run_id); setText('#summary-retrieval', (traceData.retrieval_strategy || '—') + ' · ' + ({ R0: 'Lexical', R1: 'Dense', R2: 'Hybrid', R3: 'Hybrid + rerank' }[traceData.retrieval_strategy] || ''));
-    setText('#summary-corpus', (traceData.corpus_name || '—') + ' · ' + (traceData.corpus_chunk_count || 0).toLocaleString() + ' chunks'); setText('#summary-model', traceData.model !== 'none' ? (traceData.model || '—') : 'Not called'); setText('#summary-calls', (traceData.provider_calls || 0) + ' / ' + (traceData.successful_provider_calls || 0) + ' succeeded'); setText('#summary-latency', ((traceData.latency_ms || 0) / 1000).toFixed(1) + ' s'); setText('#summary-generation', traceData.generation_mode || data.generation_mode || '—'); setText('#summary-fallback', traceData.fallback_usage ? 'Yes' : 'No'); setText('#summary-participants', active.map((agent) => readableAgent(agent.agent_id, agent.agent_name)).join(', ') || 'None');
-    setText('#active-agent-support', activeSupport + '%'); setText('#specialist-coverage', active.length + ' / ' + selectedCount); setText('#specialist-coverage-note', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '%'); setText('#consensus-generation-badge', traceData.generation_mode === 'llm' && !traceData.fallback_usage ? 'Real LLM response' : (traceData.fallback_usage ? 'Deterministic fallback' : (traceData.generation_mode || 'Deterministic'))); renderCitedText($('#consensus-summary-text'), data.final_answer);
-    $('#research-fallback-banner').hidden = !traceData.fallback_usage;
-    const agents = $('#consensus-agents'); agents.replaceChildren(); active.forEach((agent) => { const card = element('article', 'specialist-card'); const heading = element('div', 'specialist-card-heading'); heading.append(element('div', 'specialist-card-title', readableAgent(agent.agent_id, agent.agent_name))); heading.append(element('span', 'status-badge status-active', 'ACTIVE')); card.append(heading); const meta = element('div', 'specialist-card-meta'); meta.append(element('span', '', 'Evidence support ' + Math.round((agent.confidence || 0) * 100) + '%')); meta.append(element('span', '', agent.generation_mode === 'llm' ? 'LLM' : 'Deterministic')); card.append(meta); const answer = element('p', 'specialist-answer'); renderCitedText(answer, (agent.claims || []).map((claim) => claim.text).join(' ') || 'No evidence-linked claim.'); card.append(answer); agents.append(card); });
+    setText('#summary-condition', data.condition_id + ' · ' + data.condition_name); setText('#summary-corpus', (traceData.corpus_name || '—') + ' · ' + (traceData.corpus_chunk_count || 0).toLocaleString() + ' chunks'); setText('#summary-model', traceData.model !== 'none' ? (traceData.model || '—') : 'Not called'); setText('#summary-calls', (traceData.provider_calls || 0) + ' / ' + (traceData.successful_provider_calls || 0) + ' succeeded'); setText('#summary-latency', ((traceData.latency_ms || 0) / 1000).toFixed(1) + ' s'); setText('#summary-status', presentation.label); setText('#summary-fallback', traceData.fallback_usage === true ? 'Yes' : 'No'); setText('#summary-participants', active.map((agent) => readableAgent(agent.agent_id, agent.agent_name)).join(', ') || 'None');
+    const summaryStatus = $('#summary-status'); summaryStatus.className = 'status-badge ' + (traceData.fallback_usage === true ? 'status-warning' : presentation.label === 'Live LLM' ? 'status-success' : 'status-neutral');
+    setText('#active-agent-support', activeSupport + '%'); setText('#specialist-coverage', active.length + ' / ' + selectedCount); setText('#specialist-coverage-note', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '%'); setText('#consensus-generation-badge', presentation.badge); renderCitedText($('#consensus-summary-text'), data.final_answer);
+    const runStatus = $('#research-fallback-banner'); runStatus.className = 'research-alert ' + presentation.className; setText('#research-run-status-title', presentation.title); setText('#research-run-status-detail', presentation.detail); runStatus.hidden = false;
+    const agents = $('#consensus-agents'); agents.replaceChildren(); active.forEach((agent) => { const card = element('article', 'specialist-card'); const heading = element('div', 'specialist-card-heading'); heading.append(element('div', 'specialist-card-title', readableAgent(agent.agent_id, agent.agent_name))); heading.append(element('span', 'status-badge status-active', 'ACTIVE')); card.append(heading); const meta = element('div', 'specialist-card-meta'); meta.append(element('span', '', 'Generation: ' + (agent.generation_mode === 'llm' ? 'LLM' : 'Deterministic'))); meta.append(element('span', '', 'Evidence support: ' + Math.round((agent.confidence || 0) * 100) + '%')); card.append(meta); const answer = element('p', 'specialist-answer'); renderCitedText(answer, (agent.claims || []).map((claim) => claim.text).join(' ') || 'No evidence-linked claim.'); card.append(answer); agents.append(card); });
     const abstainDetails = $('#abstained-specialists'); abstainDetails.hidden = !abstained.length; setText('#abstained-count', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); const abstainList = $('#consensus-abstaining-list'); abstainList.replaceChildren(); abstained.forEach((agent) => { const row = element('div', 'abstained-row'); row.append(element('strong', '', readableAgent(agent.agent_id, agent.agent_name))); row.append(element('span', '', agent.abstention_reason || 'No scoped evidence matched.')); abstainList.append(row); });
     const debateVisible = Boolean(traceData.debate_enabled) || (data.agreements || []).length || (data.disagreements || []).length; $('#consensus-debate-section').hidden = !debateVisible; if (debateVisible) { renderList($('#consensus-agreements'), data.agreements || [], 'No explicit agreement detected.'); renderList($('#consensus-disagreements'), data.disagreements || [], 'No explicit disagreement detected.'); }
     const judgesVisible = Boolean(traceData.judges_enabled) || (data.judge_outputs || []).length; $('#consensus-judge-section').hidden = !judgesVisible; const judges = $('#consensus-judges'); judges.replaceChildren(); (data.judge_outputs || []).forEach((judge) => { const card = element('article', 'judge-card'); card.append(element('strong', '', judge.judge_name + ' · ' + Math.round((judge.score || 0) * 100) + '%')); card.append(element('p', '', (judge.findings || []).join(' ') || judge.reasoning_summary)); judges.append(card); });
-    renderList($('#consensus-safety'), data.safety_flags || [], 'No structured safety flag.'); renderList($('#consensus-limitations'), data.limitations || [], 'No additional limitation.'); renderEvidence(data); renderIntegratedJudges(data);
+    const integratedVisible = Boolean(data.evidence_support || data.conflict_status || data.safety_assessment || data.evidence_confidence); $('#integrated-judge-panel').hidden = !integratedVisible; if (integratedVisible) renderIntegratedJudges(data);
+    renderList($('#consensus-safety'), data.safety_flags || [], 'No structured safety flag.'); renderList($('#consensus-limitations'), data.limitations || [], 'No additional limitation.'); renderEvidence(data);
     setText('#consensus-latency', (traceData.latency_ms || 0) + ' ms'); setText('#consensus-api-calls', (traceData.provider_calls || 0) + ' attempted · ' + (traceData.successful_provider_calls || 0) + ' succeeded'); setText('#consensus-call-failures', (traceData.failed_provider_calls || 0) + ' failed · fallback=' + Boolean(traceData.fallback_usage)); setText('#consensus-generation-mode', traceData.generation_mode || data.generation_mode || 'deterministic'); setText('#consensus-corpus', (traceData.corpus_name || 'unknown') + ' · ' + (traceData.corpus_chunk_count || 0) + ' chunks · mode=' + (traceData.corpus_mode || 'unknown')); setText('#consensus-provider', traceData.provider_configured || 'unknown'); setText('#consensus-model', traceData.model || 'none'); setText('#consensus-fixture-used', traceData.retrieval_strategy || 'not run'); setText('#consensus-embedding', (traceData.embedding_provider || 'none') + ' · ' + (traceData.embedding_model || 'none')); setText('#consensus-reranker', (traceData.reranker_provider || 'none') + ' · ' + (traceData.reranker || 'none')); const systemAbstained = traceData.termination_stage === 'planner_scope_gate'; setText('#consensus-participating', (traceData.participating_agents || []).map((id) => readableAgent(id)).join(', ') || (systemAbstained ? 'none · system stopped before specialists' : 'none')); setText('#consensus-abstaining', (traceData.abstaining_agents || []).map((id) => readableAgent(id)).join(', ') || (systemAbstained ? 'not run · system-level abstention' : 'none')); setText('#consensus-stages', 'termination=' + (traceData.termination_stage || 'completed') + ' · debate=' + Boolean(traceData.debate_enabled) + ' · judges=' + Boolean(traceData.judges_enabled)); setText('#consensus-score-formula', traceData.support_score_formula || 'Evidence support across selected agents; not medical correctness'); $('#consensus-trace').textContent = JSON.stringify(safeRunExport(data), null, 2);
     $('#consensus-results').hidden = false; $('#consensus-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -423,16 +443,42 @@
   });
 
   let researchRequestActive = false; let researchProgressTimer = null; let researchProgressStarted = 0; let researchProgressStage = 'connecting';
-  function setResearchProgress(stage) { researchProgressStage = stage; const labels = copy[language].researchProgress; setText('#consensus-progress-status', labels[stage] || labels.connecting); }
-  function startResearchProgress() { researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; setResearchProgress('connecting'); setText('#consensus-progress-elapsed', '0.0 s'); clearInterval(researchProgressTimer); researchProgressTimer = setInterval(() => setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'), 100); }
-  function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgress(stage); }
+  function setResearchProgress(stage) {
+    researchProgressStage = stage;
+    const messages = {
+      connecting: ['Connecting to research backend…', 'Elapsed time is measured directly; no percentage is estimated.'],
+      waking: ['Backend may be waking from an idle state.', 'Your experiment is still running.'],
+      processing: ['Processing retrieved evidence and model output…', 'The backend response has returned and the workbench is preparing the result.'],
+      complete: ['Run complete', 'The completed response and trace are shown below.'],
+      failed: ['Request failed', 'Check the message below, then retry when the backend is available.'],
+    };
+    const message = messages[stage] || messages.connecting;
+    setText('#consensus-progress-status', message[0]); setText('#consensus-progress-detail', message[1]);
+  }
+  function startResearchProgress() {
+    researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; setResearchProgress('connecting'); setText('#consensus-progress-elapsed', '0.0 s'); clearInterval(researchProgressTimer);
+    researchProgressTimer = setInterval(() => { const elapsed = performance.now() - researchProgressStarted; setText('#consensus-progress-elapsed', (elapsed / 1000).toFixed(1) + ' s'); if (elapsed >= 8000 && researchProgressStage === 'connecting') setResearchProgress('waking'); }, 250);
+  }
+  function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
+  function setResearchControlsDisabled(disabled) {
+    $$('#consensus-form textarea, #consensus-form select, #consensus-form input[type="radio"]').forEach((control) => { control.disabled = disabled; });
+    setText('#consensus-submit-label', disabled ? 'Running experiment…' : 'Run experiment');
+  }
   function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); }
-  $('#consensus-strategy').addEventListener('change', updateConditionHelp); $('#consensus-retrieval').addEventListener('change', updateConditionHelp);
+  function bindChoiceGroup(name, selectSelector) {
+    const select = $(selectSelector);
+    const radios = $$('input[name="' + name + '"]');
+    const syncFromSelect = () => { radios.forEach((input) => { input.checked = input.value === select.value; }); updateConditionHelp(); };
+    radios.forEach((input) => input.addEventListener('change', () => { if (input.checked) { select.value = input.value; syncFromSelect(); } }));
+    select.addEventListener('change', syncFromSelect);
+    syncFromSelect();
+  }
+  bindChoiceGroup('architecture-condition', '#consensus-strategy'); bindChoiceGroup('retrieval-strategy', '#consensus-retrieval');
   $('#consensus-form').addEventListener('submit', async (event) => {
     event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const question = $('#consensus-question').value.trim(); if (question.length < 3) return showMessage(message, 'Please enter a longer question.');
-    researchRequestActive = true; showMessage(message, ''); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); startResearchProgress();
-    try { setResearchProgress('retrieving'); const data = await api('/api/research/run', { question, condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true }, () => setResearchProgress('generating')); setResearchProgress('evaluating'); renderResearchRun(data); setResearchProgress('rendering'); }
-    catch (error) { stopResearchProgress('failed'); showMessage(message, error.message + '. The research interface remains available.'); } finally { researchRequestActive = false; button.disabled = false; button.classList.remove('is-loading'); event.currentTarget.setAttribute('aria-busy', 'false'); }
+    researchRequestActive = true; showMessage(message, ''); setResearchControlsDisabled(true); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); $('#research-fallback-banner').hidden = true; startResearchProgress();
+    try { const data = await api('/api/research/run', { question, condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true }); setResearchProgress('processing'); renderResearchRun(data); stopResearchProgress('complete'); }
+    catch (error) { stopResearchProgress('failed'); showMessage(message, error.message + '. Verify the research backend is online and try again.'); } finally { researchRequestActive = false; setResearchControlsDisabled(false); button.disabled = false; button.classList.remove('is-loading'); event.currentTarget.setAttribute('aria-busy', 'false'); }
   });
 
   $('#research-compare-form').addEventListener('submit', async (event) => {
@@ -445,6 +491,7 @@
   });
 
   $('#copy-run-id').addEventListener('click', () => { if (currentResearchRun?.run_id) navigator.clipboard?.writeText(currentResearchRun.run_id); });
+  $('#copy-run-json').addEventListener('click', async (event) => { if (!currentResearchRun) return; const button = event.currentTarget; try { await navigator.clipboard?.writeText(JSON.stringify(safeRunExport(currentResearchRun), null, 2)); button.textContent = 'Copied'; setTimeout(() => { button.textContent = 'Copy JSON'; }, 1400); } catch (_) { button.textContent = 'Copy unavailable'; } });
   $('#download-run-json').addEventListener('click', () => { if (currentResearchRun) { const exported = safeRunExport(currentResearchRun); exported.question = $('#consensus-question').value; downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.json', JSON.stringify(exported, null, 2), 'application/json;charset=utf-8'); } });
   $('#download-run-csv').addEventListener('click', () => { if (currentResearchRun) downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.csv', runCsv(currentResearchRun), 'text/csv;charset=utf-8'); });
   $('#download-compare-json').addEventListener('click', () => { if (currentComparison) downloadText('tcm-comparison_' + currentComparison.comparison_id + '.json', JSON.stringify(safeRunExport(currentComparison), null, 2), 'application/json;charset=utf-8'); });
@@ -455,15 +502,20 @@
       setMode(location.hash === '#research-compare' ? 'compare' : location.hash === '#legacy-demo' ? 'single' : 'multi');
     } else setView('home');
   });
-  fetch(API + '/health').then((response) => response.json()).then((data) => {
-    const profile = data.runtime_profile === 'local_research' ? 'Local research' : 'Public demo';
+  const locationLabel = isLocalDevelopment ? 'Local' : 'Online';
+  setText('#workbench-location-label', locationLabel + ' Research Workbench'); setText('#runtime-location', 'Checking backend');
+  fetch(API + '/health').then((response) => { if (!response.ok) throw new Error('Health check failed (' + response.status + ')'); return response.json(); }).then((data) => {
+    const profile = locationLabel;
     const corpusLabel = (data.corpus_name || data.active_corpus) + ' · ' + (data.corpus_chunk_count || 0) + ' chunks';
     const providerLabel = 'provider configured=' + data.provider_configured + ' · LLM execution=' + (data.llm_execution_enabled ? 'enabled' : 'disabled');
     setText('.prototype-status span:last-child', profile + ' · ' + corpusLabel + ' · ' + providerLabel);
     setText('#consensus-corpus-status', profile + ' uses ' + corpusLabel + '. Scores below are evidence-support signals, not medical correctness.');
     setText('#compare-corpus-status', profile + ' · ' + corpusLabel + '.');
+    setText('#runtime-corpus', data.corpus_name || data.active_corpus || 'Corpus unavailable'); setText('#runtime-chunks', Number(data.corpus_chunk_count || 0).toLocaleString() + ' chunks');
+    const configuredProvider = String(data.provider_configured || 'Provider not reported'); setText('#runtime-provider', configuredProvider === 'siliconflow' ? 'SiliconFlow' : configuredProvider); setText('#runtime-model', data.llm_model || '—'); setText('#runtime-llm', data.llm_execution_enabled ? 'Live LLM' : 'Deterministic mode');
+    $('#workbench-runtime-strip').classList.toggle('is-online', !isLocalDevelopment); $('#runtime-llm').classList.toggle('is-success', Boolean(data.llm_execution_enabled));
     $('.prototype-status').classList.toggle('is-live', true);
-  }).catch(() => setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'));
+  }).catch(() => { setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'); setText('#runtime-location', 'Backend unavailable'); setText('#runtime-corpus', 'Corpus not confirmed'); setText('#runtime-chunks', '— chunks'); setText('#runtime-provider', 'Provider not confirmed'); setText('#runtime-model', '—'); setText('#runtime-llm', 'Backend unavailable'); $('#runtime-llm').classList.remove('is-success'); $('#workbench-runtime-strip').classList.add('is-offline'); });
 
   applyLanguage('en'); updateConditionHelp();
   if (location.hash === '#workbench' || location.hash === '#legacy-demo' || location.hash === '#research-workbench' || location.hash === '#research-compare') {
