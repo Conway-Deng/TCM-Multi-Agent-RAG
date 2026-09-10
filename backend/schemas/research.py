@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from tcm.schemas import UserContext
 
@@ -30,6 +30,17 @@ class ResearchMode(str, Enum):
     SINGLE_RAG = "tcm_single_rag"
     MULTI_AGENT = "tcm_multi_agent"
     COMPARE = "research_compare"
+
+
+class ModelProfile(str, Enum):
+    M1 = "M1"
+    M2 = "M2"
+
+
+class ModelTarget(str, Enum):
+    QWEN = "qwen"
+    GLM = "glm"
+    DEEPSEEK = "deepseek"
 
 
 class RunState(str, Enum):
@@ -221,6 +232,9 @@ class ResearchRequest(BaseModel):
     include_trace: bool = True
     store_raw_query: bool = False
     random_seed: int = 20260815
+    model_profile: ModelProfile | None = None
+    model_rotation: Literal[1, 2, 3] = 1
+    model_target: ModelTarget | None = None
 
     @field_validator("question")
     @classmethod
@@ -229,6 +243,12 @@ class ResearchRequest(BaseModel):
         if len(value) < 3:
             raise ValueError("Please enter a health question of at least 3 characters.")
         return value
+
+    @model_validator(mode="after")
+    def model_selection_is_unambiguous(self):
+        if self.model_profile is not None and self.model_target is not None:
+            raise ValueError("model_profile and model_target cannot be used together")
+        return self
 
 
 class ResearchRunResult(BaseModel):
@@ -269,6 +289,15 @@ class CompareRequest(BaseModel):
     top_k: int = Field(default=4, ge=1, le=20)
     iterative_retrieval: bool = False
     random_seed: int = 20260815
+    model_profile: ModelProfile | None = None
+    model_rotation: Literal[1, 2, 3] = 1
+    model_target: ModelTarget | None = None
+
+    @model_validator(mode="after")
+    def model_selection_is_unambiguous(self):
+        if self.model_profile is not None and self.model_target is not None:
+            raise ValueError("model_profile and model_target cannot be used together")
+        return self
 
 
 class CompareResponse(BaseModel):

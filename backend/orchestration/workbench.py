@@ -11,8 +11,8 @@ from config import get_settings
 from corpus import corpus_stats, corpus_version
 from judges import run_judges
 from prompts import prompt_metadata
-from providers import get_provider_bundle
-from providers.base import GenerationResult
+from providers import get_provider_bundle, specialist_provider_for
+from providers.base import GenerationResult, LLMProvider
 from providers.local import DeterministicMockLLM
 from providers.openai_compatible import ProviderUnavailable
 from providers.output_quality import runaway_output_reason
@@ -200,7 +200,7 @@ class ResearchWorkbench:
         self.retriever = RetrievalEngine()
         self.planner = QueryPlannerAgent()
 
-    async def _run_agent(self, agent, request, plan, evidence, target_plan, *, llm_enabled: bool):
+    async def _run_agent(self, agent, request, plan, evidence, target_plan, *, llm_enabled: bool, provider: LLMProvider):
         baseline = await agent.answer(
             request.question,
             plan.language,
@@ -220,7 +220,7 @@ class ResearchWorkbench:
             attempts += 1
             attempt_started = time.perf_counter()
             try:
-                candidate = await self.providers.llm.generate(
+                candidate = await provider.generate(
                     system=system,
                     prompt=prompt,
                     temperature=0.0,
@@ -231,8 +231,8 @@ class ResearchWorkbench:
                 rejection = str(exc)
                 attempt_trace.append(ProviderAttempt(
                     attempt=attempts,
-                    provider=self.providers.llm.name,
-                    model=self.providers.llm.model,
+                    provider=provider.name,
+                    model=provider.model,
                     elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
                     success=False,
                     http_status=exc.http_status,
@@ -269,7 +269,12 @@ class ResearchWorkbench:
                 generated_evidence_ids = prompt_evidence_ids
                 break
         if generated is None:
-            reason = f"Provider output rejected: {rejection}" if rejection else "Provider output rejected"
+            last_attempt = attempt_trace[-1] if attempt_trace else None
+            reason = (
+                f"model={last_attempt.model}; provider={last_attempt.provider}; attempt={last_attempt.attempt}; "
+                f"http_status={last_attempt.http_status}; error_type={last_attempt.error_type}; error={last_attempt.error}"
+                if last_attempt else "Provider output rejected"
+            )
             return baseline.model_copy(update={"generation_mode": "deterministic_fallback"}), attempts, 0, reason, attempt_trace
         combined_claim = baseline.claims[0].model_copy(update={
             "text": generated.text.strip(),
@@ -378,7 +383,22 @@ class ResearchWorkbench:
             ids = _agent_ids(request, plan.required_agents, bool(condition["multi_agent"]))
             agents = build_agents(ids)
             executions = await asyncio.gather(*[
-                self._run_agent(agent, request, plan, evidence, target_plan, llm_enabled=llm_enabled) for agent in agents
+                self._run_agent(
+                    agent,
+                    request,
+                    plan,
+                    evidence,
+                    target_plan,
+                    llm_enabled=llm_enabled,
+                    provider=specialist_provider_for(
+                        self.providers,
+                        request.model_profile,
+                        seat_index=seat_index,
+                        rotation_id=request.model_rotation,
+                        model_target=request.model_target,
+                    ),
+                )
+                for seat_index, agent in enumerate(agents)
             ])
             outputs = [item[0] for item in executions]
             provider_calls = sum(item[1] for item in executions)
@@ -416,6 +436,12 @@ class ResearchWorkbench:
             "RQ6 requires actual human evaluation data and is not answered by automated metrics.",
         ]
         safety_flags = list(dict.fromkeys(flag for output in outputs for flag in output.safety_flags))
+        actual_providers = list(dict.fromkeys(
+            attempt.provider for attempt in provider_attempts if attempt.success
+        ))
+        actual_models = list(dict.fromkeys(
+            attempt.model for attempt in provider_attempts if attempt.success
+        ))
         total_latency = round((time.perf_counter() - started) * 1000)
         trace = RunTrace(
             run_id=run_id,
@@ -427,8 +453,8 @@ class ResearchWorkbench:
             corpus_mode=str(corpus_metadata["corpus_mode"]),
             condition_id=request.condition_id,
             experiment_config=request.model_dump(mode="json", exclude={"question", "context"}),
-            provider=self.providers.llm.name if successful_provider_calls else "none",
-            model=self.providers.llm.model if successful_provider_calls else "none",
+            provider=(actual_providers[0] if len(actual_providers) == 1 else "multiple") if actual_providers else (self.providers.llm.name if successful_provider_calls else "none"),
+            model=(actual_models[0] if len(actual_models) == 1 else ",".join(actual_models)) if actual_models else (self.providers.llm.model if successful_provider_calls else "none"),
             provider_configured=self.settings.llm_provider,
             llm_execution_enabled=llm_enabled,
             generation_mode=generation_mode,
@@ -554,6 +580,9 @@ class ResearchWorkbench:
                 top_k=request.top_k,
                 iterative_retrieval=request.iterative_retrieval,
                 random_seed=request.random_seed,
+                model_profile=request.model_profile,
+                model_rotation=request.model_rotation,
+                model_target=request.model_target,
             )))
         return CompareResponse(
             comparison_id=f"cmp-{uuid.uuid4().hex[:12]}",

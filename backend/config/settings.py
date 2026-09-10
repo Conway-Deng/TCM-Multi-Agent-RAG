@@ -16,6 +16,10 @@ class Settings(BaseModel):
     llm_api_key: str = ""
     llm_base_url: str = "https://api.siliconflow.cn/v1"
     llm_model: str = "Qwen/Qwen3-8B"
+    qwen_model: str = "Qwen/Qwen3-8B"
+    glm_model: str = "THUDM/GLM-Z1-9B-0414"
+    deepseek_model: str = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+    consensus_model: str = "Qwen/Qwen3-8B"
     llm_timeout_seconds: float = 45.0
     llm_max_tokens: int = 1400
     embedding_provider: str = "local"
@@ -59,11 +63,16 @@ def _bool(name: str, default: bool) -> bool:
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     origins = [item.strip() for item in os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500").split(",") if item.strip()]
+    legacy_model = os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip() or "Qwen/Qwen3-8B"
     return Settings(
         llm_provider=os.getenv("LLM_PROVIDER", "mock").strip().casefold() or "mock",
         llm_api_key=os.getenv("LLM_API_KEY", "").strip(),
         llm_base_url=os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1").rstrip("/"),
-        llm_model=os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip(),
+        llm_model=legacy_model,
+        qwen_model=os.getenv("QWEN_MODEL", "").strip() or legacy_model,
+        glm_model=os.getenv("GLM_MODEL", "THUDM/GLM-Z1-9B-0414").strip() or "THUDM/GLM-Z1-9B-0414",
+        deepseek_model=os.getenv("DEEPSEEK_MODEL", "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B").strip() or "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+        consensus_model=os.getenv("CONSENSUS_MODEL", "Qwen/Qwen3-8B").strip() or "Qwen/Qwen3-8B",
         llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "45")),
         llm_max_tokens=int(os.getenv("LLM_MAX_TOKENS", "1400")),
         embedding_provider=os.getenv("EMBEDDING_PROVIDER", "local").strip().casefold() or "local",
