@@ -6,15 +6,6 @@
   padding: 0;
 }
 
-/* Supervisor research dashboard — presentation layer only. */
-body > .bg-gradient,
-body > .bg-orbs,
-body > .site-header,
-body > #home-view,
-body > .site-footer {
-  display: none !important;
-}
-
 body {
   background: #f4f6f8;
   color: #17233a;
