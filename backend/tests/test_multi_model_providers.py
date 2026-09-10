@@ -49,10 +49,31 @@ class FakeLLM:
         )
 
 
-def _bundle(*, glm_failure: ProviderUnavailable | None = None) -> ProviderBundle:
-    qwen = FakeLLM(QWEN)
-    glm = FakeLLM(GLM, failure=glm_failure)
-    deepseek = FakeLLM(DEEPSEEK)
+class ScriptedLLM(FakeLLM):
+    def __init__(self, model: str, results: list[GenerationResult | Exception]) -> None:
+        super().__init__(model)
+        self.results = list(results)
+        self.call_arguments: list[dict] = []
+
+    async def generate(self, **kwargs) -> GenerationResult:
+        self.calls += 1
+        self.call_arguments.append(kwargs)
+        result = self.results.pop(0)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+
+def _bundle(
+    *,
+    glm_failure: ProviderUnavailable | None = None,
+    qwen_provider: FakeLLM | None = None,
+    glm_provider: FakeLLM | None = None,
+    deepseek_provider: FakeLLM | None = None,
+) -> ProviderBundle:
+    qwen = qwen_provider or FakeLLM(QWEN)
+    glm = glm_provider or FakeLLM(GLM, failure=glm_failure)
+    deepseek = deepseek_provider or FakeLLM(DEEPSEEK)
     return ProviderBundle(
         llm=qwen,
         embedding=object(),
@@ -76,13 +97,13 @@ def test_shared_builder_preserves_verified_qwen_configuration(monkeypatch: pytes
         llm_max_tokens=1400,
     )
     monkeypatch.setattr("providers.factory.get_settings", lambda: settings)
-    for model in (QWEN, GLM, DEEPSEEK):
-        provider = build_llm_provider(model)
+    for model, timeout_override, expected_timeout in ((QWEN, None, 45), (GLM, None, 45), (DEEPSEEK, 90, 90)):
+        provider = build_llm_provider(model, timeout_override=timeout_override)
         assert isinstance(provider, OpenAICompatibleLLMProvider)
         assert provider.name == "siliconflow"
         assert provider.api_key == "unit-test-placeholder"
         assert provider.base_url == "https://api.siliconflow.cn/v1"
-        assert provider.timeout == 45
+        assert provider.timeout == expected_timeout
         assert provider.max_tokens == 1400
         assert provider.model == model
         assert _chat_payload(
@@ -99,17 +120,23 @@ def test_every_configured_remote_provider_uses_one_builder(monkeypatch: pytest.M
     import providers.factory as factory
 
     settings = Settings(llm_provider="siliconflow", llm_api_key="unit-test-placeholder")
-    constructed: list[str] = []
+    constructed: list[tuple[str, float | None]] = []
 
-    def fake_builder(model_id: str) -> FakeLLM:
-        constructed.append(model_id)
+    def fake_builder(model_id: str, *, timeout_override: float | None = None) -> FakeLLM:
+        constructed.append((model_id, timeout_override))
         return FakeLLM(model_id)
 
     monkeypatch.setattr(factory, "get_settings", lambda: settings)
     monkeypatch.setattr(factory, "build_llm_provider", fake_builder)
     bundle = factory.get_provider_bundle()
 
-    assert constructed == [settings.llm_model, settings.qwen_model, settings.glm_model, settings.deepseek_model, settings.consensus_model]
+    assert constructed == [
+        (settings.llm_model, None),
+        (settings.qwen_model, None),
+        (settings.glm_model, None),
+        (settings.deepseek_model, 90),
+        (settings.consensus_model, None),
+    ]
     assert bundle.llm.model == settings.llm_model
     assert bundle.qwen.model == QWEN
     assert bundle.glm.model == GLM
@@ -168,6 +195,91 @@ def test_model_target_and_profile_cannot_be_combined() -> None:
             model_profile=ModelProfile.M2,
             model_target=ModelTarget.GLM,
         )
+
+
+def test_finish_reason_stop_accepts_valid_unpunctuated_deepseek_text() -> None:
+    text = "This source constrained educational summary reports only the supplied evidence"
+    deepseek = ScriptedLLM(DEEPSEEK, [GenerationResult(text=text, provider="siliconflow", model=DEEPSEEK, finish_reason="stop")])
+
+    async def run_once():
+        workbench = ResearchWorkbench(force_mock=True)
+        workbench.providers = _bundle(deepseek_provider=deepseek)
+        workbench.settings = workbench.settings.model_copy(update={
+            "llm_provider": "siliconflow",
+            "llm_api_key": "unit-test-placeholder",
+            "research_real_llm_enabled": True,
+        })
+        return await workbench.run(ResearchRequest(
+            question="Explain herbal formula concepts for insomnia in TCM teaching.",
+            condition_id=ConditionId.C1,
+            retrieval_strategy=RetrievalStrategy.R2,
+            model_target=ModelTarget.DEEPSEEK,
+        ))
+
+    result = asyncio.run(run_once())
+    assert result.trace is not None
+    assert result.trace.successful_provider_calls == 1
+    assert len(result.trace.provider_attempts) == 1
+    assert result.trace.provider_attempts[0].finish_reason == "stop"
+
+
+def test_deepseek_length_retry_uses_larger_budget_and_traces_finish_reason() -> None:
+    deepseek = ScriptedLLM(DEEPSEEK, [
+        GenerationResult(text="This response is truncated before its final sentence", provider="siliconflow", model=DEEPSEEK, finish_reason="length"),
+        GenerationResult(text="This source-constrained educational summary reports only the supplied evidence.", provider="siliconflow", model=DEEPSEEK, finish_reason="stop"),
+    ])
+
+    async def run_once():
+        workbench = ResearchWorkbench(force_mock=True)
+        workbench.providers = _bundle(deepseek_provider=deepseek)
+        workbench.settings = workbench.settings.model_copy(update={
+            "llm_provider": "siliconflow",
+            "llm_api_key": "unit-test-placeholder",
+            "research_real_llm_enabled": True,
+        })
+        return await workbench.run(ResearchRequest(
+            question="Explain herbal formula concepts for insomnia in TCM teaching.",
+            condition_id=ConditionId.C1,
+            retrieval_strategy=RetrievalStrategy.R2,
+            model_target=ModelTarget.DEEPSEEK,
+        ))
+
+    result = asyncio.run(run_once())
+    assert [call["max_tokens"] for call in deepseek.call_arguments] == [384, 640]
+    assert "Return one complete concise paragraph and end the final sentence with terminal punctuation." in deepseek.call_arguments[1]["system"]
+    assert result.trace is not None
+    assert [attempt.finish_reason for attempt in result.trace.provider_attempts] == ["length", "stop"]
+    assert result.trace.provider_attempts[0].error == "truncated output (finish_reason=length)"
+    assert result.trace.provider_attempts[1].success is True
+
+
+@pytest.mark.parametrize("model_target, model", [(ModelTarget.QWEN, QWEN), (ModelTarget.GLM, GLM)])
+def test_qwen_and_glm_retry_token_budget_is_unchanged(model_target: ModelTarget, model: str) -> None:
+    provider = ScriptedLLM(model, [
+        GenerationResult(text="This otherwise valid response has no terminal punctuation", provider="siliconflow", model=model, finish_reason="stop"),
+        GenerationResult(text="This source-constrained educational summary reports only the supplied evidence.", provider="siliconflow", model=model, finish_reason="stop"),
+    ])
+
+    async def run_once():
+        workbench = ResearchWorkbench(force_mock=True)
+        providers = {"qwen_provider": provider} if model_target == ModelTarget.QWEN else {"glm_provider": provider}
+        workbench.providers = _bundle(**providers)
+        workbench.settings = workbench.settings.model_copy(update={
+            "llm_provider": "siliconflow",
+            "llm_api_key": "unit-test-placeholder",
+            "research_real_llm_enabled": True,
+        })
+        return await workbench.run(ResearchRequest(
+            question="Explain herbal formula concepts for insomnia in TCM teaching.",
+            condition_id=ConditionId.C1,
+            retrieval_strategy=RetrievalStrategy.R2,
+            model_target=model_target,
+        ))
+
+    result = asyncio.run(run_once())
+    assert [call["max_tokens"] for call in provider.call_arguments] == [384, 384]
+    assert all("Return one complete concise paragraph" not in call["system"] for call in provider.call_arguments)
+    assert result.trace is not None and result.trace.successful_provider_calls == 1
 
 
 def test_legacy_request_uses_qwen_and_model_failure_is_isolated() -> None:

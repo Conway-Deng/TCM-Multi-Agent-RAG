@@ -215,8 +215,11 @@ class ResearchWorkbench:
         generated_evidence_ids = baseline.evidence_ids
         rejection = None
         attempt_trace: list[ProviderAttempt] = []
+        deepseek = provider.model == self.settings.deepseek_model
         for retry in (False, True):
             system, prompt, prompt_evidence_ids = _agent_prompt(agent, request.question, plan.language, baseline, evidence, target_plan, retry=retry)
+            if retry and deepseek:
+                system += " Return one complete concise paragraph and end the final sentence with terminal punctuation."
             attempts += 1
             attempt_started = time.perf_counter()
             try:
@@ -224,7 +227,7 @@ class ResearchWorkbench:
                     system=system,
                     prompt=prompt,
                     temperature=0.0,
-                    max_tokens=384,
+                    max_tokens=640 if retry and deepseek else 384,
                     frequency_penalty=0.5 if not retry else 1.0,
                 )
             except ProviderUnavailable as exc:
@@ -241,7 +244,10 @@ class ResearchWorkbench:
                     retry_performed=retry is False,
                 ))
                 continue
-            rejection = runaway_output_reason(candidate.text)
+            rejection = runaway_output_reason(
+                candidate.text,
+                finish_reason=candidate.finish_reason if deepseek else None,
+            )
             if rejection is None:
                 rejection = self.retriever.unsupported_multi_entity_claim(request.question, candidate.text, evidence)
             if rejection is not None:
@@ -251,6 +257,7 @@ class ResearchWorkbench:
                     model=candidate.model,
                     elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
                     success=False,
+                    finish_reason=candidate.finish_reason,
                     error_type="output_quality_rejection",
                     error=rejection,
                     retry_performed=retry is False,
@@ -262,6 +269,7 @@ class ResearchWorkbench:
                 model=candidate.model,
                 elapsed_ms=round((time.perf_counter() - attempt_started) * 1000),
                 success=True,
+                finish_reason=candidate.finish_reason,
                 retry_performed=False,
             ))
             if rejection is None:

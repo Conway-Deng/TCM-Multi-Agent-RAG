@@ -157,6 +157,7 @@ class ProviderAttempt(BaseModel):
     model: str = "unknown"
     elapsed_ms: int = Field(default=0, ge=0)
     success: bool = False
+    finish_reason: str | None = None
     http_status: int | None = Field(default=None, ge=100, le=599)
     error_type: Literal["timeout", "rate_limit", "http_4xx", "http_5xx", "connectivity", "output_quality_rejection", "malformed_response", "unknown"] | None = None
     error: str | None = None

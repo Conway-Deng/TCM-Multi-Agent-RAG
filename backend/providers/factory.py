@@ -32,14 +32,14 @@ M2_SPECIALIST_ROTATIONS: dict[int, tuple[str, str, str]] = {
 }
 
 
-def build_llm_provider(model_id: str) -> LLMProvider:
+def build_llm_provider(model_id: str, *, timeout_override: float | None = None) -> LLMProvider:
     """Build every configured remote model through the verified Qwen path."""
     settings = get_settings()
     return OpenAICompatibleLLMProvider(
         api_key=settings.llm_api_key,
         base_url=settings.llm_base_url,
         model=model_id,
-        timeout=settings.llm_timeout_seconds,
+        timeout=settings.llm_timeout_seconds if timeout_override is None else timeout_override,
         max_tokens=settings.llm_max_tokens,
         provider_name=settings.llm_provider,
     )
@@ -94,10 +94,13 @@ def get_provider_bundle(*, force_mock: bool = False) -> ProviderBundle:
         consensus: LLMProvider = mock
         mock_mode = True
     else:
-        llm = build_llm_provider(settings.llm_model)
+        llm = build_llm_provider(
+            settings.llm_model,
+            timeout_override=settings.deepseek_timeout_seconds if settings.llm_model == settings.deepseek_model else None,
+        )
         qwen = build_llm_provider(settings.qwen_model)
         glm = build_llm_provider(settings.glm_model)
-        deepseek = build_llm_provider(settings.deepseek_model)
+        deepseek = build_llm_provider(settings.deepseek_model, timeout_override=settings.deepseek_timeout_seconds)
         consensus = build_llm_provider(settings.consensus_model)
         mock_mode = False
     embedding: EmbeddingProvider = LocalHashEmbeddingProvider()

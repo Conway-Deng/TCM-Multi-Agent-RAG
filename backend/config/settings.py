@@ -21,6 +21,7 @@ class Settings(BaseModel):
     deepseek_model: str = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
     consensus_model: str = "Qwen/Qwen3-8B"
     llm_timeout_seconds: float = 45.0
+    deepseek_timeout_seconds: float = 90.0
     llm_max_tokens: int = 1400
     embedding_provider: str = "local"
     embedding_api_key: str = ""
@@ -74,6 +75,7 @@ def get_settings() -> Settings:
         deepseek_model=os.getenv("DEEPSEEK_MODEL", "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B").strip() or "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
         consensus_model=os.getenv("CONSENSUS_MODEL", "Qwen/Qwen3-8B").strip() or "Qwen/Qwen3-8B",
         llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "45")),
+        deepseek_timeout_seconds=float(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "90")),
         llm_max_tokens=int(os.getenv("LLM_MAX_TOKENS", "1400")),
         embedding_provider=os.getenv("EMBEDDING_PROVIDER", "local").strip().casefold() or "local",
         embedding_api_key=os.getenv("EMBEDDING_API_KEY", "").strip(),

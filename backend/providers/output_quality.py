@@ -7,16 +7,18 @@ import re
 _WORD_PATTERN = re.compile(r"[A-Za-z]+(?:[-'][A-Za-z]+)?|[\u3400-\u9fff]|[\uac00-\ud7af]")
 
 
-def runaway_output_reason(text: str, *, max_words: int = 180) -> str | None:
+def runaway_output_reason(text: str, *, max_words: int = 180, finish_reason: str | None = None) -> str | None:
     """Return a rejection reason without modifying generated medical content."""
     if not text.strip():
         return "empty output"
     stripped = text.strip()
+    if finish_reason == "length":
+        return "truncated output (finish_reason=length)"
     if "\ufffd" in text or any(ord(character) < 32 and character not in "\n\r\t" for character in text):
         return "invalid text character"
     if "\\" in text:
         return "unexpected escape formatting"
-    if not stripped.endswith((".", "?", "!", "。", "？", "！")):
+    if finish_reason != "stop" and not stripped.endswith((".", "?", "!", "。", "？", "！")):
         return "incomplete paragraph"
     if re.search(r"(?:,,|;;|::|\.\.)", text):
         return "malformed repeated punctuation"

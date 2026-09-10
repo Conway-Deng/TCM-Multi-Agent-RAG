@@ -51,6 +51,13 @@ def _extract_chat_content(data: dict[str, Any]) -> str:
     return content
 
 
+def _extract_finish_reason(data: dict[str, Any]) -> str | None:
+    finish_reason = data["choices"][0].get("finish_reason")
+    if finish_reason is not None and not isinstance(finish_reason, str):
+        raise TypeError("provider finish_reason must be a string or null")
+    return finish_reason
+
+
 class OpenAICompatibleLLMProvider:
     def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
         self.name = provider_name
@@ -90,6 +97,7 @@ class OpenAICompatibleLLMProvider:
                 response.raise_for_status()
                 data = response.json()
             content = _extract_chat_content(data)
+            finish_reason = _extract_finish_reason(data)
             usage = data.get("usage", {})
             return GenerationResult(
                 text=content,
@@ -97,6 +105,8 @@ class OpenAICompatibleLLMProvider:
                 model=self.model,
                 prompt_tokens=int(usage.get("prompt_tokens", 0)),
                 completion_tokens=int(usage.get("completion_tokens", 0)),
+                finish_reason=finish_reason,
+                metadata={"finish_reason": finish_reason},
             )
         except httpx.TimeoutException as exc:
             raise ProviderUnavailable("LLM request timed out", error_type="timeout") from exc

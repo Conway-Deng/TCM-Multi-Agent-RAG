@@ -11,6 +11,7 @@ class GenerationResult:
     model: str
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    finish_reason: str | None = None
     fallback: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
 

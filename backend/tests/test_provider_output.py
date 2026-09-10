@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 import sys
@@ -12,7 +13,7 @@ sys.path.insert(0, str(BACKEND))
 
 from agents import build_agents
 from orchestration.workbench import _agent_prompt, _claim_with_citations, _synthesis
-from providers.openai_compatible import _chat_payload, _extract_chat_content
+from providers.openai_compatible import OpenAICompatibleLLMProvider, _chat_payload, _extract_chat_content, _extract_finish_reason
 from providers.output_quality import runaway_output_reason
 from schemas.research import DebateTrace, ResearchAgentOutput, StructuredClaim
 
@@ -31,6 +32,8 @@ def test_non_streaming_payload_and_response_content_are_extracted_once() -> None
     assert payload["max_tokens"] == 384
     assert payload["frequency_penalty"] == 0.5
     assert _extract_chat_content({"choices": [{"message": {"content": "one complete response"}}]}) == "one complete response"
+    assert _extract_finish_reason({"choices": [{"message": {"content": "one complete response"}, "finish_reason": "stop"}]}) == "stop"
+    assert _extract_finish_reason({"choices": [{"message": {"content": "one complete response"}}]}) is None
     with pytest.raises(TypeError):
         _extract_chat_content({"choices": [{"message": {"content": {"text": "not a string"}}}]})
 
@@ -43,6 +46,44 @@ def test_non_streaming_payload_and_response_content_are_extracted_once() -> None
         frequency_penalty=0.5,
     )
     assert qwen3_payload["enable_thinking"] is False
+
+
+def test_provider_generation_captures_finish_reason(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return {
+                "choices": [{"message": {"content": "A complete provider response."}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 4, "completion_tokens": 5},
+            }
+
+    class FakeClient:
+        def __init__(self, *, timeout: float) -> None:
+            self.timeout = timeout
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return None
+
+        async def post(self, *_, **__) -> FakeResponse:
+            return FakeResponse()
+
+    monkeypatch.setattr("providers.openai_compatible.httpx.AsyncClient", FakeClient)
+    provider = OpenAICompatibleLLMProvider(
+        api_key="unit-test-placeholder",
+        base_url="https://api.siliconflow.cn/v1",
+        model="Qwen/Qwen3-8B",
+        timeout=45,
+        max_tokens=1400,
+        provider_name="siliconflow",
+    )
+    result = asyncio.run(provider.generate(system="system", prompt="prompt"))
+    assert result.finish_reason == "stop"
+    assert result.metadata["finish_reason"] == "stop"
 
 
 def test_evidence_prompt_is_clean_and_leaves_provenance_to_backend() -> None:
@@ -84,6 +125,10 @@ def test_runaway_output_is_rejected_without_rewriting_content() -> None:
     assert runaway_output_reason("Red Ginseng is used classified as reinforcing qi") == "incomplete paragraph"
     assert runaway_output_reason("Red Ginseng is knownR. ginseng and is traditionally described as warm.") == "malformed token spacing"
     assert runaway_output_reason("Red Ginseng is traditionally described as warm,, sweet, and slightly bitter.") == "malformed repeated punctuation"
+    assert runaway_output_reason("Red Ginseng is traditionally described as warm sweet and slightly bitter", finish_reason="stop") is None
+    assert runaway_output_reason("Red Ginseng is traditionally described as warm sweet and slightly bitter", finish_reason="length") == "truncated output (finish_reason=length)"
+    assert runaway_output_reason("Red Ginseng is traditionally slightly slightly bitter and used to reinforce qi", finish_reason="stop") == "consecutive repeated token"
+    assert runaway_output_reason("Red Ginseng is knownR ginseng and is traditionally described as warm", finish_reason="stop") == "malformed token spacing"
 
 
 def test_normal_c1_c2_synthesis_serializes_cleanly() -> None:
