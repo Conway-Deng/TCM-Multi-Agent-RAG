@@ -42,9 +42,7 @@ def test_export_contract_is_secret_safe_and_supports_run_and_compare() -> None:
 
 
 def test_runtime_model_selector_and_payload_contract() -> None:
-    assert "<span>Step 4</span>Interactive model configuration" in HTML
-    assert "Single-model test" in HTML
-    assert "Multi-agent configuration" in HTML
+    assert "<span>Step 4</span>Multi-Agent model configuration" in HTML
     assert 'id="consensus-model-target"' in HTML
     assert 'id="consensus-model-profile"' in HTML
     assert '<option value="qwen" selected>Qwen · Qwen/Qwen3-8B</option>' in HTML
@@ -58,16 +56,25 @@ def test_runtime_model_selector_and_payload_contract() -> None:
     assert 'name="interactive-model-configuration" value="profile:M2"' in HTML
     assert "profile ? { model_profile: profile } : { model_target: $('#consensus-model-target').value || 'qwen' }" in JS
     assert "...selectedModelConfigurationPayload()" in JS
-    assert "Qwen × 3 specialist seats" in HTML
-    assert all(label in HTML for label in ("Qwen ✓", "GLM ✓", "DeepSeek ✓"))
-    assert "Interactive multi-model routing; formal A3 results were produced by a separate frozen experimental protocol." in HTML
+    assert "M1 · Homogeneous Multi-Agent" in HTML
+    assert "Qwen × 3 specialist agents" in HTML
+    assert all(label in HTML for label in ("Agent A · Qwen ✓", "Agent B · Qwen ✓", "Agent C · Qwen ✓"))
+    assert "M2 · Heterogeneous Multi-Agent" in HTML
+    assert "Qwen + GLM + DeepSeek" in HTML
+    assert all(label in HTML for label in ("Qwen ✓", "GLM ✓", "DeepSeek ✓", "Consensus · Qwen"))
+    assert "Specialist seat assignment follows the configured model rotation." in HTML
+    assert "Interactive demonstration of the model configurations evaluated in A3. Formal A3 results were produced under the frozen experimental protocol." in HTML
     assert "Formal A3 reproduction" not in HTML
     assert "Published experiment rerun" not in HTML
 
 
 def test_multi_model_profile_warning_and_trace_diagnostics() -> None:
-    assert "Multi-model profiles are most meaningful with a multi-agent architecture such as C2; C1 has only one active specialist seat." in HTML
-    assert "condition === 'C1' && $('#consensus-model-profile').value" in JS
+    assert "C1 is a single-agent baseline. M1/M2 are Multi-Agent configurations and are most meaningful for Multi-Agent / Debate architectures." in HTML
+    assert "input.disabled = isC1" in JS
+    assert "if (isC1 && profile.value)" in JS
+    assert "target.value = 'qwen'" in JS
+    assert "Advanced provider diagnostics" in HTML
+    assert "Provider diagnostic only; not the A3 Multi-Agent comparison." in HTML
     assert "Models in provider attempts" in HTML
     assert "attemptedModels" in JS
     assert ".map((attempt) => attempt.model).filter(Boolean)" in JS

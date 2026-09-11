@@ -367,28 +367,26 @@
               <p id="retrieval-help" class="selection-help">Deterministic lexical retrieval over the active corpus.</p>
             </fieldset>
             <fieldset class="setup-step choice-fieldset" aria-describedby="runtime-model-help model-profile-architecture-warning">
-              <legend><span>Step 4</span>Interactive model configuration</legend>
+              <legend><span>Step 4</span>Multi-Agent model configuration</legend>
               <select id="consensus-model-target" class="contract-select" aria-hidden="true" tabindex="-1"><option value="qwen" selected>Qwen · Qwen/Qwen3-8B</option><option value="glm">GLM · THUDM/GLM-Z1-9B-0414</option><option value="deepseek">DeepSeek · deepseek-ai/DeepSeek-R1-0528-Qwen3-8B</option></select>
               <select id="consensus-model-profile" class="contract-select" aria-hidden="true" tabindex="-1"><option value="" selected>Single-model test</option><option value="M1">M1 · Homogeneous Qwen</option><option value="M2">M2 · Heterogeneous</option></select>
-              <div class="model-configuration-group" role="radiogroup" aria-label="Interactive model configuration">
-                <div class="model-configuration-section">
-                  <p class="model-configuration-heading">Single-model test <small>Uses model_target</small></p>
+              <div class="model-configuration-group" role="radiogroup" aria-label="Multi-Agent model configuration">
+                <div id="model-profile-card-grid" class="model-profile-card-grid" aria-label="A3 model profiles">
+                  <label class="choice-card model-profile-card"><input type="radio" name="interactive-model-configuration" value="profile:M1"><span class="choice-card-code">M1 · Homogeneous Multi-Agent</span><strong>Qwen × 3 specialist agents</strong><span class="model-seat-list"><span>Agent A · Qwen ✓</span><span>Agent B · Qwen ✓</span><span>Agent C · Qwen ✓</span><span>Consensus · Qwen</span></span></label>
+                  <label class="choice-card model-profile-card"><input type="radio" name="interactive-model-configuration" value="profile:M2"><span class="choice-card-code">M2 · Heterogeneous Multi-Agent</span><strong>Qwen + GLM + DeepSeek</strong><span class="model-seat-list"><span>Qwen ✓</span><span>GLM ✓</span><span>DeepSeek ✓</span><span>Consensus · Qwen</span></span><small>Specialist seat assignment follows the configured model rotation.</small></label>
+                </div>
+                <p id="runtime-model-help" class="selection-help">Interactive demonstration of the model configurations evaluated in A3. Formal A3 results were produced under the frozen experimental protocol.</p>
+                <p id="model-profile-architecture-warning" class="selection-help model-profile-warning" role="note" hidden>C1 is a single-agent baseline. M1/M2 are Multi-Agent configurations and are most meaningful for Multi-Agent / Debate architectures. Qwen is selected as the single-agent baseline.</p>
+                <details class="provider-diagnostics">
+                  <summary>Advanced provider diagnostics</summary>
+                  <p class="selection-help">Provider diagnostic only; not the A3 Multi-Agent comparison.</p>
                   <div class="model-card-grid">
-                    <label class="choice-card"><input type="radio" name="interactive-model-configuration" value="target:qwen" checked><span class="choice-card-code">Qwen</span><strong>Qwen/Qwen3-8B</strong></label>
-                    <label class="choice-card"><input type="radio" name="interactive-model-configuration" value="target:glm"><span class="choice-card-code">GLM</span><strong>THUDM/GLM-Z1-9B-0414</strong></label>
-                    <label class="choice-card"><input type="radio" name="interactive-model-configuration" value="target:deepseek"><span class="choice-card-code">DeepSeek</span><strong>deepseek-ai/DeepSeek-R1-0528-Qwen3-8B</strong></label>
+                    <label class="choice-card choice-card-compact"><input type="radio" name="interactive-model-configuration" value="target:qwen" checked><span class="choice-card-code">Qwen</span><strong>Qwen/Qwen3-8B</strong></label>
+                    <label class="choice-card choice-card-compact"><input type="radio" name="interactive-model-configuration" value="target:glm"><span class="choice-card-code">GLM</span><strong>THUDM/GLM-Z1-9B-0414</strong></label>
+                    <label class="choice-card choice-card-compact"><input type="radio" name="interactive-model-configuration" value="target:deepseek"><span class="choice-card-code">DeepSeek</span><strong>deepseek-ai/DeepSeek-R1-0528-Qwen3-8B</strong></label>
                   </div>
-                </div>
-                <div class="model-configuration-section">
-                  <p class="model-configuration-heading">Multi-agent configuration <small>Uses model_profile</small></p>
-                  <div class="model-profile-card-grid">
-                    <label class="choice-card model-profile-card"><input type="radio" name="interactive-model-configuration" value="profile:M1"><span class="choice-card-code">M1 · Homogeneous Qwen</span><strong>Qwen × 3 specialist seats</strong></label>
-                    <label class="choice-card model-profile-card"><input type="radio" name="interactive-model-configuration" value="profile:M2"><span class="choice-card-code">M2 · Heterogeneous</span><strong class="model-participants"><span>Qwen ✓</span><span>GLM ✓</span><span>DeepSeek ✓</span></strong></label>
-                  </div>
-                </div>
+                </details>
               </div>
-              <p id="model-profile-architecture-warning" class="selection-help model-profile-warning" role="note" hidden>Multi-model profiles are most meaningful with a multi-agent architecture such as C2; C1 has only one active specialist seat.</p>
-              <p id="runtime-model-help" class="selection-help">Interactive multi-model routing; formal A3 results were produced by a separate frozen experimental protocol.</p>
             </fieldset>
             <div class="consensus-form-footer"><p>Corpus v1, model, calls, and evidence IDs are recorded with every run.</p><button id="consensus-submit" class="consensus-submit" type="submit"><span id="consensus-submit-label">Run experiment</span><span class="consensus-spinner" aria-hidden="true"></span></button></div>
             <div id="consensus-progress" class="research-progress" role="status" aria-live="polite" hidden><div class="research-progress-bar" aria-hidden="true"><span></span></div><div><strong id="consensus-progress-status">Connecting to research backend…</strong><time id="consensus-progress-elapsed">0.0 s</time></div><small id="consensus-progress-detail">Progress is indeterminate; elapsed time is measured directly.</small></div>

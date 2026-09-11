@@ -473,9 +473,16 @@
   function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
   function setResearchControlsDisabled(disabled) {
     $$('#consensus-form textarea, #consensus-form select, #consensus-form input[type="radio"]').forEach((control) => { control.disabled = disabled; });
+    if (!disabled) updateModelArchitectureState();
     setText('#consensus-submit-label', disabled ? 'Running experiment…' : 'Run experiment');
   }
-  function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); const warning = $('#model-profile-architecture-warning'); if (warning) warning.hidden = !(condition === 'C1' && $('#consensus-model-profile').value); }
+  function updateModelArchitectureState() {
+    const isC1 = $('#consensus-strategy').value === 'C1'; const target = $('#consensus-model-target'); const profile = $('#consensus-model-profile'); const radios = $$('input[name="interactive-model-configuration"]');
+    radios.filter((input) => input.value.startsWith('profile:')).forEach((input) => { input.disabled = isC1; });
+    const profileGrid = $('#model-profile-card-grid'); profileGrid.classList.toggle('is-disabled', isC1); profileGrid.setAttribute('aria-disabled', String(isC1)); $('#model-profile-architecture-warning').hidden = !isC1;
+    if (isC1 && profile.value) { profile.value = ''; target.value = 'qwen'; radios.forEach((input) => { input.checked = input.value === 'target:qwen'; }); }
+  }
+  function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); updateModelArchitectureState(); }
   function bindChoiceGroup(name, selectSelector) {
     const select = $(selectSelector);
     const radios = $$('input[name="' + name + '"]');
