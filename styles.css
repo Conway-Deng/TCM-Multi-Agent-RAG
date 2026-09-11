@@ -4629,6 +4629,7 @@ body {
 .formal-experiment-card span { color: var(--accent-strong); font-weight: 900; font-size: .76rem; letter-spacing: .04em; }
 .formal-experiment-card strong { font-size: 1rem; }
 .formal-experiment-card small { color: var(--text-muted); line-height: 1.45; }
+.formal-empty-state { margin: 1rem 0 0; padding: 1rem; border: 1px dashed var(--border); border-radius: 12px; background: var(--surface); color: var(--text-muted); text-align: center; }
 .paper-configuration, .formal-job-panel { margin-top: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 14px; background: rgb(255 255 255 / 72%); }
 .paper-config-fields, .experiment-guide dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: 1rem 0; }
 .paper-config-fields div, .experiment-guide dl div, .formal-job-grid div { padding: .7rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
@@ -4638,8 +4639,8 @@ body {
 .paper-condition-controls { display: flex; flex-wrap: wrap; gap: .55rem; margin: .8rem 0; }
 .paper-condition-controls label { display: flex; gap: .45rem; align-items: flex-start; padding: .65rem .75rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
 .paper-condition-controls input { margin-top: .18rem; }
-.experiment-guide { margin-top: 1rem; padding: .85rem; border-left: 3px solid var(--accent); background: var(--accent-soft); }
-.experiment-guide h4 { margin: 0; }
+.experiment-guide, .formal-condition-details { margin-top: 1rem; padding: .85rem; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.experiment-guide summary, .formal-condition-details summary { cursor: pointer; font-weight: 800; color: var(--accent-strong); }
 .formal-run-controls { display: grid; gap: .65rem; margin-top: 1rem; }
 .formal-run-controls > label { font-weight: 800; }
 .formal-run-controls > label span { color: var(--text-muted); font-weight: 400; }

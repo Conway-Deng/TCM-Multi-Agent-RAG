@@ -189,13 +189,13 @@
     const controls = [
       ['one_case', 'Run One Case', $('#run-one-case')],
       ['paired', 'Run Paired Comparison', $('#run-paired')],
-      ['full_benchmark', 'Full Formal Benchmark', $('#run-full-benchmark')],
+      ['full_benchmark', 'Full Formal Replay — Local worker required 🔒', $('#run-full-benchmark')],
     ];
     const statuses = $('#formal-capability-statuses'); statuses.replaceChildren();
     controls.forEach(([mode, label, button]) => {
       const capability = (selectedFormalExperiment.run_capabilities || {})[mode] || { state: 'UNAVAILABLE', reason: 'Capability was not reported by the backend.' };
-      button.disabled = !paperConfigurationApplied || !modes.includes(mode);
-      button.title = button.disabled ? capability.reason || (paperConfigurationApplied ? capability.state : 'Apply the locked paper configuration first.') : '';
+      button.disabled = mode === 'full_benchmark' || !modes.includes(mode);
+      button.title = button.disabled ? (mode === 'full_benchmark' ? 'Run locally with a persistent worker.' : capability.reason || capability.state) : '';
       const item = element('div', 'formal-capability');
       item.append(element('span', '', label), element('strong', capability.state === 'READY ONLINE' ? 'capability-ready' : capability.state === 'LOCAL FULL REPLAY' ? 'capability-local' : 'capability-unavailable', capability.state));
       if (capability.reason) item.append(element('small', '', capability.reason));
@@ -205,7 +205,8 @@
 
   function selectFormalExperiment(item) {
     selectedFormalExperiment = item;
-    paperConfigurationApplied = false;
+    paperConfigurationApplied = true;
+    activeFormalRunId = null;
     $$('.formal-experiment-card').forEach((card) => card.setAttribute('aria-pressed', String(card.dataset.experimentId === item.experiment_id)));
     $('#paper-configuration').hidden = false;
     setText('#paper-config-title', item.number + ' · ' + item.title);
@@ -226,7 +227,9 @@
     });
     setText('#guide-question', item.research_question); setText('#guide-changes', item.what_changes); setText('#guide-fixed', item.what_stays_fixed);
     setText('#guide-provider', item.models.join(' / ') + ' · ' + item.provider); setText('#guide-dataset', item.dataset); setText('#guide-metric', item.primary_metrics.join(', '));
-    showMessage($('#formal-run-message'), item.disabled_reason || 'Select Apply Paper Configuration to confirm the locked protocol.');
+    $('#formal-job-panel').hidden = true;
+    $('#formal-empty-state').hidden = false;
+    showMessage($('#formal-run-message'), item.disabled_reason || 'Locked paper configuration applied automatically.');
     updateFormalRunButtons();
   }
 
@@ -248,6 +251,7 @@
 
   function renderFormalStatus(status) {
     activeFormalRunId = status.run_id;
+    $('#formal-empty-state').hidden = true;
     $('#formal-job-panel').hidden = false;
     setText('#formal-job-title', status.experiment_id + ' · ' + status.run_id); setText('#formal-job-status', status.status);
     setText('#formal-job-progress', status.completed + ' / ' + status.total); setText('#formal-job-condition', status.current_condition || '—');
@@ -279,6 +283,7 @@
   async function startFormalRun(runMode) {
     if (!selectedFormalExperiment || !paperConfigurationApplied) return;
     if (runMode === 'full_benchmark' && !window.confirm('Start a new full benchmark replay? This may make many provider calls and replay files may not be durable on hosted infrastructure.')) return;
+    if (runMode === 'full_benchmark') return;
     const selected = $('input[name="formal-condition"]:checked');
     const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: runMode };
     if (runMode === 'one_case') body.condition = selected ? selected.value : selectedFormalExperiment.conditions[0].id;
@@ -561,14 +566,8 @@
   $$('.language-btn').forEach((button) => button.addEventListener('click', () => applyLanguage(button.dataset.lang)));
   $('#guided-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('guided'));
   $('#custom-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('custom'));
-  $('#apply-paper-configuration').addEventListener('click', () => {
-    paperConfigurationApplied = true;
-    showMessage($('#formal-run-message'), selectedFormalExperiment?.disabled_reason || 'Paper configuration applied. Fixed settings remain locked.');
-    updateFormalRunButtons();
-  });
   $('#run-one-case').addEventListener('click', () => startFormalRun('one_case'));
   $('#run-paired').addEventListener('click', () => startFormalRun('paired'));
-  $('#run-full-benchmark').addEventListener('click', () => startFormalRun('full_benchmark'));
   $('#refresh-formal-run').addEventListener('click', refreshFormalRun);
   $('#resume-formal-run').addEventListener('click', async () => {
     if (!activeFormalRunId) return;
