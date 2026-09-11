@@ -42,19 +42,35 @@ def test_export_contract_is_secret_safe_and_supports_run_and_compare() -> None:
 
 
 def test_runtime_model_selector_and_payload_contract() -> None:
-    assert "<span>Step 4</span>Runtime model" in HTML
+    assert "<span>Step 4</span>Interactive model configuration" in HTML
+    assert "Single-model test" in HTML
+    assert "Multi-agent configuration" in HTML
     assert 'id="consensus-model-target"' in HTML
+    assert 'id="consensus-model-profile"' in HTML
     assert '<option value="qwen" selected>Qwen · Qwen/Qwen3-8B</option>' in HTML
     assert '<option value="glm">GLM · THUDM/GLM-Z1-9B-0414</option>' in HTML
     assert '<option value="deepseek">DeepSeek · deepseek-ai/DeepSeek-R1-0528-Qwen3-8B</option>' in HTML
-    assert HTML.count('name="runtime-model"') == 3
-    assert 'name="runtime-model" value="qwen" checked' in HTML
-    assert 'name="runtime-model" value="glm"' in HTML
-    assert 'name="runtime-model" value="deepseek"' in HTML
-    assert "bindChoiceGroup('runtime-model', '#consensus-model-target')" in JS
-    assert "model_target: $('#consensus-model-target').value" in JS
-    assert "model_profile" not in JS
-    assert "Manual runtime selection for interactive demonstration; formal experiment configurations are reported separately." in HTML
+    assert HTML.count('name="interactive-model-configuration"') == 5
+    assert 'name="interactive-model-configuration" value="target:qwen" checked' in HTML
+    assert 'name="interactive-model-configuration" value="target:glm"' in HTML
+    assert 'name="interactive-model-configuration" value="target:deepseek"' in HTML
+    assert 'name="interactive-model-configuration" value="profile:M1"' in HTML
+    assert 'name="interactive-model-configuration" value="profile:M2"' in HTML
+    assert "profile ? { model_profile: profile } : { model_target: $('#consensus-model-target').value || 'qwen' }" in JS
+    assert "...selectedModelConfigurationPayload()" in JS
+    assert "Qwen × 3 specialist seats" in HTML
+    assert all(label in HTML for label in ("Qwen ✓", "GLM ✓", "DeepSeek ✓"))
+    assert "Interactive multi-model routing; formal A3 results were produced by a separate frozen experimental protocol." in HTML
+    assert "Formal A3 reproduction" not in HTML
+    assert "Published experiment rerun" not in HTML
+
+
+def test_multi_model_profile_warning_and_trace_diagnostics() -> None:
+    assert "Multi-model profiles are most meaningful with a multi-agent architecture such as C2; C1 has only one active specialist seat." in HTML
+    assert "condition === 'C1' && $('#consensus-model-profile').value" in JS
+    assert "Models in provider attempts" in HTML
+    assert "attemptedModels" in JS
+    assert ".map((attempt) => attempt.model).filter(Boolean)" in JS
 
 
 def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
