@@ -1,0 +1,175 @@
+{
+  "K1": {
+    "accuracy": 0.7878787878787878,
+    "macro_f1": 0.7797277994377938,
+    "per_class": {
+      "AGREEMENT": {
+        "precision": 0.8888888888888888,
+        "recall": 0.6,
+        "f1": 0.7164179104477612,
+        "support": 40
+      },
+      "PARTIAL_CONFLICT": {
+        "precision": 0.625,
+        "recall": 0.75,
+        "f1": 0.6818181818181818,
+        "support": 40
+      },
+      "DIRECT_CONFLICT": {
+        "precision": 0.6111111111111112,
+        "recall": 0.9166666666666666,
+        "f1": 0.7333333333333334,
+        "support": 12
+      },
+      "INSUFFICIENT_OR_AMBIGUOUS": {
+        "precision": 1.0,
+        "recall": 0.975,
+        "f1": 0.9873417721518987,
+        "support": 40
+      }
+    },
+    "confusion_matrix": {
+      "AGREEMENT": {
+        "AGREEMENT": 24,
+        "PARTIAL_CONFLICT": 16,
+        "DIRECT_CONFLICT": 0,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "PARTIAL_CONFLICT": {
+        "AGREEMENT": 3,
+        "PARTIAL_CONFLICT": 30,
+        "DIRECT_CONFLICT": 7,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "DIRECT_CONFLICT": {
+        "AGREEMENT": 0,
+        "PARTIAL_CONFLICT": 1,
+        "DIRECT_CONFLICT": 11,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "INSUFFICIENT_OR_AMBIGUOUS": {
+        "AGREEMENT": 0,
+        "PARTIAL_CONFLICT": 1,
+        "DIRECT_CONFLICT": 0,
+        "INSUFFICIENT_OR_AMBIGUOUS": 39
+      }
+    }
+  },
+  "K2": {
+    "accuracy": 0.7651515151515151,
+    "macro_f1": 0.7588704592604645,
+    "per_class": {
+      "AGREEMENT": {
+        "precision": 0.9047619047619048,
+        "recall": 0.475,
+        "f1": 0.6229508196721311,
+        "support": 40
+      },
+      "PARTIAL_CONFLICT": {
+        "precision": 0.6037735849056604,
+        "recall": 0.8,
+        "f1": 0.6881720430107526,
+        "support": 40
+      },
+      "DIRECT_CONFLICT": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.7499999999999999,
+        "support": 12
+      },
+      "INSUFFICIENT_OR_AMBIGUOUS": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1": 0.9743589743589743,
+        "support": 40
+      }
+    },
+    "confusion_matrix": {
+      "AGREEMENT": {
+        "AGREEMENT": 19,
+        "PARTIAL_CONFLICT": 20,
+        "DIRECT_CONFLICT": 1,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "PARTIAL_CONFLICT": {
+        "AGREEMENT": 2,
+        "PARTIAL_CONFLICT": 32,
+        "DIRECT_CONFLICT": 6,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "DIRECT_CONFLICT": {
+        "AGREEMENT": 0,
+        "PARTIAL_CONFLICT": 0,
+        "DIRECT_CONFLICT": 12,
+        "INSUFFICIENT_OR_AMBIGUOUS": 0
+      },
+      "INSUFFICIENT_OR_AMBIGUOUS": {
+        "AGREEMENT": 0,
+        "PARTIAL_CONFLICT": 1,
+        "DIRECT_CONFLICT": 1,
+        "INSUFFICIENT_OR_AMBIGUOUS": 38
+      }
+    }
+  },
+  "paired_statistics": {
+    "macro_f1_k1": 0.7797277994377938,
+    "macro_f1_k2": 0.7588704592604645,
+    "difference_k2_minus_k1": -0.02085734017732932,
+    "bootstrap_95_ci": [
+      -0.0912389347304301,
+      0.04904077923012007
+    ],
+    "bootstrap_replicates": 10000,
+    "mcnemar": {
+      "k1_correct_k2_wrong": 11,
+      "k2_correct_k1_wrong": 8,
+      "p_value": 0.6476058959960938
+    }
+  },
+  "latency": {
+    "K1": {
+      "mean_ms": 30004.16093939394,
+      "median_ms": 23578.323,
+      "p95_ms": 64011.778,
+      "provider_attempts": 0
+    },
+    "K2": {
+      "mean_ms": 36555.97231060606,
+      "median_ms": 33627.7715,
+      "p95_ms": 63678.795,
+      "provider_attempts": 0
+    },
+    "paired_difference": {
+      "pairs_used": 132,
+      "mean_ms": 6551.811371212121,
+      "median_ms": 6769.1224999999995,
+      "bootstrap_95_ci": [
+        4139.27021969697,
+        9051.436704545455
+      ],
+      "bootstrap_replicates": 10000,
+      "bootstrap_seed": 20260903,
+      "wilcoxon_signed_rank": {
+        "n_nonzero": 132,
+        "w_plus": 6875,
+        "p_value_normal_approx": 1.638500588202489e-08
+      }
+    }
+  },
+  "reliability": {
+    "K1": {
+      "usable_rate": 1.0,
+      "citation_coverage": 0.0,
+      "viewpoint_preservation": 0.0,
+      "uncertainty_rate": 0.0
+    },
+    "K2": {
+      "usable_rate": 1.0,
+      "citation_coverage": 0.7348484848484849,
+      "viewpoint_preservation": 0.6742424242424242,
+      "uncertainty_rate": 0.8409090909090909
+    }
+  },
+  "scheduled_executions": 264,
+  "provider_attempts": 264
+}

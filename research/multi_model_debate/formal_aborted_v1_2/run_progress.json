@@ -1,0 +1,10 @@
+{
+  "total_canonical": 200,
+  "completed_canonical": 6,
+  "current_sequence": 6,
+  "completed_m1": 3,
+  "completed_m2": 3,
+  "usable_canonical": 3,
+  "terminal_unusable_canonical": 3,
+  "timestamp_utc": "2026-09-04T08:14:14.757403+00:00"
+}

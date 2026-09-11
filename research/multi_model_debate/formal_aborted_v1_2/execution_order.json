@@ -1,0 +1,5006 @@
+{
+  "status": "PLANNED_NOT_EXECUTED",
+  "seed": 20260903,
+  "order": [
+    {
+      "sequence": 1,
+      "question_id": "rq4-v1-025",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a3debde9f5fba63f02f79dac1f210039c02db5d53ee310a8d6694dc73ee95ae8"
+    },
+    {
+      "sequence": 2,
+      "question_id": "rq4-v1-025",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4a57db3f42bc1d6a044762b367d74ad646e3376e364806c1d45a9d094026d831"
+    },
+    {
+      "sequence": 3,
+      "question_id": "rq4-v1-029",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1d0f1968d649921486149780271496b8a501c118baa10b6b2102412757e0425e"
+    },
+    {
+      "sequence": 4,
+      "question_id": "rq4-v1-029",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "dbda099960692a7c90d27e2a39ed9fed0ec45693559c6a93ba1279a6072a5572"
+    },
+    {
+      "sequence": 5,
+      "question_id": "rq4-v1-089",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fda4ddf5e602c6d2ef93220482ec68ba1e2c45c79e29c58b12513d86066d0acd"
+    },
+    {
+      "sequence": 6,
+      "question_id": "rq4-v1-089",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "56192fbeaccb4a6fb39b31e8cc4641475e170133a9b82890c5808285ab7ab0d6"
+    },
+    {
+      "sequence": 7,
+      "question_id": "rq4-v1-067",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8bd3c1dd9634f7f8ff078065c15a03a6c2ae7f4c7a4e864d170361c80df73c16"
+    },
+    {
+      "sequence": 8,
+      "question_id": "rq4-v1-067",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "225aa1d2f926e99e9db030bc9ef2c025df6f4873a8eeebbd5024ebe72523461d"
+    },
+    {
+      "sequence": 9,
+      "question_id": "rq4-v1-058",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2814cba1cb6da4af2b14d8d8647c6320cc913b1241689a31478313cf311cda1c"
+    },
+    {
+      "sequence": 10,
+      "question_id": "rq4-v1-058",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7cd39678f62b2a4a1e87a7f8ed0d73cc40b1ca88569fdc4f287afd19d88b3c2a"
+    },
+    {
+      "sequence": 11,
+      "question_id": "rq4-v1-098",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "04645e879198c1384b9eeee7dbce5b9442d5e79e71c93d51997685fb86355867"
+    },
+    {
+      "sequence": 12,
+      "question_id": "rq4-v1-098",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5c95a04ceddc08f38bc0d1e11d27fd9ceb043db59cfe715f414c4c8c39c3315f"
+    },
+    {
+      "sequence": 13,
+      "question_id": "rq4-v1-092",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "3b863f7d1ae1453d0fee924f5c00128a937def33030fd41d7c3a7c463d7024af"
+    },
+    {
+      "sequence": 14,
+      "question_id": "rq4-v1-092",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "83ea127f862aedebca4a8af5d27cdc73b70451d194354c903874369b84f5add9"
+    },
+    {
+      "sequence": 15,
+      "question_id": "rq4-v1-051",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "64b162bbad4daf6b73553593a939cc7aa4c16aa38edc4948a6c719f2b3aadf1f"
+    },
+    {
+      "sequence": 16,
+      "question_id": "rq4-v1-051",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "447cfa0d10a61e522ce3dfd2be6826026cdb0055224901980523a874c6e79c3a"
+    },
+    {
+      "sequence": 17,
+      "question_id": "rq4-v1-046",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "bfd9b3c6e960578b24ecd23ad1ff2b01e06e93cbd96aad2dc054ba91633baece"
+    },
+    {
+      "sequence": 18,
+      "question_id": "rq4-v1-046",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "10352c1412f84fa68a96520e48fa603e8d051e8de719e6c5e2ff67d2b46aae1f"
+    },
+    {
+      "sequence": 19,
+      "question_id": "rq4-v1-010",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1048e37bec90484e00f05f5db6c2931e09c8ccc4b78b2362a1d28f9b31429eb7"
+    },
+    {
+      "sequence": 20,
+      "question_id": "rq4-v1-010",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "09800d5eb9fcdf55931ec9dad09479c11053a641ecbc4414a7f9d230d666a9f7"
+    },
+    {
+      "sequence": 21,
+      "question_id": "rq4-v1-001",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d6a112809d783bc37ca96c25fa1b82a9a7c2a19ebb04f9ef97968ebdbc1bb44d"
+    },
+    {
+      "sequence": 22,
+      "question_id": "rq4-v1-001",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b583b6143d7fe7778eabcb7e46a068a05e2a716a45ed6f98da191cae12db145a"
+    },
+    {
+      "sequence": 23,
+      "question_id": "rq4-v1-019",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "55df04378e97bea037193d6533cfe4ef349bd54d39f79d4a6d8f1660ff89a189"
+    },
+    {
+      "sequence": 24,
+      "question_id": "rq4-v1-019",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a1ea838db7ad729fcbaa9c84077db75604199e73d8b9725daf29a9e2b75fff30"
+    },
+    {
+      "sequence": 25,
+      "question_id": "rq4-v1-075",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5579a6ab4b92029dbfbac870d889e0d2fcfa62b2c7ac58b2ab88f47b2c42189c"
+    },
+    {
+      "sequence": 26,
+      "question_id": "rq4-v1-075",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "91425a17abff4cb05a943ca55fb3fc9b5acfa2878ee711cbfb6d3dd49839f816"
+    },
+    {
+      "sequence": 27,
+      "question_id": "rq4-v1-074",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "ce942ef6625fb8f40c12988ac7165c3c3330d87fafc921ab1d43b629c2c52040"
+    },
+    {
+      "sequence": 28,
+      "question_id": "rq4-v1-074",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4a0e957623d8fbdb47cf0cdc973ddb899be31bd850774a5caef4754e6eb176ab"
+    },
+    {
+      "sequence": 29,
+      "question_id": "rq4-v1-037",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b26140db833bfd960d5f3a3ce61d3612da5bfd683177444b176848ae86920804"
+    },
+    {
+      "sequence": 30,
+      "question_id": "rq4-v1-037",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "91b21c4bd80d98f36ea71c104742386bceee8348957e592642b56f816491e168"
+    },
+    {
+      "sequence": 31,
+      "question_id": "rq4-v1-004",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "f78c1a0609cea79b007e2b737af1c24561f908bb4523d29a7ce609745337e6ce"
+    },
+    {
+      "sequence": 32,
+      "question_id": "rq4-v1-004",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "f33e8658405a1a506e291cb64c7a5074cb768d0aa949311736b30d134abe403b"
+    },
+    {
+      "sequence": 33,
+      "question_id": "rq4-v1-026",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5267d3dccde3abfa4955767cbda88494aa7f78dc13d763f5cc9a4e15e70474ba"
+    },
+    {
+      "sequence": 34,
+      "question_id": "rq4-v1-026",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9391a55d82255ebd6617f790add5fe73f6bad2113a7e278ebc92798b60ef2bed"
+    },
+    {
+      "sequence": 35,
+      "question_id": "rq4-v1-033",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "60603f664c56d1c00b464ab393dd1bc9b7e938fde16f38b72b9eae3a30fb6bc1"
+    },
+    {
+      "sequence": 36,
+      "question_id": "rq4-v1-033",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "521edb3d6262904d5f00b4e7cf80b51d28447c24aaa0af2874155832399950a6"
+    },
+    {
+      "sequence": 37,
+      "question_id": "rq4-v1-100",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "de84fff866936033c4c1c3ce8db32557e8ce6d4b8af30bd122b7a9fe62d2838a"
+    },
+    {
+      "sequence": 38,
+      "question_id": "rq4-v1-100",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fc38a9f6f34ad2243e912576d29d211c6c4ab80c47fefa89069d2e9561e5aeaa"
+    },
+    {
+      "sequence": 39,
+      "question_id": "rq4-v1-007",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4401b35ba3492d5f3fa68d375c99a8c5ae90cfbdfaad8cedbd0a7a28bbb1f09f"
+    },
+    {
+      "sequence": 40,
+      "question_id": "rq4-v1-007",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "c8ec2ecb5d56ab3a94eadb131862acde5fe5ca565743e49b38b19f19542fca83"
+    },
+    {
+      "sequence": 41,
+      "question_id": "rq4-v1-047",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9ea00a057121d1462e9893784baac7c23251f7ec4ba7535c03fb3ac5eee6d09f"
+    },
+    {
+      "sequence": 42,
+      "question_id": "rq4-v1-047",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "939badf2a3cec4953ba310aeebb82fa780c46a32ff942016ce390a5ccb48e6b2"
+    },
+    {
+      "sequence": 43,
+      "question_id": "rq4-v1-071",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4046e3af016f515d0c34a69d0c89f5c395909d2445511af86512e5fe57f127f2"
+    },
+    {
+      "sequence": 44,
+      "question_id": "rq4-v1-071",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b6f4ae6f2b4664ea15b5a1a7c2f008edde70cc51d21f2ad15ac5845bc56d0804"
+    },
+    {
+      "sequence": 45,
+      "question_id": "rq4-v1-006",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "05e4fe27abed2751f69a2916574cc578f4a8283fb6199e08b6afb9c93260abe7"
+    },
+    {
+      "sequence": 46,
+      "question_id": "rq4-v1-006",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7c64dedc9dcdf2e5498890815fc0b4600d131d0856307b0f9adb0642fe49e587"
+    },
+    {
+      "sequence": 47,
+      "question_id": "rq4-v1-011",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8638f03c843ea1557269980a76dab41e1a4a932a0810c6ff626ad69ae029ba79"
+    },
+    {
+      "sequence": 48,
+      "question_id": "rq4-v1-011",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "47b17a918f716507dedc5416138306fd8f7635eeb799e02677ccf4dc697af38a"
+    },
+    {
+      "sequence": 49,
+      "question_id": "rq4-v1-068",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5d50b2d54009fb61dd79a7f1288220118eb22b49ed3e3177c275babfb86f3690"
+    },
+    {
+      "sequence": 50,
+      "question_id": "rq4-v1-068",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1da548418e094ff5cfb831912b8312720f235b4d17ab30aaa72301e80004df50"
+    },
+    {
+      "sequence": 51,
+      "question_id": "rq4-v1-095",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8f1be60c13f66daf6a93543ccd8d653d389482903cd25be2613df899267db638"
+    },
+    {
+      "sequence": 52,
+      "question_id": "rq4-v1-095",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "af68485230d8f76aa855a05aabe04afb51c17e61f97784e768d891f914ccb3c4"
+    },
+    {
+      "sequence": 53,
+      "question_id": "rq4-v1-024",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7e15d9dcc06de14926bb09b3187efc783fffa4543af1c4560fa469486a712a11"
+    },
+    {
+      "sequence": 54,
+      "question_id": "rq4-v1-024",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7c52e8edecfaee7607fdd90640eae7129b98e513c50e6134ad7759002ad32a5c"
+    },
+    {
+      "sequence": 55,
+      "question_id": "rq4-v1-085",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fb3283a069870db0b634104d58069a8405a00daecd84d3d1013a63f300d8f7b3"
+    },
+    {
+      "sequence": 56,
+      "question_id": "rq4-v1-085",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "677cd9fde03a09cd18d2667b79c7c9385dbbeb3febcab93dce5d0fc0211c829b"
+    },
+    {
+      "sequence": 57,
+      "question_id": "rq4-v1-097",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "acab9b7a9a2a9a0bff17621b7c191c6b1112a3d77366a64158df5a5941d1a510"
+    },
+    {
+      "sequence": 58,
+      "question_id": "rq4-v1-097",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e552f999024d3b24e02c9ca414584a924b6833c0a8570e170ad313e3ff1a9c0f"
+    },
+    {
+      "sequence": 59,
+      "question_id": "rq4-v1-044",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fbdeb6e9143d3c1727e19838f66a8c33c3868a7ff1de22eb4afe61760647b4d2"
+    },
+    {
+      "sequence": 60,
+      "question_id": "rq4-v1-044",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2f58fff78f0897f32945c3ec4f97300543b43dd2cf3c8b1a00539362ed47ea92"
+    },
+    {
+      "sequence": 61,
+      "question_id": "rq4-v1-008",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9375e3b8ec281cfd29b384179a212d9644f2b853e82d8ed491bf7a8c38c4c632"
+    },
+    {
+      "sequence": 62,
+      "question_id": "rq4-v1-008",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8099802ec205d1170764b75d7d6d63565caaee6b520a0e44f96786708caacae1"
+    },
+    {
+      "sequence": 63,
+      "question_id": "rq4-v1-050",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "f41f5687a8dcf551b43d2c14641b5d5112d3db48dbf7d0e82208badc8a746df0"
+    },
+    {
+      "sequence": 64,
+      "question_id": "rq4-v1-050",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "881f67dadd25cb5e9530bfe4710b544046cf873a528d92301c7f17c6e229c1ac"
+    },
+    {
+      "sequence": 65,
+      "question_id": "rq4-v1-080",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9c993d0f3e33176e4894003470881bb410f924e40d37fc42fa0e52f6a4833b05"
+    },
+    {
+      "sequence": 66,
+      "question_id": "rq4-v1-080",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "83169c215fc80ec127727b32ef0573d66d459cc1c6742d1bf3ac8fb31463d33c"
+    },
+    {
+      "sequence": 67,
+      "question_id": "rq4-v1-076",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b92c16df32f46276f02579935f1dbb7d9778471e19cd7290085efb4ff2af0065"
+    },
+    {
+      "sequence": 68,
+      "question_id": "rq4-v1-076",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b73ce7e688c0f624c5eaecb2013300b29686258b00832af6bc3285e4dd5fbdb7"
+    },
+    {
+      "sequence": 69,
+      "question_id": "rq4-v1-063",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8c62c3241a2bcf2d494458ab6ea2d23d82565d73a66c9b3276eccd47228c54d5"
+    },
+    {
+      "sequence": 70,
+      "question_id": "rq4-v1-063",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "67e99385405d4b19280bb8f1c44a4ebde7388a43efd441050a4e29999fa62802"
+    },
+    {
+      "sequence": 71,
+      "question_id": "rq4-v1-091",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "80732053d49a9af6d8e4536762186d66e4c6ab17e78665fe1f4fb91784fe1eae"
+    },
+    {
+      "sequence": 72,
+      "question_id": "rq4-v1-091",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "00484ea377634144ef287d490c85e5bb13634558aec7b0e1d3a5762a81aadbc9"
+    },
+    {
+      "sequence": 73,
+      "question_id": "rq4-v1-055",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d2a5b14a24d385b70c200f04ac8af18afd75ec6bba91f16a9237aae1896c89ba"
+    },
+    {
+      "sequence": 74,
+      "question_id": "rq4-v1-055",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "dbdb74989d0a141cb8502510ded5495d31f7cf8f8c048a917c75fd17892a6283"
+    },
+    {
+      "sequence": 75,
+      "question_id": "rq4-v1-054",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5335a52534dc0828c3ebd7409d37b45a54139c3a6dfab19a3047e2847e892379"
+    },
+    {
+      "sequence": 76,
+      "question_id": "rq4-v1-054",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "63cac2a042a9730cdf487c14a2bdf6c285b3c5b05d962f748e9d31c91ed2f8a6"
+    },
+    {
+      "sequence": 77,
+      "question_id": "rq4-v1-041",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "ee80475af57e1b160760eb55b8f71b63ff921ada04b1120abc0eab860680d78b"
+    },
+    {
+      "sequence": 78,
+      "question_id": "rq4-v1-041",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "6e77ca74d761a7a623f8077abfec103915c39d7768d43691723d4ba7b2498d06"
+    },
+    {
+      "sequence": 79,
+      "question_id": "rq4-v1-070",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "29f558becae59ef17b0be25298cca7e9ea772c3322d567b27a1ec165210374d8"
+    },
+    {
+      "sequence": 80,
+      "question_id": "rq4-v1-070",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2e8727085f9ef0e10e1ab6b4b7890ee94833f885196ad91759dcdfd18e82f9f3"
+    },
+    {
+      "sequence": 81,
+      "question_id": "rq4-v1-069",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2c5938e400c63c6f6252c47d6e67de0871c6d94b1a501ed9c66ee0d8cd99d314"
+    },
+    {
+      "sequence": 82,
+      "question_id": "rq4-v1-069",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4dd4f87c8bd677b8dee2c866b9a49244154c5e72f53fcb3b225527fccd0ec2f6"
+    },
+    {
+      "sequence": 83,
+      "question_id": "rq4-v1-039",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0fe234e7917dcdd2b58a255dbcffa452ba18130a85c0c700b3ba0865a8403f7e"
+    },
+    {
+      "sequence": 84,
+      "question_id": "rq4-v1-039",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5b3fd3177524aa26aba6c7bbf3b9f1da31ab8bec3a5a9a0b48ed5eb27b7e1536"
+    },
+    {
+      "sequence": 85,
+      "question_id": "rq4-v1-088",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b4afbcf06c2e6216ffb8874e4c8d094cd2ae259ab6cc6f0ec4da1cd81ae13b90"
+    },
+    {
+      "sequence": 86,
+      "question_id": "rq4-v1-088",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "51d29a462928fc5c5d70d047d41e220cfbc97be884a8cdc3a8422dfbb650cc98"
+    },
+    {
+      "sequence": 87,
+      "question_id": "rq4-v1-087",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7eb187bc31af0719f027d4fde349ffd9cb4b994dcd70e31733330e06f8a4dbc9"
+    },
+    {
+      "sequence": 88,
+      "question_id": "rq4-v1-087",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "99665901d6d3fa6b02be7d69c40fb321447a7c2600980ba6fbea804f1cc3734d"
+    },
+    {
+      "sequence": 89,
+      "question_id": "rq4-v1-038",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e3fe64f5c196efb86e4b0e11ae2a1c4780f1b6af3360ae0d072c97cb295ee512"
+    },
+    {
+      "sequence": 90,
+      "question_id": "rq4-v1-038",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a4dd7287033f62b21b4b2bc6d0790bac736c71c5f8a204de0bb26154b4efc947"
+    },
+    {
+      "sequence": 91,
+      "question_id": "rq4-v1-012",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "06061152b28a227e0cbc0ce1e793c12f94b0de199130ab77471d0c7fa0d1c415"
+    },
+    {
+      "sequence": 92,
+      "question_id": "rq4-v1-012",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d38f9012e3787d728392a896d704565213cce6d064790231e1a4a8c51761e241"
+    },
+    {
+      "sequence": 93,
+      "question_id": "rq4-v1-048",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "006ccfc4c2d372e296f1f9f5cdc08cb32729e5c7e7fe86d982b8c01eb4ecd9a9"
+    },
+    {
+      "sequence": 94,
+      "question_id": "rq4-v1-048",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e0b6c52d46992bacfc0d9b8f07b105b0d5e517ed2174e6420af6b5c0c8c15f89"
+    },
+    {
+      "sequence": 95,
+      "question_id": "rq4-v1-031",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "937971a9e142abbbe2dad08d22cc4ca4f6d10715da552f3973110f64026c1e96"
+    },
+    {
+      "sequence": 96,
+      "question_id": "rq4-v1-031",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "65d638aa34416e60d6dfa225e4dc0655100b77e7baf07f24c94f5fb802d6bed4"
+    },
+    {
+      "sequence": 97,
+      "question_id": "rq4-v1-040",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "19b2f5a422828b24cd534f24e539b3ed6c6103fe2b5e4ebc65ffa30be50a5020"
+    },
+    {
+      "sequence": 98,
+      "question_id": "rq4-v1-040",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "eef231c1eff20d9a73fb9bbc85563fa468e149e588e47b1ed3f7f300d4a70ccd"
+    },
+    {
+      "sequence": 99,
+      "question_id": "rq4-v1-079",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b0e33a7cbe492469f0fd65c79e71108a6e59dcbe64748f49d99044fb9a4e132e"
+    },
+    {
+      "sequence": 100,
+      "question_id": "rq4-v1-079",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "64927f313d669cc8d402d870a89c0fa5ff0d564024354edeeb09c99aeac6ee7f"
+    },
+    {
+      "sequence": 101,
+      "question_id": "rq4-v1-086",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "3cb473d07dbe263b45bca14aabe7e888e70aef09702791e3a98436a52ee5ae07"
+    },
+    {
+      "sequence": 102,
+      "question_id": "rq4-v1-086",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1c3adb0fa78e0054e3e67faacb7e02139e5606fa30367124e3abcee7a6cbe072"
+    },
+    {
+      "sequence": 103,
+      "question_id": "rq4-v1-014",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "74893114d75a8f6fe0694b5c153cbcb36c4ecba3daa2333918f39680b98efa82"
+    },
+    {
+      "sequence": 104,
+      "question_id": "rq4-v1-014",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0c7bb656b636f9bc23bedcd5be19128142fdb2ddff2919ee718b53c83baa087f"
+    },
+    {
+      "sequence": 105,
+      "question_id": "rq4-v1-059",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2d8866af3a1f1a05c20472123261ad4fe935b0121b40317038589a3be057fa5b"
+    },
+    {
+      "sequence": 106,
+      "question_id": "rq4-v1-059",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7a502ad8ba3ce1288290a35d7d875a12167c2ce5a51cfad5b23f7b3522cbad68"
+    },
+    {
+      "sequence": 107,
+      "question_id": "rq4-v1-056",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2152aa6979d8586721ed6f9f61bb3f94930c4d88dd5bfad638a77d70889ce0a9"
+    },
+    {
+      "sequence": 108,
+      "question_id": "rq4-v1-056",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "3222c29fcbe5e778983845c008836b0c8f3b62171f176fc6ec435aca4c2864db"
+    },
+    {
+      "sequence": 109,
+      "question_id": "rq4-v1-078",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "73f4d80f4757f532d2bc76ddcc58f094fbd0614a683eb054044ab3faf506448b"
+    },
+    {
+      "sequence": 110,
+      "question_id": "rq4-v1-078",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2b10378ffe0232e26b9935c3e38ae6692f051d33c1be0af16ae9212f6ee218ff"
+    },
+    {
+      "sequence": 111,
+      "question_id": "rq4-v1-073",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "bc7fdc9a0c622f658d009324608b10456a0634d27b623be3d28d5d1f53ba931b"
+    },
+    {
+      "sequence": 112,
+      "question_id": "rq4-v1-073",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "95c7f7afabbab03618c321afc8c7760e70156399178ff5c791d2c25ba82eccfb"
+    },
+    {
+      "sequence": 113,
+      "question_id": "rq4-v1-027",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "be7fb06919919e088d05ec33a8913c26cf91cdfda53e9d6445dc5841f305a85e"
+    },
+    {
+      "sequence": 114,
+      "question_id": "rq4-v1-027",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0527314c2c865684c04036b94b454e319ea6af31700f5a92637fb07490cac075"
+    },
+    {
+      "sequence": 115,
+      "question_id": "rq4-v1-013",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "6d6d9e530208d7f251685bbd053d3e40315e53aef6d56b93568fc04370755bf1"
+    },
+    {
+      "sequence": 116,
+      "question_id": "rq4-v1-013",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "89b8c7181bab379f2b584da5557582362629406624b81bcffb0224483e932400"
+    },
+    {
+      "sequence": 117,
+      "question_id": "rq4-v1-049",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d2b268f9c4e5db403cea6822ecf0dbb036f22d284a10787bb473d702493053ff"
+    },
+    {
+      "sequence": 118,
+      "question_id": "rq4-v1-049",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a27a81b5245b110289a8bc10b291b80203f431d467e7ee8341c467b71a3c1607"
+    },
+    {
+      "sequence": 119,
+      "question_id": "rq4-v1-002",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "55b786af39207654d11a190b51e283b137adb124163de49147942dc3f748f188"
+    },
+    {
+      "sequence": 120,
+      "question_id": "rq4-v1-002",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "be13acdaf2531c2f9a6f6a8ade8fc5caa1f83eed13221b854687b4ef1afbd494"
+    },
+    {
+      "sequence": 121,
+      "question_id": "rq4-v1-081",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0016a3bd5ca4d996eeeeb67adae647c1fe02be382ea792343fdd3677fff11d25"
+    },
+    {
+      "sequence": 122,
+      "question_id": "rq4-v1-081",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0695e97b76bc89f9c938b9985cd35e91f984b89e277e5303b5526d1534d5205f"
+    },
+    {
+      "sequence": 123,
+      "question_id": "rq4-v1-077",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a055c88a70f2a169060226e3697a5b243c47c26ffd6b582973de3152ad15176d"
+    },
+    {
+      "sequence": 124,
+      "question_id": "rq4-v1-077",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9603a373a8b3fe5744bb2c1e4a709e3f07a5b391aa854735b664b8632baadb18"
+    },
+    {
+      "sequence": 125,
+      "question_id": "rq4-v1-021",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "67af5a19d3c3904f9c70f33b8b1d50f3dc9698036d56264ecf77647a8d173264"
+    },
+    {
+      "sequence": 126,
+      "question_id": "rq4-v1-021",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "79217dd42f239f16681472ef2580722bb5cee9131f1444cfd82a029001c1077f"
+    },
+    {
+      "sequence": 127,
+      "question_id": "rq4-v1-093",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "7736b827fc429703cc71276892c7c6b6f2affa5cdf4230b4c3ce5287ec8db8fc"
+    },
+    {
+      "sequence": 128,
+      "question_id": "rq4-v1-093",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "ce8333e90dc31f2f9a0a218af9d14834b3c6430124a5daefc75489c9c23bfad9"
+    },
+    {
+      "sequence": 129,
+      "question_id": "rq4-v1-017",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a36e18f87b223bf76ad3b97a92d23665253f8d2c515d456059b4f89e02cb7302"
+    },
+    {
+      "sequence": 130,
+      "question_id": "rq4-v1-017",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "11c15be3ca688b4367c0288f9ab9fabccf9e5878da225d920e4862c2df1fedc2"
+    },
+    {
+      "sequence": 131,
+      "question_id": "rq4-v1-023",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "36d2f3b8328122fdb57b3bf5e2931c3afbf7658515b8eb4ecc37b532a9021d17"
+    },
+    {
+      "sequence": 132,
+      "question_id": "rq4-v1-023",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "ad984599d7deee955afafc8c3adee61f2fe3b6992517df900100c95db1c2d110"
+    },
+    {
+      "sequence": 133,
+      "question_id": "rq4-v1-061",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d33dc1a3d91105df719d7ca96d1b7e680b3203a1b4091c6e06aebcae4c483a7b"
+    },
+    {
+      "sequence": 134,
+      "question_id": "rq4-v1-061",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2779ac0e824ebdfe9e8ce0f3de04f04e7e34e5ab1ed0d53a7aadf123b3651546"
+    },
+    {
+      "sequence": 135,
+      "question_id": "rq4-v1-072",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "c02ec7cd3a2495f08a6c42e1714149c07847bcbf027ad737e14fa86aaa433b44"
+    },
+    {
+      "sequence": 136,
+      "question_id": "rq4-v1-072",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0826928f10a89675a6705bb133f641b8a7c206f390f804eb5de3bd8847ce3d19"
+    },
+    {
+      "sequence": 137,
+      "question_id": "rq4-v1-042",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "c72e9c281242ac95ec313d5771b947a2339e07bc72b846e6e8381913dd9b540c"
+    },
+    {
+      "sequence": 138,
+      "question_id": "rq4-v1-042",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "bf4fe572c94f2ce961f7024d6763f09309742a775c8c69484a367d83222df3c2"
+    },
+    {
+      "sequence": 139,
+      "question_id": "rq4-v1-005",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1b78f699b2ce14059edd4b1148a0d54619047631fd52fc316622818fa656de33"
+    },
+    {
+      "sequence": 140,
+      "question_id": "rq4-v1-005",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "de33be2dc89bfeda6ca7bf4ec1a5c4f30b1e8894676ab28af85c0b50bfd7545a"
+    },
+    {
+      "sequence": 141,
+      "question_id": "rq4-v1-064",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a46c8cbb9e8c0dd7e68ee77bdab0a136cee5af0492b48327894e46d8a6f7cde8"
+    },
+    {
+      "sequence": 142,
+      "question_id": "rq4-v1-064",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "eaf51b63b3cf5725b5373650f577a4014c7470bdacfd9be9cbe70e5d55a4a6ba"
+    },
+    {
+      "sequence": 143,
+      "question_id": "rq4-v1-090",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "c2aa87d59642327d41d669a42232491fa2f3163d20dcc6df2d986d0c6576111e"
+    },
+    {
+      "sequence": 144,
+      "question_id": "rq4-v1-090",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "97ce18e5adce2394841976037c3694902c71ea69c2966a874c89e4605918c524"
+    },
+    {
+      "sequence": 145,
+      "question_id": "rq4-v1-094",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "dbe84eabaf3de7ee7bdaacb73cb09df37b46a3372372f7b0b0e4e9efa2bdab77"
+    },
+    {
+      "sequence": 146,
+      "question_id": "rq4-v1-094",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "342f0258db78579a24719cfc434906d792d0088047b845d40dd26fe7aeac9310"
+    },
+    {
+      "sequence": 147,
+      "question_id": "rq4-v1-084",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9aed90002d6ce8dd1c7ccf9fa7380d9be184c986aa6953be2c1a619a7ca30908"
+    },
+    {
+      "sequence": 148,
+      "question_id": "rq4-v1-084",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "cb8d91f67fa817eb15e8769638904ff7c4a862a67683e844482633b0c4c3139d"
+    },
+    {
+      "sequence": 149,
+      "question_id": "rq4-v1-022",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fb5d3b6897ed30f2b7d739f6f5324a89e3a4a0fe1a02dcb47055214f47df2cdc"
+    },
+    {
+      "sequence": 150,
+      "question_id": "rq4-v1-022",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b1082fcf33ce6f2ee54e9840b606a25b0a7145ce02ec3f3bad3c91ca6313b5b9"
+    },
+    {
+      "sequence": 151,
+      "question_id": "rq4-v1-034",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "8bf65dbd3c68ed7688f8722a7820e10cbd03bcf9da3bdadfc1e27077ef0d0a90"
+    },
+    {
+      "sequence": 152,
+      "question_id": "rq4-v1-034",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "817b5968ae9b4e2669fadf1b5afcae74a12cf6c2222748d1e5a6476c2b6ba936"
+    },
+    {
+      "sequence": 153,
+      "question_id": "rq4-v1-015",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e9c3eb2a4aed30bfd94f63e7c66cc8daaa5b85c83f177558f3ed4b02fbd9b7f0"
+    },
+    {
+      "sequence": 154,
+      "question_id": "rq4-v1-015",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b4f6a296911f6de0d4b90dba9967202f1ce42dc47492ae865d49b0321d39e0b5"
+    },
+    {
+      "sequence": 155,
+      "question_id": "rq4-v1-009",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "62ed7ed4ac1b1327ff00c15b4f2f3239d1257fab661907aee1c9dbccdeb8aaa2"
+    },
+    {
+      "sequence": 156,
+      "question_id": "rq4-v1-009",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5f9329130477f8615bff7ea23e8c5f139c193987d717ceb3f94b6dc92bf3c378"
+    },
+    {
+      "sequence": 157,
+      "question_id": "rq4-v1-036",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a3b5283ba72e916a0d7a40a2e0be956232c2ae4bc329686f15450cc2a5a0efa6"
+    },
+    {
+      "sequence": 158,
+      "question_id": "rq4-v1-036",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "cb4ed9595bd4071edddc1f3886c0e6b8ceee799aaacfe30648d72af0365dbb20"
+    },
+    {
+      "sequence": 159,
+      "question_id": "rq4-v1-052",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "6e874680863cfdd6806e1a64ef734c1df33f682e2abf0ca5029596cea995f3b3"
+    },
+    {
+      "sequence": 160,
+      "question_id": "rq4-v1-052",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "60e4992076655cc446809f3dd5d8c91848a292fd5e7e8752429f9ec23bda0b28"
+    },
+    {
+      "sequence": 161,
+      "question_id": "rq4-v1-099",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "af6f4e542d9d01cb602c43109fd664a774e3cd78b15163daf493ddd47acac3a5"
+    },
+    {
+      "sequence": 162,
+      "question_id": "rq4-v1-099",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "47972a3c689e9bb72afc929e9fc7227a9b68dddf697f41223abf672e39256cc0"
+    },
+    {
+      "sequence": 163,
+      "question_id": "rq4-v1-003",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "2e0ce9996a11436d5431405c3145284c3993416681d052dad713a9d1735aa3f4"
+    },
+    {
+      "sequence": 164,
+      "question_id": "rq4-v1-003",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "80a7850d24e141121e0daa4b0ad273586f94d85625bf20116a8ad82ab79f1d68"
+    },
+    {
+      "sequence": 165,
+      "question_id": "rq4-v1-053",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "d6b381cb18a66c1b017efe80f879b535589fc466e67eeb624be37554e129d9df"
+    },
+    {
+      "sequence": 166,
+      "question_id": "rq4-v1-053",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "632874bd52336caf5762e6d04f92ea0771a027f00b6616836b9d526c6e967f06"
+    },
+    {
+      "sequence": 167,
+      "question_id": "rq4-v1-096",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "fb74e8d51aa68b432138b74a56aee22f225b3d1013f885c7d6ed94d92c3b3846"
+    },
+    {
+      "sequence": 168,
+      "question_id": "rq4-v1-096",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1bd2188c16b1ea15106fe4b529086a2c7cb260df3801973a5545c831ca17e78a"
+    },
+    {
+      "sequence": 169,
+      "question_id": "rq4-v1-082",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "63db0d604d7ff5a964d9dc95cef979bf4be69fee0f496a265d11256ca12783e3"
+    },
+    {
+      "sequence": 170,
+      "question_id": "rq4-v1-082",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "0790936c8c0aab3999bba76f935b29fb80dac4e00ca1ed29459733d3172cfb5e"
+    },
+    {
+      "sequence": 171,
+      "question_id": "rq4-v1-028",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b2fbea403713afbf661b2516ecc48ae1917fe9285ffa1e1455ea0595e504c73e"
+    },
+    {
+      "sequence": 172,
+      "question_id": "rq4-v1-028",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "50d53fed1234838ab03d4f31580ca7ad2dd3aa0f76b3c42e4fca69119c7483d4"
+    },
+    {
+      "sequence": 173,
+      "question_id": "rq4-v1-016",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "c1c35ada65bb963dbb6a90b396de38849176ecd4149f49c63870bc8643f45e07"
+    },
+    {
+      "sequence": 174,
+      "question_id": "rq4-v1-016",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a625fedea77aa6b58d167a467ea247bb21df8941f7f6b3ef92b665d0a6f5cfe4"
+    },
+    {
+      "sequence": 175,
+      "question_id": "rq4-v1-066",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "35668f80ba9e9b1d7e730bf360eb82950fa86a250b2e0aeebe7c85efb70e10b2"
+    },
+    {
+      "sequence": 176,
+      "question_id": "rq4-v1-066",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e69c1efdc4004db02aecc4ee574a013c76797ff2ed7dcc16bff5ed1008b5691b"
+    },
+    {
+      "sequence": 177,
+      "question_id": "rq4-v1-065",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "b8bccd542379453551e054dabf5fde65ba1f030c734e428e915eaa719cf28e6a"
+    },
+    {
+      "sequence": 178,
+      "question_id": "rq4-v1-065",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "045111ae97fa539a5c81158c7735d42b4cb12503715c154f9664ec3c5072704d"
+    },
+    {
+      "sequence": 179,
+      "question_id": "rq4-v1-018",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "06c19dbe65169d047181ef5408d8eb279837f5fe4556ec996b721a4fee2b6325"
+    },
+    {
+      "sequence": 180,
+      "question_id": "rq4-v1-018",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "5c6d8332d656188bf89187e8f64a0fac7ae5d0bddadcd5074ec7cff9cd05a531"
+    },
+    {
+      "sequence": 181,
+      "question_id": "rq4-v1-043",
+      "condition": "M1",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "45f00131a2a1e1b521f8842078474f569eb6a794334836099fdff35e715fe21f"
+    },
+    {
+      "sequence": 182,
+      "question_id": "rq4-v1-043",
+      "condition": "M2",
+      "rotation_id": 1,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1f8550da92b0114fc84e069ef42ad702c760d264f499520c258c273724d3b6ac"
+    },
+    {
+      "sequence": 183,
+      "question_id": "rq4-v1-057",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "769c34affad19a17069d8a50bd61cff0f903a43bfc120d98ff60b5ddc037b4ff"
+    },
+    {
+      "sequence": 184,
+      "question_id": "rq4-v1-057",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "49f34b358da52598bee0bc702996b356b4436a1ae3ffabfe1f26fc961bc56178"
+    },
+    {
+      "sequence": 185,
+      "question_id": "rq4-v1-032",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4a272a522fe35f9b33907dd7f6f22748385ce46e0c2384f7d0e462b37c1a6dbd"
+    },
+    {
+      "sequence": 186,
+      "question_id": "rq4-v1-032",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "4bd0bbb7c3b942771da5918a75135fc315cfb4d3494fd84dc9d20422a41ee8d8"
+    },
+    {
+      "sequence": 187,
+      "question_id": "rq4-v1-045",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "120db8abf1c007426ecc5fa1dbbb8439b411e65e6592ed656761fd700f9c2f4b"
+    },
+    {
+      "sequence": 188,
+      "question_id": "rq4-v1-045",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "472c9b384c5d99026216e41c5d5372d047e28031b4909a1720cd1bb67f06eca3"
+    },
+    {
+      "sequence": 189,
+      "question_id": "rq4-v1-062",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "6608d00387c4f026a00e884f93ebd65cab609e2c79998979facc494fcb7c8068"
+    },
+    {
+      "sequence": 190,
+      "question_id": "rq4-v1-062",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "408a3367f1c7c8e735977512b094cb3a416325553e4a151b101a95cc8f401724"
+    },
+    {
+      "sequence": 191,
+      "question_id": "rq4-v1-030",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1155f85b6e81f3cab93cf491aeea63d41a7e099e77172577b7fa87fb6c8c8a45"
+    },
+    {
+      "sequence": 192,
+      "question_id": "rq4-v1-030",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "3b95b7b4c0c91323d24493983daf33d2b6bca6972ad8518d7fbb30e79b297e66"
+    },
+    {
+      "sequence": 193,
+      "question_id": "rq4-v1-083",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "1d60ead472ca2c965dc81db10ba0d21b206ae7edb1463c9165bf9ac04526b5b6"
+    },
+    {
+      "sequence": 194,
+      "question_id": "rq4-v1-083",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e7946ccf9a3638999f0b803474089b53c45e1da6c95df01466d5c78d758a4f9e"
+    },
+    {
+      "sequence": 195,
+      "question_id": "rq4-v1-020",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "ed8d2c3c43fb0c35aa20cd6125dd6a8840cd5e2249973d5ce7d76e5de4c032ed"
+    },
+    {
+      "sequence": 196,
+      "question_id": "rq4-v1-020",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "9ba07ef4a736b22a37292e11fe35c204e46cbf0d5f1c454fe21faed35dd98a8b"
+    },
+    {
+      "sequence": 197,
+      "question_id": "rq4-v1-035",
+      "condition": "M1",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "e14430fe6de5cbf340631a943b089f0938b7e212e374855c4948772b080c0828"
+    },
+    {
+      "sequence": 198,
+      "question_id": "rq4-v1-035",
+      "condition": "M2",
+      "rotation_id": 2,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "151d37c78bf68d4342ac19c8bd8204c862d036d57c6830c345c408722d1b75f4"
+    },
+    {
+      "sequence": 199,
+      "question_id": "rq4-v1-060",
+      "condition": "M2",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "a54e5457e7d92f4a3065acfc70f3e9181b8fd5675479663c5c4ee69a08a76ce4"
+    },
+    {
+      "sequence": 200,
+      "question_id": "rq4-v1-060",
+      "condition": "M1",
+      "rotation_id": 3,
+      "agent_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen"
+        }
+      ],
+      "consensus_model": "Qwen/Qwen3-8B",
+      "resume_identity": "248f6b3157754099a8f298af54a8db6f5e72961cf378b6f7f0c6778f598842c6"
+    }
+  ]
+}

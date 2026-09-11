@@ -1,0 +1,14 @@
+{
+  "status": "READY_FOR_CLEAN_A3_V1_2",
+  "study_config_sha256": "d1f3f9955081225951596bc78945e18133ee73a0bcb41f80aeb4936137a5ab70",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "evidence_manifest_sha256": "ac95750e314f2f77fbe8d6fa03e558e4562065cd491671a52065d2ce90108807",
+  "role_rotation_manifest_sha256": "21144519a963345795678d45123b1525840fa2969831e3915541e7f31443d705",
+  "execution_plan_sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+  "prompt_bundle_sha256": "8fcd211758f6d5f6d00275282aee581d610ae1be2fcb1c4da4773cc0715d6187",
+  "planned_executions": 200,
+  "nominal_formal_provider_calls": 2000,
+  "recorded_nonformal_smoke_calls": 27,
+  "formal_provider_calls": 0
+}

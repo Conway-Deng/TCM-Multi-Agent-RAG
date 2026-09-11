@@ -1,0 +1,95 @@
+{
+  "artifact_class": "NON_FORMAL_A3_V1_3_SMOKE",
+  "formal_benchmark_payloads_used": false,
+  "budgets": {
+    "initial": 512,
+    "revision": 768
+  },
+  "calls": 6,
+  "retries": 0,
+  "failures": 0,
+  "formal_calls": 0,
+  "fallback_count": 0,
+  "path": "research/multi_model_debate/smoke/v1_3_targeted_smoke.jsonl",
+  "models": [
+    {
+      "model": "Qwen/Qwen3-8B",
+      "stage": "initial",
+      "returned_model": "Qwen/Qwen3-8B",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 512,
+      "completion_tokens": 23,
+      "reasoning_tokens": 0,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    },
+    {
+      "model": "Qwen/Qwen3-8B",
+      "stage": "revision",
+      "returned_model": "Qwen/Qwen3-8B",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 768,
+      "completion_tokens": 44,
+      "reasoning_tokens": 0,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    },
+    {
+      "model": "THUDM/GLM-Z1-9B-0414",
+      "stage": "initial",
+      "returned_model": "THUDM/GLM-Z1-9B-0414",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 512,
+      "completion_tokens": 281,
+      "reasoning_tokens": 249,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    },
+    {
+      "model": "THUDM/GLM-Z1-9B-0414",
+      "stage": "revision",
+      "returned_model": "THUDM/GLM-Z1-9B-0414",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 768,
+      "completion_tokens": 567,
+      "reasoning_tokens": 516,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "stage": "initial",
+      "returned_model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 512,
+      "completion_tokens": 874,
+      "reasoning_tokens": 841,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "stage": "revision",
+      "returned_model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "http_status": 200,
+      "finish_reason": "stop",
+      "max_tokens_sent": 768,
+      "completion_tokens": 929,
+      "reasoning_tokens": 860,
+      "schema_validation_result": "PASS",
+      "fallback_used": false,
+      "pass": true
+    }
+  ],
+  "status": "PASS"
+}

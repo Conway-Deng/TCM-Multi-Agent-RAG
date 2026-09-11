@@ -1,0 +1,39 @@
+{
+  "status": "FROZEN_RESEARCH_B_FORMAL_STUDY_V1",
+  "benchmark_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_b\\benchmark\\research_b_v1_frozen.jsonl",
+  "benchmark_sha256": "52e642d944e21f976b2c1155df7d84f8a74e7fccee29e576697b5b6b97d798d4",
+  "freeze_manifest_sha256": "19a60304333ff3a0b3efdc9cd6c91b75ec37a8ab40725211611cbf976de697d9",
+  "formal_results_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_b\\formal_run_v1\\results.jsonl",
+  "formal_results_sha256": "5187c910954fb0ff9cf7bf792388a845e5c7686bcc8ab1123ecdc8b1990dcef8",
+  "total_executions": 480,
+  "unique_pairs_count": 480,
+  "j1_count": 240,
+  "j2_count": 240,
+  "j1_usable": 239,
+  "j2_usable": 240,
+  "j1_accuracy": 0.3556,
+  "j1_macro_f1": 0.2903,
+  "j2_accuracy": 0.8292,
+  "j2_macro_f1": 0.7975,
+  "accuracy_diff_j2_minus_j1": 0.4736,
+  "macro_f1_diff_j2_minus_j1": 0.5072,
+  "mcnemar_p_value": 5.585196838722984e-33,
+  "authoritative_latency": {
+    "J1": {
+      "mean_ms": 37547.63,
+      "median_ms": 25230.25,
+      "p95_ms": 105351.82
+    },
+    "J2": {
+      "mean_ms": 24838.13,
+      "median_ms": 21460.18,
+      "p95_ms": 51129.79
+    }
+  },
+  "diagnostic_runs_status": "NON_FORMAL_PRESERVED_SEPARATELY",
+  "diagnostic_files": [
+    "research/research_b/formal_run_v1/pre_amendment_results_optional_confidence.jsonl",
+    "research/research_b/formal_run_v1/pre_amendment_results_response_format.jsonl",
+    "research/research_b/formal_run_v1/diagnostic_partial_run_prior_to_clean_formal.jsonl"
+  ]
+}

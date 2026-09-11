@@ -1,0 +1,554 @@
+[
+  {
+    "id": "tcm_sleep_001",
+    "topic": "sleep",
+    "subtopic": "sleep_and_palpitations",
+    "symptoms": {
+      "en": ["insomnia", "dream-disturbed sleep", "palpitations", "forgetfulness", "pale complexion"],
+      "zh": ["失眠", "多梦", "心悸", "健忘", "面色偏淡"],
+      "ko": ["불면", "꿈이 많음", "두근거림", "건망", "창백한 안색"]
+    },
+    "keywords": {
+      "en": ["insomnia", "trouble sleeping", "poor sleep", "dreams", "palpitations", "forgetful"],
+      "zh": ["失眠", "睡不着", "睡眠不好", "多梦", "心悸", "心慌", "健忘"],
+      "ko": ["불면", "잠을 못", "잠이 안", "꿈", "두근", "건망"]
+    },
+    "pattern": {
+      "en": "Heart blood deficiency",
+      "zh": "心血不足（心血虚）",
+      "ko": "심혈허"
+    },
+    "rationale": {
+      "en": "In traditional TCM teaching, sleep disturbance with palpitations, forgetfulness, and pale or deficiency-like signs may be discussed under heart blood deficiency.",
+      "zh": "在中医教学语境中，失眠、多梦若伴心悸、健忘、面色偏淡等表现，可作为心血不足方向的辨证线索之一。",
+      "ko": "한의학 교육 맥락에서는 불면과 꿈이 많음이 두근거림, 건망, 창백한 안색 같은 허증 양상과 함께 나타날 때 심혈허 방향을 참고할 수 있습니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Gui Pi Tang (归脾汤)", "zh": "归脾汤", "ko": "귀비탕"},
+        "description": {
+          "en": "An educational formula example traditionally discussed for selected qi-and-blood deficiency presentations affecting sleep.",
+          "zh": "教学示例：传统上常用于讨论气血不足、心脾相关睡眠问题的方剂之一。",
+          "ko": "교육용 예시: 기혈 부족과 심비 관련 수면 양상을 설명할 때 전통적으로 언급되는 처방 예시입니다."
+        },
+        "warning": {
+          "en": "Educational example only, not a prescription.",
+          "zh": "仅供教学示例，并非处方。",
+          "ko": "교육용 예시일 뿐 처방이 아닙니다."
+        }
+      }
+    ],
+    "safety_notes": {
+      "en": ["Palpitations, fainting, chest pain, or breathlessness require biomedical assessment."],
+      "zh": ["若心悸伴晕厥、胸痛或呼吸困难，应优先接受现代医学评估。"],
+      "ko": ["두근거림이 실신, 흉통, 호흡곤란과 함께 나타나면 현대의학적 평가가 우선입니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["sleep", "palpitations", "deficiency"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_sleep_002",
+    "topic": "sleep",
+    "subtopic": "insomnia_with_deficiency_heat",
+    "symptoms": {
+      "en": ["insomnia", "restlessness", "night sweats", "dry mouth", "heat sensation"],
+      "zh": ["失眠", "心烦", "盗汗", "口干", "夜间烦热"],
+      "ko": ["불면", "가슴 답답함", "도한", "입마름", "밤의 열감"]
+    },
+    "keywords": {
+      "en": ["insomnia", "restless", "night sweats", "dry mouth", "hot at night", "trouble sleeping"],
+      "zh": ["失眠", "睡不着", "心烦", "盗汗", "口干", "夜里热", "烦热"],
+      "ko": ["불면", "잠을 못", "답답", "도한", "입마름", "밤에 열"]
+    },
+    "pattern": {
+      "en": "Heart yin deficiency with deficiency heat",
+      "zh": "心阴不足伴虚热",
+      "ko": "심음허와 허열"
+    },
+    "rationale": {
+      "en": "TCM educational summaries often separate insomnia with dryness, night sweating, or restlessness from other sleep patterns because these features suggest a deficiency-heat direction.",
+      "zh": "若失眠同时伴有心烦、口干、盗汗或夜间烦热，中医教学中常会把它与虚热相关的睡眠辨证方向区分开来。",
+      "ko": "불면이 입마름, 도한, 밤의 열감, 답답함과 함께 나타나면 교육적으로 허열 관련 수면 양상과 구분해 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Tian Wang Bu Xin Dan (天王补心丹)", "zh": "天王补心丹", "ko": "천왕보심단"},
+        "description": {
+          "en": "An educational example traditionally discussed for selected heart yin or blood deficiency sleep presentations.",
+          "zh": "教学示例：传统上用于讨论心阴或心血不足相关睡眠表现的方剂之一。",
+          "ko": "교육용 예시: 심음 또는 심혈 부족과 관련된 수면 양상을 설명할 때 언급되는 처방 예시입니다."
+        },
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Persistent or severe insomnia can relate to mood disorders, medication effects, pain, sleep apnea, thyroid disease, or other causes."],
+      "zh": ["新发、严重或持续失眠可能与情绪、药物、疼痛、睡眠呼吸暂停、甲状腺等问题有关，应按需就医评估。"],
+      "ko": ["새롭거나 심한 불면, 오래 지속되는 불면은 기분 문제, 약물, 통증, 수면무호흡, 갑상샘 문제 등과 관련될 수 있습니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["sleep", "yin_deficiency", "heat"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_fatigue_001",
+    "topic": "fatigue",
+    "subtopic": "fatigue_poor_appetite",
+    "symptoms": {
+      "en": ["fatigue", "low energy", "poor appetite", "bloating", "loose stools"],
+      "zh": ["乏力", "没精神", "食欲差", "腹胀", "便溏"],
+      "ko": ["피로", "기운 없음", "입맛 저하", "더부룩함", "묽은 변"]
+    },
+    "keywords": {
+      "en": ["fatigue", "tired", "low energy", "poor appetite", "bloating", "loose stool"],
+      "zh": ["乏力", "疲劳", "累", "没精神", "胃口不好", "食欲差", "腹胀", "便溏"],
+      "ko": ["피곤", "피로", "기운", "입맛", "더부룩", "묽은 변"]
+    },
+    "pattern": {"en": "Spleen qi deficiency", "zh": "脾气不足（脾气虚）", "ko": "비기허"},
+    "rationale": {
+      "en": "Traditional teaching may discuss reduced appetite, bloating, loose stools, and persistent low energy as a spleen qi deficiency direction.",
+      "zh": "食欲下降、腹胀、便溏与持续乏力同见时，中医教学中可作为脾气不足方向的线索。",
+      "ko": "식욕 저하, 더부룩함, 묽은 변, 지속적인 피로가 함께 나타날 때 비기허 방향을 교육적으로 참고할 수 있습니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Si Jun Zi Tang (四君子汤)", "zh": "四君子汤", "ko": "사군자탕"},
+        "description": {
+          "en": "An educational example traditionally discussed for spleen qi deficiency presentations.",
+          "zh": "教学示例：传统上用于讨论脾气不足相关表现的方剂之一。",
+          "ko": "교육용 예시: 비기허 양상을 설명할 때 전통적으로 언급되는 처방 예시입니다."
+        },
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Fatigue and appetite change have many biomedical causes; persistent or worsening symptoms need clinical assessment."],
+      "zh": ["乏力和食欲改变可由多种现代医学原因造成，持续或加重时应接受临床评估。"],
+      "ko": ["피로와 식욕 변화에는 다양한 의학적 원인이 있을 수 있어 지속되거나 악화되면 진료 평가가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["fatigue", "digestion", "deficiency"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_digestive_001",
+    "topic": "digestion",
+    "subtopic": "stress_bloating_poor_appetite",
+    "symptoms": {
+      "en": ["stress", "bloating", "poor appetite", "variable digestion", "rib-side or abdominal fullness"],
+      "zh": ["压力大", "腹胀", "胃口不好", "消化波动", "胁肋或腹部胀满"],
+      "ko": ["스트레스", "복부 더부룩함", "입맛 저하", "소화 변동", "옆구리나 배의 팽만감"]
+    },
+    "keywords": {
+      "en": ["stress", "bloating", "poor appetite", "low appetite", "variable digestion", "abdominal fullness"],
+      "zh": ["压力大", "压力", "腹胀", "胃胀", "胃口不好", "食欲差", "不想吃饭", "消化波动", "情绪紧张"],
+      "ko": ["스트레스", "더부룩", "복부팽만", "입맛", "소화", "긴장"]
+    },
+    "pattern": {
+      "en": "Liver-spleen disharmony / constrained liver qi with spleen weakness",
+      "zh": "肝郁脾虚或肝脾不和",
+      "ko": "간비불화 또는 간울과 비허"
+    },
+    "rationale": {
+      "en": "TCM teaching commonly links stress-associated bloating, poor appetite, and fluctuating digestion with a liver-spleen disharmony direction.",
+      "zh": "压力大时出现腹胀、胃口不好、消化波动或情绪紧张，中医教学中常作为肝郁脾虚或肝脾不和方向来讨论。",
+      "ko": "스트레스와 함께 더부룩함, 입맛 저하, 소화 변동이 나타날 때 간비불화 또는 간울과 비허 방향을 교육적으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Xiao Yao San (逍遥散)", "zh": "逍遥散", "ko": "소요산"},
+        "description": {
+          "en": "An educational example traditionally discussed for constrained liver qi with digestive weakness.",
+          "zh": "教学示例：传统上用于讨论肝气郁结兼消化功能偏弱表现的方剂之一。",
+          "ko": "교육용 예시: 간울과 소화 기능 저하가 함께 있는 양상을 설명할 때 언급되는 처방 예시입니다."
+        },
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Persistent abdominal pain, vomiting, black stool, blood in stool, weight loss, fever, or severe appetite loss requires medical assessment."],
+      "zh": ["持续腹痛、呕吐、黑便、便血、体重下降、发热或严重食欲下降需要医学评估。"],
+      "ko": ["지속적인 복통, 구토, 흑변, 혈변, 체중 감소, 발열, 심한 식욕 저하는 의학적 평가가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["stress", "digestion", "bloating"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_digestive_002",
+    "topic": "digestion",
+    "subtopic": "post_meal_indigestion",
+    "symptoms": {
+      "en": ["bloating after eating", "belching", "acid reflux", "bad breath", "nausea"],
+      "zh": ["食后腹胀", "嗳气", "反酸", "口气重", "恶心"],
+      "ko": ["식후 더부룩함", "트림", "속쓰림", "입 냄새", "메스꺼움"]
+    },
+    "keywords": {
+      "en": ["indigestion", "overeating", "bloating", "acid reflux", "burping", "belching", "bad breath", "nausea"],
+      "zh": ["消化不良", "吃撑", "腹胀", "胃胀", "嗳气", "反酸", "口臭", "恶心", "积食"],
+      "ko": ["소화불량", "과식", "더부룩", "속쓰림", "트림", "입 냄새", "메스꺼움"]
+    },
+    "pattern": {"en": "Food stagnation", "zh": "食积或胃失和降", "ko": "식체 또는 음식 정체"},
+    "rationale": {
+      "en": "Post-meal fullness, belching, reflux, bad breath, and nausea after overeating are commonly used in TCM teaching to illustrate food stagnation.",
+      "zh": "进食后腹胀、嗳气、反酸、口气重或恶心，尤其与饮食过量相关时，中医教学中常作为食积方向讨论。",
+      "ko": "식후 더부룩함, 트림, 속쓰림, 입 냄새, 메스꺼움이 과식과 관련될 때 식체 방향의 교육 예시로 설명됩니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Bao He Wan (保和丸)", "zh": "保和丸", "ko": "보화환"},
+        "description": {"en": "An educational example traditionally discussed for selected food-stagnation presentations.", "zh": "教学示例：传统上用于讨论特定食积表现的方剂之一。", "ko": "교육용 예시: 식체 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Severe abdominal pain, persistent vomiting, black stool, blood in stool, chest pain, or unintentional weight loss requires medical assessment."],
+      "zh": ["剧烈腹痛、反复呕吐、黑便、便血、胸痛或不明原因体重下降需要就医。"],
+      "ko": ["심한 복통, 반복 구토, 흑변, 혈변, 흉통, 의도치 않은 체중 감소는 진료가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["digestion", "food_stagnation", "bloating"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_stress_001",
+    "topic": "stress",
+    "subtopic": "constraint_symptoms",
+    "symptoms": {
+      "en": ["stress", "irritability", "sighing", "chest or rib-side tightness", "variable digestion"],
+      "zh": ["压力", "烦躁易怒", "叹气", "胸胁胀闷", "消化波动"],
+      "ko": ["스트레스", "짜증", "한숨", "가슴이나 옆구리 답답함", "소화 변동"]
+    },
+    "keywords": {
+      "en": ["stress", "irritable", "sigh", "chest tightness", "rib tightness", "mood", "anxious"],
+      "zh": ["压力", "烦躁", "易怒", "叹气", "胸闷", "胁胀", "情绪", "焦虑"],
+      "ko": ["스트레스", "짜증", "한숨", "가슴 답답", "옆구리", "불안"]
+    },
+    "pattern": {"en": "Liver qi stagnation", "zh": "肝气郁结", "ko": "간기울결"},
+    "rationale": {
+      "en": "Emotional constraint with sighing, chest or rib-side tightness, and variable digestion is traditionally discussed as constrained liver qi in TCM teaching.",
+      "zh": "情绪压力伴叹气、胸胁或腹部胀闷、消化波动时，中医教学中可作为肝气郁结方向讨论。",
+      "ko": "정서적 스트레스와 한숨, 가슴·옆구리 답답함, 소화 변동이 함께 나타날 때 간기울결 방향을 교육적으로 참고합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Xiao Yao San (逍遥散)", "zh": "逍遥散", "ko": "소요산"},
+        "description": {"en": "An educational example traditionally discussed for selected constrained liver qi presentations.", "zh": "教学示例：传统上用于讨论肝气郁结相关表现的方剂之一。", "ko": "교육용 예시: 간기울결 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["New or severe chest discomfort should be assessed urgently rather than attributed to a TCM pattern."],
+      "zh": ["新出现或严重胸部不适应尽快就医，不应简单归因于中医证型。"],
+      "ko": ["새롭거나 심한 흉부 불편감은 한의학적 양상으로 돌리기보다 신속한 평가가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["stress", "constraint", "digestion"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_headache_001",
+    "topic": "headache",
+    "subtopic": "headache_dizziness_heat_or_rising",
+    "symptoms": {
+      "en": ["headache", "dizziness", "irritability", "red face", "upward-rushing sensation"],
+      "zh": ["头痛", "头晕", "烦躁", "面部发热", "上冲感"],
+      "ko": ["두통", "어지러움", "짜증", "얼굴 열감", "위로 치미는 느낌"]
+    },
+    "keywords": {
+      "en": ["headache", "feverish head", "head feels hot", "dizzy", "vertigo", "irritable", "migraine"],
+      "zh": ["头痛", "头疼", "头有点发热", "头发热", "头晕", "眩晕", "烦躁", "偏头痛"],
+      "ko": ["두통", "머리에 열", "머리가 열", "어지러움", "현기증", "짜증"]
+    },
+    "pattern": {"en": "Liver yang rising or heat-rising tendency", "zh": "肝阳上亢或热象上扰", "ko": "간양상항 또는 열이 위로 오르는 양상"},
+    "rationale": {
+      "en": "Headache with dizziness, irritability, facial heat, or an upward-rushing sensation may be discussed as a rising or heat-related direction in TCM teaching.",
+      "zh": "头痛若伴头晕、烦躁、面部发热或上冲感，中医教学中可讨论肝阳上亢或热象上扰等方向。",
+      "ko": "두통이 어지러움, 짜증, 얼굴 열감, 위로 치미는 느낌과 함께 나타나면 상승성 또는 열 관련 양상으로 설명할 수 있습니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Tian Ma Gou Teng Yin (天麻钩藤饮)", "zh": "天麻钩藤饮", "ko": "천마구등음"},
+        "description": {"en": "An educational example traditionally discussed for selected liver-yang-rising presentations.", "zh": "教学示例：传统上用于讨论特定肝阳上亢表现的方剂之一。", "ko": "교육용 예시: 간양상항 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Sudden worst headache, neurological change, fever with stiff neck, head injury, or very high blood pressure needs urgent medical care."],
+      "zh": ["突发剧烈头痛、神经功能异常、发热伴颈项强直、头部外伤或血压很高时需要紧急就医。"],
+      "ko": ["갑작스러운 최악의 두통, 신경학적 변화, 열과 목 경직, 머리 외상, 매우 높은 혈압은 긴급 진료가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["headache", "dizziness", "heat"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_headache_002",
+    "topic": "headache",
+    "subtopic": "dull_headache_dizziness_deficiency",
+    "symptoms": {
+      "en": ["dull headache", "dizziness", "blurred vision", "pale complexion", "poor sleep"],
+      "zh": ["隐隐头痛", "头晕", "眼花", "面色偏淡", "睡眠不佳"],
+      "ko": ["은은한 두통", "어지러움", "눈 침침함", "창백한 안색", "수면 저하"]
+    },
+    "keywords": {
+      "en": ["dull headache", "headache", "dizzy", "blurred vision", "pale", "poor sleep"],
+      "zh": ["隐隐头痛", "头痛", "头晕", "眼花", "面色淡", "睡眠不好"],
+      "ko": ["은은한 두통", "두통", "어지러움", "눈 침침", "창백", "잠"]
+    },
+    "pattern": {"en": "Blood deficiency headache direction", "zh": "血虚头痛方向", "ko": "혈허성 두통 방향"},
+    "rationale": {
+      "en": "Dull headache or dizziness with pallor, blurred vision, and poor sleep is used in TCM teaching to illustrate a blood-deficiency direction.",
+      "zh": "头部隐痛或头晕伴面色偏淡、眼花、睡眠不佳时，中医教学中可作为血虚头痛方向讨论。",
+      "ko": "은은한 두통이나 어지러움이 창백함, 눈 침침함, 수면 저하와 함께 나타나면 혈허성 두통 방향을 교육적으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Si Wu Tang (四物汤)", "zh": "四物汤", "ko": "사물탕"},
+        "description": {"en": "An educational example traditionally discussed for selected blood-deficiency presentations.", "zh": "教学示例：传统上用于讨论特定血虚表现的方剂之一。", "ko": "교육용 예시: 혈허 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Dizziness, pallor, heavy bleeding, fainting, or exertional breathlessness can indicate anemia or other conditions needing medical tests."],
+      "zh": ["头晕、面色苍白、月经过多、晕厥或活动后气短可能提示贫血等问题，需要医学检查。"],
+      "ko": ["어지러움, 창백함, 과다 출혈, 실신, 활동 시 숨참은 빈혈 등 의학적 검사가 필요한 상태와 관련될 수 있습니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["headache", "dizziness", "deficiency"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_throat_001",
+    "topic": "throat_cough",
+    "subtopic": "itchy_dry_throat",
+    "symptoms": {
+      "en": ["itchy throat", "dry throat", "dry cough", "scant phlegm", "throat tickle"],
+      "zh": ["嗓子痒", "咽干", "干咳", "少痰", "喉咙痒"],
+      "ko": ["목이 간질거림", "마른 목", "마른기침", "가래가 적음", "목 간지러움"]
+    },
+    "keywords": {
+      "en": ["itchy throat", "throat tickle", "dry throat", "dry cough", "cough", "scant phlegm"],
+      "zh": ["嗓子痒", "喉咙痒", "咽痒", "咽干", "干咳", "咳嗽", "少痰"],
+      "ko": ["목이 간질", "목 간지러움", "마른 목", "마른기침", "기침", "가래"]
+    },
+    "pattern": {"en": "Wind-dryness affecting the lung", "zh": "风燥犯肺", "ko": "풍조범폐"},
+    "rationale": {
+      "en": "Throat irritation, dryness, dry cough, and scant phlegm are used in TCM teaching to discuss a wind-dryness direction, especially in dry weather or early irritation.",
+      "zh": "嗓子痒、咽干、干咳或少痰同时出现时，中医教学中常作为风燥犯肺方向讨论，尤其在干燥环境或初期咽喉刺激时。",
+      "ko": "목 간지러움, 건조감, 마른기침, 적은 가래가 함께 나타날 때 풍조범폐 방향을 교육적으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Sang Xing Tang (桑杏汤)", "zh": "桑杏汤", "ko": "상행탕"},
+        "description": {"en": "An educational example traditionally discussed for selected mild wind-dryness presentations.", "zh": "教学示例：传统上用于讨论较轻风燥犯肺表现的方剂之一。", "ko": "교육용 예시: 가벼운 풍조 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Breathing difficulty, high fever, chest pain, coughing blood, dehydration, or symptoms lasting more than a few days should prompt medical review."],
+      "zh": ["呼吸困难、高热、胸痛、咳血、脱水或症状持续数日应就医评估。"],
+      "ko": ["호흡곤란, 고열, 흉통, 객혈, 탈수, 며칠 이상 지속되는 증상은 진료가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["throat", "cough", "dryness"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_throat_002",
+    "topic": "throat_cough",
+    "subtopic": "feverish_throat_heat",
+    "symptoms": {
+      "en": ["sore or itchy throat", "feverish sensation", "mild chills", "thirst", "cough"],
+      "zh": ["咽痛或嗓子痒", "发热感", "轻微恶寒", "口渴", "咳嗽"],
+      "ko": ["목 아픔이나 간지러움", "열감", "가벼운 오한", "갈증", "기침"]
+    },
+    "keywords": {
+      "en": ["sore throat", "itchy throat", "feverish", "head feels hot", "thirst", "cough", "yellow mucus"],
+      "zh": ["咽痛", "嗓子痒", "喉咙痒", "发热", "头有点发热", "口渴", "咳嗽", "黄痰"],
+      "ko": ["목 아픔", "목이 간질", "열감", "머리가 열", "갈증", "기침", "누런 가래"]
+    },
+    "pattern": {"en": "Wind-heat exterior or upper-burner heat/dryness tendency", "zh": "风热外感或上焦热燥倾向", "ko": "풍열 외감 또는 상초 열·건조 양상"},
+    "rationale": {
+      "en": "Prominent throat discomfort with feverish sensation, thirst, cough, or yellow discharge is used in TCM teaching to discuss wind-heat or upper heat/dryness tendencies.",
+      "zh": "咽喉不适伴发热感、口渴、咳嗽或黄痰等表现时，中医教学中可讨论风热外感或上焦热燥倾向。",
+      "ko": "목 불편감이 열감, 갈증, 기침, 누런 분비물과 함께 나타날 때 풍열 또는 상초 열·건조 양상으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Yin Qiao San / Sang Xing Tang (银翘散 / 桑杏汤)", "zh": "银翘散 / 桑杏汤", "ko": "은교산 / 상행탕"},
+        "description": {"en": "Educational examples for selected wind-heat or wind-dryness presentations; not interchangeable prescriptions.", "zh": "教学示例：用于说明特定风热或风燥表现；并非可互相替代的处方建议。", "ko": "교육용 예시: 특정 풍열 또는 풍조 양상을 설명하기 위한 예시이며 처방 조언이 아닙니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["High or persistent fever, breathing difficulty, severe throat swelling, dehydration, rash, or stiff neck needs prompt medical care."],
+      "zh": ["高热或持续发热、呼吸困难、严重咽喉肿胀、脱水、皮疹或颈项强直需要及时就医。"],
+      "ko": ["고열이나 지속 발열, 호흡곤란, 심한 목 부종, 탈수, 발진, 목 경직은 신속한 진료가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["throat", "cough", "heat"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_coldheat_001",
+    "topic": "cold_heat_sweating",
+    "subtopic": "cold_digestive_weakness",
+    "symptoms": {
+      "en": ["cold hands", "abdominal cold", "poor appetite", "loose stools", "fatigue"],
+      "zh": ["手脚冰凉", "腹部怕冷", "胃口不好", "便溏", "乏力"],
+      "ko": ["손발이 참", "배가 차가움", "입맛 저하", "묽은 변", "피로"]
+    },
+    "keywords": {
+      "en": ["cold hands", "cold limbs", "feel cold", "abdominal cold", "diarrhea", "poor appetite", "fatigue"],
+      "zh": ["手脚冰凉", "四肢冷", "怕冷", "腹部冷", "腹泻", "便溏", "胃口不好", "乏力"],
+      "ko": ["손발이 차", "몸이 차", "배가 차", "설사", "입맛", "피로"]
+    },
+    "pattern": {"en": "Spleen yang deficiency direction", "zh": "脾阳不足方向", "ko": "비양허 방향"},
+    "rationale": {
+      "en": "Digestive weakness accompanied by pronounced cold signs is traditionally discussed separately from qi deficiency alone and may suggest a spleen yang deficiency direction.",
+      "zh": "消化功能偏弱并伴明显怕冷、手脚冰凉或腹部冷感时，中医教学中可讨论脾阳不足方向。",
+      "ko": "소화 기능 저하와 뚜렷한 냉감, 손발 차가움, 배의 냉감이 함께 나타나면 비양허 방향을 교육적으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Li Zhong Wan (理中丸)", "zh": "理中丸", "ko": "이중환"},
+        "description": {"en": "An educational example traditionally discussed for selected cold middle-burner presentations.", "zh": "教学示例：传统上用于讨论中焦虚寒相关表现的方剂之一。", "ko": "교육용 예시: 중초 허한 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Cold intolerance can relate to thyroid, circulatory, nutritional, endocrine, or other conditions and should not be self-diagnosed."],
+      "zh": ["怕冷可能与甲状腺、循环、营养、内分泌等问题有关，不应自行诊断。"],
+      "ko": ["추위를 심하게 타는 것은 갑상샘, 순환, 영양, 내분비 문제 등과 관련될 수 있어 자가진단하지 않아야 합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["cold", "digestion", "deficiency"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_deficiency_001",
+    "topic": "lower_back_tinnitus_deficiency",
+    "subtopic": "lower_back_tinnitus_yin_deficiency",
+    "symptoms": {
+      "en": ["lower back soreness", "tinnitus", "night sweats", "dry mouth", "hot palms or soles"],
+      "zh": ["腰酸", "耳鸣", "盗汗", "口干", "手足心热"],
+      "ko": ["허리 뻐근함", "이명", "도한", "입마름", "손발바닥 열감"]
+    },
+    "keywords": {
+      "en": ["lower back soreness", "low back soreness", "back soreness", "tinnitus", "night sweats", "dry mouth", "hot palms", "hot soles"],
+      "zh": ["腰酸", "腰背酸", "腰酸背痛", "耳鸣", "盗汗", "口干", "手足心热"],
+      "ko": ["허리 뻐근", "허리가 뻐근", "이명", "도한", "입마름", "손바닥 열", "발바닥 열"]
+    },
+    "pattern": {"en": "Kidney yin deficiency direction", "zh": "肾阴不足方向", "ko": "신음허 방향"},
+    "rationale": {
+      "en": "Lower-back soreness with tinnitus, dry mouth, night sweating, or heat signs is traditionally discussed as a kidney yin deficiency direction in TCM teaching.",
+      "zh": "腰酸若伴耳鸣、口干、盗汗或手足心热等表现，中医教学中可作为肾阴不足方向讨论。",
+      "ko": "허리 뻐근함이 이명, 입마름, 도한, 손발바닥 열감과 함께 나타나면 신음허 방향을 교육적으로 설명합니다."
+    },
+    "educational_examples": [
+      {
+        "type": "formula",
+        "name": {"en": "Liu Wei Di Huang Wan (六味地黄丸)", "zh": "六味地黄丸", "ko": "육미지황환"},
+        "description": {"en": "An educational example traditionally discussed for selected kidney yin deficiency presentations.", "zh": "教学示例：传统上用于讨论肾阴不足相关表现的方剂之一。", "ko": "교육용 예시: 신음허 양상을 설명할 때 언급되는 처방 예시입니다."},
+        "warning": {"en": "Educational example only, not a prescription.", "zh": "仅供教学示例，并非处方。", "ko": "교육용 예시일 뿐 처방이 아닙니다."}
+      }
+    ],
+    "safety_notes": {
+      "en": ["Night sweats, unexplained weight change, persistent back pain, urinary symptoms, or neurological symptoms warrant medical assessment."],
+      "zh": ["盗汗、不明原因体重变化、持续腰背痛、尿路症状或神经症状应接受医学评估。"],
+      "ko": ["도한, 원인 모를 체중 변화, 지속적 허리통증, 소변 증상, 신경 증상은 의학적 평가가 필요합니다."]
+    },
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary",
+    "evidence_category": "terminology_or_educational",
+    "tags": ["lower_back", "tinnitus", "yin_deficiency"],
+    "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_acupuncture_001",
+    "topic": "acupuncture_meridian",
+    "subtopic": "meridian_theory_conceptual_scope",
+    "symptoms": {"en": ["conceptual acupuncture question", "meridian relationship"], "zh": ["针灸概念", "经络联系"], "ko": ["침 개념", "경락 관계"]},
+    "keywords": {"en": ["acupuncture", "meridian", "acupoint", "channel theory"], "zh": ["针灸", "经络", "穴位", "经脉"], "ko": ["침", "경락", "혈자리"]},
+    "pattern": {"en": "Meridian and acupuncture conceptual framework", "zh": "经络与针灸概念框架", "ko": "경락과 침 개념 체계"},
+    "rationale": {"en": "Traditional TCM teaching uses meridian theory as a conceptual framework for relationships among channels, body regions, and functional descriptions; this does not establish a biomedical mechanism.", "zh": "中医教学以经络理论作为描述经脉、身体部位与传统功能联系的概念框架；这并不等同于已证实的现代生物医学机制。", "ko": "한의학 교육에서는 경락 이론을 경로, 신체 부위, 전통적 기능 관계를 설명하는 개념 체계로 사용하며, 이는 현대 생의학적 기전이 입증되었다는 뜻이 아닙니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Conceptual information must not be converted into self-needling instructions; acupuncture procedures require appropriately qualified practitioners."], "zh": ["概念性说明不得转化为自行针刺操作；针灸操作需要具备相应资质的专业人员。"], "ko": ["개념 설명을 자가 침 시술로 바꾸어서는 안 되며, 침 시술은 적절한 자격을 갖춘 전문가가 해야 합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary", "evidence_category": "terminology_or_educational", "tags": ["acupuncture", "meridian", "conceptual"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_constitution_001",
+    "topic": "constitution",
+    "subtopic": "constitution_theory_overview",
+    "symptoms": {"en": ["persistent cold tendency", "fatigue tendency"], "zh": ["长期怕冷倾向", "容易疲劳"], "ko": ["지속적인 냉감 경향", "쉽게 피로함"]},
+    "keywords": {"en": ["constitution", "body constitution", "cold tendency", "fatigue tendency"], "zh": ["体质", "身体体质", "怕冷倾向", "疲劳倾向"], "ko": ["체질", "냉감 경향", "피로 경향"]},
+    "pattern": {"en": "TCM constitution theory", "zh": "中医体质理论", "ko": "한의학 체질 이론"},
+    "rationale": {"en": "TCM constitution theory describes relatively persistent tendencies rather than diagnosing a disease from one symptom; classification normally requires broader history and qualified assessment.", "zh": "中医体质理论描述相对持续的倾向，不能依据单一症状诊断疾病；体质分类通常需要更完整的病史与专业评估。", "ko": "한의학 체질 이론은 한 가지 증상으로 질병을 진단하기보다 비교적 지속적인 경향을 설명하며, 분류에는 더 넓은 병력과 전문 평가가 필요합니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Persistent cold intolerance or fatigue can have many medical causes and should not be attributed to constitution without assessment."], "zh": ["持续怕冷或乏力可能有多种医学原因，不应未经评估就归因于体质。"], "ko": ["지속적인 냉감이나 피로는 다양한 의학적 원인이 있을 수 있어 평가 없이 체질로 돌리지 않아야 합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary", "src_who_tcm_2022"],
+    "source_type": "educational_textbook_summary", "evidence_category": "terminology_or_educational", "tags": ["constitution", "cold", "fatigue"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_dietary_001",
+    "topic": "dietary_therapy",
+    "subtopic": "traditional_food_properties",
+    "symptoms": {"en": ["dietary therapy question", "digestive comfort"], "zh": ["食疗问题", "消化舒适度"], "ko": ["식이요법 질문", "소화 편안함"]},
+    "keywords": {"en": ["dietary therapy", "food properties", "warming food", "cooling food"], "zh": ["食疗", "食物属性", "温性食物", "凉性食物"], "ko": ["식이요법", "음식 성질", "따뜻한 음식", "찬 음식"]},
+    "pattern": {"en": "Traditional TCM dietary-property concepts", "zh": "传统中医食物属性概念", "ko": "전통 한의학 음식 성질 개념"},
+    "rationale": {"en": "Traditional dietary therapy classifies foods with concepts such as warming or cooling properties; these traditional categories must be distinguished from modern nutritional composition and clinical evidence.", "zh": "传统食疗以温、凉等概念描述食物属性；这些传统分类必须与现代营养成分及临床证据明确区分。", "ko": "전통 식이요법은 따뜻함·차가움 같은 개념으로 음식 성질을 분류하며, 이는 현대 영양 성분과 임상 근거와 구분해야 합니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Food allergy, diabetes, kidney disease, eating disorders, pregnancy, and medicine interactions require individualized professional advice."], "zh": ["食物过敏、糖尿病、肾病、进食障碍、妊娠及药物相互作用需要个体化专业建议。"], "ko": ["음식 알레르기, 당뇨, 신장 질환, 섭식장애, 임신, 약물 상호작용은 개별 전문 조언이 필요합니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary"],
+    "source_type": "educational_textbook_summary", "evidence_category": "traditional_theory", "tags": ["dietary", "food", "digestion"], "review_status": "needs_human_review"
+  },
+  {
+    "id": "tcm_yangsheng_001",
+    "topic": "lifestyle_yangsheng",
+    "subtopic": "sleep_routine_and_seasonal_concepts",
+    "symptoms": {"en": ["irregular sleep routine", "stress"], "zh": ["作息不规律", "压力"], "ko": ["불규칙한 수면 습관", "스트레스"]},
+    "keywords": {"en": ["yangsheng", "sleep routine", "seasonal routine", "gentle movement"], "zh": ["养生", "睡眠作息", "顺应季节", "适度运动"], "ko": ["양생", "수면 습관", "계절 생활", "가벼운 움직임"]},
+    "pattern": {"en": "Traditional Yangsheng lifestyle concepts", "zh": "传统养生生活方式概念", "ko": "전통 양생 생활 개념"},
+    "rationale": {"en": "Traditional Yangsheng teaching emphasizes regular sleep, moderate movement, and seasonal routines as general educational concepts, not individualized clinical prescriptions.", "zh": "传统养生教学重视规律睡眠、适度活动与季节性作息；这些是一般教学概念，不是个体化临床处方。", "ko": "전통 양생 교육은 규칙적 수면, 적당한 움직임, 계절에 따른 생활을 일반 교육 개념으로 강조하며 개인 임상 처방이 아닙니다."},
+    "educational_examples": [],
+    "safety_notes": {"en": ["Lifestyle suggestions must not delay assessment of persistent, severe, or worsening symptoms."], "zh": ["生活方式建议不得延误对持续、严重或加重症状的医学评估。"], "ko": ["생활 조언 때문에 지속되거나 심하거나 악화되는 증상에 대한 평가가 지연되어서는 안 됩니다."]},
+    "source_ids": ["src_internal_tcm_teaching_summary"],
+    "source_type": "educational_textbook_summary", "evidence_category": "traditional_theory", "tags": ["lifestyle", "yangsheng", "sleep", "seasonal"], "review_status": "needs_human_review"
+  }
+]

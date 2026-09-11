@@ -4613,6 +4613,55 @@ body {
   .research-workbench *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
+/* Guided paper experiments: scoped to the research workbench. */
+.paper-mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; margin: 1rem 0; padding: .3rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.paper-mode-switch button { border: 0; border-radius: 9px; padding: .75rem 1rem; background: transparent; color: var(--text-muted); font: inherit; font-weight: 800; }
+.paper-mode-switch button[aria-selected="true"] { background: #fff; color: var(--accent-strong); box-shadow: 0 2px 10px rgb(20 45 65 / 10%); }
+.guided-paper-experiments, .custom-research-workbench { margin-top: 1rem; }
+.guided-heading, .paper-configuration-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.guided-heading h3, .paper-configuration h3, .formal-job-panel h3 { margin: .15rem 0 .35rem; }
+.guided-heading p:last-child { margin: 0; color: var(--text-muted); }
+.locked-badge { flex: 0 0 auto; border-radius: 999px; padding: .35rem .65rem; background: var(--accent-soft); color: var(--accent-strong); font-size: .78rem; font-weight: 800; }
+.formal-experiment-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin-top: 1rem; }
+.formal-experiment-card { display: grid; gap: .45rem; min-height: 176px; padding: 1rem; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: inherit; text-align: left; font: inherit; }
+.formal-experiment-card:hover, .formal-experiment-card:focus-visible { border-color: var(--accent); }
+.formal-experiment-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent); }
+.formal-experiment-card span { color: var(--accent-strong); font-weight: 900; font-size: .76rem; letter-spacing: .04em; }
+.formal-experiment-card strong { font-size: 1rem; }
+.formal-experiment-card small { color: var(--text-muted); line-height: 1.45; }
+.paper-configuration, .formal-job-panel { margin-top: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 14px; background: rgb(255 255 255 / 72%); }
+.paper-config-fields, .experiment-guide dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: 1rem 0; }
+.paper-config-fields div, .experiment-guide dl div, .formal-job-grid div { padding: .7rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
+.paper-config-fields dt, .experiment-guide dt, .formal-job-grid span { color: var(--text-muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.paper-config-fields dd, .experiment-guide dd { margin: .25rem 0 0; line-height: 1.4; }
+.paper-config-fields dd::after { content: "  🔒"; font-size: .72rem; }
+.paper-condition-controls { display: flex; flex-wrap: wrap; gap: .55rem; margin: .8rem 0; }
+.paper-condition-controls label { display: flex; gap: .45rem; align-items: flex-start; padding: .65rem .75rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
+.paper-condition-controls input { margin-top: .18rem; }
+.experiment-guide { margin-top: 1rem; padding: .85rem; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.experiment-guide h4 { margin: 0; }
+.formal-run-controls { display: grid; gap: .65rem; margin-top: 1rem; }
+.formal-run-controls > label { font-weight: 800; }
+.formal-run-controls > label span { color: var(--text-muted); font-weight: 400; }
+.formal-run-controls input { max-width: 28rem; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.formal-capability-statuses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }
+.formal-capability { display: grid; gap: .18rem; align-content: start; padding: .65rem .75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.formal-capability span, .formal-capability small { color: var(--text-muted); }
+.formal-capability strong { font-size: .76rem; letter-spacing: .04em; }
+.capability-ready { color: var(--success); }
+.capability-local { color: var(--accent); }
+.capability-unavailable { color: var(--danger); }
+.formal-run-buttons { display: flex; flex-wrap: wrap; gap: .6rem; }
+.formal-run-buttons button:disabled { cursor: not-allowed; opacity: .5; }
+.formal-job-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }
+.formal-job-grid strong { display: block; margin-top: .25rem; }
+.formal-job-panel pre { max-height: 22rem; overflow: auto; white-space: pre-wrap; }
+.formal-job-downloads { display: flex; flex-wrap: wrap; gap: .45rem; margin: .75rem 0; }
+.custom-workbench-label { margin-bottom: 1rem; padding: .75rem; border-left: 3px solid var(--warning); background: #fff9ed; }
+.custom-workbench-label p { margin: 0; }
+@media (max-width: 860px) { .formal-experiment-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-capability-statuses { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading { display: grid; } }
+
 .research-notation-card {
   margin-top: .8rem;
   padding: 1rem 1.15rem;

@@ -1,0 +1,62 @@
+{
+  "status": "PREPARED_NOT_STARTED",
+  "study_id": "RESEARCH_A3_MULTI_MODEL_DEBATE_V1_2",
+  "timestamp_utc": "2026-09-04T07:24:23.334976+00:00",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "evidence_manifest_sha256": "ac95750e314f2f77fbe8d6fa03e558e4562065cd491671a52065d2ce90108807",
+  "role_rotation_manifest_sha256": "21144519a963345795678d45123b1525840fa2969831e3915541e7f31443d705",
+  "execution_plan_sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+  "prompt_bundle_sha256": "8fcd211758f6d5f6d00275282aee581d610ae1be2fcb1c4da4773cc0715d6187",
+  "study_config_sha256": "d1f3f9955081225951596bc78945e18133ee73a0bcb41f80aeb4936137a5ab70",
+  "structured_output_sha256": "7ea4c7ff9826d8987c45be89d9ce0e62cf59d377f1b3d49ba92d65098df13c44",
+  "runner_sha256": "7f00b6836323022e7f88701780ccfb73e98b59b73f5ef8fbcce16a5ad1447046",
+  "formal_runner_sha256": "76247ca18faf6e2c4276f947d76eef315a43610f636a4354a4ad82e4b157fc29",
+  "protocol_amendment_sha256": "47f44068fb20d430aed6cd4f28cea43515d464b97c55009856fd15da8bc1f873",
+  "revision_token_config_sha256": "d20dbfbfd4aef7136d74c7688726bcb1032d528a241bbfc66f5ed1b796cb8915",
+  "token_budget_audit_sha256": "8edfc682533238da089ddd574a69e3b5f5101586e15af66134539939af8a2077",
+  "v1_2_smoke_validation_sha256": "d9f54450a242dd69d67ac720f70b47ec2bc7eec3885a65fbd90eae9222d7a60f",
+  "aborted_v1_1_manifest_sha256": "8fcc8166cc5f2895a4f5cf904a12d75f325ad58dccb3971ae97c9eb24a28c8f5",
+  "aborted_v1_manifest_sha256": "94c4e7923ce9b03793f6ca56a696b64e51be09940d3b4e1b1f7db2bb8ef4b98f",
+  "exact_model_ids": [
+    "Qwen/Qwen3-8B",
+    "THUDM/GLM-Z1-9B-0414",
+    "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+  ],
+  "consensus_model": "Qwen/Qwen3-8B",
+  "retry_policy": {
+    "max_attempts_per_slot": 2,
+    "allowed_failures": [
+      "429",
+      "5xx",
+      "timeout",
+      "parse_failure"
+    ]
+  },
+  "terminal_slot_policy": "After two failed attempts, checkpoint condition usable=false and continue to the next canonical execution.",
+  "provider_read_timeout_seconds": 240.0,
+  "decoding_settings": {
+    "temperature": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "token_budgets": {
+    "initial": 384,
+    "critique": 512,
+    "revision": 512,
+    "consensus": 512
+  },
+  "concurrency_policy": {
+    "Qwen/Qwen3-8B": 1,
+    "THUDM/GLM-Z1-9B-0414": 1,
+    "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": 1
+  },
+  "planned_canonical_executions": 200,
+  "planned_provider_generations": 2000,
+  "starting_state": {
+    "canonical_completed": 0,
+    "provider_attempts": 0,
+    "semantic_review_rows": 0
+  },
+  "aborted_v1_outputs_included": false,
+  "aborted_v1_1_outputs_included": false
+}

@@ -8,13 +8,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from agents import AGENT_REGISTRY
 from config import get_settings
 from corpus import corpus_stats
 from judges import JUDGE_REGISTRY
+from formal_experiments import formal_jobs, public_registry
+from formal_experiments.schemas import FormalRunRequest, FormalRunStatus
 from orchestration import CONDITION_REGISTRY, ResearchWorkbench, get_run
 from retrieval import RETRIEVER_REGISTRY, RetrievalEngine
 from schemas.research import CompareRequest, CompareResponse, ResearchRequest, ResearchRunResult, RetrievalItem, RetrievalStrategy
@@ -163,3 +165,53 @@ async def retrieval_search(request: RetrievalSearchRequest) -> list[RetrievalIte
 @app.get("/api/corpus/stats")
 async def api_corpus_stats() -> dict[str, object]:
     return corpus_stats()
+
+
+@app.get("/api/formal-experiments", summary="List paper-locked experiment protocols")
+async def formal_experiments() -> list[dict]:
+    return public_registry()
+
+
+@app.post("/api/formal-runs", response_model=FormalRunStatus, status_code=202, summary="Start a new replay of a frozen paper protocol")
+async def create_formal_run(request: FormalRunRequest) -> dict:
+    try:
+        return formal_jobs.create(request)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/formal-runs/{run_id}", response_model=FormalRunStatus, summary="Read replay job status")
+async def formal_run_status(run_id: str) -> dict:
+    try:
+        return formal_jobs.get(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+
+
+@app.get("/api/formal-runs/{run_id}/results", summary="Read replay results without historical paper outputs")
+async def formal_run_results(run_id: str) -> dict:
+    try:
+        return formal_jobs.results(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+
+
+@app.post("/api/formal-runs/{run_id}/resume", response_model=FormalRunStatus, status_code=202, summary="Resume a failed replay from its isolated output directory")
+async def resume_formal_run(run_id: str) -> dict:
+    try:
+        return formal_jobs.resume(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.get("/api/formal-runs/{run_id}/files/{file_path:path}", summary="Download a generated replay artifact")
+async def formal_run_file(run_id: str, file_path: str):
+    try:
+        path = formal_jobs.file(run_id, file_path)
+        return FileResponse(path, filename=path.name)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc

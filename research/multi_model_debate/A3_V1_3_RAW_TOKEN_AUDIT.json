@@ -1,0 +1,449 @@
+{
+  "scope": "Operational token/provider metadata only; no semantic outcome metric inspected.",
+  "percentile_method": "nearest-rank p90/p95; conventional median",
+  "visible_output_token_rule": "completion_tokens - reasoning_tokens only when both provider fields are numeric; otherwise unavailable",
+  "runs": {
+    "v1.1": {
+      "archive": "D:\\project\\multi_agent_rag_research\\code_git\\research\\multi_model_debate\\formal_aborted_v1_1",
+      "provider_attempts_sha256": "6a8c10ca63f29804bab7560b3f25d53d2ecc5ea3f605ab3c5f8df7a4fe632b9b",
+      "stage_outputs_sha256": "d1d8844d65c85563f3c5edf9ecbdaf0657f89a7b27e3a0a0b41a2b9df20a5cc5",
+      "attempts": 252
+    },
+    "v1.2": {
+      "archive": "D:\\project\\multi_agent_rag_research\\code_git\\research\\multi_model_debate\\formal_aborted_v1_2",
+      "provider_attempts_sha256": "79b14eeb2cfbf85bd9cd2f9f0b6b588f939806dee49c5d0a45a72e7513b12030",
+      "stage_outputs_sha256": "09e1991688d30c68e1b317d1cde40b7e5ae4ef1692c0702aa0c36849ccad84e7",
+      "attempts": 61
+    }
+  },
+  "combined": {
+    "initial": {
+      "Qwen/Qwen3-8B": {
+        "attempts": 64,
+        "successful": 64,
+        "finish_reason_stop": 64,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 384
+        },
+        "provider_completion_tokens": {
+          "n": 64,
+          "min": 72,
+          "median": 114.0,
+          "p90": 359,
+          "p95": 362,
+          "max": 369
+        },
+        "provider_reasoning_tokens": {
+          "n": 64,
+          "min": 0,
+          "median": 0.0,
+          "p90": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "estimated_visible_output_tokens": {
+          "n": 64,
+          "min": 72,
+          "median": 114.0,
+          "p90": 359,
+          "p95": 362,
+          "max": 369
+        },
+        "visible_estimate_availability": "64/64 attempts"
+      },
+      "THUDM/GLM-Z1-9B-0414": {
+        "attempts": 16,
+        "successful": 16,
+        "finish_reason_stop": 16,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 384
+        },
+        "provider_completion_tokens": {
+          "n": 16,
+          "min": 358,
+          "median": 492.0,
+          "p90": 1223,
+          "p95": 1426,
+          "max": 1426
+        },
+        "provider_reasoning_tokens": {
+          "n": 16,
+          "min": 268,
+          "median": 386.0,
+          "p90": 1122,
+          "p95": 1155,
+          "max": 1155
+        },
+        "estimated_visible_output_tokens": {
+          "n": 16,
+          "min": 53,
+          "median": 110.5,
+          "p90": 262,
+          "p95": 271,
+          "max": 271
+        },
+        "visible_estimate_availability": "16/16 attempts"
+      },
+      "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+        "attempts": 17,
+        "successful": 15,
+        "finish_reason_stop": 15,
+        "finish_reason_length": 1,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 384
+        },
+        "provider_completion_tokens": {
+          "n": 16,
+          "min": 1341,
+          "median": 1684.0,
+          "p90": 2924,
+          "p95": 2924,
+          "max": 2924
+        },
+        "provider_reasoning_tokens": {
+          "n": 16,
+          "min": 1258,
+          "median": 1567.5,
+          "p90": 2625,
+          "p95": 2625,
+          "max": 2625
+        },
+        "estimated_visible_output_tokens": {
+          "n": 16,
+          "min": 70,
+          "median": 115.5,
+          "p90": 299,
+          "p95": 384,
+          "max": 384
+        },
+        "visible_estimate_availability": "16/17 attempts"
+      }
+    },
+    "critique": {
+      "Qwen/Qwen3-8B": {
+        "attempts": 63,
+        "successful": 63,
+        "finish_reason_stop": 63,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 63,
+          "min": 60,
+          "median": 62,
+          "p90": 173,
+          "p95": 215,
+          "max": 258
+        },
+        "provider_reasoning_tokens": {
+          "n": 63,
+          "min": 0,
+          "median": 0,
+          "p90": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "estimated_visible_output_tokens": {
+          "n": 63,
+          "min": 60,
+          "median": 62,
+          "p90": 173,
+          "p95": 215,
+          "max": 258
+        },
+        "visible_estimate_availability": "63/63 attempts"
+      },
+      "THUDM/GLM-Z1-9B-0414": {
+        "attempts": 15,
+        "successful": 15,
+        "finish_reason_stop": 15,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 15,
+          "min": 513,
+          "median": 1030,
+          "p90": 2205,
+          "p95": 2373,
+          "max": 2373
+        },
+        "provider_reasoning_tokens": {
+          "n": 15,
+          "min": 444,
+          "median": 972,
+          "p90": 2122,
+          "p95": 2318,
+          "max": 2318
+        },
+        "estimated_visible_output_tokens": {
+          "n": 15,
+          "min": 55,
+          "median": 69,
+          "p90": 228,
+          "p95": 407,
+          "max": 407
+        },
+        "visible_estimate_availability": "15/15 attempts"
+      },
+      "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+        "attempts": 17,
+        "successful": 14,
+        "finish_reason_stop": 17,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 17,
+          "min": 1544,
+          "median": 2645,
+          "p90": 4076,
+          "p95": 4076,
+          "max": 4076
+        },
+        "provider_reasoning_tokens": {
+          "n": 17,
+          "min": 1471,
+          "median": 2553,
+          "p90": 4006,
+          "p95": 4006,
+          "max": 4006
+        },
+        "estimated_visible_output_tokens": {
+          "n": 17,
+          "min": 68,
+          "median": 72,
+          "p90": 304,
+          "p95": 310,
+          "max": 310
+        },
+        "visible_estimate_availability": "17/17 attempts"
+      }
+    },
+    "revision": {
+      "Qwen/Qwen3-8B": {
+        "attempts": 68,
+        "successful": 50,
+        "finish_reason_stop": 50,
+        "finish_reason_length": 18,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 68,
+          "min": 93,
+          "median": 152.0,
+          "p90": 384,
+          "p95": 512,
+          "max": 512
+        },
+        "provider_reasoning_tokens": {
+          "n": 68,
+          "min": 0,
+          "median": 0.0,
+          "p90": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "estimated_visible_output_tokens": {
+          "n": 68,
+          "min": 93,
+          "median": 152.0,
+          "p90": 384,
+          "p95": 512,
+          "max": 512
+        },
+        "visible_estimate_availability": "68/68 attempts"
+      },
+      "THUDM/GLM-Z1-9B-0414": {
+        "attempts": 15,
+        "successful": 13,
+        "finish_reason_stop": 15,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 15,
+          "min": 411,
+          "median": 629,
+          "p90": 932,
+          "p95": 1070,
+          "max": 1070
+        },
+        "provider_reasoning_tokens": {
+          "n": 15,
+          "min": 297,
+          "median": 442,
+          "p90": 624,
+          "p95": 792,
+          "max": 792
+        },
+        "estimated_visible_output_tokens": {
+          "n": 15,
+          "min": 65,
+          "median": 152,
+          "p90": 398,
+          "p95": 398,
+          "max": 398
+        },
+        "visible_estimate_availability": "15/15 attempts"
+      },
+      "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+        "attempts": 16,
+        "successful": 11,
+        "finish_reason_stop": 11,
+        "finish_reason_length": 5,
+        "requested_max_tokens_by_run": {
+          "v1.1": 384,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 16,
+          "min": 1501,
+          "median": 2163.5,
+          "p90": 3085,
+          "p95": 3299,
+          "max": 3299
+        },
+        "provider_reasoning_tokens": {
+          "n": 16,
+          "min": 1323,
+          "median": 1760.0,
+          "p90": 2796,
+          "p95": 2915,
+          "max": 2915
+        },
+        "estimated_visible_output_tokens": {
+          "n": 16,
+          "min": 141,
+          "median": 188.0,
+          "p90": 384,
+          "p95": 512,
+          "max": 512
+        },
+        "visible_estimate_availability": "16/16 attempts"
+      }
+    },
+    "consensus": {
+      "Qwen/Qwen3-8B": {
+        "attempts": 22,
+        "successful": 22,
+        "finish_reason_stop": 22,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 22,
+          "min": 65,
+          "median": 87.0,
+          "p90": 128,
+          "p95": 129,
+          "max": 339
+        },
+        "provider_reasoning_tokens": {
+          "n": 22,
+          "min": 0,
+          "median": 0.0,
+          "p90": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "estimated_visible_output_tokens": {
+          "n": 22,
+          "min": 65,
+          "median": 87.0,
+          "p90": 128,
+          "p95": 129,
+          "max": 339
+        },
+        "visible_estimate_availability": "22/22 attempts"
+      },
+      "THUDM/GLM-Z1-9B-0414": {
+        "attempts": 0,
+        "successful": 0,
+        "finish_reason_stop": 0,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "provider_reasoning_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "estimated_visible_output_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "visible_estimate_availability": "0/0 attempts"
+      },
+      "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+        "attempts": 0,
+        "successful": 0,
+        "finish_reason_stop": 0,
+        "finish_reason_length": 0,
+        "requested_max_tokens_by_run": {
+          "v1.1": 512,
+          "v1.2": 512
+        },
+        "provider_completion_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "provider_reasoning_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "estimated_visible_output_tokens": {
+          "n": 0,
+          "min": null,
+          "median": null,
+          "p90": null,
+          "p95": null,
+          "max": null
+        },
+        "visible_estimate_availability": "0/0 attempts"
+      }
+    }
+  }
+}

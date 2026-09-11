@@ -1,0 +1,29 @@
+{
+  "experiment_id": "RESEARCH_C_TCM_CONFLICT_TRANSPARENCY_V1",
+  "status": "COMPLETE_FROZEN",
+  "conditions": {
+    "K1": "Standard source-grounded answering without explicit conflict instructions",
+    "K2": "Conflict-aware answering requiring conflict identification, dual viewpoint preservation, and citation"
+  },
+  "labels": [
+    "AGREEMENT",
+    "PARTIAL_CONFLICT",
+    "DIRECT_CONFLICT",
+    "INSUFFICIENT_OR_AMBIGUOUS"
+  ],
+  "model": "Qwen/Qwen3-8B",
+  "base_url_env": "LLM_BASE_URL",
+  "api_key_env": "LLM_API_KEY",
+  "model_env": "LLM_MODEL",
+  "temperature": 0,
+  "max_tokens": 512,
+  "timeout_seconds": 120,
+  "max_attempts": 3,
+  "retry_backoff_seconds": 1,
+  "concurrency": 8,
+  "random_seed": 20260902,
+  "candidate_benchmark": "research/research_c/benchmark/candidate_cases_v0_1.jsonl",
+  "formal_benchmark": "research/research_c/benchmark/research_c_v1_frozen.jsonl",
+  "freeze_manifest": "research/research_c/benchmark/freeze_manifest_v1.json",
+  "output_dir": "research/research_c/formal_run_v1"
+}

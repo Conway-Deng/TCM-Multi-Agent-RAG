@@ -1,0 +1,39 @@
+{
+  "benchmark_version": "RQ1_CONFIRMATORY_V1_1",
+  "status": "FROZEN_SOURCE_GROUNDED_RQ1_CONFIRMATORY_V1_1",
+  "freeze_timestamp_utc": "2026-08-22T14:20:48+00:00",
+  "source_git_revision": "cc1b5fa",
+  "question_count": 100,
+  "atomic_gold_fact_count": 223,
+  "domain_distribution": {
+    "herbal": 60,
+    "syndrome": 25,
+    "multi_target": 15
+  },
+  "difficulty_distribution": {
+    "easy": 40,
+    "medium": 40,
+    "hard": 20
+  },
+  "corpus_version": "TCM Research Corpus v1",
+  "corpus_chunk_count": 4461,
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "candidate_benchmark_sha256": "f938ec9b3e3d31c0f04983951dc6de2c6edc7b411bdd3f0501f0e8e12e23559e",
+  "final_benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+  "heldout_manifest_sha256": "0274c853b3e1dae648b23002b8d7baf83a14f063d259b118874a520325e67870",
+  "external_source_review": {
+    "result": "APPROVED",
+    "questions_approved": 100,
+    "atomic_gold_facts_approved": 223,
+    "confidence": "HIGH_ALL_ROWS",
+    "method": "external GPT source-grounded review",
+    "clinical_or_tcm_expert_validation": "NOT_PERFORMED"
+  },
+  "gold_interpretation": "SOURCE-GROUNDED_REFERENCE_NOT_CLINICAL_TRUTH",
+  "formal_experiment_protocol": "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md",
+  "formal_experiment_protocol_sha256": "b18307373a96ba2fa5d8aee007e57788f910bb0364272d17d8820189d0b4f86a",
+  "analysis_plan": "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/analysis_plan.json",
+  "analysis_plan_sha256": "2c4478a7b28900c7bf79fa126dd429d162263ccc98fc73095b5dabd1d04be457",
+  "formal_provider_runs_before_freeze": 0,
+  "freeze_invariant": "No benchmark question, Gold fact, evidence mapping, or protocol analysis threshold may be changed after this freeze or in response to formal outputs."
+}

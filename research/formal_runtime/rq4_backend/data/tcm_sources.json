@@ -1,0 +1,35 @@
+[
+  {
+    "id": "src_who_tcm_2022",
+    "title": "WHO International Standard Terminologies on Traditional Chinese Medicine",
+    "organization": "World Health Organization",
+    "year": 2022,
+    "url_or_identifier": "bibliographic_details_not_supplied_in_prototype_corpus",
+    "section": "Terminology names used for educational pattern mapping",
+    "source_type": "terminology_standard",
+    "license_or_usage_note": "Used only as a traceable terminology reference in this research prototype; bibliographic details and permissions require human verification before publication.",
+    "verification_status": "needs_review"
+  },
+  {
+    "id": "src_internal_tcm_teaching_summary",
+    "title": "Limited-scope educational TCM syndrome-differentiation summary",
+    "organization": "MediRAG-Judge research prototype",
+    "year": 2026,
+    "url_or_identifier": "internal_prototype_corpus",
+    "section": "Sleep, fatigue, digestive, stress, headache, throat, cold/heat, and deficiency presentations",
+    "source_type": "educational_textbook_summary",
+    "license_or_usage_note": "Created for software prototyping from general educational TCM concepts; requires qualified TCM and source review before research publication.",
+    "verification_status": "needs_review"
+  },
+  {
+    "id": "src_general_safety_guardrails",
+    "title": "Prototype medical safety and abstention guardrails",
+    "organization": "MediRAG-Judge research prototype",
+    "year": 2026,
+    "url_or_identifier": "internal_safety_policy",
+    "section": "Emergency routing, out-of-scope routing, and non-prescription constraints",
+    "source_type": "safety_information",
+    "license_or_usage_note": "Software safety guardrails for research routing only; not a substitute for clinical triage or local emergency guidance.",
+    "verification_status": "needs_review"
+  }
+]

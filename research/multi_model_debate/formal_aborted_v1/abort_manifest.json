@@ -1,0 +1,27 @@
+{
+  "status": "ABORTED_PRE_FINAL_PROTOCOL_VALIDATION",
+  "scientific_use": "EXCLUDED_FROM_ALL_FINAL_A3_ANALYSES",
+  "reason": "Pre-final protocol validation identified a false revision-schema failure for empty critique_uptake when the supplied critique had zero actionable items, study-wide termination after a terminal slot failure, and insufficient 120-second free-tier read timeout behavior.",
+  "completed_canonical_rows": 2,
+  "completed_pairs": 1,
+  "failed_sequence": 3,
+  "failure_location": {
+    "question_id": "rq4-v1-029",
+    "condition": "M2",
+    "stage": "revision",
+    "seat": "A",
+    "model": "THUDM/GLM-Z1-9B-0414"
+  },
+  "semantic_review_created": false,
+  "final_statistics_created": false,
+  "final_scientific_conclusions_permitted": false,
+  "preservation": {
+    "method": "Byte-identical copy of every file from research/multi_model_debate/formal; original directory also retained in place.",
+    "formal_run_manifest_sha256": "7851a2bfb269e10f0b97fdf23821f5e47d3640b710defd2cd7660f4c2d483d42",
+    "formal_results_sha256": "3a82e61ac890a8bc8b1557a7410c9e3fb3203c334f5031673a6af56b7a1d4494",
+    "provider_attempts_sha256": "0a26f86c77ae270a90ff6e54a5f5e46d20d205b107b19958352b009a90cf7907",
+    "stage_outputs_sha256": "95a2c143f64886283d86441429ad0ab89165f01e7c4d76c02c45e767405d1573",
+    "execution_order_sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+    "run_progress_sha256": "147ae4f881163775a7b21837fdedaa4ec7948683e9f02a9580062efdeec80987"
+  }
+}

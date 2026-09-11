@@ -1,0 +1,35 @@
+{
+  "status": "RQ1_CONFIRMATORY_COMPLETE",
+  "analysis_date": "2026-08-23",
+  "source_git_revision": "f9b0a77",
+  "methodology": "AI-assisted semantic evaluation using the frozen source-grounded rubric",
+  "unblinding": {
+    "SYSTEM_A": "C1 Single-RAG",
+    "SYSTEM_B": "C2 Multi-Agent",
+    "source": "locked export mapping in research/experiment_pipeline/rq1_confirmatory.py at frozen revision f9b0a77, verified by exact answer linkage to results.jsonl and formal_execution_manifest.json"
+  },
+  "inputs": {
+    "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+    "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+    "freeze_manifest_sha256": "76da2ea35674ada0a960f967c7c8c8806500c35fd9d19bd83c58f70e58012d64",
+    "protocol_sha256": "b18307373a96ba2fa5d8aee007e57788f910bb0364272d17d8820189d0b4f86a",
+    "analysis_plan_sha256": "2c4478a7b28900c7bf79fa126dd429d162263ccc98fc73095b5dabd1d04be457",
+    "execution_manifest_sha256": "308284b77c510e4d38e6bdb19b96f0f736c1274eaf0a1bedc6eb14e3cd0d3422",
+    "results_jsonl_sha256": "d899fdfbe3bc25717e1e66c7979cdf26dd870ec777a72245fccc7755b2f6e8d0",
+    "semantic_packet_sha256": "51e72cc18e45a9ab9dff71ccc75f2fa0de70ef867ab1dae5babf76da29c48c50",
+    "semantic_review_import_sha256": "08a2df29d9577a5184b251d56423f26aa0e920cd00f3ac24872ebcb06ca4ff7c",
+    "objective_scores_sha256": "93b69172df642f9a87845fc1948c88fc82d7a2c3c3e0f6e2713f21e8e7496f32"
+  },
+  "sample": {
+    "planned_questions": 100,
+    "complete_usable_pairs": 92,
+    "semantic_rows": 422
+  },
+  "statistics": {
+    "bootstrap_resamples": 10000,
+    "seed": 20260821,
+    "practical_threshold_full_recall": 0.05
+  },
+  "provider_or_llm_calls_during_analysis": 0,
+  "conclusion": "The small favorable Full Recall direction for C2 in the original study did not replicate on the independent confirmatory benchmark: C2 was essentially tied with, and slightly below, C1. Statistical superiority was not established, and the confirmatory 95% CI rules out a >=5-percentage-point C2 benefit under this tested setup without constituting a formal equivalence claim. Confirmatory reliability was similar (slightly higher for C2 by one usable answer), while C2 again had higher mean and median latency, although the paired latency difference was uncertain."
+}

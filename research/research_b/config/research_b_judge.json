@@ -1,0 +1,24 @@
+{
+  "experiment_id": "RESEARCH_B_JUDGE_EVIDENCE_V1",
+  "status": "PREPARATION_ONLY_SOURCE_REVIEW_REQUIRED",
+  "conditions": {
+    "J1": "Judge receives the claim only",
+    "J2": "Judge receives the same claim plus the reviewed corpus evidence"
+  },
+  "labels": ["SUPPORTED", "PARTIALLY_SUPPORTED", "UNSUPPORTED", "CONTRADICTED"],
+  "model": "Qwen/Qwen3-8B",
+  "base_url_env": "LLM_BASE_URL",
+  "api_key_env": "LLM_API_KEY",
+  "model_env": "LLM_MODEL",
+  "temperature": 0,
+  "max_tokens": 220,
+  "timeout_seconds": 120,
+  "max_attempts": 3,
+  "retry_backoff_seconds": 1,
+  "concurrency": 8,
+  "random_seed": 20260902,
+  "candidate_benchmark": "research/research_b/benchmark/candidate_cases_v0_1.jsonl",
+  "formal_benchmark": "research/research_b/benchmark/research_b_v1_frozen.jsonl",
+  "freeze_manifest": "research/research_b/benchmark/freeze_manifest_v1.json",
+  "output_dir": "research/research_b/formal_run_v1"
+}

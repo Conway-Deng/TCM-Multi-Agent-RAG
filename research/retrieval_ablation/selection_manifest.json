@@ -1,0 +1,871 @@
+{
+  "algorithm": "SHA256(seed:question_id) ordering within domain/difficulty; fixed domain quotas; largest-remainder difficulty allocation",
+  "assignments": [
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 1,
+      "question_id": "tcmc-v1-018",
+      "subset": "selection",
+      "subset_sequence": 1
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "multi_target",
+      "overall_sequence": 2,
+      "question_id": "tcmc-v1-086",
+      "subset": "selection",
+      "subset_sequence": 2
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 3,
+      "question_id": "tcmc-v1-001",
+      "subset": "selection",
+      "subset_sequence": 3
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 4,
+      "question_id": "tcmc-v1-041",
+      "subset": "selection",
+      "subset_sequence": 4
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 5,
+      "question_id": "tcmc-v1-067",
+      "subset": "selection",
+      "subset_sequence": 5
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 6,
+      "question_id": "tcmc-v1-062",
+      "subset": "selection",
+      "subset_sequence": 6
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "multi_target",
+      "overall_sequence": 7,
+      "question_id": "tcmc-v1-094",
+      "subset": "selection",
+      "subset_sequence": 7
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 8,
+      "question_id": "tcmc-v1-015",
+      "subset": "selection",
+      "subset_sequence": 8
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 9,
+      "question_id": "tcmc-v1-071",
+      "subset": "selection",
+      "subset_sequence": 9
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 10,
+      "question_id": "tcmc-v1-028",
+      "subset": "selection",
+      "subset_sequence": 10
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 11,
+      "question_id": "tcmc-v1-039",
+      "subset": "selection",
+      "subset_sequence": 11
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "syndrome",
+      "overall_sequence": 12,
+      "question_id": "tcmc-v1-085",
+      "subset": "selection",
+      "subset_sequence": 12
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 13,
+      "question_id": "tcmc-v1-036",
+      "subset": "selection",
+      "subset_sequence": 13
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 14,
+      "question_id": "tcmc-v1-040",
+      "subset": "selection",
+      "subset_sequence": 14
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 15,
+      "question_id": "tcmc-v1-077",
+      "subset": "selection",
+      "subset_sequence": 15
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 16,
+      "question_id": "tcmc-v1-009",
+      "subset": "selection",
+      "subset_sequence": 16
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "syndrome",
+      "overall_sequence": 17,
+      "question_id": "tcmc-v1-082",
+      "subset": "selection",
+      "subset_sequence": 17
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 18,
+      "question_id": "tcmc-v1-066",
+      "subset": "selection",
+      "subset_sequence": 18
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 19,
+      "question_id": "tcmc-v1-079",
+      "subset": "selection",
+      "subset_sequence": 19
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 20,
+      "question_id": "tcmc-v1-029",
+      "subset": "selection",
+      "subset_sequence": 20
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "multi_target",
+      "overall_sequence": 21,
+      "question_id": "tcmc-v1-092",
+      "subset": "selection",
+      "subset_sequence": 21
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "multi_target",
+      "overall_sequence": 22,
+      "question_id": "tcmc-v1-095",
+      "subset": "confirmation",
+      "subset_sequence": 1
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 23,
+      "question_id": "tcmc-v1-019",
+      "subset": "selection",
+      "subset_sequence": 22
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 24,
+      "question_id": "tcmc-v1-031",
+      "subset": "selection",
+      "subset_sequence": 23
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 25,
+      "question_id": "tcmc-v1-049",
+      "subset": "selection",
+      "subset_sequence": 24
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 26,
+      "question_id": "tcmc-v1-026",
+      "subset": "selection",
+      "subset_sequence": 25
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "multi_target",
+      "overall_sequence": 27,
+      "question_id": "tcmc-v1-091",
+      "subset": "confirmation",
+      "subset_sequence": 2
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 28,
+      "question_id": "tcmc-v1-068",
+      "subset": "selection",
+      "subset_sequence": 26
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 29,
+      "question_id": "tcmc-v1-076",
+      "subset": "selection",
+      "subset_sequence": 27
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 30,
+      "question_id": "tcmc-v1-010",
+      "subset": "selection",
+      "subset_sequence": 28
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 31,
+      "question_id": "tcmc-v1-050",
+      "subset": "selection",
+      "subset_sequence": 29
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 32,
+      "question_id": "tcmc-v1-013",
+      "subset": "selection",
+      "subset_sequence": 30
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 33,
+      "question_id": "tcmc-v1-007",
+      "subset": "selection",
+      "subset_sequence": 31
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 34,
+      "question_id": "tcmc-v1-011",
+      "subset": "selection",
+      "subset_sequence": 32
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "multi_target",
+      "overall_sequence": 35,
+      "question_id": "tcmc-v1-100",
+      "subset": "selection",
+      "subset_sequence": 33
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 36,
+      "question_id": "tcmc-v1-045",
+      "subset": "confirmation",
+      "subset_sequence": 3
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 37,
+      "question_id": "tcmc-v1-047",
+      "subset": "confirmation",
+      "subset_sequence": 4
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "multi_target",
+      "overall_sequence": 38,
+      "question_id": "tcmc-v1-088",
+      "subset": "selection",
+      "subset_sequence": 34
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 39,
+      "question_id": "tcmc-v1-014",
+      "subset": "selection",
+      "subset_sequence": 35
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 40,
+      "question_id": "tcmc-v1-080",
+      "subset": "confirmation",
+      "subset_sequence": 5
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "multi_target",
+      "overall_sequence": 41,
+      "question_id": "tcmc-v1-090",
+      "subset": "confirmation",
+      "subset_sequence": 6
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 42,
+      "question_id": "tcmc-v1-021",
+      "subset": "confirmation",
+      "subset_sequence": 7
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 43,
+      "question_id": "tcmc-v1-063",
+      "subset": "confirmation",
+      "subset_sequence": 8
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 44,
+      "question_id": "tcmc-v1-065",
+      "subset": "confirmation",
+      "subset_sequence": 9
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 45,
+      "question_id": "tcmc-v1-072",
+      "subset": "confirmation",
+      "subset_sequence": 10
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 46,
+      "question_id": "tcmc-v1-075",
+      "subset": "confirmation",
+      "subset_sequence": 11
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 47,
+      "question_id": "tcmc-v1-034",
+      "subset": "confirmation",
+      "subset_sequence": 12
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 48,
+      "question_id": "tcmc-v1-074",
+      "subset": "confirmation",
+      "subset_sequence": 13
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 49,
+      "question_id": "tcmc-v1-064",
+      "subset": "confirmation",
+      "subset_sequence": 14
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 50,
+      "question_id": "tcmc-v1-022",
+      "subset": "confirmation",
+      "subset_sequence": 15
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 51,
+      "question_id": "tcmc-v1-044",
+      "subset": "confirmation",
+      "subset_sequence": 16
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 52,
+      "question_id": "tcmc-v1-051",
+      "subset": "selection",
+      "subset_sequence": 36
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 53,
+      "question_id": "tcmc-v1-002",
+      "subset": "confirmation",
+      "subset_sequence": 17
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 54,
+      "question_id": "tcmc-v1-033",
+      "subset": "confirmation",
+      "subset_sequence": 18
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 55,
+      "question_id": "tcmc-v1-053",
+      "subset": "selection",
+      "subset_sequence": 37
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 56,
+      "question_id": "tcmc-v1-069",
+      "subset": "confirmation",
+      "subset_sequence": 19
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 57,
+      "question_id": "tcmc-v1-048",
+      "subset": "confirmation",
+      "subset_sequence": 20
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 58,
+      "question_id": "tcmc-v1-060",
+      "subset": "selection",
+      "subset_sequence": 38
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 59,
+      "question_id": "tcmc-v1-003",
+      "subset": "confirmation",
+      "subset_sequence": 21
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 60,
+      "question_id": "tcmc-v1-078",
+      "subset": "confirmation",
+      "subset_sequence": 22
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "multi_target",
+      "overall_sequence": 61,
+      "question_id": "tcmc-v1-096",
+      "subset": "selection",
+      "subset_sequence": 39
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "multi_target",
+      "overall_sequence": 62,
+      "question_id": "tcmc-v1-099",
+      "subset": "confirmation",
+      "subset_sequence": 23
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 63,
+      "question_id": "tcmc-v1-006",
+      "subset": "confirmation",
+      "subset_sequence": 24
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 64,
+      "question_id": "tcmc-v1-055",
+      "subset": "selection",
+      "subset_sequence": 40
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 65,
+      "question_id": "tcmc-v1-038",
+      "subset": "confirmation",
+      "subset_sequence": 25
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 66,
+      "question_id": "tcmc-v1-058",
+      "subset": "confirmation",
+      "subset_sequence": 26
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 67,
+      "question_id": "tcmc-v1-046",
+      "subset": "confirmation",
+      "subset_sequence": 27
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "multi_target",
+      "overall_sequence": 68,
+      "question_id": "tcmc-v1-093",
+      "subset": "confirmation",
+      "subset_sequence": 28
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 69,
+      "question_id": "tcmc-v1-037",
+      "subset": "confirmation",
+      "subset_sequence": 29
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 70,
+      "question_id": "tcmc-v1-025",
+      "subset": "confirmation",
+      "subset_sequence": 30
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 71,
+      "question_id": "tcmc-v1-032",
+      "subset": "confirmation",
+      "subset_sequence": 31
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 72,
+      "question_id": "tcmc-v1-005",
+      "subset": "confirmation",
+      "subset_sequence": 32
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 73,
+      "question_id": "tcmc-v1-054",
+      "subset": "confirmation",
+      "subset_sequence": 33
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 74,
+      "question_id": "tcmc-v1-023",
+      "subset": "confirmation",
+      "subset_sequence": 34
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 75,
+      "question_id": "tcmc-v1-020",
+      "subset": "confirmation",
+      "subset_sequence": 35
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 76,
+      "question_id": "tcmc-v1-016",
+      "subset": "confirmation",
+      "subset_sequence": 36
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 77,
+      "question_id": "tcmc-v1-061",
+      "subset": "confirmation",
+      "subset_sequence": 37
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "multi_target",
+      "overall_sequence": 78,
+      "question_id": "tcmc-v1-098",
+      "subset": "confirmation",
+      "subset_sequence": 38
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "syndrome",
+      "overall_sequence": 79,
+      "question_id": "tcmc-v1-070",
+      "subset": "confirmation",
+      "subset_sequence": 39
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 80,
+      "question_id": "tcmc-v1-052",
+      "subset": "confirmation",
+      "subset_sequence": 40
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 81,
+      "question_id": "tcmc-v1-056",
+      "subset": "confirmation",
+      "subset_sequence": 41
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 82,
+      "question_id": "tcmc-v1-027",
+      "subset": "confirmation",
+      "subset_sequence": 42
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 83,
+      "question_id": "tcmc-v1-017",
+      "subset": "confirmation",
+      "subset_sequence": 43
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 84,
+      "question_id": "tcmc-v1-024",
+      "subset": "confirmation",
+      "subset_sequence": 44
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "syndrome",
+      "overall_sequence": 85,
+      "question_id": "tcmc-v1-083",
+      "subset": "confirmation",
+      "subset_sequence": 45
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 86,
+      "question_id": "tcmc-v1-030",
+      "subset": "confirmation",
+      "subset_sequence": 46
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 87,
+      "question_id": "tcmc-v1-008",
+      "subset": "confirmation",
+      "subset_sequence": 47
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "syndrome",
+      "overall_sequence": 88,
+      "question_id": "tcmc-v1-084",
+      "subset": "confirmation",
+      "subset_sequence": 48
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 89,
+      "question_id": "tcmc-v1-057",
+      "subset": "confirmation",
+      "subset_sequence": 49
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 90,
+      "question_id": "tcmc-v1-004",
+      "subset": "confirmation",
+      "subset_sequence": 50
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 91,
+      "question_id": "tcmc-v1-035",
+      "subset": "confirmation",
+      "subset_sequence": 51
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "herbal",
+      "overall_sequence": 92,
+      "question_id": "tcmc-v1-059",
+      "subset": "confirmation",
+      "subset_sequence": 52
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 93,
+      "question_id": "tcmc-v1-042",
+      "subset": "confirmation",
+      "subset_sequence": 53
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "herbal",
+      "overall_sequence": 94,
+      "question_id": "tcmc-v1-012",
+      "subset": "confirmation",
+      "subset_sequence": 54
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "syndrome",
+      "overall_sequence": 95,
+      "question_id": "tcmc-v1-073",
+      "subset": "confirmation",
+      "subset_sequence": 55
+    },
+    {
+      "difficulty": "medium",
+      "domain_group": "herbal",
+      "overall_sequence": 96,
+      "question_id": "tcmc-v1-043",
+      "subset": "confirmation",
+      "subset_sequence": 56
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "multi_target",
+      "overall_sequence": 97,
+      "question_id": "tcmc-v1-087",
+      "subset": "confirmation",
+      "subset_sequence": 57
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "syndrome",
+      "overall_sequence": 98,
+      "question_id": "tcmc-v1-081",
+      "subset": "confirmation",
+      "subset_sequence": 58
+    },
+    {
+      "difficulty": "easy",
+      "domain_group": "multi_target",
+      "overall_sequence": 99,
+      "question_id": "tcmc-v1-089",
+      "subset": "confirmation",
+      "subset_sequence": 59
+    },
+    {
+      "difficulty": "hard",
+      "domain_group": "multi_target",
+      "overall_sequence": 100,
+      "question_id": "tcmc-v1-097",
+      "subset": "confirmation",
+      "subset_sequence": 60
+    }
+  ],
+  "benchmark_path": "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+  "benchmark_sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+  "confirmation_count": 60,
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "seed": 20260903,
+  "selection_count": 40,
+  "selection_domain_quotas": {
+    "herbal": 24,
+    "multi_target": 6,
+    "syndrome": 10
+  },
+  "status": "PREREGISTERED_BEFORE_FORMAL_RETRIEVAL",
+  "stratum_counts": {
+    "herbal": {
+      "easy": {
+        "confirmation": 15,
+        "selection": 10,
+        "total": 25
+      },
+      "hard": {
+        "confirmation": 6,
+        "selection": 4,
+        "total": 10
+      },
+      "medium": {
+        "confirmation": 15,
+        "selection": 10,
+        "total": 25
+      }
+    },
+    "multi_target": {
+      "easy": {
+        "confirmation": 3,
+        "selection": 2,
+        "total": 5
+      },
+      "hard": {
+        "confirmation": 3,
+        "selection": 2,
+        "total": 5
+      },
+      "medium": {
+        "confirmation": 3,
+        "selection": 2,
+        "total": 5
+      }
+    },
+    "syndrome": {
+      "easy": {
+        "confirmation": 6,
+        "selection": 4,
+        "total": 10
+      },
+      "hard": {
+        "confirmation": 3,
+        "selection": 2,
+        "total": 5
+      },
+      "medium": {
+        "confirmation": 6,
+        "selection": 4,
+        "total": 10
+      }
+    }
+  },
+  "study_id": "TCM_RETRIEVAL_ABLATION_V1"
+}

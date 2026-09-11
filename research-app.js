@@ -150,6 +150,145 @@
     return data;
   }
 
+  async function apiGet(path) {
+    const response = await fetch(API + path, { headers: { Accept: 'application/json' } });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed (' + response.status + ')');
+    return data;
+  }
+
+  let formalExperiments = [];
+  let selectedFormalExperiment = null;
+  let activeFormalRunId = null;
+  let formalRunTimer = null;
+  let paperConfigurationApplied = false;
+
+  function setPaperWorkbenchMode(mode) {
+    const guided = mode === 'guided';
+    $('#guided-paper-experiments').hidden = !guided;
+    $('#consensus-form').hidden = guided;
+    $('#guided-mode-tab').setAttribute('aria-selected', String(guided));
+    $('#custom-mode-tab').setAttribute('aria-selected', String(!guided));
+    $('#guided-mode-tab').tabIndex = guided ? 0 : -1;
+    $('#custom-mode-tab').tabIndex = guided ? -1 : 0;
+  }
+
+  function lockedField(label, value) {
+    const wrapper = element('div');
+    wrapper.append(element('dt', '', label), element('dd', '', value || 'Not applicable'));
+    return wrapper;
+  }
+
+  function formalConditionLabel(condition) {
+    return condition.id + ' · ' + condition.name + (condition.stage ? ' · ' + condition.stage : '');
+  }
+
+  function updateFormalRunButtons() {
+    if (!selectedFormalExperiment) return;
+    const modes = selectedFormalExperiment.available_run_modes || [];
+    const controls = [
+      ['one_case', 'Run One Case', $('#run-one-case')],
+      ['paired', 'Run Paired Comparison', $('#run-paired')],
+      ['full_benchmark', 'Full Formal Benchmark', $('#run-full-benchmark')],
+    ];
+    const statuses = $('#formal-capability-statuses'); statuses.replaceChildren();
+    controls.forEach(([mode, label, button]) => {
+      const capability = (selectedFormalExperiment.run_capabilities || {})[mode] || { state: 'UNAVAILABLE', reason: 'Capability was not reported by the backend.' };
+      button.disabled = !paperConfigurationApplied || !modes.includes(mode);
+      button.title = button.disabled ? capability.reason || (paperConfigurationApplied ? capability.state : 'Apply the locked paper configuration first.') : '';
+      const item = element('div', 'formal-capability');
+      item.append(element('span', '', label), element('strong', capability.state === 'READY ONLINE' ? 'capability-ready' : capability.state === 'LOCAL FULL REPLAY' ? 'capability-local' : 'capability-unavailable', capability.state));
+      if (capability.reason) item.append(element('small', '', capability.reason));
+      statuses.append(item);
+    });
+  }
+
+  function selectFormalExperiment(item) {
+    selectedFormalExperiment = item;
+    paperConfigurationApplied = false;
+    $$('.formal-experiment-card').forEach((card) => card.setAttribute('aria-pressed', String(card.dataset.experimentId === item.experiment_id)));
+    $('#paper-configuration').hidden = false;
+    setText('#paper-config-title', item.number + ' · ' + item.title);
+    const fields = $('#paper-config-fields'); fields.replaceChildren();
+    [
+      ['Experiment', item.paper_label], ['Research question', item.research_question], ['Dataset', item.dataset],
+      ['Cases / questions', String(item.dataset_size)], ['Conditions', item.conditions.map(formalConditionLabel).join(' | ')],
+      ['Model(s)', item.models.join(' | ')], ['Provider', item.provider], ['Retrieval', item.retrieval],
+      ['Architecture', item.architecture], ['Consensus model', item.consensus_model], ['Primary metrics', item.primary_metrics.join(', ')],
+    ].forEach(([label, value]) => fields.append(lockedField(label, value)));
+    const controls = $('#paper-condition-controls'); controls.replaceChildren();
+    const seen = new Set();
+    item.conditions.forEach((condition) => {
+      const key = (condition.stage || '') + ':' + condition.id;
+      if (seen.has(key)) return; seen.add(key);
+      const label = element('label'); const input = element('input'); input.type = 'radio'; input.name = 'formal-condition'; input.value = condition.id; input.dataset.stage = condition.stage || ''; input.checked = controls.children.length === 0;
+      label.append(input, element('span', '', formalConditionLabel(condition))); controls.append(label);
+    });
+    setText('#guide-question', item.research_question); setText('#guide-changes', item.what_changes); setText('#guide-fixed', item.what_stays_fixed);
+    setText('#guide-provider', item.models.join(' / ') + ' · ' + item.provider); setText('#guide-dataset', item.dataset); setText('#guide-metric', item.primary_metrics.join(', '));
+    showMessage($('#formal-run-message'), item.disabled_reason || 'Select Apply Paper Configuration to confirm the locked protocol.');
+    updateFormalRunButtons();
+  }
+
+  function renderFormalRegistry(items) {
+    formalExperiments = items;
+    const container = $('#formal-experiment-cards'); container.replaceChildren();
+    items.forEach((item) => {
+      const card = element('button', 'formal-experiment-card'); card.type = 'button'; card.dataset.experimentId = item.experiment_id; card.setAttribute('aria-pressed', 'false');
+      card.append(element('span', '', item.number + ' · ' + item.paper_label), element('strong', '', item.title), element('small', '', item.research_question));
+      card.addEventListener('click', () => selectFormalExperiment(item)); container.append(card);
+    });
+    if (items.length) selectFormalExperiment(items[0]);
+  }
+
+  async function loadFormalRegistry() {
+    try { renderFormalRegistry(await apiGet('/api/formal-experiments')); }
+    catch (error) { $('#formal-experiment-cards').replaceChildren(element('p', 'consensus-message', 'Formal experiment registry unavailable: ' + error.message)); }
+  }
+
+  function renderFormalStatus(status) {
+    activeFormalRunId = status.run_id;
+    $('#formal-job-panel').hidden = false;
+    setText('#formal-job-title', status.experiment_id + ' · ' + status.run_id); setText('#formal-job-status', status.status);
+    setText('#formal-job-progress', status.completed + ' / ' + status.total); setText('#formal-job-condition', status.current_condition || '—');
+    setText('#formal-job-case', status.current_case || '—'); setText('#formal-job-outcomes', status.successful + ' / ' + status.failed);
+    setText('#formal-job-elapsed', Number(status.elapsed_seconds || 0).toFixed(1) + ' s'); setText('#formal-job-resume-state', status.resume_state);
+    $('#resume-formal-run').disabled = status.status !== 'failed';
+    if (formalRunTimer) { clearTimeout(formalRunTimer); formalRunTimer = null; }
+    if (status.status === 'queued' || status.status === 'running') formalRunTimer = setTimeout(refreshFormalRun, 2500);
+    if (status.status === 'complete' || status.status === 'failed') loadFormalResults();
+  }
+
+  async function refreshFormalRun() {
+    if (!activeFormalRunId) return;
+    try { renderFormalStatus(await apiGet('/api/formal-runs/' + encodeURIComponent(activeFormalRunId))); }
+    catch (error) { showMessage($('#formal-run-message'), error.message); }
+  }
+
+  async function loadFormalResults() {
+    if (!activeFormalRunId) return;
+    try {
+      const data = await apiGet('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/results');
+      setText('#formal-job-results', JSON.stringify(data, null, 2));
+      const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
+      (data.downloads || []).forEach((file) => { const link = element('a', 'secondary-action', file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
+    }
+    catch (error) { setText('#formal-job-results', error.message); }
+  }
+
+  async function startFormalRun(runMode) {
+    if (!selectedFormalExperiment || !paperConfigurationApplied) return;
+    if (runMode === 'full_benchmark' && !window.confirm('Start a new full benchmark replay? This may make many provider calls and replay files may not be durable on hosted infrastructure.')) return;
+    const selected = $('input[name="formal-condition"]:checked');
+    const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: runMode };
+    if (runMode === 'one_case') body.condition = selected ? selected.value : selectedFormalExperiment.conditions[0].id;
+    const caseId = $('#formal-case-id').value.trim(); if (caseId && runMode !== 'full_benchmark') body.case_id = caseId;
+    if (runMode === 'full_benchmark') body.confirm_full_benchmark = true;
+    showMessage($('#formal-run-message'), '');
+    try { renderFormalStatus(await api('/api/formal-runs', body)); }
+    catch (error) { showMessage($('#formal-run-message'), error.message); }
+  }
+
   function showMessage(node, message) {
     node.textContent = message;
     node.hidden = !message;
@@ -420,6 +559,22 @@
     button.addEventListener('keydown', (event) => { if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); const next = button.nextElementSibling || $$('.demo-option')[0]; next.focus(); setMode(next.dataset.mode, { push: true }); } if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); const options = $$('.demo-option'); const previous = button.previousElementSibling || options[options.length - 1]; previous.focus(); setMode(previous.dataset.mode, { push: true }); } });
   });
   $$('.language-btn').forEach((button) => button.addEventListener('click', () => applyLanguage(button.dataset.lang)));
+  $('#guided-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('guided'));
+  $('#custom-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('custom'));
+  $('#apply-paper-configuration').addEventListener('click', () => {
+    paperConfigurationApplied = true;
+    showMessage($('#formal-run-message'), selectedFormalExperiment?.disabled_reason || 'Paper configuration applied. Fixed settings remain locked.');
+    updateFormalRunButtons();
+  });
+  $('#run-one-case').addEventListener('click', () => startFormalRun('one_case'));
+  $('#run-paired').addEventListener('click', () => startFormalRun('paired'));
+  $('#run-full-benchmark').addEventListener('click', () => startFormalRun('full_benchmark'));
+  $('#refresh-formal-run').addEventListener('click', refreshFormalRun);
+  $('#resume-formal-run').addEventListener('click', async () => {
+    if (!activeFormalRunId) return;
+    try { renderFormalStatus(await api('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/resume', {})); }
+    catch (error) { showMessage($('#formal-run-message'), error.message); }
+  });
   $$('.tcm-sample').forEach((button) => button.addEventListener('click', () => { $('#tcm-question').value = button.dataset.question; $('#tcm-question').focus(); }));
 
   $('#tcm-consult-form').addEventListener('submit', async (event) => {
@@ -542,7 +697,7 @@
     $('.prototype-status').classList.toggle('is-live', true);
   }).catch(() => { setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'); setText('#runtime-location', 'Backend unavailable'); setText('#runtime-corpus', 'Corpus not confirmed'); setText('#runtime-chunks', '— chunks'); setText('#runtime-provider', 'Provider not confirmed'); setText('#runtime-model', '—'); setText('#runtime-llm', 'Backend unavailable'); $('#runtime-llm').classList.remove('is-success'); $('#workbench-runtime-strip').classList.add('is-offline'); });
 
-  applyLanguage('en'); updateConditionHelp();
+  applyLanguage('en'); updateConditionHelp(); setPaperWorkbenchMode('guided'); loadFormalRegistry();
   if (location.hash === '#workbench' || location.hash === '#legacy-demo' || location.hash === '#research-workbench' || location.hash === '#research-compare') {
     setView('workbench');
     setMode(location.hash === '#research-compare' ? 'compare' : location.hash === '#legacy-demo' ? 'single' : 'multi');

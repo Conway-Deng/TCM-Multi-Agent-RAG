@@ -1,0 +1,25 @@
+{
+  "version": "1.3",
+  "stage_max_tokens": {
+    "initial": 512,
+    "critique": 512,
+    "revision": 768,
+    "consensus": 512
+  },
+  "models": [
+    "Qwen/Qwen3-8B",
+    "THUDM/GLM-Z1-9B-0414",
+    "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+  ],
+  "conditions": ["M1", "M2"],
+  "model_specific_overrides": false,
+  "condition_specific_overrides": false,
+  "semantic_protocol_changed": false,
+  "formal_restart_from_zero": true,
+  "systemic_truncation_stop_rule": {
+    "length_attempts_same_stage": 10,
+    "terminal_truncation_conditions_same_stage": 3,
+    "condition_blind": true,
+    "adaptive_budget_change": false
+  }
+}

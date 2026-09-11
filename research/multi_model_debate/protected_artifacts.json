@@ -1,0 +1,12 @@
+{
+  "inherited_guard": {
+    "path": "research/retrieval_ablation/protected_artifacts.json",
+    "sha256": "95f0c7bff1b67690386dfc9e5712bbefd750bfb37dc2954a592c46cf9363d509"
+  },
+  "additional_artifacts": [
+    {"path": "research/retrieval_ablation/formal_stage2/stage2_final_manifest.json", "sha256": "695495e708a9a2de5a7da4e5661f8132a0d4df6ba1ecf0f761f8879900bf8ab5"},
+    {"path": "research/retrieval_ablation/formal_stage2/stage2_final_results.json", "sha256": "395ecd88c06b6bbe0d9f615580a33980b0b4909ebdd8dbfd4de7b323d6b8dd2b"},
+    {"path": "research/experiments/rq4_debate_vs_multiagent/protocol/rq4_config.json", "sha256": "7add59232ecdd17eacd8d0df5336fba7e342a02cd91088853c87ff4e2cb099e2"},
+    {"path": "research/experiments/rq4_debate_vs_multiagent/protocol/protocol.md", "sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243"}
+  ]
+}

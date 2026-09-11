@@ -1,0 +1,82 @@
+{
+  "study_id": "TCM_RETRIEVAL_ABLATION_V1",
+  "status": "PREREGISTERED_NOT_STARTED",
+  "benchmark": {
+    "path": "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+    "sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+    "questions": 100,
+    "atomic_gold_facts": 223,
+    "unique_gold_evidence_chunks": 115
+  },
+  "corpus": {
+    "path": "research/corpus/tcm_v1/chunks.jsonl",
+    "sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+    "mode": "required"
+  },
+  "retrieval_conditions": {
+    "R0": {"method": "bm25_like_lexical", "embedding": null, "reranker": null},
+    "R1": {"method": "dense", "embedding": "BAAI/bge-m3", "reranker": null},
+    "R2": {"method": "rrf_lexical_dense", "embedding": "BAAI/bge-m3", "reranker": null},
+    "R3": {"method": "rrf_then_rerank", "embedding": "BAAI/bge-m3", "reranker": "BAAI/bge-reranker-v2-m3"}
+  },
+  "formal_strict": {
+    "enabled": true,
+    "embedding_provider": "siliconflow",
+    "embedding_model": "BAAI/bge-m3",
+    "rerank_provider": "siliconflow",
+    "rerank_model": "BAAI/bge-reranker-v2-m3",
+    "allow_fallback": false,
+    "embedding_batch_size": 64,
+    "preprocessing_version": "chunk-text-v1",
+    "embedding_config_version": "retrieval-ablation-v1"
+  },
+  "fixed_variables": {
+    "downstream_model": "Qwen/Qwen3-8B",
+    "architecture": "C1",
+    "final_top_k": 4,
+    "candidate_depth": 12,
+    "iterative_retrieval": false,
+    "generation_prompt": "backend/orchestration/workbench.py::_agent_prompt as used by frozen RQ1 confirmatory C1",
+    "generation_parameters": {"temperature": 0.0, "max_tokens": 384, "frequency_penalty_initial": 0.5, "frequency_penalty_retry": 1.0},
+    "retrieval_retry_failure_policy": {"automatic_retries": 0, "provider_failure": "record_unusable_and_fail_closed", "fallback": "forbidden", "resume": "identity_guarded_manual_restart"},
+    "generation_retry_failure_policy": {"maximum_attempts_per_participating_specialist": 2, "trigger": "provider_failure_or_grounding_output_quality_rejection", "fallback": "preserve_and_classify_as_failure"},
+    "question_ordering": "selection_manifest_order"
+  },
+  "split": {
+    "seed": 20260903,
+    "manifest_path": "research/retrieval_ablation/selection_manifest.json",
+    "manifest_sha256": "7c46d5291b920d753ce9097d04b3f87fe18770c5dadb480eb0a66d8091125fac",
+    "selection_questions": 40,
+    "confirmation_questions": 60,
+    "selection_domain_quotas": {"herbal": 24, "syndrome": 10, "multi_target": 6}
+  },
+  "stage1": {
+    "generation_calls": 0,
+    "planned_retrieval_evaluations": 400,
+    "retrieval_depth_for_metrics": 8,
+    "metrics": ["chunk_recall_at_1", "chunk_recall_at_4", "chunk_recall_at_8", "gold_evidence_recall", "hit_at_1", "hit_at_4", "hit_at_8", "source_recall", "retrieval_latency_ms", "usable", "fallback"]
+  },
+  "selection_gate": {
+    "set": "selection",
+    "candidates": ["R1", "R2", "R3"],
+    "primary": "mean_chunk_recall_at_4_descending",
+    "tie_breakers": ["mean_gold_evidence_recall_descending", "mean_retrieval_latency_ms_ascending", "condition_id_ascending"],
+    "qualification": ["recall_at_4_strictly_greater_than_R0", "gold_evidence_recall_not_worse_than_R0", "usability_equals_1", "fallback_count_equals_0"]
+  },
+  "stage2": {
+    "status": "PREREGISTERED_NOT_EXECUTED",
+    "set": "confirmation",
+    "conditions": ["R0", "SELECTED_ADVANCED"],
+    "maximum_qwen_generations": 120,
+    "skip_when_no_advanced_method_qualifies": true,
+    "metrics": ["question_level_gold_fact_recall", "full_recall", "citation_recall", "citation_precision", "usable_rate", "retrieval_latency_ms", "total_latency_ms"]
+  },
+  "statistics": {
+    "unit": "question",
+    "paired": true,
+    "bootstrap_resamples": 10000,
+    "bootstrap_confidence": 0.95,
+    "paired_tests": ["paired_permutation_or_wilcoxon_where_valid", "mcnemar_for_binary_hit_metrics"],
+    "multiplicity": "holm_for_R0_vs_R1_R2_R3_confirmatory_retrieval_comparisons"
+  }
+}

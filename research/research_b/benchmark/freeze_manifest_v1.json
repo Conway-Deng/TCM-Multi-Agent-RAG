@@ -1,0 +1,20 @@
+{
+  "status": "FROZEN_INDEPENDENTLY_REVIEWED_RESEARCH_B_V1",
+  "frozen_cases": 240,
+  "class_counts": {
+    "CONTRADICTED": 60,
+    "PARTIALLY_SUPPORTED": 60,
+    "SUPPORTED": 60,
+    "UNSUPPORTED": 60
+  },
+  "benchmark_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_b\\benchmark\\research_b_v1_frozen.jsonl",
+  "benchmark_sha256": "52e642d944e21f976b2c1155df7d84f8a74e7fccee29e576697b5b6b97d798d4",
+  "candidate_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_b\\benchmark\\candidate_cases_v0_1.jsonl",
+  "candidate_sha256": "b66648a9c50f8c59519ca1a8ca2a89c0c08eef8115accd1f5d5f34b0194ccaf1",
+  "reviewed_csv_path": "D:\\browsers_downloads\\research_b_blinded_source_review_v0_1_reviewed.csv",
+  "reviewed_csv_sha256": "472022eedebb480734525e327423d83f52b65c65edfdff616ca47ecaddae996f",
+  "reviewer_values_preserved_verbatim": true,
+  "reference_labels_source": "reviewer_label column of independently completed reviewed CSV",
+  "tested_judge_generated_gold_labels": false,
+  "formal_execution_started_at_freeze": false
+}

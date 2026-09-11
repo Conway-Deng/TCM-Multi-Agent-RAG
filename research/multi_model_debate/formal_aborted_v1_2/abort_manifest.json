@@ -1,0 +1,26 @@
+{
+  "status": "ABORTED_PER_PROTOCOL",
+  "included_in_final_inference": false,
+  "semantic_outcomes_inspected_for_amendment": false,
+  "operational_metadata_use_only": true,
+  "canonical_completed": 6,
+  "completed_m1": 3,
+  "completed_m2": 3,
+  "usable_canonical": 3,
+  "terminal_unusable_canonical": 3,
+  "provider_attempts": 61,
+  "fallback_count": 0,
+  "reason": "Repeated fixed-budget truncation before formal completion; stopped without adaptive budget change.",
+  "preservation": {
+    "formal_run_manifest_sha256": "13c31ad13decf6a6b22d888e31330ccdad01703aa09da8afd1c79363be213ad4",
+    "formal_results_sha256": "396c4f7610aaa0b095013965434586f09a343c50e8b0daad90730059fff72009",
+    "provider_attempts_sha256": "79b14eeb2cfbf85bd9cd2f9f0b6b588f939806dee49c5d0a45a72e7513b12030",
+    "stage_outputs_sha256": "09e1991688d30c68e1b317d1cde40b7e5ae4ef1692c0702aa0c36849ccad84e7",
+    "execution_order_sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+    "run_progress_sha256": "db1c83a0e9f76b0803e61e1a36d2928abe540af3711bf473325fa49bdfb97409",
+    "terminal_conditions_sha256": "e22c954d897ab9fb7f38d9cce8626fcbf81fb849f3cde462a503d7a87fd6c821",
+    "semantic_review_state_sha256": "2656b738e8ded92bb895a2b31ba15075d26314e5f99ce0d4dbaa3985c27d866a",
+    "external_raw_token_audit_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\multi_model_debate\\A3_V1_3_RAW_TOKEN_AUDIT.json",
+    "external_raw_token_audit_sha256": "13e1f85264a5212c897036586d6f6021a46f0c27eb49c3a2181730b4071ad466"
+  }
+}

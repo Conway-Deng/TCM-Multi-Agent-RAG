@@ -1,0 +1,26 @@
+{
+  "research": "Research C — TCM conflict identification & transparent evidence study",
+  "status": "FROZEN",
+  "benchmark_version": "RESEARCH_C_V1_FROZEN",
+  "case_count": 132,
+  "class_counts": {
+    "AGREEMENT": 40,
+    "INSUFFICIENT_OR_AMBIGUOUS": 40,
+    "DIRECT_CONFLICT": 12,
+    "PARTIAL_CONFLICT": 40
+  },
+  "benchmark_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_c\\benchmark\\research_c_v1_frozen.jsonl",
+  "benchmark_sha256": "2e99d235d411b5d8a30c2f26138dc56266c7090d6e66ac64d395f522f40d2435",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "review_files": {
+    "D:\\browsers_downloads\\research_c_blinded_source_review_v0_1_reviewed.csv": "9b0ee1ae8760f051971f8d4b58ff7f72b274cbb2046264b329a86480bb71ba53",
+    "D:\\browsers_downloads\\research_c_blinded_source_review_replacements_v0_1_reviewed.csv": "869118b5c5e9df4195025a2f9350f4146ed56e52be584ddbe7388e42fa9c479c",
+    "D:\\browsers_downloads\\research_c_blinded_source_review_replacements_v0_2_reviewed.csv": "3a96f101d9f14ad2c122c2d6bc788f486e00e02d5789f0fdaded9f591d1ca44a",
+    "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_c\\benchmark\\research_c_blinded_source_review_final_repairs_v0_3_reviewed.csv": "78325614a95fb120a5f048015d658fd140c7fc9377cd29178b42016e00c70175"
+  },
+  "strict_direct_inventory": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_c\\benchmark\\direct_conflict_feasibility_inventory_v0_3.json",
+  "strict_direct_inventory_sha256": "8da91e0e37b02fdd6d9bf8cb5fe7f85f37ae31f05e3169a26279501995e2ba43",
+  "reserve_path": "D:\\project\\multi_agent_rag_research\\code_git\\research\\research_c\\benchmark\\research_c_review_reserve_v0_3.json",
+  "provider_api_calls": 0,
+  "formal_api_run_started": false
+}

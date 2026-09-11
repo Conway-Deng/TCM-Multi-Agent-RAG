@@ -28,5 +28,8 @@ research/corpus/normalized/**
 !research/corpus/normalized/.gitkeep
 research/corpus/tcm_v1/**
 !research/corpus/tcm_v1/.gitkeep
+# The frozen v1 chunk file is explicitly deployed for paper-faithful replay.
+!research/corpus/tcm_v1/chunks.jsonl
+research/replays/
 research/benchmarks/external/**
 !research/benchmarks/external/.gitkeep

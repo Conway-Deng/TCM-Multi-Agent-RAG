@@ -1,0 +1,26 @@
+{
+  "status": "ABORTED_PRE_FINAL_MAX_TOKENS_VALIDATION",
+  "included_in_final_inference": false,
+  "reason": "Five of 24 canonical conditions became terminal unusable; every terminal condition was caused by Qwen/Qwen3-8B revision-stage finish_reason=length at the common 384-token revision budget.",
+  "canonical_completed": 24,
+  "completed_m1": 12,
+  "completed_m2": 12,
+  "usable_canonical": 19,
+  "terminal_unusable_canonical": 5,
+  "terminal_failure_distribution": {
+    "Qwen/Qwen3-8B|revision|max_tokens_truncation": 5
+  },
+  "quality_outcomes_inspected_for_amendment": false,
+  "semantic_review_created": false,
+  "final_statistics_created": false,
+  "preservation": {
+    "method": "Byte-identical copy of every file from formal_v1_1; the stopped source directory is also retained.",
+    "formal_run_manifest_sha256": "7340a3f5bf959c31bd9e5cb5064286ec32e6b0eabde52a0535a9d8a9feb00dc4",
+    "formal_results_sha256": "4e0f70715e86752b8b11e72f99d883339b77e411b1d36a43d1a56ae336d3b60d",
+    "provider_attempts_sha256": "6a8c10ca63f29804bab7560b3f25d53d2ecc5ea3f605ab3c5f8df7a4fe632b9b",
+    "stage_outputs_sha256": "d1d8844d65c85563f3c5edf9ecbdaf0657f89a7b27e3a0a0b41a2b9df20a5cc5",
+    "run_progress_sha256": "c73361945d2a12549e1f38cb26c494bfda0bc4004d98e00acc7ae830559c2c37",
+    "execution_order_sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+    "terminal_conditions_sha256": "0a8eeda8a3003dff52564cc088a5ecce3fb3f81625ecc95cf722c9929769b1ca"
+  }
+}

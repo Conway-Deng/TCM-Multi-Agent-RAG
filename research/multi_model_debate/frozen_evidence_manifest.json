@@ -1,0 +1,3517 @@
+{
+  "status": "FROZEN_FOR_A3_GENERATION",
+  "benchmark_sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+  "corpus_sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+  "source_A2_results_sha256": "350f296d4b56a1202ea7523534e4f179a9df1936ec122306afd4e1660fbeacbe",
+  "retrieval": "R0",
+  "top_k": 4,
+  "questions": 100,
+  "exact_A2_evidence_questions": 97,
+  "offline_R0_recovered_questions": [
+    "rq4-v1-067",
+    "rq4-v1-077",
+    "rq4-v1-082"
+  ],
+  "items": [
+    {
+      "question_id": "rq4-v1-001",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-4db47c3158de162938a649c4",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-4db47c3158de162938a649c4",
+          "text": "Herb: Smoked Plum. Pinyin: Wumei. Latin name: Fructus Mume,Mume Fructus. Traditional properties: Sour,Astringent,Calm. Meridians: Liver,Spleen,Lung,Large Intestine. Traditional class: Astringent Medicinal. Used part: unripe fruit."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-002",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-08e74d1bdc48d2692ea6c6c3",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-08e74d1bdc48d2692ea6c6c3",
+          "text": "Herb: Thunder Ball;Omphalia lapidescens. Pinyin: LEI WAN. Latin name: omphalia. Traditional properties: Cold; Slightly Bitter. Meridians: Large Intestine; Stomach. Source-recorded function: To kill worms.. Source-recorded indication: 1. Its proteolytic enzyme is a taeniacidal agent. 2. Its alcoholic extract is an ascaricide.. Source-recorded toxicity: Slightly Toxic. Clinical manifestations: 1. Its proteolytic enzyme is a taeniacidal agent. 2. Its alcoholic extract is an ascaricide.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-003",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-09020ef8378b0bc8bfe406de",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-09020ef8378b0bc8bfe406de",
+          "text": "Herb: Nagai Podocarpus. Pinyin: ZHU BAI. Latin name: Myrica nagi [Syn. Podocarpus nagi]. Used part: leaf. Source-recorded function: To stanch bleeding and joint bones.. Source-recorded indication: Bleeding due to external injury, fracture.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-004",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-e29fd7aafc0aef83c2eab7bd",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-e29fd7aafc0aef83c2eab7bd",
+          "text": "Herb: Common Tulip Root. Pinyin: YU JIN XIANG GEN. Latin name: Tulipa gesneriana. Used part: root. Source-recorded function: To calm.. Source-recorded indication: Visceral agitation.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-005",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-093c2e12a791cf893d383345",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-093c2e12a791cf893d383345",
+          "text": "Herb: Black Locust Flower. Pinyin: CI HUAI HUA. Latin name: Robinia pseudoacacia. Used part: flower. Source-recorded function: To stanch bleeding.. Source-recorded indication: Precipitate blood of large intestine, hemoptysis, flooding.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-006",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-096156e37da3f4d62e9764af",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-096156e37da3f4d62e9764af",
+          "text": "Herb: Smallflower Magnoliavine. Pinyin: XIAO HUA WU WEI ZI. Latin name: Schisandra micrantha. Used part: root. Source-recorded function: To dispel wind and disinhibit damp, rectify qi and quicken blood.. Source-recorded indication: Wind-damp bone pain, knocks and falls, stomachache, menstrual disorder, nephritis.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-007",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0db050b59a23806f837ce970",
+        "tcmv1-f25f5df0c9a85ccef42003c3",
+        "tcmv1-909a3e3f6baacdcc50c5e4d8",
+        "tcmv1-698c45dc98ba2399b56e5224"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0db050b59a23806f837ce970",
+          "text": "Herb: achene of Great Burdock. Pinyin: Niubangzi. Latin name: Fructus Arctii Lappae,Arctil Fructus. Traditional properties: Pungent,Bitter,Cold. Meridians: Lung,Stomach. Traditional class: Pungent Cool Diaphoretics. Used part: fruit."
+        },
+        {
+          "evidence_id": "tcmv1-f25f5df0c9a85ccef42003c3",
+          "text": "Herb: Great Burdock Fruit ;achene of Great Burdock. Pinyin: NIU BANG ZI;DA LI ZI. Latin name: Fructus Arctii lappae. Traditional properties: Cold; Pungent; Bitter. Meridians: Lung; Stomach. Used part: fruit;Arctium lappa L.. Source-recorded function: To dispel wind-heat and relieve cough, to promote eruption, to counteract toxicity, and to soothe sore throat;Treament of cough and expectroation in influenza or upper respiratory infection, measles, rubella, sore throat, mumps, erysipelas, carbuncles and sores.. Source-recorded indication: Wind-heat common cold, cough with profuse phlegm, measles papules, wind papules, swelling pain in throat, epidemic parotitis;1. Its extract exerts a significant and prolonged effect of lowering blood sugar in rats.2. Mildly diuretic and laxative.3. An active component, arctiin, can induce tonic convulsion, feeble respiration and eventually paralysis in frogs, mice and rabbits. erysipelas, swollen welling abscess and sore toxin.. Clinical manifestations: 1. Its extract exerts a significant and prolonged effect of lowering blood sugar in rats.2. Mildly diuretic and laxative.3. An active component, arctiin, can induce tonic convulsion, feeble respiration and eventually paralysis in frogs, mice and rabbits.."
+        },
+        {
+          "evidence_id": "tcmv1-909a3e3f6baacdcc50c5e4d8",
+          "text": "Herb: Great Burdock Root. Pinyin: NIU BANG GEN. Latin name: Arctium lappa. Used part: root. Source-recorded function: To dispel wind-heat, disperse swelling toxin.. Source-recorded indication: Wind-heat common cold, headache, cough, wind toxin swollen face, swelling pain in th roat, gingiva painful swelling, wind-damp impediment pain, concretion and conglomeration, welling abscess and boil, hemorrhoids, prolapse of rectum.."
+        },
+        {
+          "evidence_id": "tcmv1-698c45dc98ba2399b56e5224",
+          "text": "Herb: Silybum Marianum. Pinyin: Shuifeiji. Latin name: Silybi Fructus. Traditional properties: Bitter,Cool. Meridians: Liver,Gallbladder. Traditional class: Antipyretic Detoxicate Drugs. Used part: achene."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-008",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0dbdd3ad1e12414434370e11",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0dbdd3ad1e12414434370e11",
+          "text": "Herb: Chinese Arborvitae Branch. Pinyin: CE BAI ZHI JIE. Latin name: Thuja orientalis. Used part: branchlet. Source-recorded function: To dispel wind and eliminate damp, resolve toxin and cure sores.. Source-recorded indication: Wind impediment, joint running wind, cholera cramp, gum swelling and pain.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-009",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-1b5fa36f4665e439f84f698f",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-1b5fa36f4665e439f84f698f",
+          "text": "Herb: Japanese Conehead. Pinyin: HONG ZE LAN. Latin name: Strobilanthes japonicus [Syn. Championella japonica]. Used part: whole herb. Source-recorded function: To quicken blood and free menstruation, transform stasis and move water.. Source-recorded indication: Menstrual disorder, dysmenorrhea, amenorrhea, postpartum abdominal pain, concretion and conglomeration, swollen welling abscess, knocks and falls.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-010",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-09964f3afafc189afd4d4771",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-09964f3afafc189afd4d4771",
+          "text": "Herb: Japanese Pieris. Pinyin: RI BEN MA ZUI MU. Latin name: Pieris japonica. Used part: leaf. Source-recorded function: To kill worms.. Source-recorded indication: Scab sore.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-011",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-22aec54e88660bc726946405",
+        "tcmv1-09a0adad17d8310bc3c939df",
+        "tcmv1-318b61c35b3da00a2d5868e8",
+        "tcmv1-441fbdb211ff76c9b7a55b42"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-22aec54e88660bc726946405",
+          "text": "Herb: Alpiniae Oxyphyliae Fructus. Pinyin: YI ZHI."
+        },
+        {
+          "evidence_id": "tcmv1-09a0adad17d8310bc3c939df",
+          "text": "Herb: Alpiniae Oxyphyliae Fructus. Pinyin: Yizhi. Latin name: Alpiniae Oxyphyllae Fructus. Traditional properties: Pungent,Warm. Meridians: Spleen,Kidney. Traditional class: Yang Reinforcing Drugs."
+        },
+        {
+          "evidence_id": "tcmv1-318b61c35b3da00a2d5868e8",
+          "text": "Herb: Alpiniae Officirum Rhizome. Pinyin: Gaoliangjiang. Latin name: Alpiniae Officinarum Rhizoma. Traditional properties: Pungent,Hot. Meridians: Spleen,Stomach. Traditional class: Warming Interior Drugs."
+        },
+        {
+          "evidence_id": "tcmv1-441fbdb211ff76c9b7a55b42",
+          "text": "Herb: Caodoukou. Pinyin: Caodoukou. Latin name: Alpiniae Katsumadai Semen. Traditional properties: Pungent,Warm. Meridians: Spleen,Stomach. Traditional class: Dampness Removing Drugs."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-012",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-09b810d8e9ad4743bd2b0164",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-09b810d8e9ad4743bd2b0164",
+          "text": "Herb: Lanceleaf Thermopsis. Pinyin: MU MA DOU. Latin name: Thermopsis lanceolata. Used part: whole herb. Source-recorded function: To relieve cough and dispel phlegm, moisten intestines and free stool.. Source-recorded indication: Cough of phlegm asthma, dry stool.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-013",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-09c3d0e3a25f23243dafda02",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-09c3d0e3a25f23243dafda02",
+          "text": "Herb: Sievers Wormwood. Pinyin: BAI HAO. Latin name: Artemisia sieversiana. Used part: whole herb. Source-recorded function: To clear heat and disinhibit damp, cool blood and stanch bleeding.. Source-recorded indication: Wind-cold-damp impediment, jaundice, heat dysentery, scab and lai .."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-014",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-3617aa588ecd83931cbef5c8",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-3617aa588ecd83931cbef5c8",
+          "text": "Herb: Indigoplant Leaf. Pinyin: Liaodaqingye. Latin name: Polygoni Tinctorii Folium,Folium Polygoni Tinctorii. Traditional properties: Bitter,Cold. Meridians: Heart,Stomach. Traditional class: Antipyretic Detoxicate Drugs."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-015",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0dd6e44ba351decf0176dc14",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0dd6e44ba351decf0176dc14",
+          "text": "Herb: Netvein Goldenray. Pinyin: WANG MAI TOU WU. Latin name: Ligularia dictyoneura [Syn. Senecio dictyoneurus ]. Used part: root. Source-recorded function: To diffuse lung and rectify qi , eliminate phlegm and suppress cough.. Source-recorded indication: Common cold, cough.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-016",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-09e976c2c53437457752b044",
+        "tcmv1-6f899bbcbf7b1ca2271c7f97",
+        "tcmv1-9606b58e77987999cd3cdf92",
+        "tcmv1-26228095accbc09146310d65"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-09e976c2c53437457752b044",
+          "text": "Herb: flower bud of Japanese pagodatree. Pinyin: Huaihua. Latin name: Sophorae Flos,Flos Sophorae. Traditional properties: Bitter,Slightly Cold. Meridians: Liver,Large Intestine. Traditional class: Blood-Cooling Hemostatic Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-6f899bbcbf7b1ca2271c7f97",
+          "text": "Herb: flower bud of Japanese pagodatree;Flos Sophorae. Pinyin: HUAI HUA. Latin name: flos Sophorae. Traditional properties: Minor cold; Bitter. Meridians: Large Intestine; Liver. Source-recorded function: To arrest bleeding by reducing heat in blood, and to quench excess fire in the liver.. Source-recorded indication: 1. Its component rutin decreases capillay permeability. 2. Lowering blood pressure transiently in anesthetized dog. 3. Inhibiting the growth of various dermatomyces.. Clinical manifestations: 1. Its component rutin decreases capillay permeability. 2. Lowering blood pressure transiently in anesthetized dog. 3. Inhibiting the growth of various dermatomyces.."
+        },
+        {
+          "evidence_id": "tcmv1-9606b58e77987999cd3cdf92",
+          "text": "Herb: pod of Japanese pagodatree. Pinyin: HUAI JIAO. Latin name: fructus Sophorae. Traditional properties: Minor cold; Bitter. Meridians: Large Intestine; Liver. Source-recorded function: For cooling blood and stopping bleeding."
+        },
+        {
+          "evidence_id": "tcmv1-26228095accbc09146310d65",
+          "text": "Herb: Japanese Pagodatree. Pinyin: HUAI. Latin name: Sophora japonica. Used part: flower and bud. Source-recorded function: To cool blood and stanch bleeding, clear liver and brighten eyes.. Source-recorded indication: Intestinal wind bleeding, bleeding from hemorrhoids, blood dysentery, hematuria, hematochezia, blood strangury, flooding and spotting, blood ejection, spontaneous external bleeding, liver fire headache, red eyes with gall, swollen welling abscess and sores.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-017",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a0c75415e85528ee562950b",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a0c75415e85528ee562950b",
+          "text": "Herb: Paniculed Bittersweet Seed. Pinyin: DENG YOU TENG ZI. Latin name: Celastrus paniculatus. Used part: seed. Source-recorded function: To dispel wind and relieve pain, free stool, promote vomiting.. Source-recorded indication: Wind-damp impediment pain, constipation, food accumulation and distending pain in stomach duct.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-018",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-2507e92c9b2711f80f7346a3",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-0dd725ebaf84fdc6ea3fd705"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-2507e92c9b2711f80f7346a3",
+          "text": "Herb: Vetchleaf Sophora Seed. Pinyin: BAI CI HUA ZI. Latin name: Sophora viciifolia. Used part: fruit. Source-recorded function: To clear heat and transform damp, disperse accumulation and relieve pain.. Source-recorded indication: Food accumulation, stomachache, abdomin al pain.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-0dd725ebaf84fdc6ea3fd705",
+          "text": "Herb: Vetchleaf Sophora. Pinyin: BAI CI HUA. Latin name: Sophora viciifolia. Used part: root. Source-recorded function: To clear heat and disinhibit throat, cool blood and disperse swelling.. Source-recorded indication: Swelling pain in throat, cough, hepatitis, dysentery, strangury syndrome, edema, hematuria, nosebleed(epistaxis), hematochezia.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-019",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a2600dc06c75e14c20cf32c",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a2600dc06c75e14c20cf32c",
+          "text": "Herb: Degelatined Deer-horn. Pinyin: LU JIAO SHUANG. Latin name: Cornu Cervi Degelatinatum. Traditional properties: Warm; Salty. Meridians: Liver; Kidney. Source-recorded function: Treatment of yang deficiency of the spleen and the kidney characterized by anorexia, vomiting, diarrhea, excessive leukorrhea, enuresis or frequent urination, abnormal uterine bleeding, subcutaneous infections and modulations.. Source-recorded indication: Treatment of yang deficiency of the spleen and the kidney characterized by anorexia, vomiting, diarrhea, excessive leukorrhea, enuresis or frequent urination, abnormal uterine bleeding, subcutaneous infections and modulations.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-020",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a26767f729828e521df3fbd",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a26767f729828e521df3fbd",
+          "text": "Herb: Suakwa Vegetablesponge Equivalent plant: Luffa acutangula;Suakwa Vegetablesponge. Pinyin: SI GUA. Latin name: Luffa cylindrica. Used part: dried vascular bundles of ripe fruit. Source-recorded function: To clear heat and resolve phlegm, cool blood and resolve toxin.. Source-recorded indication: Febrile diseases with vexation and thirst, cough of phlegm asthma, intestinal wind bleeding, bleeding from hemorrhoids, blood strangury, flooding and spotting, sores with welling abscess and flat abscess, galactostasis, innominate toxin swelling, edema.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-021",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-99920beab7f116f4e6bcaf6e",
+        "tcmv1-0a395ab6a0652b6ddfe168bb",
+        "tcmv1-5b5589b6fe9f42da3bd9baea",
+        "tcmv1-73ce0a350e8ffc35f7be6816"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-99920beab7f116f4e6bcaf6e",
+          "text": "Herb: areca seed;Areca catechu;Betenutpalm. Pinyin: BING LANG. Latin name: semen arecae. Traditional properties: Warm; Pungent; Bitter. Meridians: Spleen; Large Intestine; Stomach. Used part: seed. Source-recorded function: 1. To kill parasites; 2. To promote qi circulation; 3. To promote water metabolism. Source-recorded indication: Wormccumulation, food stagnation, distending pain in stomach duct and abdomen, diarrhea and tenesmus, beriberi, edema, malaria.. Clinical manifestations: 1. As a neurotoxin for tapeworms. 2. Arecaidine hydrobromide for eyedrop cause miosis. 3. Accelerating the secretion of digestive juices and promoting appetite.."
+        },
+        {
+          "evidence_id": "tcmv1-0a395ab6a0652b6ddfe168bb",
+          "text": "Herb: areca seed. Pinyin: Binglang. Latin name: Arecae Semen,Semen Arecae. Traditional properties: Bitter,Pungent,Warm. Meridians: Stomach,Large Intestine. Traditional class: Antiparasitic Drugs. Used part: seed."
+        },
+        {
+          "evidence_id": "tcmv1-5b5589b6fe9f42da3bd9baea",
+          "text": "Herb: Areca Catechu L.. Pinyin: Dafupi. Latin name: Arecae Pericarpium. Traditional properties: Pungent,Slightly Warm. Meridians: Spleen,Stomach,Large Intestine,Small Intestine. Traditional class: Qi Regulating Drugs."
+        },
+        {
+          "evidence_id": "tcmv1-73ce0a350e8ffc35f7be6816",
+          "text": "Herb: Charred Areca Seed. Pinyin: JIAO BING LANG. Latin name: Semen Arecae Preparata. Used part: Areca catechu L.. Source-recorded function: Treatment of retention of undigested food, dysentery with tenesmus.. Source-recorded indication: Treatment of retention of undigested food, dysentery with tenesmus.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-022",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a6006f45eab7cfd46a1a458",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a6006f45eab7cfd46a1a458",
+          "text": "Herb: Black Sesame;Oriental Sesame (black seed). Pinyin: HEI ZHI MA. Latin name: Semen Sesami Nigrum. Traditional properties: Mild; Sweet. Meridians: Large Intestine; Liver; Kidney. Used part: black seed. Source-recorded function: To tonify the liver and the kidney, to replenish vital essence and blood, and to relax the bowels.. Source-recorded indication: Dizziness, tinnitus and deafness, premature graying in beard and hair, hair loss during convalescence, intestinal dry and constipation.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-023",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a6cb559455bcb893dde31d1",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a6cb559455bcb893dde31d1",
+          "text": "Herb: Gluey Litse. Pinyin: CHAN GAO MU JIANG ZI. Latin name: Litsea glutinosa. Used part: bark and leaf. Source-recorded function: To draw out toxin and engender flesh, stanch bleeding, disperse swelling and relieve pain.. Source-recorded indication: Swollen welling abscess, sore and boil, knocks and falls, bleeding due to external injury.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-024",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-4c87d1a2ae13d12f0f3efdcb",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-4c87d1a2ae13d12f0f3efdcb",
+          "text": "Herb: Fructus Carotae;Wild Carrot Fruit. Pinyin: NAN HE SHI. Used part: fruit. Source-recorded indication: Ascariasis, oxyuria disease, taeniasis, ancylostomiasis, abdominal pain due to worm accumulation, child gan accumulation, pudendal itch.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-025",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a803fab88d3e828cb6571e0",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a803fab88d3e828cb6571e0",
+          "text": "Herb: Goldon-belt. Pinyin: JIN YAO DAI. Latin name: Lethariella zahlbruckneri. Used part: lichen. Source-recorded function: To dispel wind and eliminate damp, quicken blood and regulate menstruation, stanch bleeding and settle pain.. Source-recorded indication: Taxation damage pain in lumbus and legs, menstrual disorder, leukorrhea, incised wound and bleeding, dizziness.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-026",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0de42da02e1f2287ab5bacfe",
+        "tcmv1-008bc5af3eced1bdcca7a904",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-e25f36c540626399f3ec3663"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0de42da02e1f2287ab5bacfe",
+          "text": "Herb: Guya. Pinyin: Guya. Latin name: Setariae Fructus Germinatus. Traditional properties: Sweet,Warm. Meridians: Spleen,Stomach. Traditional class: Digestants."
+        },
+        {
+          "evidence_id": "tcmv1-008bc5af3eced1bdcca7a904",
+          "text": "Herb: Fengla. Pinyin: Fengla. Latin name: Cera Flava. Traditional properties: Sweet,Slightly Warm. Meridians: Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-15d4c2e795991b5a1e7d3d60",
+          "text": "Herb: Hydnocarpi Anthelminticae Semen. Pinyin: Dafengzi. Traditional properties: Pungent,Hot,Toxic. Meridians: Liver,Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-e25f36c540626399f3ec3663",
+          "text": "Herb: Shicao. Pinyin: Shicao. Latin name: Achilleae Herba. Traditional properties: Bitter,Sour,Calm. Meridians: Lung,Spleen,Bladder. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-027",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a900eb799f6c9d85610cd00",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a900eb799f6c9d85610cd00",
+          "text": "Herb: Parmelia Lichen. Pinyin: SHI HUA. Latin name: Parmelia saxatilis. Used part: lichen. Source-recorded function: To supplement liver and boost kidney, brighten eyes, stanch bleeding, resolve toxin and disinhibit damp.. Source-recorded indication: Blurred vision, pain in lumbus and knees, blood ejection, flooding and spotting, jaundice, scab and lichen.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-028",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a97d71eaa2b0f295fb051d7",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a97d71eaa2b0f295fb051d7",
+          "text": "Herb: Gongbo Monkshood. Pinyin: GONG BU WU TOU. Latin name: Aconitum kongboense. Used part: tuberoid. Source-recorded function: To dispel wind and eliminate damp, relieve pain.. Source-recorded indication: Painful joints due to rheumatalgia, knocks and falls, poisonous insect stings.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-029",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0a9c67e95c6ef9aafc06a42a",
+        "tcmv1-ec5cbeed744141ae7995ad25",
+        "tcmv1-0bb52b83f36d05e8abb0f514",
+        "tcmv1-b84f721df220c3447f2ccee8"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0a9c67e95c6ef9aafc06a42a",
+          "text": "Herb: rhizome of Chinese Goldthread. Pinyin: Huanglian. Latin name: Rhizoma Coptidis,Coptidis Rhizoma. Traditional properties: Bitter,Cold. Meridians: Heart,Spleen,Stomach,Liver,Gallbladder,Large Intestine. Traditional class: Heat-Clearing And Dampnessdrying Medicinal. Used part: rhizome."
+        },
+        {
+          "evidence_id": "tcmv1-ec5cbeed744141ae7995ad25",
+          "text": "Herb: Shortsepal Goldthread. Pinyin: DUAN E HUANG LIAN. Latin name: Coptis chinensis var. brevisepala. Used part: rhizome. Source-recorded function: See Coptis chinensis .. Source-recorded indication: See Coptis chinensis .."
+        },
+        {
+          "evidence_id": "tcmv1-0bb52b83f36d05e8abb0f514",
+          "text": "Herb: Deltoid Goldthread. Pinyin: SAN JIAO YE HUANG LIAN. Latin name: Coptis deltoidea. Used part: rhizome. Source-recorded function: See Coptis chinensis .. Source-recorded indication: See Coptis chinensis.."
+        },
+        {
+          "evidence_id": "tcmv1-b84f721df220c3447f2ccee8",
+          "text": "Herb: Omei Mountain Goldthread. Pinyin: E MEI YE HUANG LIAN. Latin name: Coptis omeiensis. Used part: rhizome. Source-recorded function: See Coptis chinensis .. Source-recorded indication: See Coptis chinensis.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-030",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0aa426b2e98b770e97c523f7",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0aa426b2e98b770e97c523f7",
+          "text": "Herb: Laurelleaf Snailseed. Pinyin: HENG ZHOU WU YAO. Latin name: Cocculus laurifolius. Used part: root or whole herb. Source-recorded function: To normalize qi and loosen chest, dispel wind and relieve pain.. Source-recorded indication: Hypertension, headache, mounting qi, abdominal pain, rheumatic pain in legs.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-031",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ab4683f2b434881e4d4fc8d",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ab4683f2b434881e4d4fc8d",
+          "text": "Herb: Bear’s Paw. Pinyin: XIONG ZHANG. Latin name: Selenarctos thibetanus, Ursus arctos. Used part: paw. Source-recorded function: To supplement qi and blood, dispel wind and eliminate impediment, fortify spleen and stomach.. Source-recorded indication: Spleen-stomach vacuity, vacuity detriment.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-032",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0abb60995ebfe4926b3e459f",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0abb60995ebfe4926b3e459f",
+          "text": "Herb: Grecian Laurel Fruit. Pinyin: YUE GUI ZI. Latin name: Laurus nobilis. Used part: fruit. Source-recorded function: To dispel wind-damp, resolve toxin, kill worms.. Source-recorded indication: Wind-damp impediment pain, tetrodon poisoning, scab and lichen, postauricular sore.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-033",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ad01e6cb1a3a75bc753a308",
+        "tcmv1-55e83b3dc4083651b661d7eb",
+        "tcmv1-4cc2d7f1dd9a426d7555c6e1",
+        "tcmv1-a6a8f8c63a23e97b1118abd2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ad01e6cb1a3a75bc753a308",
+          "text": "Herb: Mentha, Peppermint. Pinyin: Bohe. Latin name: Menthae Haplocalycis Herba,Herba Menthae. Traditional properties: Pungent,Cool. Meridians: Lung,Liver. Traditional class: Pungent Cool Diaphoretics. Used part: dried aerial parts."
+        },
+        {
+          "evidence_id": "tcmv1-55e83b3dc4083651b661d7eb",
+          "text": "Herb: Mentha, Peppermint;Wild Mint. Pinyin: BO HE. Latin name: herba Menthae;Mentha haplocalyx Briq. Traditional properties: Cool; Pungent. Meridians: Lung; Liver. Used part: dried aerial parts. Source-recorded function: To dispel wind-heat from the head and eyes, and to promote eruption.. Source-recorded indication: Chronic urticaria, infection of upper respiratory tract, sarcoma, wind-heat exterior syndrome, headache and red eyes, swelling pain in throat, non-eruption of measles, dormant papules with pruritus, liver depression and rib-side pain, abdominal distention.."
+        },
+        {
+          "evidence_id": "tcmv1-4cc2d7f1dd9a426d7555c6e1",
+          "text": "Herb: menthol. Pinyin: BO HE NAO. Latin name: Mentholum. Traditional properties: Cool; Pungent. Meridians: Lung; Liver. Used part: Metha haplocalyx Briq. Source-recorded function: As described under Peppermint Oil.. Source-recorded indication: As described under Peppermint Oil.."
+        },
+        {
+          "evidence_id": "tcmv1-a6a8f8c63a23e97b1118abd2",
+          "text": "Herb: Apple Mint. Pinyin: YU XIANG CAO. Latin name: Mentha rotundifolia. Used part: whole herb. Source-recorded function: To dispel wind, resolve toxin, harmonize stomach, moisten skin.. Source-recorded indication: Common cold, eye diseases, stomachache, sore and boil, cracking.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-034",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ad63b30ee880be7d1ed9994",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ad63b30ee880be7d1ed9994",
+          "text": "Herb: Curious Kadsura. Pinyin: YI XING NAN WU WEI ZI. Latin name: Kadsura heteroclita [Syn. Uvaria heteroclita]. Used part: root or lianoid stem. Source-recorded function: To dispel wind and eliminate damp, move qi and relieve pain, soothe sinews and quicken network vessels.. Source-recorded indication: Wind-damp impediment pain, stomachache, abdominal pain, dysmenorrhea, postpartum abdominal pain, knocks and falls, chronic pain in lumbus and legs.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-035",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ada23029b3be9b75c9ec9ae",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ada23029b3be9b75c9ec9ae",
+          "text": "Herb: Ancients Euphorbia. Pinyin: HUO YANG LE. Latin name: Euphorbia antiquorum. Used part: stem. Source-recorded function: To disinhibit urine and free stool, draw out toxin and remove putrid, kill worms and relieve itch.. Source-recorded indication: Edema, ascites, diarrhea, dysentery, food accumulation, lump glomus, clove sore, welling absc ess and flat abscess, scab and lichen.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-036",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ae93aac4a03f744a9216f75",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ae93aac4a03f744a9216f75",
+          "text": "Herb: Laxleaf Sweetroot. Pinyin: XIANG GEN QIN. Latin name: Osmorhiza aristata var. laxa. Used part: root. Source-recorded function: To dissipate cold and effuse exterior, relieve pain, fortify stomach, brighten eyes.. Source-recorded indication: Wind-cold common cold, vertex headache, generalized pain.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-037",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0af2218ca42966bfc8199713",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0af2218ca42966bfc8199713",
+          "text": "Herb: fruit of Cherokee Rose;Rosa laevigata. Pinyin: JIN YING ZI. Latin name: Fructus Rosae laevigatae. Traditional properties: Mild; Sour; Punkery. Meridians: Bladder; Large Intestine; Kidney. Used part: fruit. Source-recorded function: 1. To control the essence; 2. To astringe the intestines and stop diarrhea; 3. To decrease urination. Source-recorded indication: Emission, enuresis and frequent urination, flooding and spotting with vaginal discharge, chronic diarrhea and dysentery.. Clinical manifestations: 1. Its decoction in 1:3000-1:200 concentration inhibits the growth of influenzae virus and Bacillus dysenteriae in vitro.2. Promoting the secretion of gastric juice and enhancing the digestive function, also as an astringent.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-038",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-f4da81d08073431589f670d0",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-f4da81d08073431589f670d0",
+          "text": "Herb: all-grass of Yerbadetajo. Pinyin: Mohanlian. Latin name: Ecliptae Herba,Herba Ecliptae. Traditional properties: Sweet,Sour,Cold. Meridians: Kidney,Liver. Traditional class: Yin-Tonifying Medicinal. Used part: aerial parts."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-039",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0b139c086dfc1a868c86b9c9",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0b139c086dfc1a868c86b9c9",
+          "text": "Herb: Prepared Tortoise plastron. Pinyin: ZHI GUI BAN. Latin name: Plastrum Testudinis Praparata. Traditional properties: Cold; Sweet; Salty. Meridians: Liver; Heart; Kidney. Source-recorded function: Treatment of hyperactivity of liver yang due to deficient yin of the liver and kidneys manifested as dizziness, distension and pain in the head and blurred vision. Tortoise plastron (Guiban) is used with White peony root (Baishao), Cyathula root (Niuxi), Sea-ear sh. Source-recorded indication: Treatment of hyperactivity of liver yang due to deficient yin of the liver and kidneys manifested as dizziness, distension and pain in the head and blurred vision. Tortoise plastron (Guiban) is used with White peony root (Baishao), Cyathula root (Niuxi),."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-040",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0b17ad55127eb2038ec92516",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0b17ad55127eb2038ec92516",
+          "text": "Herb: African Myrsine. Pinyin: TIE ZI. Latin name: Myrsine africana. Used part: root or herb. Source-recorded function: To dispel wind and relieve pain, clear heat and disinhibit damp, promote contraction and stanch bleeding.. Source-recorded indication: Wind-damp impediment pain, toothache, diarrhea, dysentery, flooding, hematochezia, tuberculosis and hemoptysis.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-041",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0b21dc263938bfc4210261dd",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0b21dc263938bfc4210261dd",
+          "text": "Herb: Fairy Primrose. Pinyin: BAO CHUN HUA. Latin name: Primula malacoides. Used part: whole herb. Source-recorded function: To clear heat and resolve toxin.. Source-recorded indication: Lung heat cough, red swollen in throat, oral ulcer, gum swelling and pain, liver fire and red eyes, swollen welling abscess, sore and boil.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-042",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0b2e8307a4f69ff26074fc02",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0b2e8307a4f69ff26074fc02",
+          "text": "Herb: Dog Heart. Pinyin: GOU XIN. Latin name: Canis familiaris. Used part: heart. Source-recorded function: To quiet spirit, dispel wind, stanch bleeding, resolve toxin.. Source-recorded indication: Wind impediment, qi depression, nosebleed (epistaxis), sore in lower body.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-043",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0b512b9f4c0b50fb07ddd19f",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0b512b9f4c0b50fb07ddd19f",
+          "text": "Herb: Croton Fruit;LongspikeCroton. Pinyin: BA DOU;CHANG SUI BA DOU. Latin name: Fructus Crotonis;Croton macrostachys. Traditional properties: Hot; Pungent. Meridians: Large Intestine; Stomach. Used part: dried seed. Source-recorded function: 1. To drain accumulated cold downward; 2. To transform water and reduce edema; 3. To resolve phlegm and benefit throat. Source-recorded indication: Distention fullness and sudden pain in chest and a bdomen, fecal stoppage, diarrhea and dysentery, edema and enlarged abdomen, phlegm-rheum asthma fullness, throat wind, throat impediment, concretion and conglomeration, welling abscess and flat abscess, malign sore and scab lichen.. Source-recorded toxicity: Extremely Toxic."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-044",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0e0faddcb40ce2354d10a8f7",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-6ea0c3a03756a49dd8425cf8",
+        "tcmv1-bff7a43fa1a29e95559d9746"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0e0faddcb40ce2354d10a8f7",
+          "text": "Herb: Prepared Scorpion. Pinyin: ZHI QUAN XIE. Latin name: Scorpio Preparata. Traditional properties: Mild; Pungent. Meridians: Liver. Used part: Buthus martensii karsch. Source-recorded function: Treatment of infantile convulsion, twitching, spasm, apoplectic hemiplegia, tetanus, chronic arthritis, headache or migraine, sores, scrofula.. Source-recorded indication: 1. Anti-convulsive and sedative.2. Exerting significant and prolong hypotensive effect.3. Buthotoxin can induce respiratory paralysis, salivation and convulsion.. Source-recorded toxicity: Toxic. Clinical manifestations: 1. Anti-convulsive and sedative.2. Exerting significant and prolong hypotensive effect.3. Buthotoxin can induce respiratory paralysis, salivation and convulsion.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-6ea0c3a03756a49dd8425cf8",
+          "text": "Herb: Prepared root of corydalis. Pinyin: ZHI XUAN HU. Latin name: Rhizoma Corydalis Preparata. Traditional properties: Pungent; Slightly Bitter. Used part: Corydalis turtschaninovii Bess. F. yanhusuo Y.H. Chou et C.C. Hsu.. Source-recorded function: For stagnation of vital energy or blood stasis resulting in headache, chest pain, hypochondriac pain, epigastric pain, abdominal pain, backache, arthralgia, dysmenorrhea or trauma. Recently, alos used for angina pectoris, peptic ulcer and neuralgia.. Source-recorded indication: 1. Its components d-corydaline and d1-tetrahydropalmatine are analgesics.2. Decreasing the secretion of gastric juice and the amount of pepsin.. Clinical manifestations: 1. Its components d-corydaline and d1-tetrahydropalmatine are analgesics.2. Decreasing the secretion of gastric juice and the amount of pepsin.."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-045",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0e6f206b180736a9c7aea253",
+        "tcmv1-dad98d6f2db37248fff21ea5",
+        "tcmv1-723970581cd3b368d9fa4cbc",
+        "tcmv1-19e1bf1727cd2d569e8215a6"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0e6f206b180736a9c7aea253",
+          "text": "Herb: seed of Gordon Euryale. Pinyin: Qianshi. Latin name: Semen Euryales,Euryales Semen. Traditional properties: Sweet,Astringent,Calm. Meridians: Spleen,Kidney. Traditional class: Astringent Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-dad98d6f2db37248fff21ea5",
+          "text": "Herb: seed of Gordon Euryale. Pinyin: QIAN SHI. Latin name: Semen Euryales. Traditional properties: Mild; Sweet; Punkery. Meridians: Spleen; Kidney. Source-recorded function: 1. To strengthen the kidney to preserve essence, drprive dampness to relieve leucorrhagia. 2. To strengthen the spleen to relieve diarrhea.. Source-recorded indication: 1. Treatment of kidney-deficiency manifested as nocturnal emission, frequent micturition, enuresis, whitish and turbid urine, or leucorrhagia. 2. Treatment of diarrhea. For diarrhea of spleen-deficiency type.."
+        },
+        {
+          "evidence_id": "tcmv1-723970581cd3b368d9fa4cbc",
+          "text": "Herb: Gordon Euryale Root. Pinyin: QIAN SHI GEN. Latin name: Euryale ferox. Used part: root. Source-recorded function: To dissipate binds and relieve pain, check discharge.. Source-recorded indication: Mounting qi , leukorrhea, innominate toxin swelling.."
+        },
+        {
+          "evidence_id": "tcmv1-19e1bf1727cd2d569e8215a6",
+          "text": "Herb: Torrya seed. Pinyin: FEI ZI. Latin name: Semen Torreyae. Traditional properties: Sweet; neutral. Meridians: Lung; large intestine. Used part: Torreya grandis Fort.. Source-recorded function: For ascariasis and taeniasis. For constipation due to dryness of intestine.. Source-recorded indication: As an anthelmintic for tapeworm and hookworm, more effective than that of tetrachloroethylene.. Clinical manifestations: As an anthelmintic for tapeworm and hookworm, more effective than that of tetrachloroethylene.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-046",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ba053b849882a2fe8f0714d",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-a900a3957edc34bd4d5002f5",
+        "tcmv1-bff7a43fa1a29e95559d9746"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ba053b849882a2fe8f0714d",
+          "text": "Herb: Cabbage. Pinyin: GAN LAN. Latin name: Brassica oleracea var. capitata. Traditional properties: Mild; Sweet; Sour; Punkery. Meridians: Lung. Used part: leaf. Source-recorded function: To clear heat and disinhibit damp, dissipate binds and relieve pain, boost kidney and supplement vacuity.. Source-recorded indication: Damp-heat jaundice, pain from ulcer in digestive tract, stiffness in joints, vacuity detriment.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-a900a3957edc34bd4d5002f5",
+          "text": "Herb: Cabbage. Pinyin: GAN LAN. Latin name: Brassica oleracea var. capitata. Traditional properties: Mild; Sweet; Sour; Punkery. Meridians: Lung. Used part: leaf. Source-recorded function: To clear heat and disinhibit damp, dissipate binds and relieve pain, boost kidney and supplement vacuity.. Source-recorded indication: Damp-heat jaundice, pain from ulcer in digestive tract, stiffness in joints, vacuity detriment.."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-047",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0ba5c0feb121bec04cd113d9",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0ba5c0feb121bec04cd113d9",
+          "text": "Herb: Japanese Clave Fern. Pinyin: XIAO YE JI WEI. Latin name: Onychium japonicum [Syn. Tricomanes japonicum]. Used part: whole herb or leaf. Source-recorded function: To clear heat and resolve toxin, disinhibit damp, stanch bleeding.. Source-recorded indication: Wind-heat common cold, cough, sore pharynx, diarrhea, dysentery, dribbling pain of urination, damp-heat jaundice, blood ejection, coughing of blood, hematochezia, bleeding from hemorrhoids, hematuria, sore toxin, knocks and falls, poisonous snake bites, burns and scalds.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-048",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0e73e492d851b0d9dc7f36b1",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0e73e492d851b0d9dc7f36b1",
+          "text": "Herb: Common Caper. Pinyin: LAO SHU GUA. Latin name: Capparis spinosa. Used part: root cortex, leaf and fruit. Source-recorded function: To dispel wind, dissipate cold, eliminate damp.. Source-recorded indication: Acute rheumatic arthritis, chronic rheumatic arthritis.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-049",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0be6318d2d6b1f99c538acff",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0be6318d2d6b1f99c538acff",
+          "text": "Herb: Chinese Knotweed. Pinyin: HUO TAN MU CAO. Latin name: Polygonum chinense. Used part: herb. Source-recorded function: To clear heat and disinhibit damp, cool blood and resolve toxin, calm liver and brighten eyes, soothe sinews and quicken blood.. Source-recorded indication: Diarrhea, dysentery, swelling pain in throat, diphtheria, lung heat cough, pertussis, hepatitis, vaginal discharge, swollen welling abscess, otitis media, eczema, dizziness and tinnitus, corneal nephelium, knocks and falls.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-050",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0e983e07b7d334a02c5759bd",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0e983e07b7d334a02c5759bd",
+          "text": "Herb: Hongkong Pencilwood. Pinyin: XIANG GANG JIAN MU. Latin name: Dysoxylum hongkongense. Used part: leaf. Source-recorded function: To interrupt malaria.. Source-recorded indication: Malaria.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-051",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-5fb165c34fab0781e376515d",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-5fb165c34fab0781e376515d",
+          "text": "Herb: Common Papermulberry Fruit. Pinyin: GOU SHU GUO. Latin name: Broussonetia papyrifera. Used part: fruit. Source-recorded function: To enrich yin and supplement kidney, clear liver and brighten eyes, fortify spleen and disinhibit water.. Source-recorded indication: Limp aching lumbus and knees due to kidney vacuity, impotence, dim vision, eye screen, edema, scant urine.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-052",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0bea3dd620f87f16006b2132",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0bea3dd620f87f16006b2132",
+          "text": "Herb: Appendiculate Cremastra. Pinyin: DU JUAN LAN. Latin name: Cremastra appendiculata. Used part: pseudobulb. Source-recorded function: To clear heat and resolve toxin, disperse swelling and dissipate binds.. Source-recorded indication: Malign sores with welling abscess and flat abscess, scrofula, throat pain and throat impediment, snake or insect bites.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-053",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c1022f90396c99d057d9ebe",
+        "tcmv1-008bc5af3eced1bdcca7a904",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-e25f36c540626399f3ec3663"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c1022f90396c99d057d9ebe",
+          "text": "Herb: Tubiechong. Pinyin: Tubiechong. Latin name: Eupolyphaga Steleophaga. Traditional properties: Salty,Cold,Slightly Toxic. Meridians: Liver. Traditional class: Blood-Activating Trauma-Curing Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-008bc5af3eced1bdcca7a904",
+          "text": "Herb: Fengla. Pinyin: Fengla. Latin name: Cera Flava. Traditional properties: Sweet,Slightly Warm. Meridians: Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-15d4c2e795991b5a1e7d3d60",
+          "text": "Herb: Hydnocarpi Anthelminticae Semen. Pinyin: Dafengzi. Traditional properties: Pungent,Hot,Toxic. Meridians: Liver,Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-e25f36c540626399f3ec3663",
+          "text": "Herb: Shicao. Pinyin: Shicao. Latin name: Achilleae Herba. Traditional properties: Bitter,Sour,Calm. Meridians: Lung,Spleen,Bladder. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-054",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c1760c84e5751ac69060247",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c1760c84e5751ac69060247",
+          "text": "Herb: Grassleaf Sweetflag Rhizome;Grassleaved Sweetflag. Pinyin: SHI CHANG PU. Latin name: Rhizoma Acori Talarinowii. Traditional properties: Warm; Pungent; Bitter. Meridians: Stomach; Heart. Used part: Rhizome. Source-recorded function: To eliminate damp and phlegm, to improve appetite, and to restore consciousness and benefit the mentality.. Source-recorded indication: Febrile diseases clouded spirit, phlegm reversal, amnesia, tinnitus, deafness, distending pain in stomach duct and abdomen, food-denying dysentery, wind-damp impediment pain, knocks and falls, scab and lichen with welling abscess and flat abscess.. Clinical manifestations: 1. Small dose of its volatile oil exerts a sedative effect on experimental animals, which is synergetic with sodium pentobarbital.2. Promoting the secretion of digestive juice, inhibiting the abnormal fermentation in the gastrointestinal tract, and relaxi."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-055",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0eb49f9ee5b6abad6ac6ab8a",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0eb49f9ee5b6abad6ac6ab8a",
+          "text": "Herb: Stem of Taiwan Erycibe;Obtuseleaf Erycibe. Pinyin: DING GONG TENG. Latin name: Caulis Erycibes. Traditional properties: Warm; Pungent. Meridians: Spleen; Stomach; Liver. Used part: rattan. Source-recorded function: To dispel wind and deprive dampness, reduce swelling, relieve pain.. Source-recorded indication: Wind-damp impediment pain, hemiplegia, painful swelling from knocks and falls.. Source-recorded toxicity: Toxic. Clinical manifestations: 1. Scopoletin exerts an antiphlogistis effect in experimental animals. 2. The miotic effect of 0.01% ercycibes A is similar to that of 2% pilocapine.3. Antipyretic."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-056",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c41fc89b3a9742c12ead509",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c41fc89b3a9742c12ead509",
+          "text": "Herb: Yunnan Rabdosia. Pinyin: BU YU HONG. Latin name: Rabdosia yuennanensis. Used part: rhizome or whole herb. Source-recorded function: To dispel wind and disinhibit damp, quicken blood and free menstruation, resolve toxin and disperse swelling.. Source-recorded indication: Common cold, wind-damp bone pain, hemiplegia, food accumulation, pain in stomach duct, dysentery, jaundice, dysmenorrhea, menstrual block, flooding and spotting [=metrorrhagia and metrostaxis], scrofula, syphilis, sores, measles papules, wind papules, scab and lai, knocks and falls, rabid dog bite, poisonous snake bites.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-057",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0eb913d23bd7db7c6d3bc4f4",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0eb913d23bd7db7c6d3bc4f4",
+          "text": "Herb: Hairy Bayberry. Pinyin: MAO YANG MEI. Latin name: Myrica esculent. Used part: bark. Source-recorded function: To astringe intestines and check diarrhea, stanch bleeding, relieve pain.. Source-recorded indication: Diarrhea, dysentery, flooding and spotting, stomachache.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-058",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c52e51fa9e92fc2eb5c2191",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c52e51fa9e92fc2eb5c2191",
+          "text": "Herb: Ginkgo Root. Pinyin: BAI GUO GEN. Latin name: Ginkgo biloba. Used part: root. Source-recorded function: To boost qi and supplement vacuity.. Source-recorded indication: Emission, enuresis, frequent urination at night, vaginal discharge, stone strangury.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-059",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c5f1b3a9f9cfd2523ffb273",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746",
+        "tcmv1-b904cf5927a7a156c141d9c2"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c5f1b3a9f9cfd2523ffb273",
+          "text": "Herb: SHAN MAI DONG. Pinyin: SHAN MAI DONG. Latin name: Liriope spicata. Used part: tuberoid. Source-recorded function: To nourish yin and engender liquid.. Source-recorded indication: Yin vacuity lung dryness, cough of profuse phlegm, stomach yin insufficiency, dry mouth and throat, intestinal dry and constipation.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        },
+        {
+          "evidence_id": "tcmv1-b904cf5927a7a156c141d9c2",
+          "text": "Herb: pericarp of bretschneider Pear. Pinyin: LI PI;XUE LI PI. Latin name: pericarpium pyri;Exocarpium Pyrus. Traditional properties: Cool; Sweet; Slightly Sour. Meridians: Lung; Stomach. Used part: Pyrus bretschneuderi Rehd;Pyrus pyrifolia (Burm.f.)Nakai;Pyrus ussuriensis Maxim;."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-060",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0c6bca5666b1b1c0cc3b8738",
+        "tcmv1-008bc5af3eced1bdcca7a904",
+        "tcmv1-15d4c2e795991b5a1e7d3d60",
+        "tcmv1-e25f36c540626399f3ec3663"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0c6bca5666b1b1c0cc3b8738",
+          "text": "Herb: Jiaozhizi. Pinyin: Jiaozhizi. Latin name: Gardeniae Fructus Praeparatus. Traditional properties: Bitter,Cold. Meridians: Heart,Lung,Triple Energizers. Traditional class: Heat-Clearing Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-008bc5af3eced1bdcca7a904",
+          "text": "Herb: Fengla. Pinyin: Fengla. Latin name: Cera Flava. Traditional properties: Sweet,Slightly Warm. Meridians: Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-15d4c2e795991b5a1e7d3d60",
+          "text": "Herb: Hydnocarpi Anthelminticae Semen. Pinyin: Dafengzi. Traditional properties: Pungent,Hot,Toxic. Meridians: Liver,Spleen. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        },
+        {
+          "evidence_id": "tcmv1-e25f36c540626399f3ec3663",
+          "text": "Herb: Shicao. Pinyin: Shicao. Latin name: Achilleae Herba. Traditional properties: Bitter,Sour,Calm. Meridians: Lung,Spleen,Bladder. Traditional class: Medicinal For Detoxification、Parasiticide、Drying Dampness And Relieving Itching."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-061",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-4cfc9755e8b4f393224f4cbf",
+        "tcmv1-5682ab1a4922960c104d7a12",
+        "tcmv1-362fe8f6fc01eee77a8f6715",
+        "tcmv1-107a2889e2902e72f08feaa2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-4cfc9755e8b4f393224f4cbf",
+          "text": "Syndrome: abundant phlegm. Pinyin: Tan Sheng. Source definition: 痰证是指痰浊停聚或流窜于脏腑、组织之间,临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-5682ab1a4922960c104d7a12",
+          "text": "Syndrome: abundant sputum. Pinyin: Tan Duo."
+        },
+        {
+          "evidence_id": "tcmv1-362fe8f6fc01eee77a8f6715",
+          "text": "Syndrome: stubborn phlegm. Pinyin: Wan Tan. Source definition: 指坚结胶固之痰,亦称老痰、结痰、郁痰。."
+        },
+        {
+          "evidence_id": "tcmv1-107a2889e2902e72f08feaa2",
+          "text": "Syndrome: phlegm fire. Pinyin: Tan Huo. Source definition: 痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-062",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-4d63e0869f89bff2f40fc345",
+        "tcmv1-1f65bb5e6695db7436d0450a",
+        "tcmv1-d454b9e740e8f709f5e858ee",
+        "tcmv1-9f9f6c739522526382c5e086"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-4d63e0869f89bff2f40fc345",
+          "text": "Syndrome: Retention of Dampness and heat in Mtddle-energizer. Pinyin: Shi Re Zhong Zu. Source definition: 指湿热蕴结体内,脏腑经络运行受阻,可见全身湿热症状的病理变化。."
+        },
+        {
+          "evidence_id": "tcmv1-1f65bb5e6695db7436d0450a",
+          "text": "Syndrome: Retention of Dampness and turbidity in Mtddle-energizer. Pinyin: Shi Zhuo Zhong Zu. Source definition: 寒湿困脾证是指寒湿内盛,困阻脾阳,运化失职,以脘腹痞闷、纳呆、便溏、身重与寒湿症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-d454b9e740e8f709f5e858ee",
+          "text": "Syndrome: Retention of Dampness in Mtddle-energizer. Pinyin: Shi Zu Zhong Jiao. Source definition: 即湿邪阻滞脾胃,影响其运化功能。症见头重、怠倦、脘闷、腹胀、纳呆、口粘渴、喜热饮、小便短赤,舌苔厚白或腻,脉缓等。."
+        },
+        {
+          "evidence_id": "tcmv1-9f9f6c739522526382c5e086",
+          "text": "Syndrome: retention of dampness impair mtddle-energizer. Pinyin: Shi Zhi Shang Zhong. Source definition: 寒湿困脾证是指寒湿内盛,困阻脾阳,运化失职,以脘腹痞闷、纳呆、便溏、身重与寒湿症状为主要表现的证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-063",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-4fa3f33e83b1224b4690b23e",
+        "tcmv1-45e8644f0a527529cbe51a63",
+        "tcmv1-de7cea176037d44011e3a175",
+        "tcmv1-45cfd6aea2cb1bee0cc8c879"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-4fa3f33e83b1224b4690b23e",
+          "text": "Syndrome: stagnation of phlegm and drool. Pinyin: Tan Xian Ji Zhi. Source definition: 痰证是指痰浊停聚或流窜于脏腑、组织之间,临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-45e8644f0a527529cbe51a63",
+          "text": "Syndrome: stagnation of gastrosplenic qi; stagnation of spleen and stomach qi. Pinyin: Pi Wei Qi Zhi. Source definition: 指脾胃之气阻滞不畅。."
+        },
+        {
+          "evidence_id": "tcmv1-de7cea176037d44011e3a175",
+          "text": "Syndrome: stagnation of phlegm retention. Pinyin: Tan Yin Ting Zhi. Source definition: 痰证是指痰浊停聚或流窜于脏腑、组织之间,临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-45cfd6aea2cb1bee0cc8c879",
+          "text": "Syndrome: stagnation of qi of the liver and stomach. Pinyin: Gan Wei Qi Zhi. Source definition: 是指情志不畅,郁怒伤肝,横逆犯胃,导致胃失和降而出现的证候。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-064",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-5341d286a1dd40ea6c7b45ee",
+        "tcmv1-dcbf5602974acb5bc915e047",
+        "tcmv1-c19d19bf14e015f6709cdae6",
+        "tcmv1-f3613d7ad1ec0fd7d100eff2"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-5341d286a1dd40ea6c7b45ee",
+          "text": "Syndrome: Heart stasis. Pinyin: Xin Fu Yu Xie. Source definition: 血瘀证是指瘀血内阻,以疼痛、肿块、出血、瘀血色脉征为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-dcbf5602974acb5bc915e047",
+          "text": "Syndrome: Stasis, swelling and pain. Pinyin: Yu Zhi Zhong Tong. Source definition: 血瘀证是指瘀血内阻,以疼痛、肿块、出血、瘀血色脉征为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-c19d19bf14e015f6709cdae6",
+          "text": "Syndrome: stasis of lung-energy. Pinyin: Fei Qi Yong Shi. Source definition: 是指邪实气壅,肺气不能宣降导致的证候."
+        },
+        {
+          "evidence_id": "tcmv1-f3613d7ad1ec0fd7d100eff2",
+          "text": "Syndrome: stasis. Pinyin: Yu Zhi. Source definition: 血瘀证是指瘀血内阻,以疼痛、肿块、出血、瘀血色脉征为主要表现的证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-065",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-539e7881b312b469fdc298b8",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923",
+        "tcmv1-37929d7cdae018cdb20f923b"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-539e7881b312b469fdc298b8",
+          "text": "Syndrome: deficiency of the lung and kidney. Pinyin: Fei Shen Bu Zu. Source definition: 肺肾阴虚证是指肺肾阴液亏虚,虚热内扰,以干咳、少痰、腰酸、遗精及阴虚症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-2cd2df2bbe0d12636c4ed744",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Bu Zu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        },
+        {
+          "evidence_id": "tcmv1-bcfdda38f974d9fc3ae44923",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Yu Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        },
+        {
+          "evidence_id": "tcmv1-37929d7cdae018cdb20f923b",
+          "text": "Syndrome: asthenia of both liver and kidney; deficiency of both liver and kidney. Pinyin: Gan Shen Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-066",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-544eb4e3be1b7e9c7450d0e2",
+        "tcmv1-cff4dac5dfe2fd61ac7b6131",
+        "tcmv1-c8e17f9385b55247a45193c9",
+        "tcmv1-f93ef20d37a3b22382554c44"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-544eb4e3be1b7e9c7450d0e2",
+          "text": "Syndrome: Jing Han. Pinyin: Jing Han. Source definition: 寒湿之邪侵袭经脉。."
+        },
+        {
+          "evidence_id": "tcmv1-cff4dac5dfe2fd61ac7b6131",
+          "text": "Syndrome: wind-cold-damp syndrome. Pinyin: Feng Han Shi. Source definition: 指风、寒、湿三种邪气的结合。."
+        },
+        {
+          "evidence_id": "tcmv1-c8e17f9385b55247a45193c9",
+          "text": "Syndrome: accumulation of cold evil. Pinyin: Han Ji. Source definition: 感受阴寒之邪所致的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-f93ef20d37a3b22382554c44",
+          "text": "Syndrome: coldness of yin. Pinyin: Yin Han. Source definition: 外感之寒邪或阳虚所生之内寒。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-067",
+      "retrieval": "R0",
+      "evidence_origin": "deterministic_R0_recovery_for_A2_pre_retrieval_abstention",
+      "ordered_chunk_ids": [
+        "tcmv1-5725a22d24f8cd181cd9a2aa",
+        "tcmv1-c96e103fca37a948ef090741",
+        "tcmv1-c59a378e8ffd7b78df252599",
+        "tcmv1-f1faee65ee58262e671f9506"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-5725a22d24f8cd181cd9a2aa",
+          "text": "Syndrome: injury caused by strain and sprain. Pinyin: Lao Shang. Source definition: 中医指因过度劳累而引起的内伤."
+        },
+        {
+          "evidence_id": "tcmv1-c96e103fca37a948ef090741",
+          "text": "Syndrome: cough caused by dryness. Pinyin: Zao Ke. Source definition: 因肺虚液少或燥邪伤肺所致的咳嗽。."
+        },
+        {
+          "evidence_id": "tcmv1-c59a378e8ffd7b78df252599",
+          "text": "Syndrome: pain caused by ecchymoma. Pinyin: Yu Zhong Teng Tong. Source definition: 血瘀证是指瘀血内阻,以疼痛、肿块、出血、瘀血色脉征为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-f1faee65ee58262e671f9506",
+          "text": "Syndrome: maculae caused by violent heat pathogen. Pinyin: Wen Du Fa Ban. Source definition: 由於温热之毒内蕴肺胃,充斥三焦,波及营血,透发於肌肤而为斑。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-068",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-5836f3c3b7b7e8c030bed67e",
+        "tcmv1-d226ec983f6d9e8878f0c831",
+        "tcmv1-dcbee33b3ed2ba87b44c33f4",
+        "tcmv1-5902f36617054dced8b9de87"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-5836f3c3b7b7e8c030bed67e",
+          "text": "Syndrome: cold in meridian. Pinyin: Shu Shi Biao Zheng. Source definition: 暑湿伤表,卫气失调,以发热,微恶风寒,头重身困,口渴,烦躁,小便短赤,舌红苔黄腻,脉濡数等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-d226ec983f6d9e8878f0c831",
+          "text": "Syndrome: cold sensation in uterus. Pinyin: Gong Leng. Source definition: 指妇女肾阳不足,胞子宫失于温煦所出现的下腹坠胀,疼痛,得热则缓和,白带多,痛经,月经失调,脉沉紧,舌苔薄白多津为主要症状者."
+        },
+        {
+          "evidence_id": "tcmv1-dcbee33b3ed2ba87b44c33f4",
+          "text": "Syndrome: a presence of cold in the spleen. Pinyin: Pi Han. Source definition: 脾胃虚寒证是由于素体脾气虚,或脾虚日久,波及脾阳,使脾阳也虚。或贪食生冷,损伤脾阳,导致脾阳虚不能温暖胃肠,寒气自内而生的病证。."
+        },
+        {
+          "evidence_id": "tcmv1-5902f36617054dced8b9de87",
+          "text": "Syndrome: cold diarrhea. Pinyin: Leng Xie."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-069",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-596c7423935c2e0e03c2badb",
+        "tcmv1-32c341ac2511fe1720b7890c",
+        "tcmv1-c2053cba8d048eaa771ee06b",
+        "tcmv1-2cd2df2bbe0d12636c4ed744"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-596c7423935c2e0e03c2badb",
+          "text": "Syndrome: breakdowm of the normal physilolgical coordination between the heart and the kidney. Pinyin: Xin Shen Bu Jiao. Source definition: 心肾不交证是指心肾水火既济失调,以心烦、失眠、梦遗、耳鸣、腰膝酸软等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-32c341ac2511fe1720b7890c",
+          "text": "Syndrome: disharmony between the liver and stomach. Pinyin: Gan Wei Bu He. Source definition: 肝气瘀滞,横逆犯胃,胃失和降,以胃脘、胁肋胀满疼痛,嗳气、呃逆、吞酸,情绪抑郁,不欲食,苔薄黄,脉弦等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-c2053cba8d048eaa771ee06b",
+          "text": "Syndrome: insufficiency of both the heart and the spleen. Pinyin: Xin Pi Bu Zu. Source definition: 心脾两虚证是指脾气亏虚,心血不足,以心悸怔忡、失眠多梦、食少、腹胀、便溏及气血两虚症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-2cd2df2bbe0d12636c4ed744",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Bu Zu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-070",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-5d7c20dfc3e8c98ab4a1a684",
+        "tcmv1-00ce7010e21abde6e2cd45bd",
+        "tcmv1-01521362972e12b896c42873",
+        "tcmv1-01b61fa93d54e8bdd1c408f6"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-5d7c20dfc3e8c98ab4a1a684",
+          "text": "Syndrome: asthenia-heat. Pinyin: Xu Re. Source definition: 阴虚证是指人体阴液亏少,其滋润、濡养等功能减退,或阴不制阳,阳气偏亢,以口咽干燥、五心烦热、潮热盗汗等为主要表现的虚热证。."
+        },
+        {
+          "evidence_id": "tcmv1-00ce7010e21abde6e2cd45bd",
+          "text": "Syndrome: febrile symptoms. Pinyin: Re Zheng. Source definition: 是指感受热邪、或阳盛阴虚,人体的机能活动亢进所表现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-01521362972e12b896c42873",
+          "text": "Syndrome: the heat attacts the pericardium. Pinyin: Re Ru Xin Bao. Source definition: 温热病内陷营血阶段的证型之一。主要证候有高热、神昏、谵语、甚则昏迷不醒、四肢厥逆、或见抽搐等。."
+        },
+        {
+          "evidence_id": "tcmv1-01b61fa93d54e8bdd1c408f6",
+          "text": "Syndrome: deficiency of the kidney-yang. Pinyin: Shen Yang Xu. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-071",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-63894395f9a20215165d45d0",
+        "tcmv1-5ab15f2ef401d563fdbf3ec2",
+        "tcmv1-dc3371b6500492e46b1a61da",
+        "tcmv1-1bbf7362e507b0843a4eb22d"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-63894395f9a20215165d45d0",
+          "text": "Syndrome: indigestion due to accumulation. Pinyin: Ji Zhi Bu Xiao. Source definition: 是指由于饮食不节,损伤脾胃而出现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-5ab15f2ef401d563fdbf3ec2",
+          "text": "Syndrome: indigestion. Pinyin: Yin Shi Bu Xiao. Source definition: 是指由于饮食不节,损伤脾胃而出现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-dc3371b6500492e46b1a61da",
+          "text": "Syndrome: indigestion. Pinyin: Yin Shi Ting Zhi. Source definition: 是指由于饮食不节,损伤脾胃而出现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-1bbf7362e507b0843a4eb22d",
+          "text": "Syndrome: indigestion with food retention. Pinyin: Shi Ji Bu Xiao. Source definition: 是指由于饮食不节,损伤脾胃而出现的证候。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-072",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-63c654d329f129b0a089dd72",
+        "tcmv1-bc41a4f30d31e66d9e9ae7fd",
+        "tcmv1-33170745dd17c9b5338eeb12",
+        "tcmv1-7e5c8ceeaddcb85dbb49edb8"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-63c654d329f129b0a089dd72",
+          "text": "Syndrome: consumptive disease. Pinyin: Xu Lao. Source definition: 是由于禀赋薄弱、后天失养及外感内伤等多种原因引起的,以脏腑功能衰退,气血阴阳亏损,日久不复为主要病机,以五脏虚证为主要临床表现的多种慢性虚弱症候的总称。."
+        },
+        {
+          "evidence_id": "tcmv1-bc41a4f30d31e66d9e9ae7fd",
+          "text": "Syndrome: consumptive disease. Pinyin: Xu Lao. Source definition: 是由于禀赋薄弱、后天失养及外感内伤等多种原因引起的,以脏腑功能衰退,气血阴阳亏损,日久不复为主要病机,以五脏虚证为主要临床表现的多种慢性虚弱症候的总称。."
+        },
+        {
+          "evidence_id": "tcmv1-33170745dd17c9b5338eeb12",
+          "text": "Syndrome: heat disease. Pinyin: Re Bing."
+        },
+        {
+          "evidence_id": "tcmv1-7e5c8ceeaddcb85dbb49edb8",
+          "text": "Syndrome: externally infected disease. Pinyin: Wai Gan."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-073",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-648399f917028ca7197d8096",
+        "tcmv1-2a01f6a33b3140d9c4a7c8ca",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-648399f917028ca7197d8096",
+          "text": "Syndrome: cold syndrome of the spleen and the stomach of deficiency type. Pinyin: Pi Wei Xu Han. Source definition: 脾胃虚寒证是由于素体脾气虚,或脾虚日久,波及脾阳,使脾阳也虚。或贪食生冷,损伤脾阳,导致脾阳虚不能温暖胃肠,寒气自内而生的病证。."
+        },
+        {
+          "evidence_id": "tcmv1-2a01f6a33b3140d9c4a7c8ca",
+          "text": "Syndrome: asthma of cold type. Pinyin: Leng Xiao."
+        },
+        {
+          "evidence_id": "tcmv1-2cd2df2bbe0d12636c4ed744",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Bu Zu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        },
+        {
+          "evidence_id": "tcmv1-bcfdda38f974d9fc3ae44923",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Yu Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-074",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-64f291135b6b3fd43c60bfbd",
+        "tcmv1-49bf9e326855e4aec93252a7",
+        "tcmv1-02a9808fa683d6a36d31577c",
+        "tcmv1-ddc04ee5f1a9e50cf0e36771"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-64f291135b6b3fd43c60bfbd",
+          "text": "Syndrome: abdominal pain due to parasitic infestation. Pinyin: Chong Ji. Source definition: 虫积肠道证是指蛔虫等寄居肠道,阻滞气机,噬耗营养,以腹痛、面黄体瘦、大便排虫及气滞症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-49bf9e326855e4aec93252a7",
+          "text": "Syndrome: swelling and pain due to blood stasis. Pinyin: Yu Xie Zhong Tong. Source definition: 血瘀证是指瘀血内阻,以疼痛、肿块、出血、瘀血色脉征为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-02a9808fa683d6a36d31577c",
+          "text": "Syndrome: distending pain of the hypochondrium due to gallblsdder disorder. Pinyin: Dan Zhang. Source definition: 胆胀是指胆腑气郁,胆失通降所引起的以右胁胀痛为主要临床表现的一种疾病。."
+        },
+        {
+          "evidence_id": "tcmv1-ddc04ee5f1a9e50cf0e36771",
+          "text": "Syndrome: stagnation due to excessive heat. Pinyin: Shi Re Ji Zhi."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-075",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-64ff7ed25cdb79f8a4931d5f",
+        "tcmv1-148d30f7b4c12eeee9c8d20e",
+        "tcmv1-78ee1bdd9d36b448ce5ddb01",
+        "tcmv1-37929d7cdae018cdb20f923b"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-64ff7ed25cdb79f8a4931d5f",
+          "text": "Syndrome: kidney yang deficiency. Pinyin: Shen Yang Xu Shuai. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-148d30f7b4c12eeee9c8d20e",
+          "text": "Syndrome: yang deficiency. Pinyin: Yang Xu. Source definition: 阳虚证是指人体阳气亏损,其温养、推动、气化等功能减退,以畏寒肢冷为主要表现的虚寒证。."
+        },
+        {
+          "evidence_id": "tcmv1-78ee1bdd9d36b448ce5ddb01",
+          "text": "Syndrome: externally infection due to yang deficiency. Pinyin: Yang Xu Wai Gan. Source definition: 阳虚证是指人体阳气亏损,其温养、推动、气化等功能减退,以畏寒肢冷为主要表现的虚寒证。."
+        },
+        {
+          "evidence_id": "tcmv1-37929d7cdae018cdb20f923b",
+          "text": "Syndrome: asthenia of both liver and kidney; deficiency of both liver and kidney. Pinyin: Gan Shen Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-076",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-66b005bd46779c54980e96e3",
+        "tcmv1-ddc04ee5f1a9e50cf0e36771",
+        "tcmv1-11bfd329971d541729b08392",
+        "tcmv1-230350382b2e41385b22c23a"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-66b005bd46779c54980e96e3",
+          "text": "Syndrome: consumption of the body fluid due to excessive heat. Pinyin: Re Sheng Shang Jin. Source definition: 津液亏虚证是指机体津液亏少,形体、脏腑、官窍失却滋润濡养和充盈,以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-ddc04ee5f1a9e50cf0e36771",
+          "text": "Syndrome: stagnation due to excessive heat. Pinyin: Shi Re Ji Zhi."
+        },
+        {
+          "evidence_id": "tcmv1-11bfd329971d541729b08392",
+          "text": "Syndrome: deficiency of body fluid with dryness in the intestines. Pinyin: Jin Ku Chang Zao. Source definition: 肠燥津亏证是指津液亏损,肠失濡润,传导失职,以大便燥结难下及津亏症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-230350382b2e41385b22c23a",
+          "text": "Syndrome: deficiency of the body fluid. Pinyin: Jin Shang. Source definition: 津液亏虚证是指机体津液亏少,形体、脏腑、官窍失却滋润濡养和充盈,以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-077",
+      "retrieval": "R0",
+      "evidence_origin": "deterministic_R0_recovery_for_A2_pre_retrieval_abstention",
+      "ordered_chunk_ids": [
+        "tcmv1-66ce03f5cbdc849a173af31a",
+        "tcmv1-2272c0439fa5902235f48c6d",
+        "tcmv1-c8e17f9385b55247a45193c9",
+        "tcmv1-faab05dd339a9c4167083895"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-66ce03f5cbdc849a173af31a",
+          "text": "Syndrome: Heat Evil camp injury. Pinyin: Wen Xie Shang Ying. Source definition: 热毒深传,侵入营血,以发热不退,抽搐频繁,牙关紧闭,两目上视,面色灰暗,甚或突然呼吸停止,肢厥脉绝,舌紫暗而干,或舌卷僵硬,脉细数为常见症的小儿暑温证候."
+        },
+        {
+          "evidence_id": "tcmv1-2272c0439fa5902235f48c6d",
+          "text": "Syndrome: diarrhea due to evil heat. Pinyin: Re Xie. Source definition: 因热迫大肠所引起."
+        },
+        {
+          "evidence_id": "tcmv1-c8e17f9385b55247a45193c9",
+          "text": "Syndrome: accumulation of cold evil. Pinyin: Han Ji. Source definition: 感受阴寒之邪所致的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-faab05dd339a9c4167083895",
+          "text": "Syndrome: summer-heat evil. Pinyin: Shu Xie. Source definition: 凡夏至之后,立秋以前,致病具有炎热、升散、兼湿特性的外邪,称为暑邪。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-078",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-672e1a8a4b3236ec04fdec29",
+        "tcmv1-ab9aaba7a916ea8f114fff97",
+        "tcmv1-7aef69f9e982cfa4cc068a44",
+        "tcmv1-d89dc1afefbe6deccbefd4e6"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-672e1a8a4b3236ec04fdec29",
+          "text": "Syndrome: Cold-dampness and incubated summer heat. Pinyin: Han Shi Bi Shu. Source definition: 是指寒湿之邪阻滞经络,以肢体或患处沉重冷痛、麻木,或肿胀,畏冷肢凉,苔白滑等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-ab9aaba7a916ea8f114fff97",
+          "text": "Syndrome: summer heat. Pinyin: Shu Re. Source definition: 外感暑邪的热证。."
+        },
+        {
+          "evidence_id": "tcmv1-7aef69f9e982cfa4cc068a44",
+          "text": "Syndrome: stagnation of cold-dampness. Pinyin: Han Shi Yu Zhi. Source definition: 是指寒湿之邪阻滞经络,以肢体或患处沉重冷痛、麻木,或肿胀,畏冷肢凉,苔白滑等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-d89dc1afefbe6deccbefd4e6",
+          "text": "Syndrome: wind and heat. Pinyin: Feng Re. Source definition: 感受风热之邪。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-079",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-6768cbf7f9fc3b8ef9b67b63",
+        "tcmv1-d273912b006c494c635ec3e7",
+        "tcmv1-b9c5662ecef862a5751c465d",
+        "tcmv1-e8d700418c7ee6ae31b838ed"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-6768cbf7f9fc3b8ef9b67b63",
+          "text": "Syndrome: the debility of qi and the blood. Pinyin: Qi Xie Xu Ruo. Source definition: 气血两虚证是指气血不能互相化生,以气虚和血虚症状相兼为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-d273912b006c494c635ec3e7",
+          "text": "Syndrome: the debility from chronic illness. Pinyin: Jiu Bing Xu Lei."
+        },
+        {
+          "evidence_id": "tcmv1-b9c5662ecef862a5751c465d",
+          "text": "Syndrome: deficiency of qi and the blood. Pinyin: Qi Xie Yu Xu. Source definition: 气血两虚证是指气血不能互相化生,以气虚和血虚症状相兼为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-e8d700418c7ee6ae31b838ed",
+          "text": "Syndrome: insufficiency of the vital energy and blood. Pinyin: Qi Xie Bu Zu. Source definition: 气血两虚证是指气血不能互相化生,以气虚和血虚症状相兼为主要表现的证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-080",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-678b794573767bc971af080a",
+        "tcmv1-37929d7cdae018cdb20f923b",
+        "tcmv1-2cd2df2bbe0d12636c4ed744",
+        "tcmv1-bcfdda38f974d9fc3ae44923"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-678b794573767bc971af080a",
+          "text": "Syndrome: deficiency in kidney. Pinyin: Shen Xu. Source definition: 肾气虚弱,以腰酸,耳鸣,性欲减退,头晕健忘,脉弱等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-37929d7cdae018cdb20f923b",
+          "text": "Syndrome: asthenia of both liver and kidney; deficiency of both liver and kidney. Pinyin: Gan Shen Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        },
+        {
+          "evidence_id": "tcmv1-2cd2df2bbe0d12636c4ed744",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Bu Zu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        },
+        {
+          "evidence_id": "tcmv1-bcfdda38f974d9fc3ae44923",
+          "text": "Syndrome: deficiency of the liver and kidney. Pinyin: Gan Shen Yu Xu. Source definition: 是指肝肾精亏血少所表现出来的一类病证。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-081",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-680504f2ccd7c73cd0a424e6",
+        "tcmv1-cd7c0069708afdbd83e91a51",
+        "tcmv1-fded9412604d74fc78bd761c",
+        "tcmv1-c96e103fca37a948ef090741"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-680504f2ccd7c73cd0a424e6",
+          "text": "Syndrome: affection by exopathic wind-cold. Pinyin: Wai Gan Feng Han. Source definition: 风寒犯肺证是指由于风寒侵袭,肺卫失宣,以咳嗽及风寒表证症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-cd7c0069708afdbd83e91a51",
+          "text": "Syndrome: onset of affection due to wind-warm syndrome. Pinyin: Feng Wen Chu Qi. Source definition: 风温初起,邪犯肺卫,以发热,微恶风寒,无汗或少汗,头痛,咳嗽,口微渴,舌边尖红,苔薄白,脉浮数等为常见症的风温证候。."
+        },
+        {
+          "evidence_id": "tcmv1-fded9412604d74fc78bd761c",
+          "text": "Syndrome: wind-cold syndrome. Pinyin: Feng Han. Source definition: 伤寒证是指寒邪外袭于肤表,阻遏卫阳所表现的表实寒证,又称风寒表证."
+        },
+        {
+          "evidence_id": "tcmv1-c96e103fca37a948ef090741",
+          "text": "Syndrome: cough caused by dryness. Pinyin: Zao Ke. Source definition: 因肺虚液少或燥邪伤肺所致的咳嗽。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-082",
+      "retrieval": "R0",
+      "evidence_origin": "deterministic_R0_recovery_for_A2_pre_retrieval_abstention",
+      "ordered_chunk_ids": [
+        "tcmv1-686850b1a364f3a06563ec6e",
+        "tcmv1-5725a22d24f8cd181cd9a2aa",
+        "tcmv1-66ce03f5cbdc849a173af31a",
+        "tcmv1-00ce7010e21abde6e2cd45bd"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-686850b1a364f3a06563ec6e",
+          "text": "Syndrome: Dyspepsia injury wine. Pinyin: Shi Ji Shang Jiu. Source definition: 是指由于饮酒,损伤脾胃而出现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-5725a22d24f8cd181cd9a2aa",
+          "text": "Syndrome: injury caused by strain and sprain. Pinyin: Lao Shang. Source definition: 中医指因过度劳累而引起的内伤."
+        },
+        {
+          "evidence_id": "tcmv1-66ce03f5cbdc849a173af31a",
+          "text": "Syndrome: Heat Evil camp injury. Pinyin: Wen Xie Shang Ying. Source definition: 热毒深传,侵入营血,以发热不退,抽搐频繁,牙关紧闭,两目上视,面色灰暗,甚或突然呼吸停止,肢厥脉绝,舌紫暗而干,或舌卷僵硬,脉细数为常见症的小儿暑温证候."
+        },
+        {
+          "evidence_id": "tcmv1-00ce7010e21abde6e2cd45bd",
+          "text": "Syndrome: febrile symptoms. Pinyin: Re Zheng. Source definition: 是指感受热邪、或阳盛阴虚,人体的机能活动亢进所表现的证候。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-083",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-6986107f70297be2dfd660e3",
+        "tcmv1-5682ab1a4922960c104d7a12",
+        "tcmv1-00ce7010e21abde6e2cd45bd",
+        "tcmv1-01521362972e12b896c42873"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-6986107f70297be2dfd660e3",
+          "text": "Syndrome: sputum drink. Pinyin: Tan Yin. Source definition: 痰证是指痰浊停聚或流窜于脏腑、组织之间,临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-5682ab1a4922960c104d7a12",
+          "text": "Syndrome: abundant sputum. Pinyin: Tan Duo."
+        },
+        {
+          "evidence_id": "tcmv1-00ce7010e21abde6e2cd45bd",
+          "text": "Syndrome: febrile symptoms. Pinyin: Re Zheng. Source definition: 是指感受热邪、或阳盛阴虚,人体的机能活动亢进所表现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-01521362972e12b896c42873",
+          "text": "Syndrome: the heat attacts the pericardium. Pinyin: Re Ru Xin Bao. Source definition: 温热病内陷营血阶段的证型之一。主要证候有高热、神昏、谵语、甚则昏迷不醒、四肢厥逆、或见抽搐等。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-084",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-699fadfa52a3f8f64deaafa0",
+        "tcmv1-c46832d433abd82e39d4d461",
+        "tcmv1-bd7a1c078a48ac0f5b388ab4",
+        "tcmv1-891a0ce9f2a3d6e5775548a6"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-699fadfa52a3f8f64deaafa0",
+          "text": "Syndrome: the hepatic fire. Pinyin: Gan Huo. Source definition: 指肝经火胜,内扰于肝的一种病理现象。."
+        },
+        {
+          "evidence_id": "tcmv1-c46832d433abd82e39d4d461",
+          "text": "Syndrome: the stomach fire. Pinyin: Wei Huo. Source definition: 指胃热炽盛化火的病变。."
+        },
+        {
+          "evidence_id": "tcmv1-bd7a1c078a48ac0f5b388ab4",
+          "text": "Syndrome: exuberance of the heart fire. Pinyin: Xin Huo Kang Sheng. Source definition: 心火亢盛证是指心火内炽,扰神迫血,火热上炎下移,以心烦失眠、舌赤生疮、吐衄、尿赤及火热症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-891a0ce9f2a3d6e5775548a6",
+          "text": "Syndrome: the Depression of the liver generates pathogenic fire. Pinyin: Gan Yu Hua Huo. Source definition: 是指因情志不遂,或突然遭受精神刺激,或病邪侵扰,导致肝失疏泄,气机郁滞,日久化火,出现胸胁或少腹胀闷窜疼,急躁易怒,头晕胀疼,面红目赤,口苦,咽干,不寐,妇女乳房胀痛,月经不调,痛经,甚则闭经等症状的一种中医证型。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-085",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-6e7e1a731f2f2ae930169875",
+        "tcmv1-1838b64bb3530be14c8968c4",
+        "tcmv1-d6655a44f23fc0de18842440",
+        "tcmv1-45e8644f0a527529cbe51a63"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2",
+        "symmap_v2"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-6e7e1a731f2f2ae930169875",
+          "text": "Syndrome: deficiency-cold of abdomen. Pinyin: Xia Wan Xu Leng. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-1838b64bb3530be14c8968c4",
+          "text": "Syndrome: deficiency-cold of kidney. Pinyin: Xia Yuan Xu Leng. Source definition: 肾阳虚证是指肾阳亏虚,机体失其温煦,以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-d6655a44f23fc0de18842440",
+          "text": "Syndrome: deficiency-cold. Pinyin: Xu Han. Source definition: 阳虚证是指人体阳气亏损,其温养、推动、气化等功能减退,以畏寒肢冷为主要表现的虚寒证。."
+        },
+        {
+          "evidence_id": "tcmv1-45e8644f0a527529cbe51a63",
+          "text": "Syndrome: stagnation of gastrosplenic qi; stagnation of spleen and stomach qi. Pinyin: Pi Wei Qi Zhi. Source definition: 指脾胃之气阻滞不畅。."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-086",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0eeb853d28842ae27eb828bb",
+        "tcmv1-88b66c6082f18ccbf8f76387",
+        "tcmv1-bb05e751677d383a3948cb2a",
+        "tcmv1-7af6d4d0b9e8df4a5dc335c9"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0eeb853d28842ae27eb828bb",
+          "text": "Herb: Common Camptotheac. Pinyin: XI SHU. Latin name: Camptotheca acuminata. Used part: fruit or root. Source-recorded function: To clear heat and resolve toxin, dissipate binds and disperse concretion, anticancer.. Source-recorded indication: Acute leukemia, chronic leukemia, psoriasis, swollen liver and spleen due to bilharziosis, carcinoma of esophagus, carcinoma of cardia, carcinoma of intestine, carcinoma of liver, carcinoma of stomach, swelling of sores.. Clinical manifestations: 1. Both camptothecine and hydroxycamptothtecine are anticarcinogenic components, which inhibit polymerase of DNA or damage DNA directly. 2. They distribute mainly in the digestive tract, kidney and bone marrow, and stimulate the digestive and urinary trac."
+        },
+        {
+          "evidence_id": "tcmv1-88b66c6082f18ccbf8f76387",
+          "text": "Syndrome: stomach heat. Pinyin: Wei Re. Source definition: 指胃热炽盛化火的病变。."
+        },
+        {
+          "evidence_id": "tcmv1-bb05e751677d383a3948cb2a",
+          "text": "Herb: Loquat Leaf;PI PA YE. Pinyin: PI PA YE. Latin name: Folium Eriobotryae. Traditional properties: Minor cold; Bitter. Meridians: Lung; Stomach. Used part: leaf. Source-recorded function: To remove heat from the lung and the stomach, and to relieve cough and vomiting.. Source-recorded indication: Lung heat cough, qi counterflow with rapid asthma , stomach heat vomiting, heat vexation and thirst.. Clinical manifestations: 1. Its decoction inhibits the growth of Staphylococcus aureus in vitro.2. Its saponins exert an expectorant effect.3. Inhibiting the influenza virus.."
+        },
+        {
+          "evidence_id": "tcmv1-7af6d4d0b9e8df4a5dc335c9",
+          "text": "Herb: Lemon. Pinyin: NING MENG. Latin name: Citrus limon. Used part: fruit. Source-recorded function: To engender liquid and allay thirst, dispel summerheat, quiet fetus.. Source-recorded indication: Stomach heat fluid damage, summerheat stroke with vexation and thirst, inappetence, glomus distention in stomach duct and abdomen, lung heat dry cough, vomiting in pregnancy.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-087",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-6f4fd15224109f278f32117f",
+        "tcmv1-0c897e609d16569ceb470087",
+        "tcmv1-8e0b989610b404d52fe50efb",
+        "tcmv1-6e8ac4010b50a92fde28f82f"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-6f4fd15224109f278f32117f",
+          "text": "Syndrome: consumption of yin caused by febrile diseases. Pinyin: Re Bing Shang Yin. Source definition: 津液亏虚证是指机体津液亏少,形体、脏腑、官窍失却滋润濡养和充盈,以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-0c897e609d16569ceb470087",
+          "text": "Herb: Indigobush Amorpha. Pinyin: ZI SUI HUAI. Latin name: Amorpha fruticosa. Used part: leaf. Source-recorded function: To clear heat and resolve toxin, dispel damp and disperse swelling.. Source-recorded indication: Welling abscess, burns and scalds, eczema.."
+        },
+        {
+          "evidence_id": "tcmv1-8e0b989610b404d52fe50efb",
+          "text": "Herb: Agaric. Pinyin: YIN ER. Latin name: Tremlla fuciformis. Used part: Tremella fuciformis Berk. Source-recorded function: It is used in the treatment of symptoms caused by insufficiency of the lung-yin, such as dry cough, sensation of dryness and an itch in the throat and sputum with streaks of blood. It is used in patients suffering from dry mouth, thirst and dry stool due to insufficiency of the stomach-yin. It can also be used in the treatment of patients with hemafecia caused by fire of deficiency type. 3. Restoring qi and moistening dryness. It is prescribed for patients having such conditions as loss of body fluid, manifested as dryness of mouth and tongue and fatigue caused by debilitation as well as vomiting and diarrhea.. Source-recorded indication: It is used in the treatment of symptoms caused by insufficiency of the lung-yin, such as dry cough, sensation of dryness and an itch in the throat and sputum with streaks of blood. It is used in patients suffering from dry mouth, thirst and dry stool due."
+        },
+        {
+          "evidence_id": "tcmv1-6e8ac4010b50a92fde28f82f",
+          "text": "Herb: Liriope Root Tuber. Pinyin: SHAN MAI DONG. Latin name: Radix Liriopes. Used part: Liriope spicata (Thunb. )Lour. var. prolifera Y. T. Ma.;Liriope uscari (Decne. )Bailey.. Source-recorded function: Treatment of dry cough caused by lung yin deficiency, cough caused by consumptive diseases, fluid deficiency and thirst, dysphoria and insomnia, constipation due to fluid deficiency of intestine.. Source-recorded indication: Treatment of dry cough caused by lung yin deficiency, cough caused by consumptive diseases, fluid deficiency and thirst, dysphoria and insomnia, constipation due to fluid deficiency of intestine.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-088",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-891a0ce9f2a3d6e5775548a6",
+        "tcmv1-0ef0c64cbfd8f4a21ad53d01",
+        "tcmv1-f9f2d118f264e676695feee6",
+        "tcmv1-bff7a43fa1a29e95559d9746"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-891a0ce9f2a3d6e5775548a6",
+          "text": "Syndrome: the Depression of the liver generates pathogenic fire. Pinyin: Gan Yu Hua Huo. Source definition: 是指因情志不遂,或突然遭受精神刺激,或病邪侵扰,导致肝失疏泄,气机郁滞,日久化火,出现胸胁或少腹胀闷窜疼,急躁易怒,头晕胀疼,面红目赤,口苦,咽干,不寐,妇女乳房胀痛,月经不调,痛经,甚则闭经等症状的一种中医证型。."
+        },
+        {
+          "evidence_id": "tcmv1-0ef0c64cbfd8f4a21ad53d01",
+          "text": "Herb: Fingerleaf Rodgersflower. Pinyin: MU HE. Latin name: Rodgersia aesculifolia. Used part: rhizome. Source-recorded function: To clear heat and transform damp, engender flesh and stanch bleeding.. Source-recorded indication: Damp-heat dysentery, chronic diarrhea, white turbidity, vaginal discharge, flooding and spotting, blood ejection, spontaneous external bleeding, hematochezia, sore toxin, incised wound.."
+        },
+        {
+          "evidence_id": "tcmv1-f9f2d118f264e676695feee6",
+          "text": "Herb: Aauropi Folium. Pinyin: LONG LI YE."
+        },
+        {
+          "evidence_id": "tcmv1-bff7a43fa1a29e95559d9746",
+          "text": "Herb: Millettiae Speciosae Radix. Pinyin: NIU DA LI."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-089",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0cb87909724c99259872d0e8",
+        "tcmv1-72b1485a2ab2af2bf545b73c",
+        "tcmv1-2f82d4fa767a654a1418a353",
+        "tcmv1-6e8ac4010b50a92fde28f82f"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0cb87909724c99259872d0e8",
+          "text": "Herb: Heterophylly Falsestarwort Root;HeterophyIIa FaIsestarwort. Pinyin: TAI ZI SHEN. Latin name: Radix Pseudostellariae. Traditional properties: Mild; Sweet; Slightly Bitter. Meridians: Lung; Spleen. Source-recorded function: To replenish qi and invigorate the spleen function, and topromote fluid secretion and moisten the lung.. Source-recorded indication: Treatment of hypofunction of the spleen with lassitude and anorexia, debility and deficiency of qi and yin marked by spontaneous sweating and thirst during convalescence dry cough due to dryness of the lung.."
+        },
+        {
+          "evidence_id": "tcmv1-72b1485a2ab2af2bf545b73c",
+          "text": "Syndrome: deficiency of spermatozoa. Pinyin: Jing Yu. Source definition: 是指肾精亏损、髓海空虚所致的发育迟缓、未老先衰、肢体痿弱不用的一类证候。."
+        },
+        {
+          "evidence_id": "tcmv1-2f82d4fa767a654a1418a353",
+          "text": "Herb: Heterophylly Falsestarwort Root. Pinyin: Taizishen. Latin name: Radix Pseudostellariae,Pseudostellariae Radix. Traditional properties: Sweet,Slightly Bitter,Calm. Meridians: Spleen,Lung. Traditional class: Qi Reinforcing Drugs."
+        },
+        {
+          "evidence_id": "tcmv1-6e8ac4010b50a92fde28f82f",
+          "text": "Herb: Liriope Root Tuber. Pinyin: SHAN MAI DONG. Latin name: Radix Liriopes. Used part: Liriope spicata (Thunb. )Lour. var. prolifera Y. T. Ma.;Liriope uscari (Decne. )Bailey.. Source-recorded function: Treatment of dry cough caused by lung yin deficiency, cough caused by consumptive diseases, fluid deficiency and thirst, dysphoria and insomnia, constipation due to fluid deficiency of intestine.. Source-recorded indication: Treatment of dry cough caused by lung yin deficiency, cough caused by consumptive diseases, fluid deficiency and thirst, dysphoria and insomnia, constipation due to fluid deficiency of intestine.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-090",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-7364ddb853166c8dbdef0ac5",
+        "tcmv1-b3890c72951da23c353f8eba",
+        "tcmv1-0ce63cebd7533519d79ca571",
+        "tcmv1-2c5a9aefb211ac098834aa7f"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-7364ddb853166c8dbdef0ac5",
+          "text": "Syndrome: dyspnea due to deficiency. Pinyin: Xu Chuan. Source definition: 虚喘常由慢性咳嗽、肺痨等肺系病症迁延未愈,病久肺虚,气失所主,肾元亏虚,肾不纳气而短气喘促。."
+        },
+        {
+          "evidence_id": "tcmv1-b3890c72951da23c353f8eba",
+          "text": "Herb: seed of Garden Balsam; Garden Balsam Seed. Pinyin: JI XING ZI. Latin name: Semen Impatientis. Traditional properties: Pungent; Bitter. Meridians: Liver; Heart. Used part: ripe seed. Source-recorded function: To remove stagnation of qi, eliminate blood stasis, and soften hard masses.. Source-recorded indication: Concretion and conglomeration, lump glomus, amenorrhea, dysphagia-occlusion.. Source-recorded toxicity: Toxic."
+        },
+        {
+          "evidence_id": "tcmv1-0ce63cebd7533519d79ca571",
+          "text": "Herb: seed of Garden Balsam. Pinyin: Jixingzi. Latin name: Impatientis Semen,Semen Impatientis. Traditional properties: Slightly Bitter,Pungent,Warm,Slightly Toxic. Meridians: Lung,Liver. Traditional class: Blood Activating Stasis Removing Drugs. Used part: ripe seed."
+        },
+        {
+          "evidence_id": "tcmv1-2c5a9aefb211ac098834aa7f",
+          "text": "Herb: Tokay Gecko. Pinyin: GE JIE. Latin name: Gecko. Traditional properties: Mild; Salty. Meridians: Lung; Kidney. Used part: Gekko gecko Linnaeus.. Source-recorded function: Treatment of dyspnea or asthma in deficiency syndromes, cough and hemoptysis in consumptive diseases, impotence, seminal emission.. Source-recorded indication: Treatment of dyspnea or asthma in deficiency syndromes, cough and hemoptysis in consumptive diseases, impotence, seminal emission.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-091",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-755bb8aeeb51c81fba132064",
+        "tcmv1-ebed055c5134c664e75d7841",
+        "tcmv1-70a71d0ab4df01a12e4e23e4",
+        "tcmv1-0cf72a017aa1adf5ac9dcfb9"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-755bb8aeeb51c81fba132064",
+          "text": "Syndrome: Bile fire and phlegm. Pinyin: Dan Huo Xie Tan. Source definition: 胆郁痰扰证是指痰热内扰,胆气不宁,以胆怯易惊、心烦失眠及痰热症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-ebed055c5134c664e75d7841",
+          "text": "Herb: Nux Vomica. Pinyin: Maqianzi. Latin name: Strychni Semen,Semen Strychni. Traditional properties: Bitter,Warm,Extremely Poisonous. Meridians: Liver,Spleen. Traditional class: Wind-Dampnessdispelling And Colddispersing Medicinal. Used part: seed."
+        },
+        {
+          "evidence_id": "tcmv1-70a71d0ab4df01a12e4e23e4",
+          "text": "Herb: Nux Vomica Powder. Pinyin: MA QIAN ZI FEN. Latin name: Semen Strychni Pulveratum. Used part: Strychnos nux-vomica L.;Strychnos pierriana A. W. Hill.. Source-recorded function: Treatment of protracted arthritis, rheumatoid arthralgia, numbness and paralysis, sequala of poliomyelitis, traumatic injury, boils and sores.. Source-recorded indication: Treatment of protracted arthritis, rheumatoid arthralgia, numbness and paralysis, sequala of poliomyelitis, traumatic injury, boils and sores.."
+        },
+        {
+          "evidence_id": "tcmv1-0cf72a017aa1adf5ac9dcfb9",
+          "text": "Herb: Nux Vomica. Pinyin: MA QIAN ZI. Latin name: Semen Strychni. Traditional properties: Cold; Bitter. Meridians: Spleen; Liver. Used part: seed. Source-recorded function: To promote the flow of qi and blood in the collaterals, relieve pain, and promote the subsidence of swelling.. Source-recorded indication: Hemiplegia, numbness and paralysis, muscle weakness, impotence, hypertrophic spinitis, chronic anemia, wind-damp intractable impediment, sequel of poliomyelitis, rheumatoid arthritis, knocks and falls, swelling pain of welling abscess and flat abscess.. Source-recorded toxicity: Extremely Toxic."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-092",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-761e4e15c7371527f0b6d7ba",
+        "tcmv1-0cfbfe848ff2b75421bdf8f8",
+        "tcmv1-cc2d3a1098a2414c33f6b82c",
+        "tcmv1-9e3783d04f7f6bc3274a826e"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-761e4e15c7371527f0b6d7ba",
+          "text": "Syndrome: abnormal rising of qi. Pinyin: Qi Ni. Source definition: 气逆证是指气机升降失常,逆而向上,以咳喘、呕恶、头痛眩晕等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-0cfbfe848ff2b75421bdf8f8",
+          "text": "Herb: Xiqingguo. Pinyin: Xiqingguo. Latin name: Chebulae Fructus Immaturus. Traditional properties: Bitter,Sour,Astringent,Calm. Meridians: Lung,Large Intestine. Traditional class: Heat-Clearing Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+          "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.."
+        },
+        {
+          "evidence_id": "tcmv1-9e3783d04f7f6bc3274a826e",
+          "text": "Herb: fruit of Diverseflower Evodia. Pinyin: WU YU. Latin name: Fructus Evodiae. Traditional properties: Warm; Pungent; Bitter. Meridians: Spleen; Stomach; Liver; Kidney. Used part: Evodia rutaecarpa (Juss.) Benth.;Evodia rutaecarpa (Juss.) Benth. var. officinalis (Dode) Huang;Evodia rutaecarpa (Juss.) Benth. var. bodinieri (Dode) Huang. Source-recorded function: Treatment of headache accompanied by retching and cold limbs, abdominal colic, weakness and edema of the legs, abdominal pain during menstruation, epigastric distension and pain with vomiting and acid regurgitation, diarrhea occurring before dawn daily, hypertension. External use for ulcers in the mouth.. Source-recorded indication: 1. Its volatile oil containing evoden inhibits the abnormal fermentation in the intestine.2. Evodin, evodiamine and rutaecarpine, are active components for analgesic.3. Oral administration or injection can lower blood pressure in normal animals or those with renal hypertension.. Source-recorded toxicity: Toxic. Clinical manifestations: 1. Its volatile oil containing evoden inhibits the abnormal fermentation in the intestine.2. Evodin, evodiamine and rutaecarpine, are active components for analgesic.3. Oral administration or injection can lower blood pressure in normal animals or those w."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-093",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-b787ef386a8c8d4ded440333",
+        "tcmv1-0d0e88127ea0ad5a24062ad3",
+        "tcmv1-76d46f9e145e92b641d4b5e1",
+        "tcmv1-6c7b31489b2bd9459197b18d"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-b787ef386a8c8d4ded440333",
+          "text": "Syndrome: accumulation of heat toxic and phlegm. Pinyin: Re Du Tan Huo Yu Jie. Source definition: 指无形之火与有形之痰煎熬胶结贮积于体内的病证。."
+        },
+        {
+          "evidence_id": "tcmv1-0d0e88127ea0ad5a24062ad3",
+          "text": "Herb: Common Tea. Pinyin: CHA YE. Latin name: Camellia sinensis [Syn. Thea sinensis]. Traditional properties: Cool; Sweet; Bitter. Meridians: Lung; Stomach; Heart. Used part: tender leaf or tender bud. Source-recorded function: To clear head and eyes, eliminate vexation and allay thirst, disperse food, transform phlegm, disinhibit urine, resolve toxin.. Source-recorded indication: Headache, dim vision, red eyes, desire to sleep, common cold, vexation and thirst, food accumulation, bad breath, phlegm asthma, epilepsy, inhibited urination, diarrhea, throat swelling, swelling of sores and boils, burns and scalds.."
+        },
+        {
+          "evidence_id": "tcmv1-76d46f9e145e92b641d4b5e1",
+          "text": "Syndrome: accumulation of phlegm. Pinyin: Tan Yong. Source definition: 痰证是指痰浊停聚或流窜于脏腑、组织之间,临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-6c7b31489b2bd9459197b18d",
+          "text": "Herb: Green Tea. Pinyin: LV CHA. Latin name: Folium camelliae sinensis. Traditional properties: Cool; Sweet; Bitter. Meridians: Lung; Stomach; Heart. Used part: Camellia sinensis Kuntze."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-094",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-773e9f8a3b91adece6c8996f",
+        "tcmv1-0d1189e9bf28cb0f86feb849",
+        "tcmv1-d5b8d65363f50c284eceb125",
+        "tcmv1-4fe7d3d3d2c68f1ead6ea025"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-773e9f8a3b91adece6c8996f",
+          "text": "Syndrome: constipation due to heat in the large intestine. Pinyin: Chang Re. Source definition: 小肠实热证是指心火下移小肠,热迫膀胱,气化失司,以小便赤涩疼痛、心烦、舌疮及实热症状为主要表现的证。."
+        },
+        {
+          "evidence_id": "tcmv1-0d1189e9bf28cb0f86feb849",
+          "text": "Herb: Prepared Frankincense. Pinyin: ZHI RU XIANG. Latin name: Resina Olibani Praparata. Traditional properties: Warm; Pungent; Bitter. Meridians: Spleen; Liver; Heart. Used part: Boswellia carterii Birdw. Source-recorded function: Treatment of pains caused by blood stagnation. Source-recorded indication: 1. Exerting significant analgesic effect.2. Dilating the peripheral blood vessels.3. Enhancing the phagocytosis of macrophages in the abdominal cavity of mice.. Clinical manifestations: 1. Exerting significant analgesic effect.2. Dilating the peripheral blood vessels.3. Enhancing the phagocytosis of macrophages in the abdominal cavity of mice.."
+        },
+        {
+          "evidence_id": "tcmv1-d5b8d65363f50c284eceb125",
+          "text": "Herb: Prepared root and rhziome of Sorrel Rhubarb. Pinyin: ZHI DA HUANG. Latin name: Radix et Rhizoma Rhei Praeparata. Traditional properties: Cold; Bitter. Meridians: Spleen; Large Intestine; Stomach; Liver; Heart. Used part: Rheum palmatum L.;Rheum officinale Baill.;Rheum tanguticum Maxim. ex Balf.. Source-recorded function: Treatment of fever with constipation, retention of the feces and abdominal pain, dysentery with inadequate discharge from the bowels, jaundice caused by damp-heat, haematemesis, epistaxis, inflammation of eye and swelling of the throat due to heat in the blood, appendicitis with abdominal pain, boils, sores and abscess, amenorrhea due to blood stasis, traumatic injuries, hemorrhage from the upper gastrointestinal tract. External use for scalds and burns.Radixet Rhizoma Rhei (stir-fried with wine) Inflammation of the eye, swelling of the throat and painful swelling of the gums. Radix et Rhizoma Rhei (prepared) Boils, sores and abscess. Radix et Rhizoma Rhei (carbonized) Hemorrhage with blood stasis due to heat in the blood.. Source-recorded indication: 1. Sennoside A is the component for purgation.2. Promoting biliary secretion and enhancing the amount of bilirubin and bile acid.3. Rhein and Emodin exert bacteriostatic effect by inhibting the synthesis of DNA, RNA and protein in bacteria4. Emodin is a component for hypotensive5. Oral use of its extract reduces the raio of serum cholesterol and total phospholipid in rabbits with hypercholesterolemia.6. Chrysophanol, an other active component, exerts a hemostatic effect.. Clinical manifestations: 1. Sennoside A is the component for purgation.2. Promoting biliary secretion and enhancing the amount of bilirubin and bile acid.3. Rhein and Emodin exert bacteriostatic effect by inhibting the synthesis of DNA, RNA and protein in bacteria4. Emodin is a c."
+        },
+        {
+          "evidence_id": "tcmv1-4fe7d3d3d2c68f1ead6ea025",
+          "text": "Herb: Prepared Purple perilla fruit, Prepared Perilla seed. Pinyin: CHAO SU ZI. Latin name: Fructus Perillae Preparata. Traditional properties: Warm; Pungent. Meridians: Lung; Large Intestine. Used part: Perilla frutescens (L.) Britt.. Source-recorded function: Treatment of: 1. Upward perversion of lung qi caused by excessive phlegm fluid manifested as cough with white profuse sputum, or asthma and fullness and stifling sensation in the chest and hypochondriac region. Perilla seed (Suzi) is used with White mustard seed (Baijiezi) and Radish seed (Laifuzi) in the formula Sanzi Yangqing Tang. 2. Constipation due to dryness in the intestines. Perilla seed (Suzi) is used with Hemp seed (Huomaren), Trichosanthes seed (Gualouren) and Apricot seed (Xingren).. Source-recorded indication: Treatment of: 1. Upward perversion of lung qi caused by excessive phlegm fluid manifested as cough with white profuse sputum, or asthma and fullness and stifling sensation in the chest and hypochondriac region. Perilla seed (Suzi) is used with White musta."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-095",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-78ee1bdd9d36b448ce5ddb01",
+        "tcmv1-0d1500cbb0d87279ad455719",
+        "tcmv1-cc2d3a1098a2414c33f6b82c",
+        "tcmv1-764e44e83a45f991ef363fb3"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-78ee1bdd9d36b448ce5ddb01",
+          "text": "Syndrome: externally infection due to yang deficiency. Pinyin: Yang Xu Wai Gan. Source definition: 阳虚证是指人体阳气亏损,其温养、推动、气化等功能减退,以畏寒肢冷为主要表现的虚寒证。."
+        },
+        {
+          "evidence_id": "tcmv1-0d1500cbb0d87279ad455719",
+          "text": "Herb: Yemugua. Pinyin: Yemugua. Latin name: Stauntoniae Caulis Et Folium. Traditional properties: Slightly Bitter,Calm. Meridians: Liver,Stomach. Traditional class: Wind-Dampnessdispelling And Colddispersing Medicinal."
+        },
+        {
+          "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+          "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.."
+        },
+        {
+          "evidence_id": "tcmv1-764e44e83a45f991ef363fb3",
+          "text": "Herb: Prepared tuber of Pinellia. Pinyin: ZHI BAN XIA. Latin name: Rhizoma Pinelliae Preparata. Traditional properties: Warm; Pungent. Meridians: Lung; Spleen; Stomach. Used part: Pinellia ternata (Thunb.) Breit.. Source-recorded function: Treatment of cough and asthma with much phlegm, dizziness and palpitation due to retention of phlegm and fluid, vertigo caused by wind-phlegm, headache with cold extremities due to attack of phlegm , stuffiness in the chest and the epigastrium, globus hystericus. Rhizoma Pineliae (processed with ginger) is often used for relieving nausea and vomiting. Rhizoma pinelliae (Proccessed with alum) for removing damp and phlegm. Rhizoma Pinelliae (unproccessed) is used externally for boils, sores and lymphadenitis.. Source-recorded indication: Treatment of cough and asthma with much phlegm, dizziness and palpitation due to retention of phlegm and fluid, vertigo caused by wind-phlegm, headache with cold extremities due to attack of phlegm , stuffiness in the chest and the epigastrium, globus hys. Source-recorded toxicity: Extremely Toxic."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-096",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-7aef69f9e982cfa4cc068a44",
+        "tcmv1-0d3457c3ca6651dc2692afe3",
+        "tcmv1-cc2d3a1098a2414c33f6b82c",
+        "tcmv1-1d9c5d48334c461a6a01d9e9"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-7aef69f9e982cfa4cc068a44",
+          "text": "Syndrome: stagnation of cold-dampness. Pinyin: Han Shi Yu Zhi. Source definition: 是指寒湿之邪阻滞经络,以肢体或患处沉重冷痛、麻木,或肿胀,畏冷肢凉,苔白滑等为常见症的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-0d3457c3ca6651dc2692afe3",
+          "text": "Herb: Fourflower Litse. Pinyin: QING XIANG MU JIANG ZI. Latin name: Litsea euosma. Used part: leaf. Source-recorded function: To dispel wind and move qi , fortify spleen and disinhibit damp, resolve toxin.. Source-recorded indication: Abdominal distention and pain, summerheat-damp vomiting and diarrhea, pain in joints, edema, innominate toxin swelling.."
+        },
+        {
+          "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+          "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.."
+        },
+        {
+          "evidence_id": "tcmv1-1d9c5d48334c461a6a01d9e9",
+          "text": "Herb: Pungent Litse. Pinyin: ZHEN CAI. Latin name: Litsea pungens. Used part: wood. Source-recorded indication: Cough of phlegm-rheum, accumulation-gathering and distention-fullness, beriberi, sore and scab in children.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-097",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0f0731dab7a9798e6dee078b",
+        "tcmv1-90ca31fe59b8d968ffe70e3a",
+        "tcmv1-b64af28abf3982a8c2da11fd",
+        "tcmv1-cc2d3a1098a2414c33f6b82c"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0f0731dab7a9798e6dee078b",
+          "text": "Herb: Strongfragrant Loosestrife. Pinyin: LING XIANG CAO. Latin name: Lysimachia foenum-graecum. Used part: whole herb. Source-recorded function: To resolve exterior, relieve pain, move qi , expel roundworm.. Source-recorded indication: Common cold with headache, swelling pain in throat, toothache, distention fullness in chest and abdomen, ascariasis.."
+        },
+        {
+          "evidence_id": "tcmv1-90ca31fe59b8d968ffe70e3a",
+          "text": "Syndrome: Phlegm fever in children. Pinyin: Xiao Er Tan Re. Source definition: 由痰热互结,阻于气道,肺道失利,肺胃气逆,痰火伤及血络所致。."
+        },
+        {
+          "evidence_id": "tcmv1-b64af28abf3982a8c2da11fd",
+          "text": "Herb: Sweet Wormwood seed. Pinyin: QING HAO ZI. Latin name: Semen Artemisiae. Traditional properties: Cold; Pungent; Bitter. Meridians: Liver; Kidney; Gallbladder. Used part: Artemisia apiacea Hance;Artemisia annua L.. Source-recorded function: Treatment of fever caused by summer heat, afternoon fever in deficiency of yin or in consumptive diseases, malaria with chills and fever, jaundice.. Source-recorded indication: 1. Artemisinine from its volatile oil is an effective antimalarial agent on mice, monkey, chicken and human malaria. The malarial parasite will disappear in blood after oral administration of 100mg/kg for 3 days in mice and 200mg/kg for2-3 days in monkey. The therapeutic effect of artemisinie is similar to that of chloroquine.2. Antipyretic.. Clinical manifestations: 1. Artemisinine from its volatile oil is an effective antimalarial agent on mice, monkey, chicken and human malaria. The malarial parasite will disappear in blood after oral administration of 100mg/kg for 3 days in mice and 200mg/kg for2-3 days in monkey.."
+        },
+        {
+          "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+          "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-098",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-0d572b1f8e4d66f35179e87e",
+        "tcmv1-abfcc2453d99e3a8fa48d1aa",
+        "tcmv1-833f1086e54ed47c969dddfa",
+        "tcmv1-263e38eac5d8c1bfd0499d73"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "symmap_v2",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-0d572b1f8e4d66f35179e87e",
+          "text": "Herb: Chinese Crossostephium Root. Pinyin: FU RONG JU GEN. Latin name: Crossostephium chinense. Used part: root. Source-recorded function: To dispel wind-damp, warm center and relieve pain.. Source-recorded indication: Rheumatic arthritis, cold pain in stomach duct.."
+        },
+        {
+          "evidence_id": "tcmv1-abfcc2453d99e3a8fa48d1aa",
+          "text": "Syndrome: insufficiency of qi and yin; deficiency of qi and yin. Pinyin: Qi Yin Bu Zu. Source definition: 本证指由于阴虚日久,阴不化气而气失化源,或因邪热疫毒伤损,伤阴耗气,导致机体气阴不足,功能减退所表现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-833f1086e54ed47c969dddfa",
+          "text": "Syndrome: deficiency of qi and yin. Pinyin: Qi Yin Yu Xu. Source definition: 本证指由于阴虚日久,阴不化气而气失化源,或因邪热疫毒伤损,伤阴耗气,导致机体气阴不足,功能减退所表现的证候。."
+        },
+        {
+          "evidence_id": "tcmv1-263e38eac5d8c1bfd0499d73",
+          "text": "Herb: Fourleaf Ladybell Root. Pinyin: NAN SHA SHEN. Latin name: Radix Adenophorae. Source-recorded function: To nourish yin and remove heat from the lung, to relieve phlegm, and to reinforce qi.. Source-recorded indication: Treament of heat in the lung with dry cough, cough with scanty sticky sputum in phthisis with deficiency of yin , deficiency of both qi and yin with feverishness and thirst.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-099",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-a6d9bdab4418ea0cd1eac691",
+        "tcmv1-8463845d62d150b054b08a6a",
+        "tcmv1-0d65cdf0c01995dd77407cab",
+        "tcmv1-cc2d3a1098a2414c33f6b82c"
+      ],
+      "source_ids": [
+        "tcmbank_v1",
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-a6d9bdab4418ea0cd1eac691",
+          "text": "Herb: Snowbellleaf Tickclover. Pinyin: GUANG JIN QIAN CAO. Latin name: Desmodium styracifolium. Traditional properties: Mild; Sweet; Neutral. Meridians: Bladder; Liver; Kidney; Gallbladder. Used part: aerial parts. Source-recorded function: To clear heat and eliminate damp, disinhibit urine and free strangury.. Source-recorded indication: Heat strangury, sand strangury, stone strangury, pain of hot urine, scant urine with edema, jaundice with reddish urine, urethral stone.."
+        },
+        {
+          "evidence_id": "tcmv1-8463845d62d150b054b08a6a",
+          "text": "Syndrome: sluggish flow of qi. Pinyin: Qi Zhi. Source definition: 气滞证是指人体某一部位,或某一脏腑、经络的气机阻滞,运行不畅,以胀闷、疼痛、脉弦为主要表现的证。气滞证又称气郁证、气结证。."
+        },
+        {
+          "evidence_id": "tcmv1-0d65cdf0c01995dd77407cab",
+          "text": "Herb: Snowbellleaf tickclover herb. Pinyin: GUANG DONG JIN QIAN CAO. Latin name: Herba Desmodii Styracifolii. Used part: Desmodium styracifolium ( Osbeck ) Merr.. Source-recorded function: For stranguria cuased by urinary stone and stranguria of heat-type. Recently used most commonly for cases of infectious hepatitis, cholelithiasis and cholecystitis with dampness-heat syndrome, also for cases of coronary heart disease with dampness-heat syndrome.. Source-recorded indication: 1. Its flavones increase coronary, cerebral and renal blood flow, counteracting pituitrin-induced myocardial ischemia and arrhythmia and enhancing the anoxic tolerance under atmosphere in experimental animals. 2. Increasing biliary secretion. 3. Diuretic.. Clinical manifestations: 1. Its flavones increase coronary, cerebral and renal blood flow, counteracting pituitrin-induced myocardial ischemia and arrhythmia and enhancing the anoxic tolerance under atmosphere in experimental animals. 2. Increasing biliary secretion. 3. Diuretic.."
+        },
+        {
+          "evidence_id": "tcmv1-cc2d3a1098a2414c33f6b82c",
+          "text": "Herb: root of Morinda officinalis. Pinyin: BA JI. Latin name: Radix Morindae officinalis. Traditional properties: Minor Warm; Pungent; Sweet. Meridians: Kidney. Used part: Morinda officinalis How. Source-recorded function: 1. Treatment of deficient kidney yang manifested as soreness and weakness in the lower back and knees, impotence, premature ejaculation, infertility, frigidity, irregular menstruation, and cold sensation and pain in the lower abdomen. a) Morinda root (Bajitian) is used with Ginseng (Renshen), Cistanche (Roucongrong) and Dadder seed (Tusizi) for impotence, premature ejaculation and infertility, b) Morinda root (Bajitian) is used with Teasel root (Xuduan) and Eucommia bark (Duzhong) for soreness and weakness in lower back and knees, c) Morinda root (Bajitian) is used with Cinnamon bark (Rougui), Galangal rhizome (Gaoliangjiang) and Evodia fruit (Wuzhuyu) for irregular menstruation. 2. Morinda root (Bajitian) is used with Teasel root (Xuduan), Mulberry mistletoe (Sangjisheng) and Hypoglauca yam (Bixie) for cold sensation and pain in the lumbar region and knees or motor impairment.. Source-recorded indication: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.. Clinical manifestations: Treatment of impotence, seminal emission, infertility menstrual disorders, pain and cold feeling in the lower abdomen; rheumatic arthralgia; limpness of the legs.."
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-100",
+      "retrieval": "R0",
+      "evidence_origin": "exact_A2_C2_C4_identity",
+      "ordered_chunk_ids": [
+        "tcmv1-863b9d28972d3f9d14fab7fa",
+        "tcmv1-0d71e8364d145e2802d8e493",
+        "tcmv1-1eb4948c5d8790fbdd0b91f5",
+        "tcmv1-3bcca966ef99a754be3651c1"
+      ],
+      "source_ids": [
+        "symmap_v2",
+        "tcmbank_v1",
+        "tcmbank_v1",
+        "tcmbank_v1"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "tcmv1-863b9d28972d3f9d14fab7fa",
+          "text": "Syndrome: an unconscious patient with febrile diseases. Pinyin: Re Bing Shen Hun. Source definition: 痰火扰神证是指火热痰浊交结,扰乱心神,以狂躁、神昏及痰热症状为主要表现的证。痰火扰神证又称痰火扰心 (闭窍)证。."
+        },
+        {
+          "evidence_id": "tcmv1-0d71e8364d145e2802d8e493",
+          "text": "Herb: Chinese Hydrangea. Pinyin: ZHONG GUO XIU QIU. Latin name: Hydrangea chinensis. Used part: root. Source-recorded function: To interrupt malaria, quicken blood and relieve pain, clear heat and disinhibit urine.. Source-recorded indication: Knocks and falls, fracture, malaria, headache, measles papules, dribbling pain of urination.."
+        },
+        {
+          "evidence_id": "tcmv1-1eb4948c5d8790fbdd0b91f5",
+          "text": "Herb: Paniculate Hydrangea. Pinyin: FEN TUAN HUA. Latin name: Hydrangea paniculata. Used part: flower. Source-recorded function: To disperse damp, break blood.. Source-recorded indication: Scrotal wind.."
+        },
+        {
+          "evidence_id": "tcmv1-3bcca966ef99a754be3651c1",
+          "text": "Herb: Largeleaf Hydrangea. Pinyin: BA XIAN HUA. Latin name: Hydrangea macrophylla. Used part: root, leaf and flower. Source-recorded function: To interrupt malaria.. Source-recorded indication: Malaria, fright palpitation due to heart heat, vexation and agitation.."
+        }
+      ]
+    }
+  ]
+}

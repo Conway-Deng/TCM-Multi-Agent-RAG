@@ -1,0 +1,988 @@
+{
+  "schema_version": "1.0",
+  "status": "FROZEN_FORMAL_ASSETS_DEPLOYED",
+  "source_repository_commit": "9c3aa6445167089b81922cf0cbf53d0e00434df0",
+  "hash_algorithm": "sha256",
+  "asset_count": 139,
+  "assets": [
+    {
+      "path": "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+      "sha256": "2590ffd569d1087b8c01453fc676edad28d85a8ccbf21edb19df6827e5be67f0",
+      "bytes": 223038
+    },
+    {
+      "path": "research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json",
+      "sha256": "76da2ea35674ada0a960f967c7c8c8806500c35fd9d19bd83c58f70e58012d64",
+      "bytes": 1901
+    },
+    {
+      "path": "research/benchmarks/tcm_gold_rq4_v1/benchmark_rq4_v1_frozen.jsonl",
+      "sha256": "744298bc007aad562dab62268c0b887642e288408cd7cec87c8d03fb90aa21a4",
+      "bytes": 297114
+    },
+    {
+      "path": "research/benchmarks/tcm_gold_rq4_v1/freeze_manifest_rq4_v1.json",
+      "sha256": "3a5ba12b364e748ec00ce6b94cd311a6c0626d1f7c7dc2fe451f7762f26bca86",
+      "bytes": 1067
+    },
+    {
+      "path": "research/benchmarks/tcm_gold_rq4_v1/heldout_manifest_rq4_v1_frozen.json",
+      "sha256": "0101d3632a294d27fac6d4b90d5ae1b8b8944c976b1293d2578b91d8806c8184",
+      "bytes": 2231
+    },
+    {
+      "path": "research/corpus/tcm_v1/chunks.jsonl",
+      "sha256": "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9",
+      "bytes": 9426756
+    },
+    {
+      "path": "research/experiment_pipeline/rq1_confirmatory.py",
+      "sha256": "c200afc2567dfc6aa399d157fb3e0e1fe3c125a6f67663b03e74b035168bae54",
+      "bytes": 19791
+    },
+    {
+      "path": "research/experiment_pipeline/rq4_platform.py",
+      "sha256": "6f0d2cf0830c76935c6502e9d3f4429b661b01c5057cb1b87a89c6d2b770ac1c",
+      "bytes": 70091
+    },
+    {
+      "path": "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md",
+      "sha256": "b18307373a96ba2fa5d8aee007e57788f910bb0364272d17d8820189d0b4f86a",
+      "bytes": 1957
+    },
+    {
+      "path": "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/rq1_confirmatory.yaml",
+      "sha256": "1ce774e3373c554c64b7d2c26ecec85ac48775a86623aeb7ea4e56e119fe1563",
+      "bytes": 1489
+    },
+    {
+      "path": "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/confirmatory_analysis_manifest.json",
+      "sha256": "ab9434e1ddd8f5ab780fc0c8978987dc9fd545812291c0ba3e0b02158afb741a",
+      "bytes": 2376
+    },
+    {
+      "path": "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/results.jsonl",
+      "sha256": "d899fdfbe3bc25717e1e66c7979cdf26dd870ec777a72245fccc7755b2f6e8d0",
+      "bytes": 363884
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/execution_order.json",
+      "sha256": "48e92f723cbf1d095b225acffe8712d78b4ed2f579f31666093dd48a0555a3b4",
+      "bytes": 30184
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_manifest.json",
+      "sha256": "d00452260e10a51f12e3430dd97b5f61481ac66bad1572a3b4ea561fb841417b",
+      "bytes": 1064
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/formal_execution_manifest.json",
+      "sha256": "0e9173aa044d9a9259e1bdb9b190a4cc11a73e73a286e82df41923a5612d7b86",
+      "bytes": 40027
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/results.jsonl",
+      "sha256": "350f296d4b56a1202ea7523534e4f179a9df1936ec122306afd4e1660fbeacbe",
+      "bytes": 1038884
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/protocol/implementation_amendment_post_fix_validation_v1.md",
+      "sha256": "39bb4f8b593825a037e09fbafbabdeb1009f76770545dc0d9643e4de41917acd",
+      "bytes": 2238
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/protocol/protocol.md",
+      "sha256": "96d1dfc005a18f057760ac163402cc4d01488a8e8b707ae4df2e861de9c9c243",
+      "bytes": 3093
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/protocol/protocol_manifest.json",
+      "sha256": "dec1b3fb5328cc921324f9b72f8ad37410a1b8878770ef2e36cd6b7389b8087c",
+      "bytes": 1900
+    },
+    {
+      "path": "research/experiments/rq4_debate_vs_multiagent/protocol/rq4_config.json",
+      "sha256": "7add59232ecdd17eacd8d0df5336fba7e342a02cd91088853c87ff4e2cb099e2",
+      "bytes": 949
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/agents/__init__.py",
+      "sha256": "80ffa5a858bba2a747715af0d51931c24ebff1377869a1be7f6c07d576c90545",
+      "bytes": 157
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/agents/planner.py",
+      "sha256": "fda4d73b9dde851c63be2e6755d410936469b4914ecbabb90c602c2517def7f7",
+      "bytes": 4492
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/agents/registry.py",
+      "sha256": "5b12cda6660883bbdbf3966cf88a684da59628c91954ada798abf42ae9c45abf",
+      "bytes": 896
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/agents/specialists.py",
+      "sha256": "8f1a950aa472ea3e5fc539bfd0df1ad88c346b40190254b054a19478791562d9",
+      "bytes": 7583
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/config/__init__.py",
+      "sha256": "9be2c86a2ec4bbdfcf50f0254616d0ff7e84389fa7c8758af4ceae34fd158f81",
+      "bytes": 178
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/config/models.py",
+      "sha256": "8ea0c58bc8792f2b1266dcd28c143777dcbcc790224f91c6c10cba63a7388e18",
+      "bytes": 1168
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/config/settings.py",
+      "sha256": "90be854fd04238319c47f15ebb741f3f911a619e0e6ac266e28aa3546223539b",
+      "bytes": 4362
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/corpus/__init__.py",
+      "sha256": "836be29cdaf191938066453a25cf02106f53d31601e492b555393614f0c7cd27",
+      "bytes": 191
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/corpus/models.py",
+      "sha256": "cf49d30b8d81f5d87911fd6aefe16f9d7d9656e1ea15cd51acff65c70129d5ec",
+      "bytes": 1561
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/corpus/registry.py",
+      "sha256": "5b8ce4fed9bb8674c9caa2eed241f5dd06f4c635451a37b2499254e391cd590e",
+      "bytes": 9773
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/corpus/v1_models.py",
+      "sha256": "f9ff8a18d22e82999f1ce4a86d27f817e0a711728d454602b0c9292b5b3b678e",
+      "bytes": 2869
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/data/tcm_knowledge_base.json",
+      "sha256": "20f937a936c7c0cd50f68be33e4691dac7c09a94d7a3c318974be53125657087",
+      "bytes": 41801
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/data/tcm_scope_rules.json",
+      "sha256": "e5214d9f87c1330008ff3b947d29fc53706a935f1ef960214967eda4eae3ce19",
+      "bytes": 8677
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/data/tcm_sources.json",
+      "sha256": "f6cc925e2d8d20f75ccedeed26af555a130b286bda6c798da7b869e79f4972eb",
+      "bytes": 1878
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/judges/__init__.py",
+      "sha256": "64df77efbe117489acc1f19285eeaacad741b71fa7c0c93e0e1c1c568c73c9ea",
+      "bytes": 119
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/judges/deterministic.py",
+      "sha256": "de378fbd525aa1f4c4717efe82c6d6bec630f891e7026ec67aabb6dd3928b37a",
+      "bytes": 4819
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/judges/registry.py",
+      "sha256": "e95e0ab442e6dd7cc0d6bebb9db75a6778061fe86c833246f7a76fef1b283d99",
+      "bytes": 800
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/main.py",
+      "sha256": "1cfccd0dfc0cfa3d825081a31a797caaedae07a723b55526989bc6879dfa5394",
+      "bytes": 6561
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/orchestration/__init__.py",
+      "sha256": "0c9aab1bbebd941a35c932f5af493b0c36827f5746e100e63f12369d08b8aecf",
+      "bytes": 159
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/orchestration/conditions.py",
+      "sha256": "c3d653e2c75ee830ab8366082fd36b19c679631869d5eb00b0d0b147757d3f5c",
+      "bytes": 2985
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/orchestration/debate.py",
+      "sha256": "36283d3378ccc2386af174da81a6cc510955d69421f1c2bb34e92958bfd98ad2",
+      "bytes": 2188
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/orchestration/genuine_debate.py",
+      "sha256": "761d9839cc3f5e0c34d19d483161abebf6e3c68bb7df058af734808817449bea",
+      "bytes": 17555
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/orchestration/workbench.py",
+      "sha256": "1eba26852f7b679b07f3a88e2542af91f8d4f2ba8a3a52c8efd236c790186e8a",
+      "bytes": 34038
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/__init__.py",
+      "sha256": "c10136a3345a6f497b360c60e340946d6af41a5ed53a675c087b99ac3ffdb41f",
+      "bytes": 69
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/acupuncture/v1.txt",
+      "sha256": "bf980589846cfd3ea4e5fcf00f9616021fd684a43107b3b67ef45849ce624361",
+      "bytes": 132
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/confidence_judge/v1.txt",
+      "sha256": "b2d1b15a7b83221862d30e216b97735e61616a106ada5536bd9f9e1ae39d358f",
+      "bytes": 147
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/conflict_judge/v1.txt",
+      "sha256": "63437c86308aa40bb95a4f574c4aaac841ab94ca4ce44d6a133c38ef996cc098",
+      "bytes": 144
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/constitution/v1.txt",
+      "sha256": "3e32bba87345450168da65095781d37b02414d5176496358a1be67a75e08369b",
+      "bytes": 122
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/critic/v1.txt",
+      "sha256": "86f19a4b079d7f3cf94b0eda2c80f76fa85f8c5f119ecb88b690a0df23931336",
+      "bytes": 125
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/debate/v1.txt",
+      "sha256": "fbe26607da18f724d6e6f89f71fcdd5c2b08548df8e25889fa964ffc85210d24",
+      "bytes": 156
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/dietary/v1.txt",
+      "sha256": "c24ce372cebd50d18ff81e90822fd72fc139a9c48183781d8937ac0e51521b30",
+      "bytes": 145
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/evidence_judge/v1.txt",
+      "sha256": "f776a97a84de8944050b575e19a77ab950708832ec294b82a669f607ca90f866",
+      "bytes": 153
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/hallucination_judge/v1.txt",
+      "sha256": "149ac23232772ae87fd50f58a3983b577e1648d60b277faff7d96fb16caf0766",
+      "bytes": 143
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/herbs/v1.txt",
+      "sha256": "f4f6a74728360458a29df9780a5916af48714d7c03eaba21096734949b89677e",
+      "bytes": 161
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/lifestyle/v1.txt",
+      "sha256": "ebaf3c60d8ae0e1cad931d41fac9f3f05b1dd41edb1f5ef022711128eed1e3a8",
+      "bytes": 140
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/planner/v1.txt",
+      "sha256": "0c194b6bdad5d285a94256dea202a6472f1f8438e6c3877fe08c293f0c60afe7",
+      "bytes": 225
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/provenance_judge/v1.txt",
+      "sha256": "7032491ea21cd007e4003fcc6328776005766cc0308fa8d994f7391c07f23b26",
+      "bytes": 128
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/registry.py",
+      "sha256": "928188cd42c7421ddb0162cca5cab13ef75ab8ec6dfd83e4d3a63e439058d8f2",
+      "bytes": 844
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/revision/v1.txt",
+      "sha256": "4eba1170ca085c7fcae84c46b1afc978b1faa3e70dc4d7a17bb70dc371e06c7e",
+      "bytes": 133
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/safety_judge/v1.txt",
+      "sha256": "318bfc2445d6b2b4bbde6b3878b75c8af0343d9f57a1edae1ad41c2808945031",
+      "bytes": 151
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/syndrome/v1.txt",
+      "sha256": "017d32dbbfa46c40597c56b8211fca34856e08847e68ff100163d9b8d0a14029",
+      "bytes": 172
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/prompts/synthesis/v1.txt",
+      "sha256": "276e99e0808180b6063ad4489230631345bcdbac10ff5d0ab835ca6d5fa7d8d8",
+      "bytes": 173
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/__init__.py",
+      "sha256": "c1f7cdbb6fa69be68ca585899256bc535491147cefa2028e448720b24719b145",
+      "bytes": 110
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/base.py",
+      "sha256": "68f975bb096ca83488185f6a5e3ae4da92e10bc066a4ee90f6361be453dd845c",
+      "bytes": 1250
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/factory.py",
+      "sha256": "9630e46991074b2e6e868863f8b1821bd16942bce22e28a71eb7a5840e0a9d4d",
+      "bytes": 2348
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/local.py",
+      "sha256": "67594f4c209669388e5d7f0ddfbdc0a00c4b8f1a3b7d4262412e369bb7ed5352",
+      "bytes": 2962
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/openai_compatible.py",
+      "sha256": "1a6a2fbf7b5b7b8f3a01e235deddce861336c2542f2b19f1b317db48eb5dfc19",
+      "bytes": 4284
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/output_quality.py",
+      "sha256": "438323b70599bfe97259c14229768ab50a153e1db1c086023a18710f440f49a1",
+      "bytes": 1593
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/qdrant.py",
+      "sha256": "a9a9f9f28a89e5f303a9c20e060579311e2b9c2ccbbd358502d6387a82864408",
+      "bytes": 779
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/providers/siliconflow.py",
+      "sha256": "f4d6111418b1e7443c1c92a498ad5b9d7b4adcdda8acccb28d2b17eb1762b49d",
+      "bytes": 7529
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/requirements.txt",
+      "sha256": "d97a8c5d0a2cfb1610d5848a0c7df942b62935d975404abfd10222ee92bc2171",
+      "bytes": 148
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/retrieval/__init__.py",
+      "sha256": "e923bfff8763a8c953ab5753a55ac3d8222f0cddb09bd0121d44883100c907a3",
+      "bytes": 130
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/retrieval/engine.py",
+      "sha256": "496cac0082135bb1053f96f18d998b566d3792e1a87a45b0e1fef042ea1f3ba6",
+      "bytes": 24320
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/retrieval/registry.py",
+      "sha256": "c226de79a6a3e01aac3245a1487d583fb549f6f66f71a7466236d4ef298715f3",
+      "bytes": 463
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/schemas/__init__.py",
+      "sha256": "02595ffa7b9f8cf4980da45185cf98511a6c266eb11ca8daf4c9c26c1677e459",
+      "bytes": 43
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/schemas/research.py",
+      "sha256": "f7ccd971e508bb9c5e543e3492fca9053344057a8d88e0ce0bd7d0469e21d35a",
+      "bytes": 11697
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/__init__.py",
+      "sha256": "e5612639eec3f1c5dda9ebbf1a87ace274231f3cefd497674d26e47064e03055",
+      "bytes": 79
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/agent.py",
+      "sha256": "c028774169cf5a4246fccc20039fae0b827c1c1b5834963cfcbc8363f4bef2fe",
+      "bytes": 43937
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/knowledge_base.py",
+      "sha256": "b8e4dac40e84c3d652e89e3b4f5ccdfe7ecbedb6c40afe37b4bcb8c7a24095df",
+      "bytes": 6606
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/language.py",
+      "sha256": "193489dc50ab2fb2ce54139061e0d2cf4e9874b871cda062c8c6dd647a0275ca",
+      "bytes": 471
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/localization.py",
+      "sha256": "8462607038f4c46b2c2bb08dd7a6d700c41297b45cb1cb600800c60420234154",
+      "bytes": 3114
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/__init__.py",
+      "sha256": "c7c7b3130e7c83ced1af2bae68f3219aead5dd86b51facc5aaa1ee998c36657d",
+      "bytes": 225
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/hybrid.py",
+      "sha256": "e2f2dc641debb2788cf2ab5461014235deace327f3d5ddb5dc5c84edc09d214c",
+      "bytes": 4861
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/lexical.py",
+      "sha256": "a2b21d753f6ca159f9585c3b625e5be0ffef157ff84ee88e6b52ebf02de499dd",
+      "bytes": 2671
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/reranker.py",
+      "sha256": "50e04606a614ae1cc53c812acf2fe08afd4856f21250fc428981eafad36e83c4",
+      "bytes": 908
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/scoring.py",
+      "sha256": "10171658191d6adf2a68739c2e12759109b84570fd456cbb00d229be9c43914e",
+      "bytes": 2020
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retrieval/semantic.py",
+      "sha256": "8db1a5fb61beccd6b69781c038eacb5eeb3b5a35b1e5d9caa635c489207e98c1",
+      "bytes": 3379
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/retriever.py",
+      "sha256": "30efe6d9ca67a9ba086e09799b85d4a6783aaa8a70d88856f7f318bc867e3d1c",
+      "bytes": 675
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/safety.py",
+      "sha256": "9ae189ca7ddb4c23e651fa1ce0029a027f57bfe383c0cc2dc69a56e5987029b5",
+      "bytes": 2974
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/schemas.py",
+      "sha256": "fb118826e90b32590abf0159e46e613f07af8d58c3e903008b175d32bd13b4d0",
+      "bytes": 6618
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/scope.py",
+      "sha256": "6e6d185d9607409fc2f5ca7c2b8ec582caf5f3af7a74c8c078ec2656ced83ee2",
+      "bytes": 4700
+    },
+    {
+      "path": "research/formal_runtime/rq4_backend/tcm/validation.py",
+      "sha256": "04d0b151b36a8157e0f6852d50f8f4b19aed8f0e1d46506ba6f1ea98b51c532e",
+      "bytes": 5742
+    },
+    {
+      "path": "research/multi_model_debate/A3_V1_3_RAW_TOKEN_AUDIT.json",
+      "sha256": "13e1f85264a5212c897036586d6f6021a46f0c27eb49c3a2181730b4071ad466",
+      "bytes": 12063
+    },
+    {
+      "path": "research/multi_model_debate/A3_V1_3_TOKEN_BUDGET_AMENDMENT.md",
+      "sha256": "321ca26f60a3cd0ac656d3b670330a2471554676c588e4bcaa09963bec5a9c96",
+      "bytes": 3205
+    },
+    {
+      "path": "research/multi_model_debate/execution_plan.json",
+      "sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+      "bytes": 148274
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1/abort_manifest.json",
+      "sha256": "94c4e7923ce9b03793f6ca56a696b64e51be09940d3b4e1b1f7db2bb8ef4b98f",
+      "bytes": 1513
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_1/abort_manifest.json",
+      "sha256": "8fcc8166cc5f2895a4f5cf904a12d75f325ad58dccb3971ae97c9eb24a28c8f5",
+      "bytes": 1488
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/abort_manifest.json",
+      "sha256": "e2ee3acdc0285e7241a07dda0a58f8bfe0267f4942f92a87c42d73b9b1152665",
+      "bytes": 1568
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/execution_order.json",
+      "sha256": "97cd1aba4f440f8f10ab6146fbcb85c17c1e2d0c938bea0254c40bf2f7fd5040",
+      "bytes": 148274
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/formal_results.jsonl",
+      "sha256": "396c4f7610aaa0b095013965434586f09a343c50e8b0daad90730059fff72009",
+      "bytes": 27357
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/formal_run_manifest.json",
+      "sha256": "13c31ad13decf6a6b22d888e31330ccdad01703aa09da8afd1c79363be213ad4",
+      "bytes": 2844
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/provider_attempts.jsonl",
+      "sha256": "79b14eeb2cfbf85bd9cd2f9f0b6b588f939806dee49c5d0a45a72e7513b12030",
+      "bytes": 102103
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/run_progress.json",
+      "sha256": "db1c83a0e9f76b0803e61e1a36d2928abe540af3711bf473325fa49bdfb97409",
+      "bytes": 250
+    },
+    {
+      "path": "research/multi_model_debate/formal_aborted_v1_2/stage_outputs.jsonl",
+      "sha256": "09e1991688d30c68e1b317d1cde40b7e5ae4ef1692c0702aa0c36849ccad84e7",
+      "bytes": 105717
+    },
+    {
+      "path": "research/multi_model_debate/formal_runner.py",
+      "sha256": "8b1fe92775386f429611bcc9f1f3c0005b81acb2aa42995446ea0600009f66f1",
+      "bytes": 69074
+    },
+    {
+      "path": "research/multi_model_debate/frozen_evidence_manifest.json",
+      "sha256": "ac95750e314f2f77fbe8d6fa03e558e4562065cd491671a52065d2ce90108807",
+      "bytes": 191857
+    },
+    {
+      "path": "research/multi_model_debate/preregistration_manifest.json",
+      "sha256": "bceab6572431d99028c1a94e7376a13b2a8584e05e7319d7ce1cf8951e4f4bce",
+      "bytes": 856
+    },
+    {
+      "path": "research/multi_model_debate/prompt_templates.py",
+      "sha256": "f676b19a344a20952bec2318a63f9ff8983e14d17217877163745863000c7c3e",
+      "bytes": 2389
+    },
+    {
+      "path": "research/multi_model_debate/protected_artifacts.json",
+      "sha256": "c766a97aa1f445ce415c1d6c6fb43c30abd58a212f771fb6641b701d7d3d90d0",
+      "bytes": 867
+    },
+    {
+      "path": "research/multi_model_debate/review_packet.py",
+      "sha256": "f46d1fcb21b1c16ca31b85b8e12eae43aa4cac09e08b22db0c37b4af3e38d50f",
+      "bytes": 1203
+    },
+    {
+      "path": "research/multi_model_debate/role_rotation_manifest.json",
+      "sha256": "21144519a963345795678d45123b1525840fa2969831e3915541e7f31443d705",
+      "bytes": 63319
+    },
+    {
+      "path": "research/multi_model_debate/runner.py",
+      "sha256": "55c87f81371dd8cc1eab9ce7ea84d42098faab469172c189dfb24b08a80e3afd",
+      "bytes": 9698
+    },
+    {
+      "path": "research/multi_model_debate/structured_output.py",
+      "sha256": "7ea4c7ff9826d8987c45be89d9ce0e62cf59d377f1b3d49ba92d65098df13c44",
+      "bytes": 7537
+    },
+    {
+      "path": "research/multi_model_debate/study_config.json",
+      "sha256": "0c6ab0b01b729bd8aaf592ac761600ebf1874b603581dcc53aa4c7a54d0e6f7b",
+      "bytes": 5768
+    },
+    {
+      "path": "research/multi_model_debate/token_budget_config_v1_3.json",
+      "sha256": "73c5fc280ad5e6cb14a871d485cac451005dbf54bcf2fca45e1282f662450190",
+      "bytes": 626
+    },
+    {
+      "path": "research/multi_model_debate/v1_3_smoke_validation.json",
+      "sha256": "e492e226594c00995cb00107a8a87958ef1271cdb2ff7d58ab445f84fb47b2b5",
+      "bytes": 2690
+    },
+    {
+      "path": "research/research_b/__init__.py",
+      "sha256": "8532c80a90facbcc67d68e979fac3f9a8d1a7373e78cd2f7ad2717437d273e33",
+      "bytes": 72
+    },
+    {
+      "path": "research/research_b/benchmark/freeze_manifest_v1.json",
+      "sha256": "19a60304333ff3a0b3efdc9cd6c91b75ec37a8ab40725211611cbf976de697d9",
+      "bytes": 1100
+    },
+    {
+      "path": "research/research_b/benchmark/research_b_v1_frozen.jsonl",
+      "sha256": "52e642d944e21f976b2c1155df7d84f8a74e7fccee29e576697b5b6b97d798d4",
+      "bytes": 311531
+    },
+    {
+      "path": "research/research_b/config/research_b_judge.json",
+      "sha256": "8e78357a01fcbe25704dce0182a5c88d2a65972610a1b997883360991df6491b",
+      "bytes": 917
+    },
+    {
+      "path": "research/research_b/formal_run_v1/final_analysis/research_b_final_manifest.json",
+      "sha256": "7842984a7fad5e0862f3dce3b7c02315142344fce849df867bdaf2adb6f3cdb7",
+      "bytes": 1577
+    },
+    {
+      "path": "research/research_b/formal_run_v1/results.jsonl",
+      "sha256": "5187c910954fb0ff9cf7bf792388a845e5c7686bcc8ab1123ecdc8b1990dcef8",
+      "bytes": 583011
+    },
+    {
+      "path": "research/research_b/runner.py",
+      "sha256": "b4f0b9d69ef22b1744e8ba8a9150004d118b05e0675fd6e8ec8a1f336b32b65f",
+      "bytes": 16936
+    },
+    {
+      "path": "research/research_c/benchmark/freeze_manifest_v1.json",
+      "sha256": "cd4597bb9a3d99921f69a84efb7f51c7936a913acc8e359b6d1e7931dafce8d0",
+      "bytes": 1843
+    },
+    {
+      "path": "research/research_c/benchmark/research_c_v1_frozen.jsonl",
+      "sha256": "2e99d235d411b5d8a30c2f26138dc56266c7090d6e66ac64d395f522f40d2435",
+      "bytes": 202137
+    },
+    {
+      "path": "research/research_c/config/research_c_conflict.json",
+      "sha256": "d1bdf2e8fd3288251439da3b1b4410b1a3ae60f373116dc6429b277f944a016a",
+      "bytes": 1049
+    },
+    {
+      "path": "research/research_c/formal_run_v1/research_c_final_results.json",
+      "sha256": "dae21b60ec53dbfc714b79ffad8eb4e9264b2b312472358be0e380063ed6dffd",
+      "bytes": 4542
+    },
+    {
+      "path": "research/research_c/formal_run_v1/results.jsonl",
+      "sha256": "4b51b9560b221cbdddc89df7ae7f2f45f011cf118776c3c83bc1400d04232df1",
+      "bytes": 250799
+    },
+    {
+      "path": "research/research_c/runner.py",
+      "sha256": "ed63311fceb08ec59e5ff4239857deed004c9a0927b9ea5380986bbdfa8c8ff8",
+      "bytes": 19304
+    },
+    {
+      "path": "research/retrieval_ablation/__init__.py",
+      "sha256": "fdf0876634134ea5b9989103effab49b3086689c6f6d84caaa2cec418722c188",
+      "bytes": 50
+    },
+    {
+      "path": "research/retrieval_ablation/formal_stage2/stage2_final_manifest.json",
+      "sha256": "695495e708a9a2de5a7da4e5661f8132a0d4df6ba1ecf0f761f8879900bf8ab5",
+      "bytes": 1813
+    },
+    {
+      "path": "research/retrieval_ablation/formal_stage2/stage2_final_results.json",
+      "sha256": "395ecd88c06b6bbe0d9f615580a33980b0b4909ebdd8dbfd4de7b323d6b8dd2b",
+      "bytes": 7236
+    },
+    {
+      "path": "research/retrieval_ablation/protected_artifacts.json",
+      "sha256": "95f0c7bff1b67690386dfc9e5712bbefd750bfb37dc2954a592c46cf9363d509",
+      "bytes": 2768
+    },
+    {
+      "path": "research/retrieval_ablation/protocol.md",
+      "sha256": "a39f5721cbad50bfd19fc3893b782cf9bed0e08de9ac9c99b4421804216bf0db",
+      "bytes": 3677
+    },
+    {
+      "path": "research/retrieval_ablation/retrieval_ablation_config.json",
+      "sha256": "dd8fe563a115aaa78a6b58066be697f34d3673b44cec02c6b9624673166ea12e",
+      "bytes": 4015
+    },
+    {
+      "path": "research/retrieval_ablation/runner.py",
+      "sha256": "783dd98b78852ba9199d3caa6e6fad4aa039707de881ab8c33fc3874130de284",
+      "bytes": 17954
+    },
+    {
+      "path": "research/retrieval_ablation/selection_manifest.json",
+      "sha256": "7c46d5291b920d753ce9097d04b3f87fe18770c5dadb480eb0a66d8091125fac",
+      "bytes": 21664
+    },
+    {
+      "path": "research/retrieval_ablation/stage2_runner.py",
+      "sha256": "04406abb7356ae394e332b60f1d253e54a29dfaacff6c71c7fa5303efbfbbc61",
+      "bytes": 11901
+    },
+    {
+      "path": "research/retrieval_ablation/warm_formal_cache.py",
+      "sha256": "83c7e94e3aade4d2f689f101cce694f2e1860e19b0b3dc8a6e2df1d5630d3acb",
+      "bytes": 9435
+    }
+  ],
+  "experiments": {
+    "retrieval_ablation": {
+      "assets": [
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json",
+        "research/corpus/tcm_v1/chunks.jsonl",
+        "research/retrieval_ablation/__init__.py",
+        "research/retrieval_ablation/formal_stage2/stage2_final_manifest.json",
+        "research/retrieval_ablation/formal_stage2/stage2_final_results.json",
+        "research/retrieval_ablation/protected_artifacts.json",
+        "research/retrieval_ablation/protocol.md",
+        "research/retrieval_ablation/retrieval_ablation_config.json",
+        "research/retrieval_ablation/runner.py",
+        "research/retrieval_ablation/selection_manifest.json",
+        "research/retrieval_ablation/stage2_runner.py",
+        "research/retrieval_ablation/warm_formal_cache.py"
+      ]
+    },
+    "rq1_architecture": {
+      "assets": [
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json",
+        "research/corpus/tcm_v1/chunks.jsonl",
+        "research/experiment_pipeline/rq1_confirmatory.py",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/rq1_confirmatory.yaml",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/confirmatory_analysis_manifest.json",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/results.jsonl",
+        "research/formal_runtime/rq4_backend/agents/__init__.py",
+        "research/formal_runtime/rq4_backend/agents/planner.py",
+        "research/formal_runtime/rq4_backend/agents/registry.py",
+        "research/formal_runtime/rq4_backend/agents/specialists.py",
+        "research/formal_runtime/rq4_backend/config/__init__.py",
+        "research/formal_runtime/rq4_backend/config/models.py",
+        "research/formal_runtime/rq4_backend/config/settings.py",
+        "research/formal_runtime/rq4_backend/corpus/__init__.py",
+        "research/formal_runtime/rq4_backend/corpus/models.py",
+        "research/formal_runtime/rq4_backend/corpus/registry.py",
+        "research/formal_runtime/rq4_backend/corpus/v1_models.py",
+        "research/formal_runtime/rq4_backend/data/tcm_knowledge_base.json",
+        "research/formal_runtime/rq4_backend/data/tcm_scope_rules.json",
+        "research/formal_runtime/rq4_backend/data/tcm_sources.json",
+        "research/formal_runtime/rq4_backend/judges/__init__.py",
+        "research/formal_runtime/rq4_backend/judges/deterministic.py",
+        "research/formal_runtime/rq4_backend/judges/registry.py",
+        "research/formal_runtime/rq4_backend/main.py",
+        "research/formal_runtime/rq4_backend/orchestration/__init__.py",
+        "research/formal_runtime/rq4_backend/orchestration/conditions.py",
+        "research/formal_runtime/rq4_backend/orchestration/debate.py",
+        "research/formal_runtime/rq4_backend/orchestration/genuine_debate.py",
+        "research/formal_runtime/rq4_backend/orchestration/workbench.py",
+        "research/formal_runtime/rq4_backend/prompts/__init__.py",
+        "research/formal_runtime/rq4_backend/prompts/acupuncture/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/confidence_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/conflict_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/constitution/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/critic/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/debate/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/dietary/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/evidence_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/hallucination_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/herbs/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/lifestyle/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/planner/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/provenance_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/registry.py",
+        "research/formal_runtime/rq4_backend/prompts/revision/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/safety_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/syndrome/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/synthesis/v1.txt",
+        "research/formal_runtime/rq4_backend/providers/__init__.py",
+        "research/formal_runtime/rq4_backend/providers/base.py",
+        "research/formal_runtime/rq4_backend/providers/factory.py",
+        "research/formal_runtime/rq4_backend/providers/local.py",
+        "research/formal_runtime/rq4_backend/providers/openai_compatible.py",
+        "research/formal_runtime/rq4_backend/providers/output_quality.py",
+        "research/formal_runtime/rq4_backend/providers/qdrant.py",
+        "research/formal_runtime/rq4_backend/providers/siliconflow.py",
+        "research/formal_runtime/rq4_backend/requirements.txt",
+        "research/formal_runtime/rq4_backend/retrieval/__init__.py",
+        "research/formal_runtime/rq4_backend/retrieval/engine.py",
+        "research/formal_runtime/rq4_backend/retrieval/registry.py",
+        "research/formal_runtime/rq4_backend/schemas/__init__.py",
+        "research/formal_runtime/rq4_backend/schemas/research.py",
+        "research/formal_runtime/rq4_backend/tcm/__init__.py",
+        "research/formal_runtime/rq4_backend/tcm/agent.py",
+        "research/formal_runtime/rq4_backend/tcm/knowledge_base.py",
+        "research/formal_runtime/rq4_backend/tcm/language.py",
+        "research/formal_runtime/rq4_backend/tcm/localization.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/__init__.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/hybrid.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/lexical.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/reranker.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/scoring.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/semantic.py",
+        "research/formal_runtime/rq4_backend/tcm/retriever.py",
+        "research/formal_runtime/rq4_backend/tcm/safety.py",
+        "research/formal_runtime/rq4_backend/tcm/schemas.py",
+        "research/formal_runtime/rq4_backend/tcm/scope.py",
+        "research/formal_runtime/rq4_backend/tcm/validation.py"
+      ]
+    },
+    "rq4_debate": {
+      "assets": [
+        "research/benchmarks/tcm_gold_rq4_v1/benchmark_rq4_v1_frozen.jsonl",
+        "research/benchmarks/tcm_gold_rq4_v1/freeze_manifest_rq4_v1.json",
+        "research/benchmarks/tcm_gold_rq4_v1/heldout_manifest_rq4_v1_frozen.json",
+        "research/corpus/tcm_v1/chunks.jsonl",
+        "research/experiment_pipeline/rq4_platform.py",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/execution_order.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/formal_execution_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/results.jsonl",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/implementation_amendment_post_fix_validation_v1.md",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/protocol_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/protocol.md",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/rq4_config.json",
+        "research/formal_runtime/rq4_backend/agents/__init__.py",
+        "research/formal_runtime/rq4_backend/agents/planner.py",
+        "research/formal_runtime/rq4_backend/agents/registry.py",
+        "research/formal_runtime/rq4_backend/agents/specialists.py",
+        "research/formal_runtime/rq4_backend/config/__init__.py",
+        "research/formal_runtime/rq4_backend/config/models.py",
+        "research/formal_runtime/rq4_backend/config/settings.py",
+        "research/formal_runtime/rq4_backend/corpus/__init__.py",
+        "research/formal_runtime/rq4_backend/corpus/models.py",
+        "research/formal_runtime/rq4_backend/corpus/registry.py",
+        "research/formal_runtime/rq4_backend/corpus/v1_models.py",
+        "research/formal_runtime/rq4_backend/data/tcm_knowledge_base.json",
+        "research/formal_runtime/rq4_backend/data/tcm_scope_rules.json",
+        "research/formal_runtime/rq4_backend/data/tcm_sources.json",
+        "research/formal_runtime/rq4_backend/judges/__init__.py",
+        "research/formal_runtime/rq4_backend/judges/deterministic.py",
+        "research/formal_runtime/rq4_backend/judges/registry.py",
+        "research/formal_runtime/rq4_backend/main.py",
+        "research/formal_runtime/rq4_backend/orchestration/__init__.py",
+        "research/formal_runtime/rq4_backend/orchestration/conditions.py",
+        "research/formal_runtime/rq4_backend/orchestration/debate.py",
+        "research/formal_runtime/rq4_backend/orchestration/genuine_debate.py",
+        "research/formal_runtime/rq4_backend/orchestration/workbench.py",
+        "research/formal_runtime/rq4_backend/prompts/__init__.py",
+        "research/formal_runtime/rq4_backend/prompts/acupuncture/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/confidence_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/conflict_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/constitution/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/critic/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/debate/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/dietary/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/evidence_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/hallucination_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/herbs/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/lifestyle/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/planner/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/provenance_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/registry.py",
+        "research/formal_runtime/rq4_backend/prompts/revision/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/safety_judge/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/syndrome/v1.txt",
+        "research/formal_runtime/rq4_backend/prompts/synthesis/v1.txt",
+        "research/formal_runtime/rq4_backend/providers/__init__.py",
+        "research/formal_runtime/rq4_backend/providers/base.py",
+        "research/formal_runtime/rq4_backend/providers/factory.py",
+        "research/formal_runtime/rq4_backend/providers/local.py",
+        "research/formal_runtime/rq4_backend/providers/openai_compatible.py",
+        "research/formal_runtime/rq4_backend/providers/output_quality.py",
+        "research/formal_runtime/rq4_backend/providers/qdrant.py",
+        "research/formal_runtime/rq4_backend/providers/siliconflow.py",
+        "research/formal_runtime/rq4_backend/requirements.txt",
+        "research/formal_runtime/rq4_backend/retrieval/__init__.py",
+        "research/formal_runtime/rq4_backend/retrieval/engine.py",
+        "research/formal_runtime/rq4_backend/retrieval/registry.py",
+        "research/formal_runtime/rq4_backend/schemas/__init__.py",
+        "research/formal_runtime/rq4_backend/schemas/research.py",
+        "research/formal_runtime/rq4_backend/tcm/__init__.py",
+        "research/formal_runtime/rq4_backend/tcm/agent.py",
+        "research/formal_runtime/rq4_backend/tcm/knowledge_base.py",
+        "research/formal_runtime/rq4_backend/tcm/language.py",
+        "research/formal_runtime/rq4_backend/tcm/localization.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/__init__.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/hybrid.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/lexical.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/reranker.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/scoring.py",
+        "research/formal_runtime/rq4_backend/tcm/retrieval/semantic.py",
+        "research/formal_runtime/rq4_backend/tcm/retriever.py",
+        "research/formal_runtime/rq4_backend/tcm/safety.py",
+        "research/formal_runtime/rq4_backend/tcm/schemas.py",
+        "research/formal_runtime/rq4_backend/tcm/scope.py",
+        "research/formal_runtime/rq4_backend/tcm/validation.py"
+      ]
+    },
+    "research_b": {
+      "assets": [
+        "research/research_b/__init__.py",
+        "research/research_b/benchmark/freeze_manifest_v1.json",
+        "research/research_b/benchmark/research_b_v1_frozen.jsonl",
+        "research/research_b/config/research_b_judge.json",
+        "research/research_b/formal_run_v1/final_analysis/research_b_final_manifest.json",
+        "research/research_b/formal_run_v1/results.jsonl",
+        "research/research_b/runner.py"
+      ]
+    },
+    "research_c": {
+      "assets": [
+        "research/corpus/tcm_v1/chunks.jsonl",
+        "research/research_c/benchmark/freeze_manifest_v1.json",
+        "research/research_c/benchmark/research_c_v1_frozen.jsonl",
+        "research/research_c/config/research_c_conflict.json",
+        "research/research_c/formal_run_v1/research_c_final_results.json",
+        "research/research_c/formal_run_v1/results.jsonl",
+        "research/research_c/runner.py"
+      ]
+    },
+    "a3_v1_3": {
+      "assets": [
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/benchmark_confirmatory_v1_1_frozen.jsonl",
+        "research/benchmarks/tcm_gold_rq1_confirmatory_v1/freeze_manifest_confirmatory_v1_1.json",
+        "research/benchmarks/tcm_gold_rq4_v1/benchmark_rq4_v1_frozen.jsonl",
+        "research/benchmarks/tcm_gold_rq4_v1/freeze_manifest_rq4_v1.json",
+        "research/benchmarks/tcm_gold_rq4_v1/heldout_manifest_rq4_v1_frozen.json",
+        "research/corpus/tcm_v1/chunks.jsonl",
+        "research/experiment_pipeline/rq1_confirmatory.py",
+        "research/experiment_pipeline/rq4_platform.py",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/protocol.md",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/rq1_confirmatory.yaml",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/final_analysis/confirmatory_analysis_manifest.json",
+        "research/experiments/rq1_c1_vs_c2/confirmatory_run_v1_1/results.jsonl",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/execution_order.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/final_analysis/rq4_final_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/formal_execution_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/formal_run_v1/results.jsonl",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/implementation_amendment_post_fix_validation_v1.md",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/protocol.md",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/protocol_manifest.json",
+        "research/experiments/rq4_debate_vs_multiagent/protocol/rq4_config.json",
+        "research/multi_model_debate/A3_V1_3_RAW_TOKEN_AUDIT.json",
+        "research/multi_model_debate/A3_V1_3_TOKEN_BUDGET_AMENDMENT.md",
+        "research/multi_model_debate/execution_plan.json",
+        "research/multi_model_debate/formal_aborted_v1/abort_manifest.json",
+        "research/multi_model_debate/formal_aborted_v1_1/abort_manifest.json",
+        "research/multi_model_debate/formal_aborted_v1_2/abort_manifest.json",
+        "research/multi_model_debate/formal_aborted_v1_2/execution_order.json",
+        "research/multi_model_debate/formal_aborted_v1_2/formal_results.jsonl",
+        "research/multi_model_debate/formal_aborted_v1_2/formal_run_manifest.json",
+        "research/multi_model_debate/formal_aborted_v1_2/provider_attempts.jsonl",
+        "research/multi_model_debate/formal_aborted_v1_2/run_progress.json",
+        "research/multi_model_debate/formal_aborted_v1_2/stage_outputs.jsonl",
+        "research/multi_model_debate/formal_runner.py",
+        "research/multi_model_debate/frozen_evidence_manifest.json",
+        "research/multi_model_debate/preregistration_manifest.json",
+        "research/multi_model_debate/prompt_templates.py",
+        "research/multi_model_debate/protected_artifacts.json",
+        "research/multi_model_debate/review_packet.py",
+        "research/multi_model_debate/role_rotation_manifest.json",
+        "research/multi_model_debate/runner.py",
+        "research/multi_model_debate/structured_output.py",
+        "research/multi_model_debate/study_config.json",
+        "research/multi_model_debate/token_budget_config_v1_3.json",
+        "research/multi_model_debate/v1_3_smoke_validation.json",
+        "research/research_b/__init__.py",
+        "research/research_b/benchmark/freeze_manifest_v1.json",
+        "research/research_b/benchmark/research_b_v1_frozen.jsonl",
+        "research/research_b/config/research_b_judge.json",
+        "research/research_b/formal_run_v1/final_analysis/research_b_final_manifest.json",
+        "research/research_b/formal_run_v1/results.jsonl",
+        "research/research_b/runner.py",
+        "research/research_c/benchmark/freeze_manifest_v1.json",
+        "research/research_c/benchmark/research_c_v1_frozen.jsonl",
+        "research/research_c/config/research_c_conflict.json",
+        "research/research_c/formal_run_v1/research_c_final_results.json",
+        "research/research_c/formal_run_v1/results.jsonl",
+        "research/research_c/runner.py",
+        "research/retrieval_ablation/__init__.py",
+        "research/retrieval_ablation/formal_stage2/stage2_final_manifest.json",
+        "research/retrieval_ablation/formal_stage2/stage2_final_results.json",
+        "research/retrieval_ablation/protected_artifacts.json",
+        "research/retrieval_ablation/protocol.md",
+        "research/retrieval_ablation/retrieval_ablation_config.json",
+        "research/retrieval_ablation/runner.py",
+        "research/retrieval_ablation/selection_manifest.json",
+        "research/retrieval_ablation/stage2_runner.py"
+      ]
+    }
+  }
+}

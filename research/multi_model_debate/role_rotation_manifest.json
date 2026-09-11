@@ -1,0 +1,2211 @@
+{
+  "status": "FROZEN_BEFORE_FORMAL_EXECUTION",
+  "algorithm": "benchmark file order; rotation_id = zero_based_index mod 3 + 1",
+  "distribution": {
+    "1": 34,
+    "2": 33,
+    "3": 33
+  },
+  "assignments": [
+    {
+      "question_id": "rq4-v1-001",
+      "benchmark_index": 1,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-002",
+      "benchmark_index": 2,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-003",
+      "benchmark_index": 3,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-004",
+      "benchmark_index": 4,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-005",
+      "benchmark_index": 5,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-006",
+      "benchmark_index": 6,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-007",
+      "benchmark_index": 7,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-008",
+      "benchmark_index": 8,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-009",
+      "benchmark_index": 9,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-010",
+      "benchmark_index": 10,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-011",
+      "benchmark_index": 11,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-012",
+      "benchmark_index": 12,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-013",
+      "benchmark_index": 13,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-014",
+      "benchmark_index": 14,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-015",
+      "benchmark_index": 15,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-016",
+      "benchmark_index": 16,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-017",
+      "benchmark_index": 17,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-018",
+      "benchmark_index": 18,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-019",
+      "benchmark_index": 19,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-020",
+      "benchmark_index": 20,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-021",
+      "benchmark_index": 21,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-022",
+      "benchmark_index": 22,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-023",
+      "benchmark_index": 23,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-024",
+      "benchmark_index": 24,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-025",
+      "benchmark_index": 25,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-026",
+      "benchmark_index": 26,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-027",
+      "benchmark_index": 27,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-028",
+      "benchmark_index": 28,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-029",
+      "benchmark_index": 29,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-030",
+      "benchmark_index": 30,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-031",
+      "benchmark_index": 31,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-032",
+      "benchmark_index": 32,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-033",
+      "benchmark_index": 33,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-034",
+      "benchmark_index": 34,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-035",
+      "benchmark_index": 35,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-036",
+      "benchmark_index": 36,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-037",
+      "benchmark_index": 37,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-038",
+      "benchmark_index": 38,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-039",
+      "benchmark_index": 39,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-040",
+      "benchmark_index": 40,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-041",
+      "benchmark_index": 41,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-042",
+      "benchmark_index": 42,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-043",
+      "benchmark_index": 43,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-044",
+      "benchmark_index": 44,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-045",
+      "benchmark_index": 45,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-046",
+      "benchmark_index": 46,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-047",
+      "benchmark_index": 47,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-048",
+      "benchmark_index": 48,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-049",
+      "benchmark_index": 49,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-050",
+      "benchmark_index": 50,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-051",
+      "benchmark_index": 51,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-052",
+      "benchmark_index": 52,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-053",
+      "benchmark_index": 53,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-054",
+      "benchmark_index": 54,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-055",
+      "benchmark_index": 55,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-056",
+      "benchmark_index": 56,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-057",
+      "benchmark_index": 57,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-058",
+      "benchmark_index": 58,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-059",
+      "benchmark_index": 59,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-060",
+      "benchmark_index": 60,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-061",
+      "benchmark_index": 61,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-062",
+      "benchmark_index": 62,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-063",
+      "benchmark_index": 63,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-064",
+      "benchmark_index": 64,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-065",
+      "benchmark_index": 65,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-066",
+      "benchmark_index": 66,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-067",
+      "benchmark_index": 67,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-068",
+      "benchmark_index": 68,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-069",
+      "benchmark_index": 69,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-070",
+      "benchmark_index": 70,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-071",
+      "benchmark_index": 71,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-072",
+      "benchmark_index": 72,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-073",
+      "benchmark_index": 73,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-074",
+      "benchmark_index": 74,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-075",
+      "benchmark_index": 75,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-076",
+      "benchmark_index": 76,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-077",
+      "benchmark_index": 77,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-078",
+      "benchmark_index": 78,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-079",
+      "benchmark_index": 79,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-080",
+      "benchmark_index": 80,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-081",
+      "benchmark_index": 81,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-082",
+      "benchmark_index": 82,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-083",
+      "benchmark_index": 83,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-084",
+      "benchmark_index": 84,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-085",
+      "benchmark_index": 85,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-086",
+      "benchmark_index": 86,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-087",
+      "benchmark_index": 87,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-088",
+      "benchmark_index": 88,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-089",
+      "benchmark_index": 89,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-090",
+      "benchmark_index": 90,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-091",
+      "benchmark_index": 91,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-092",
+      "benchmark_index": 92,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-093",
+      "benchmark_index": 93,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-094",
+      "benchmark_index": 94,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-095",
+      "benchmark_index": 95,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-096",
+      "benchmark_index": 96,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-097",
+      "benchmark_index": 97,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-098",
+      "benchmark_index": 98,
+      "rotation_id": 2,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-099",
+      "benchmark_index": 99,
+      "rotation_id": 3,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        }
+      ]
+    },
+    {
+      "question_id": "rq4-v1-100",
+      "benchmark_index": 100,
+      "rotation_id": 1,
+      "M2_assignment": [
+        {
+          "role": "domain_evidence_specialist",
+          "model": "Qwen/Qwen3-8B",
+          "family": "Qwen general-purpose checkpoint"
+        },
+        {
+          "role": "coverage_auditor",
+          "model": "THUDM/GLM-Z1-9B-0414",
+          "family": "GLM lineage"
+        },
+        {
+          "role": "grounding_skeptic",
+          "model": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "family": "DeepSeek-R1-distilled Qwen3 checkpoint"
+        }
+      ]
+    }
+  ]
+}
