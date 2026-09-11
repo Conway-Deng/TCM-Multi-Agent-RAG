@@ -4322,9 +4322,11 @@ body {
   outline-offset: 2px;
 }
 .condition-card-grid,
-.retrieval-card-grid { display: grid; gap: .7rem; }
+.retrieval-card-grid,
+.model-card-grid { display: grid; gap: .7rem; }
 .condition-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .retrieval-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.model-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .choice-card {
   position: relative;
   display: grid;
@@ -4349,6 +4351,7 @@ body {
 .choice-card strong { line-height: 1.3; }
 .choice-card small { color: var(--text-muted); line-height: 1.4; }
 .choice-card-compact { min-height: 78px; }
+.model-card-grid .choice-card strong { overflow-wrap: anywhere; }
 .consensus-form-footer { padding-top: .25rem; }
 .consensus-submit {
   min-height: 46px;
@@ -4452,14 +4455,17 @@ body {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   line-height: 1.55;
 }
+.technical-trace-label { margin: 1rem 0 .45rem; color: var(--text-secondary); font-size: .82rem; font-weight: 700; }
 @media (max-width: 980px) {
   .condition-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .retrieval-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .retrieval-card-grid,
+  .model-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .run-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 680px) {
   .condition-card-grid,
   .retrieval-card-grid,
+  .model-card-grid,
   .run-summary-grid,
   .judge-grid,
   .metric-panel { grid-template-columns: 1fr; }
