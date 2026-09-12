@@ -17,8 +17,62 @@ import subprocess
 import sys
 import time
 import urllib.request
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterable, Iterator
+
+
+StopPredicate = Callable[[], bool] | None
+
+
+def _stop_requested(predicate: StopPredicate) -> bool:
+    return bool(predicate and predicate())
+
+
+class _CooperativeIterable:
+    """Stop yielding before the next atomic execution, never during one."""
+
+    def __init__(self, values: Iterable[Any], should_stop: StopPredicate) -> None:
+        self.values = values
+        self.should_stop = should_stop
+
+    def __iter__(self) -> Iterator[Any]:
+        for value in self.values:
+            if _stop_requested(self.should_stop):
+                return
+            yield value
+
+
+def _cooperative_as_completed(awaitables: Iterable[Any], should_stop: StopPredicate, limit: int = 4):
+    """Yield awaitables with a bounded active window and no launches after stop."""
+    iterator = iter(awaitables)
+    active: set[asyncio.Task] = set()
+    exhausted = False
+
+    def fill() -> None:
+        nonlocal exhausted
+        while not exhausted and len(active) < limit and not _stop_requested(should_stop):
+            try:
+                active.add(asyncio.create_task(next(iterator)))
+            except StopIteration:
+                exhausted = True
+
+    fill()
+    try:
+        while active:
+            async def next_completed():
+                done, _ = await asyncio.wait(active, return_when=asyncio.FIRST_COMPLETED)
+                task = next(iter(done))
+                active.remove(task)
+                result = await task
+                fill()
+                return result
+            yield next_completed()
+    finally:
+        for pending in iterator:
+            close = getattr(pending, "close", None)
+            if close:
+                close()
 
 
 def _load(path: Path, name: str):
@@ -126,18 +180,63 @@ def _frozen_backend(root: Path, output: Path):
         stdout.close(); stderr.close()
 
 
-def _run_research_b(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None) -> None:
+def _run_research_b(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     runner = _load(root / "research/research_b/runner.py", "frozen_research_b_runner")
     config = runner.config(root / "research/research_b/config/research_b_judge.json")
     benchmark, cases, _ = runner.validate_frozen(config)
     config["output_dir"] = str(output)
     if mode == "full_benchmark":
-        runner.run(config, True)
-        return
+        results_path = output / "results.jsonl"
+        existing = runner.read_jsonl(results_path) if results_path.exists() else []
+        done = {(row["case_id"], row["condition"]) for row in existing}
+        by_id = {item["case_id"]: item for item in cases}
+        plan = runner.plan(config, cases)
+        remaining = iter(entry for entry in plan if (entry["case_id"], entry["condition"]) not in done)
+
+        def execute_one(entry):
+            return entry, runner.request_prediction(config, by_id[entry["case_id"]], entry["condition"])
+
+        max_workers = int(config.get("concurrency", 8))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures: dict[Any, dict[str, Any]] = {}
+
+            def fill() -> None:
+                while len(futures) < max_workers and not _stop_requested(should_stop):
+                    try:
+                        entry = next(remaining)
+                    except StopIteration:
+                        return
+                    futures[executor.submit(execute_one, entry)] = entry
+
+            fill()
+            while futures:
+                finished, _ = wait(futures, return_when=FIRST_COMPLETED)
+                for future in finished:
+                    futures.pop(future, None)
+                    entry, prediction = future.result()
+                    case = by_id[entry["case_id"]]
+                    record = {
+                        **entry, "reference_label": case["reference_label"], "prediction": prediction["label"],
+                        "confidence": prediction["confidence"], "reason": prediction["reason"], "usable": prediction["usable"],
+                        "latency_ms": prediction["latency_ms"], "http_status": prediction["http_status"],
+                        "model_actually_called": prediction["model_actually_called"], "provider_attempts": prediction["attempts"],
+                        "retry_count": max(0, len(prediction["attempts"]) - 1), "error": prediction["error"],
+                        "benchmark_sha256": runner.sha256(benchmark), "freeze_sha256": runner.sha256(root / config["freeze_manifest"]),
+                    }
+                    with results_path.open("a", encoding="utf-8") as handle:
+                        handle.write(json.dumps(record, ensure_ascii=False) + "\n"); handle.flush(); os.fsync(handle.fileno())
+                    done.add((entry["case_id"], entry["condition"]))
+                fill()
+        if _stop_requested(should_stop):
+            return True
+        runner.write_analysis_outputs(config, runner.read_jsonl(results_path))
+        return False
     case = next((item for item in cases if item["case_id"] == case_id), cases[0])
     chosen = _conditions(mode, condition, ["J1", "J2"])
     for index, current in enumerate(chosen, 1):
+        if _stop_requested(should_stop):
+            return True
         _status(output, completed=index - 1, total=len(chosen), current_case=case["case_id"], current_condition=current)
         prediction = runner.request_prediction(config, case, current)
         row = {
@@ -150,6 +249,7 @@ def _run_research_b(root: Path, output: Path, mode: str, condition: str | None, 
         _append(output / "results.jsonl", row)
         _status(output, completed=index, successful=index - int(not row.get("usable")), failed=int(not row.get("usable")))
     _write(output / "manifest.json", {"result_origin": "new_replay", "runner": str(benchmark), "conditions": chosen, "case_id": case["case_id"]})
+    return False
 
 
 def _enrich_research_c(root: Path, cases: list[dict[str, Any]]) -> None:
@@ -163,20 +263,79 @@ def _enrich_research_c(root: Path, cases: list[dict[str, Any]]) -> None:
         case.setdefault("source_b_id", excerpt_ids.get(case.get("source_b_excerpt", "").strip(), "unknown-source-b"))
 
 
-def _run_research_c(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None) -> None:
+def _run_research_c(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     runner = _load(root / "research/research_c/runner.py", "frozen_research_c_runner")
     config = runner.config(root / "research/research_c/config/research_c_conflict.json")
     benchmark, cases, freeze = runner.validate_frozen(config)
     config["output_dir"] = str(output)
     if mode == "full_benchmark":
-        runner.execute_formal(config, benchmark, cases, freeze)
-        return
+        # The frozen runner's executor submits the entire benchmark at once.
+        # This adapter preserves its plan, calls, row schema, and concurrency cap,
+        # while admitting new work only after a safe cancellation check.
+        runner.ROOT = root
+        out = output
+        entries = runner.plan(config, cases)
+        formal_manifest = {
+            "benchmark_sha256": runner.sha256(benchmark),
+            "freeze_manifest_sha256": runner.sha256(root / config["freeze_manifest"]),
+            "runner_sha256": runner.sha256(Path(runner.__file__)),
+            "model": config.get("model"),
+            "provider": config.get("base_url_env"),
+            "runtime": {key: config.get(key) for key in ("temperature", "max_tokens", "timeout_seconds", "max_attempts", "concurrency")},
+            "planned_formal_executions": 264,
+            "execution_order_seed": config["random_seed"],
+            "analysis_plan_version": "research_c_imbalanced_v1",
+        }
+        runner.atomic_write(out / "formal_run_manifest.json", json.dumps(formal_manifest, indent=2) + "\n")
+        runner.atomic_write(out / "execution_order.json", json.dumps(entries, indent=2) + "\n")
+        _enrich_research_c(root, cases)
+        results_path = out / "results.jsonl"; attempts_path = out / "provider_attempts.jsonl"
+        results = runner.read_jsonl(results_path) if results_path.exists() else []
+        attempts = runner.read_jsonl(attempts_path) if attempts_path.exists() else []
+        done = {(row.get("case_id"), row.get("condition")) for row in results}
+        by_id = {item["case_id"]: item for item in cases}
+        remaining = iter(entry for entry in entries if (entry["case_id"], entry["condition"]) not in done)
+
+        def execute_one(entry):
+            case = by_id[entry["case_id"]]
+            prediction = runner.request_prediction(config, case, entry["condition"])
+            row = {"case_id": case["case_id"], "condition": entry["condition"], "reference_label": case["reference_label"], "prediction": prediction.get("label"), **{key: value for key, value in prediction.items() if key not in {"attempts", "label"}}}
+            attempt_rows = [{"case_id": case["case_id"], "condition": entry["condition"], **attempt} for attempt in prediction.get("attempts", [])]
+            return row, attempt_rows
+
+        max_workers = int(config.get("concurrency", 8))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures: set[Any] = set()
+
+            def fill() -> None:
+                while len(futures) < max_workers and not _stop_requested(should_stop):
+                    try:
+                        futures.add(executor.submit(execute_one, next(remaining)))
+                    except StopIteration:
+                        return
+
+            fill()
+            while futures:
+                finished, _ = wait(futures, return_when=FIRST_COMPLETED)
+                for future in finished:
+                    futures.remove(future)
+                    row, attempt_rows = future.result(); results.append(row); attempts.extend(attempt_rows)
+                    runner.atomic_write(results_path, "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in results))
+                    runner.atomic_write(attempts_path, "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in attempts))
+                    runner.atomic_write(out / "run_progress.json", json.dumps({"completed": len(results), "planned": 264}) + "\n")
+                fill()
+        if _stop_requested(should_stop):
+            return True
+        runner.atomic_write(out / "analysis.json", json.dumps(runner.analyze_rows(results), ensure_ascii=False, indent=2) + "\n")
+        return False
     _enrich_research_c(root, cases)
     case = next((item for item in cases if item["case_id"] == case_id), cases[0])
     chosen = _conditions(mode, condition, ["K1", "K2"])
     successful = failed = 0
     for index, current in enumerate(chosen, 1):
+        if _stop_requested(should_stop):
+            return True
         _status(output, completed=index - 1, total=len(chosen), current_case=case["case_id"], current_condition=current)
         prediction = runner.request_prediction(config, case, current)
         usable = bool(prediction.get("usable")); successful += int(usable); failed += int(not usable)
@@ -189,9 +348,10 @@ def _run_research_c(root: Path, output: Path, mode: str, condition: str | None, 
         _append(output / "results.jsonl", row)
         _status(output, completed=index, successful=successful, failed=failed)
     _write(output / "manifest.json", {"result_origin": "new_replay", "runner": str(benchmark), "conditions": chosen, "case_id": case["case_id"]})
+    return False
 
 
-def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None) -> None:
+def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     runner = _load(root / "research/multi_model_debate/formal_runner.py", "frozen_a3_v1_3_runner")
     # Redirect all module-global analysis and execution paths before any run.
@@ -209,7 +369,10 @@ def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id:
         execution.execution_order = [item for item in execution.execution_order if item["question_id"] == first_qid and item["condition"] in allowed]
         if len(execution.execution_order) != len(allowed):
             raise RuntimeError(f"Frozen A3 case not found: {first_qid}")
+    execution.execution_order = _CooperativeIterable(execution.execution_order, should_stop)
     asyncio.run(execution.run())
+    if _stop_requested(should_stop):
+        return True
     if mode == "full_benchmark":
         objective, process = runner.compute_objective_and_process_metrics()
         _write(formal_output / "objective_metrics.json", objective)
@@ -217,9 +380,10 @@ def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id:
         runner.generate_blinded_review_packet()
         runner.write_semantic_review_instructions()
         _write(formal_output / "formal_validation.json", runner.validate_formal_execution())
+    return False
 
 
-def _run_retrieval(root: Path, output: Path) -> None:
+def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     os.environ.update({
         "TCM_CORPUS_MODE": "required",
@@ -238,14 +402,41 @@ def _run_retrieval(root: Path, output: Path) -> None:
     stage1.STUDY_ROOT = output
     os.environ["RETRIEVAL_ABLATION_EXECUTION"] = "FORMAL_STAGE1_APPROVED"
     stage1_out = output / "stage1"
-    asyncio.run(stage1.execute_stage1(stage1_out))
+    original_plan = stage1.build_stage1_plan
+    calls = 0
+    def cooperative_plan():
+        nonlocal calls
+        calls += 1
+        plan = original_plan()
+        return plan if calls == 1 else _CooperativeIterable(plan, should_stop)
+    stage1.build_stage1_plan = cooperative_plan
+    try:
+        try:
+            asyncio.run(stage1.execute_stage1(stage1_out))
+        except RuntimeError:
+            if not _stop_requested(should_stop):
+                raise
+    finally:
+        stage1.build_stage1_plan = original_plan
+    if _stop_requested(should_stop):
+        return True
     stage2 = _load(root / "research/retrieval_ablation/stage2_runner.py", "frozen_retrieval_stage2")
     stage2.STAGE1 = stage1_out
     stage2.OUT = output / "stage2"
-    asyncio.run(stage2.main())
+    original_as_completed = stage2.asyncio.as_completed
+    stage2.asyncio.as_completed = lambda awaitables: _cooperative_as_completed(awaitables, should_stop, 4)
+    try:
+        try:
+            asyncio.run(stage2.main())
+        except RuntimeError:
+            if not _stop_requested(should_stop):
+                raise
+    finally:
+        stage2.asyncio.as_completed = original_as_completed
+    return _stop_requested(should_stop)
 
 
-def _run_rq1(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None) -> None:
+def _run_rq1(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     runner = _load(root / "research/experiment_pipeline/rq1_confirmatory.py", "frozen_rq1_runner")
     config = runner.load(root / "research/experiments/rq1_c1_vs_c2/confirmatory_protocol/rq1_confirmatory.yaml")
@@ -267,12 +458,15 @@ def _run_rq1(root: Path, output: Path, mode: str, condition: str | None, case_id
         config["api_url"] = api_url
         for entry in entries:
             if (entry["question_id"], entry["condition"]) in done: continue
+            if _stop_requested(should_stop):
+                return True
             _status(output, completed=len(done), total=expected, current_case=entry["question_id"], current_condition=entry["condition"])
             row = runner.request_one(config, by_id[entry["question_id"]], entry)
             row["result_origin"] = "new_replay"; _append(results_path, row); done.add((entry["question_id"], entry["condition"]))
     rows = _read_jsonl(results_path)
     _status(output, completed=len(rows), successful=sum(row.get("run_status") in {"PASS", "PASS_WITH_RETRY"} for row in rows), failed=sum(row.get("run_status") not in {"PASS", "PASS_WITH_RETRY"} for row in rows))
     _write(output / "manifest.json", {"result_origin": "new_replay", "runner": "research/experiment_pipeline/rq1_confirmatory.py", "case_id": None if mode == "full_benchmark" else selected_case, "conditions": sorted(allowed), "historical_results_modified": False})
+    return False
 
 
 def _validate_rq4_assets(root: Path) -> dict[str, Any]:
@@ -293,7 +487,7 @@ def _validate_rq4_assets(root: Path) -> dict[str, Any]:
     return manifest
 
 
-def _run_rq4(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None) -> None:
+def _run_rq4(root: Path, output: Path, mode: str, condition: str | None, case_id: str | None, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider(); _validate_rq4_assets(root)
     runner = _load(root / "research/experiment_pipeline/rq4_platform.py", "frozen_rq4_runner")
     benchmark_path = root / "research/benchmarks/tcm_gold_rq4_v1/benchmark_rq4_v1_frozen.jsonl"
@@ -315,6 +509,8 @@ def _run_rq4(root: Path, output: Path, mode: str, condition: str | None, case_id
     with _frozen_backend(root, output) as api_url:
         for entry in order:
             if entry["execution_id"] in completed: continue
+            if _stop_requested(should_stop):
+                return True
             runtime = runner._runtime(records, entry, runner.utcnow()); _write(runner.RUNTIME_PATH, runtime)
             row = runner.request_execution(benchmark[entry["question_id"]], entry, runtime, api_url=api_url)
             row["result_origin"] = "new_replay"; _append(results_path, row)
@@ -325,6 +521,7 @@ def _run_rq4(root: Path, output: Path, mode: str, condition: str | None, case_id
     runner.validate_results(order, records)
     if mode == "full_benchmark": runner.objective_and_semantic_export(records)
     _write(output / "replay_isolation.json", {"result_origin": "new_replay", "historical_results_modified": False, "output_root": str(output), "conditions": sorted(allowed)})
+    return False
 
 
 def run_replay(
@@ -335,7 +532,8 @@ def run_replay(
     output: Path,
     condition: str | None = None,
     case_id: str | None = None,
-) -> None:
+    should_stop: StopPredicate = None,
+) -> bool:
     """Run one exact replay adapter inside a worker-owned disposable workspace."""
     from formal_experiments.registry import validate_replay_path, verify_deployment_integrity
     root = frozen_root.resolve()
@@ -345,17 +543,21 @@ def run_replay(
     output = validate_replay_path(root, output); output.mkdir(parents=True, exist_ok=True)
     _status(output, status="running", completed=0, total=0, successful=0, failed=0)
     actions = {
-        "retrieval_ablation": lambda: _run_retrieval(root, output),
-        "rq1_architecture": lambda: _run_rq1(root, output, run_mode, condition, case_id),
-        "rq4_debate": lambda: _run_rq4(root, output, run_mode, condition, case_id),
-        "research_b": lambda: _run_research_b(root, output, run_mode, condition, case_id),
-        "research_c": lambda: _run_research_c(root, output, run_mode, condition, case_id),
-        "a3_v1_3": lambda: _run_a3(root, output, run_mode, condition, case_id),
+        "retrieval_ablation": lambda: _run_retrieval(root, output, should_stop),
+        "rq1_architecture": lambda: _run_rq1(root, output, run_mode, condition, case_id, should_stop),
+        "rq4_debate": lambda: _run_rq4(root, output, run_mode, condition, case_id, should_stop),
+        "research_b": lambda: _run_research_b(root, output, run_mode, condition, case_id, should_stop),
+        "research_c": lambda: _run_research_c(root, output, run_mode, condition, case_id, should_stop),
+        "a3_v1_3": lambda: _run_a3(root, output, run_mode, condition, case_id, should_stop),
     }
     if experiment_id not in actions:
         raise RuntimeError("No replay-safe adapter is available for this experiment")
-    actions[experiment_id]()
+    stopped = bool(actions[experiment_id]())
+    if stopped:
+        _status(output, status="stopped", resume_state="stopped")
+        return True
     _status(output, status="complete", resume_state="complete")
+    return False
 
 
 def main() -> None:

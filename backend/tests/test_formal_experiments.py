@@ -555,3 +555,160 @@ def test_retention_deletes_only_old_generated_database_runs(tmp_path: Path) -> N
         connection.cursor().execute("UPDATE formal_jobs SET updated_at = 0 WHERE run_id = 'old-new-replay'")
     assert store.cleanup_old_replays(1) == 1
     with pytest.raises(KeyError): store.get("old-new-replay")
+
+
+def test_stop_queued_guided_run_is_immediate_and_durable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", str(ROOT))
+    monkeypatch.setenv("FORMAL_DURABLE_JOBS_ENABLED", "true")
+    monkeypatch.setenv("LLM_PROVIDER", "siliconflow")
+    monkeypatch.setenv("LLM_API_KEY", "offline-test-placeholder")
+    database = f"sqlite:///{(tmp_path / 'queued-stop.sqlite3').as_posix()}"
+    service = FormalJobService(FormalJobStore(database))
+    created = service.create(FormalRunRequest(
+        experiment_id="rq1_architecture", run_mode="full_benchmark", confirm_full_benchmark=True,
+    ))
+    stopped = service.stop(created["run_id"])
+    assert stopped["status"] == "stopped" and stopped["stop_requested"] is True
+    assert stopped["completed"] == 0 and stopped["total"] == 200
+    assert FormalJobStore(database).get(created["run_id"])["status"] == "stopped"
+    assert {item["name"] for item in service.results(created["run_id"])["downloads"]} >= {
+        "partial_report.md", "partial_results.csv", "partial_results.json",
+    }
+
+
+def test_custom_stop_waits_for_active_atomic_execution_then_preserves_rows(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import orchestration.workbench as workbench_module
+
+    database = f"sqlite:///{(tmp_path / 'running-stop.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    service = CustomJobService(store)
+    created = service.create(custom_request("First question?", "Second question?", "Third question?"))
+    calls: list[str] = []
+
+    class Result:
+        def __init__(self, question: str) -> None: self.question = question
+        def model_dump(self, mode: str) -> dict: return {"condition_id": "C2", "final_answer": self.question}
+
+    class FakeWorkbench:
+        def __init__(self, **kwargs): assert kwargs == {"cache_results": False}
+        async def run(self, request):
+            calls.append(request.question)
+            if len(calls) == 2:
+                requested = service.stop(created["run_id"])
+                assert requested["status"] == "stop_requested"
+            return Result(request.question)
+
+    monkeypatch.setattr(workbench_module, "ResearchWorkbench", FakeWorkbench)
+    assert FormalReplayWorker(store, worker_id="stop-worker").run_once() is True
+    final = CustomJobService(FormalJobStore(database)).get(created["run_id"])
+    assert calls == ["First question?", "Second question?"]
+    assert final["status"] == "stopped" and final["completed"] == 2 and final["total"] == 3
+    persisted = FormalJobStore(database).get(created["run_id"])
+    assert persisted["worker_id"] is None and persisted["lease_until"] is None
+    assert len(FormalJobStore(database).executions(created["run_id"], include_payload=True)) == 2
+
+
+def test_partial_report_exports_completed_rows_only(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'partial-report.sqlite3').as_posix()}")
+    service = CustomJobService(store)
+    created = service.create(custom_request("First question?", "Second question?"))
+    store.upsert_execution(created["run_id"], 1, {
+        "question_id": "CUSTOM-001", "condition_id": "C2", "final_answer": "completed",
+    })
+    stopped = service.stop(created["run_id"])
+    assert stopped["status"] == "stopped"
+    _, json_content = service.file(created["run_id"], "partial_results.json")
+    report = json.loads(json_content)
+    assert report["completed_execution_count"] == 1
+    assert report["original_scheduled_execution_count"] == 2
+    assert len(report["completed_rows"]) == 1
+    assert report["warning"] == "Partial replay — not directly comparable to the complete paper result."
+    csv_type, csv_content = service.file(created["run_id"], "partial_results.csv")
+    markdown_type, markdown_content = service.file(created["run_id"], "partial_report.md")
+    assert csv_type == "text/csv" and b"CUSTOM-001" in csv_content
+    assert markdown_type == "text/markdown" and b"Completed: 1 / 2" in markdown_content
+
+
+def test_stop_requested_job_is_recovered_after_worker_restart(tmp_path: Path) -> None:
+    database = f"sqlite:///{(tmp_path / 'restart-stop.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    service = CustomJobService(store)
+    created = service.create(custom_request("Restart-safe question?"))
+    claimed = store.claim_next("crashed-worker", lease_seconds=30)
+    assert claimed and claimed["status"] == "running"
+    requested = service.stop(created["run_id"])
+    assert requested["status"] == "stop_requested"
+    store.update(created["run_id"], lease_until=0)
+    replacement = FormalReplayWorker(FormalJobStore(database), worker_id="replacement-worker")
+    assert replacement.run_once() is True
+    assert CustomJobService(FormalJobStore(database)).get(created["run_id"])["status"] == "stopped"
+
+
+def test_guided_and_custom_stop_endpoints(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import main
+
+    monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", str(ROOT))
+    monkeypatch.setenv("FORMAL_DURABLE_JOBS_ENABLED", "true")
+    monkeypatch.setenv("LLM_PROVIDER", "siliconflow")
+    monkeypatch.setenv("LLM_API_KEY", "offline-test-placeholder")
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'stop-api.sqlite3').as_posix()}")
+    monkeypatch.setattr(main, "formal_jobs", FormalJobService(store))
+    monkeypatch.setattr(main, "custom_jobs", CustomJobService(store))
+    formal = main.formal_jobs.create(FormalRunRequest(
+        experiment_id="rq1_architecture", run_mode="full_benchmark", confirm_full_benchmark=True,
+    ))
+    custom = main.custom_jobs.create(custom_request("API stop question?"))
+    with TestClient(main.app) as client:
+        formal_response = client.post(f"/api/formal-runs/{formal['run_id']}/stop")
+        custom_response = client.post(f"/api/custom-runs/{custom['run_id']}/stop")
+    assert formal_response.status_code == 202 and formal_response.json()["status"] == "stopped"
+    assert custom_response.status_code == 202 and custom_response.json()["status"] == "stopped"
+
+
+def test_formal_cooperative_iterable_stops_only_between_atomic_items() -> None:
+    requested = False
+    started: list[int] = []
+    for value in worker._CooperativeIterable([1, 2, 3], lambda: requested):
+        started.append(value)
+        if value == 2:
+            requested = True
+    assert started == [1, 2]
+
+
+def test_formal_worker_finishes_active_atomic_row_before_stopping(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import formal_experiments.worker as worker_module
+
+    database = f"sqlite:///{(tmp_path / 'formal-running-stop.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    now = 1.0
+    job = {
+        "run_id": "replay-safe-boundary", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "queued", "completed": 0, "total": 200, "current_condition": None,
+        "current_case": None, "successful": 0, "failed": 0, "created_at": now,
+        "started_at": None, "updated_at": now, "resume_state": "queued",
+        "replay_output_dir": "rq1_architecture/replay-safe-boundary", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {
+        "experiment_id": "rq1_architecture", "runner": "frozen-runner", "dataset_path": "frozen.jsonl",
+        "conditions": [{"id": "C1"}, {"id": "C2"}], "models": ["Qwen/Qwen3-8B"],
+        "planned_executions": 200, "dataset_size": 100,
+    })
+
+    def fake_replay(*, output: Path, should_stop, **kwargs) -> bool:
+        FormalJobService(store).stop("replay-safe-boundary")
+        assert should_stop() is True
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "results.jsonl").write_text(json.dumps({
+            "question_id": "Q-001", "condition": "C1", "run_status": "PASS",
+        }) + "\n", encoding="utf-8")
+        return True
+
+    monkeypatch.setattr(worker_module, "run_replay", fake_replay)
+    assert FormalReplayWorker(store, worker_id="formal-stop-worker", poll_seconds=0.1).run_once() is True
+    final = FormalJobService(FormalJobStore(database)).get("replay-safe-boundary")
+    assert final["status"] == "stopped" and final["completed"] == 1 and final["total"] == 200
+    assert len(FormalJobStore(database).executions("replay-safe-boundary")) == 1
+    assert {item["name"] for item in store.artifacts("replay-safe-boundary")} >= {
+        "partial_report.md", "partial_results.csv", "partial_results.json",
+    }

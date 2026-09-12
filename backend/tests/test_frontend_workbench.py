@@ -83,3 +83,15 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
     assert "traceData.fallback_usage === true ? 'Yes' : 'No'" in JS
     assert "No successful model output" in JS
     assert "JSON.stringify(safeRunExport(data), null, 2)" in JS
+
+
+def test_guided_and_custom_runs_expose_graceful_stop_and_partial_downloads() -> None:
+    assert 'id="stop-formal-run"' in HTML
+    assert 'id="stop-custom-run"' in HTML
+    assert 'id="formal-stop-summary"' in HTML
+    assert 'id="custom-partial-downloads"' in HTML
+    assert "/api/formal-runs/" in JS and "+ '/stop'" in JS
+    assert "/api/custom-runs/" in JS
+    assert "Download Partial Report" in JS
+    assert "Partial replay — not directly comparable to the complete paper result." in JS
+    assert "['queued', 'running', 'stop_requested']" in JS

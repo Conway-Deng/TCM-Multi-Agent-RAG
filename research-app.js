@@ -237,16 +237,27 @@
     localStorage.setItem('medirag-formal-run-id', status.run_id);
     $('#formal-empty-state').hidden = true;
     $('#formal-job-panel').hidden = false;
-    setText('#formal-job-title', status.experiment_id + ' · ' + status.run_id); setText('#formal-job-status', status.status);
+    const stopped = status.status === 'stopped';
+    const stopping = status.status === 'stop_requested';
+    const active = status.status === 'queued' || status.status === 'running' || stopping;
+    const resultLabel = stopped ? 'Partial replay result' : 'New replay result';
+    setText('#formal-job-result-label', resultLabel); setText('#formal-download-result-label', resultLabel);
+    setText('#formal-job-title', status.experiment_id + ' · ' + status.run_id); setText('#formal-job-status', stopping ? 'stop requested' : status.status);
     const completed = Number(status.completed || 0); const total = Number(status.total || 0); const percent = total ? Math.min(100, Math.round(completed / total * 100)) : 0;
     setText('#formal-job-progress', completed + ' / ' + total + ' completed'); setText('#formal-job-percent', percent + '%');
     $('#formal-progress-bar').max = Math.max(1, total); $('#formal-progress-bar').value = completed;
     setText('#formal-job-current', [status.current_case, status.current_condition].filter(Boolean).join(' · ') || 'Waiting for worker');
     setText('#formal-job-outcomes', status.successful + ' / ' + status.failed); setText('#formal-job-elapsed', elapsedClock(status.elapsed_seconds));
-    if (status.status === 'complete' || status.status === 'failed') $('#run-paper-experiment').disabled = false;
+    $('#stop-formal-run').hidden = !active;
+    $('#stop-formal-run').disabled = stopping;
+    $('#stop-formal-run').textContent = stopping ? 'Stopping after current execution…' : 'Stop Run';
+    $('#formal-stop-summary').hidden = !stopped;
+    if (stopped) setText('#formal-stop-summary', 'Stopped after ' + completed + ' / ' + total + ' executions · Partial replay — not directly comparable to the complete paper result.');
+    $$('.formal-experiment-card').forEach((card) => { card.disabled = active; });
+    if (status.status === 'complete' || status.status === 'failed' || stopped) $('#run-paper-experiment').disabled = false;
     loadFormalResults();
     if (formalRunTimer) { clearTimeout(formalRunTimer); formalRunTimer = null; }
-    if (status.status === 'queued' || status.status === 'running') formalRunTimer = setTimeout(refreshFormalRun, 2500);
+    if (active) formalRunTimer = setTimeout(refreshFormalRun, 2500);
   }
 
   async function refreshFormalRun() {
@@ -267,13 +278,13 @@
         item.append(element('span', 'formal-execution-number', String(execution.sequence).padStart(3, '0')), element('span', '', execution.case_id || '—'), element('span', '', execution.condition || '—'), element('strong', '', execution.status));
         stream.append(item);
       });
-      if (data.status && data.status.status === 'running') {
+      if (data.status && ['running', 'stop_requested'].includes(data.status.status)) {
         const running = element('li', 'is-running');
-        running.append(element('span', 'formal-execution-number', String((data.results || []).length + 1).padStart(3, '0')), element('span', '', data.status.current_case || '—'), element('span', '', data.status.current_condition || '—'), element('strong', '', 'Running'));
+        running.append(element('span', 'formal-execution-number', String((data.results || []).length + 1).padStart(3, '0')), element('span', '', data.status.current_case || '—'), element('span', '', data.status.current_condition || '—'), element('strong', '', data.status.status === 'stop_requested' ? 'Finishing safely' : 'Running'));
         stream.append(running);
       }
       const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
-      (data.downloads || []).forEach((file) => { const link = element('a', 'secondary-action', file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
+      (data.downloads || []).forEach((file) => { const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' }; const link = element('a', 'secondary-action', labels[file.name] || file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
     }
     catch (error) { setText('#formal-job-results', error.message); }
   }
@@ -285,6 +296,13 @@
     showMessage($('#formal-run-message'), '');
     try { $('#formal-execution-stream').replaceChildren(); renderFormalStatus(await api('/api/formal-runs', body)); }
     catch (error) { showMessage($('#formal-run-message'), error.message); button.disabled = false; }
+  }
+
+  async function stopFormalRun() {
+    if (!activeFormalRunId) return;
+    const button = $('#stop-formal-run'); button.disabled = true; button.textContent = 'Requesting stop…';
+    try { renderFormalStatus(await api('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/stop')); }
+    catch (error) { showMessage($('#formal-run-message'), error.message); button.disabled = false; button.textContent = 'Stop Run'; }
   }
 
   function showMessage(node, message) {
@@ -560,6 +578,7 @@
   $('#guided-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('guided'));
   $('#custom-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('custom'));
   $('#run-paper-experiment').addEventListener('click', startFormalRun);
+  $('#stop-formal-run').addEventListener('click', stopFormalRun);
   $$('.tcm-sample').forEach((button) => button.addEventListener('click', () => { $('#tcm-question').value = button.dataset.question; $('#tcm-question').focus(); }));
 
   $('#tcm-consult-form').addEventListener('submit', async (event) => {
@@ -650,9 +669,19 @@
         const latest = [...newRows].reverse().find((row) => row.result && !row.result.error);
         if (latest) renderResearchRun(latest.result);
       }
-      setText('#consensus-progress-status', status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? 'Running question ' + Math.min(status.completed + 1, status.total) + ' of ' + status.total + '…' : status.status === 'complete' ? 'Run complete' : 'Run failed');
+      const customActive = ['queued', 'running', 'stop_requested'].includes(status.status);
+      setText('#consensus-progress-status', status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? 'Running question ' + Math.min(status.completed + 1, status.total) + ' of ' + status.total + '…' : status.status === 'stop_requested' ? 'Stopping after the active question…' : status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
       setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
-      if (status.status === 'queued' || status.status === 'running') {
+      $('#stop-custom-run').hidden = !customActive;
+      $('#stop-custom-run').disabled = status.status === 'stop_requested';
+      $('#stop-custom-run').textContent = status.status === 'stop_requested' ? 'Stopping after current question…' : 'Stop Run';
+      const partialDownloads = $('#custom-partial-downloads'); partialDownloads.replaceChildren();
+      if (status.status === 'stopped') {
+        const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' };
+        (results.downloads || []).filter((file) => labels[file.name]).forEach((file) => { const link = element('a', 'secondary-action', labels[file.name]); link.href = API + '/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); partialDownloads.append(link); });
+        partialDownloads.hidden = false;
+      } else partialDownloads.hidden = true;
+      if (customActive) {
         clearTimeout(customRunTimer);
         customRunTimer = setTimeout(refreshCustomRun, 2500);
         return;
@@ -662,9 +691,11 @@
       $('#consensus-submit').disabled = false;
       $('#consensus-submit').classList.remove('is-loading');
       $('#consensus-form').setAttribute('aria-busy', 'false');
-      stopResearchProgress(status.status === 'complete' ? 'complete' : 'failed');
+      stopResearchProgress(status.status === 'complete' || status.status === 'stopped' ? 'complete' : 'failed');
       showMessage($('#consensus-message'), status.status === 'complete'
         ? status.completed + ' of ' + status.total + ' custom questions completed in the cloud. The latest response is shown below.'
+        : status.status === 'stopped'
+        ? 'Stopped after ' + status.completed + ' / ' + status.total + ' executions. Partial replay — not directly comparable to the complete paper result.'
         : status.error || 'The Custom experiment failed.');
     }
     catch (error) {
@@ -692,8 +723,16 @@
     await refreshCustomRun();
   }
 
+  async function stopCustomRun() {
+    if (!activeCustomRunId) return;
+    const button = $('#stop-custom-run'); button.disabled = true; button.textContent = 'Requesting stop…';
+    try { await api('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/stop'); await refreshCustomRun(); }
+    catch (error) { showMessage($('#consensus-message'), error.message); button.disabled = false; button.textContent = 'Stop Run'; }
+  }
+
   bindChoiceGroup('architecture-condition', '#consensus-strategy'); bindChoiceGroup('retrieval-strategy', '#consensus-retrieval');
   $('#custom-question-count').addEventListener('change', updateCustomQuestionCount); updateCustomQuestionCount();
+  $('#stop-custom-run').addEventListener('click', stopCustomRun);
   $('#consensus-form').addEventListener('submit', async (event) => {
     event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const questionText = $('#consensus-question').value.trim(); const questions = questionText.split(/\r?\n/).map((question) => question.trim()).filter(Boolean); const requestedCount = selectedCustomQuestionCount();
     if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 100) return showMessage(message, 'Choose a question count from 1 to 100.');

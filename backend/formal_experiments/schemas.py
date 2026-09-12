@@ -32,7 +32,7 @@ class FormalRunStatus(BaseModel):
     run_id: str
     experiment_id: str
     run_mode: RunMode
-    status: Literal["queued", "running", "complete", "failed"]
+    status: Literal["queued", "running", "stop_requested", "stopped", "complete", "failed"]
     completed: int = Field(default=0, ge=0)
     total: int = Field(default=0, ge=0)
     current_condition: str | None = None
@@ -44,6 +44,9 @@ class FormalRunStatus(BaseModel):
     replay_output_dir: str = Field(description="Worker-relative replay workspace; never a web-service filesystem path")
     persistence: str = "PostgreSQL source of truth; execution is performed by a separate cloud worker"
     error: str | None = None
+    stop_requested: bool = False
+    stop_requested_at: float | None = None
+    stopped_at: float | None = None
 
 
 class CustomRunRequest(BaseModel):
@@ -75,7 +78,7 @@ class CustomRunRequest(BaseModel):
 
 class CustomRunStatus(BaseModel):
     run_id: str
-    status: Literal["queued", "running", "complete", "failed"]
+    status: Literal["queued", "running", "stop_requested", "stopped", "complete", "failed"]
     completed: int = Field(default=0, ge=0)
     total: int = Field(default=0, ge=0)
     current_stage: str | None = None
@@ -86,3 +89,6 @@ class CustomRunStatus(BaseModel):
     resume_state: str = "not_started"
     persistence: str = "durable PostgreSQL queue/results"
     error: str | None = None
+    stop_requested: bool = False
+    stop_requested_at: float | None = None
+    stopped_at: float | None = None

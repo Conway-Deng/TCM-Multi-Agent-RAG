@@ -282,6 +282,19 @@ async def formal_run_results(run_id: str, after: int = 0) -> dict:
         raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 
 
+@app.post("/api/formal-runs/{run_id}/stop", response_model=FormalRunStatus, status_code=202, summary="Request a cooperative stop at the next safe execution boundary")
+async def stop_formal_run(run_id: str) -> dict:
+    try:
+        status = formal_jobs.stop(run_id)
+        if status["status"] == "stop_requested":
+            await _wake_worker()
+        return status
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
 @app.post("/api/formal-runs/{run_id}/resume", response_model=FormalRunStatus, status_code=202, summary="Resume a failed replay from its isolated output directory")
 async def resume_formal_run(run_id: str) -> dict:
     try:
@@ -331,6 +344,19 @@ async def custom_run_results(run_id: str, after: int = 0) -> dict:
         return custom_jobs.results(run_id, after=max(0, after))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Custom run not found.") from exc
+
+
+@app.post("/api/custom-runs/{run_id}/stop", response_model=CustomRunStatus, status_code=202, summary="Request a cooperative stop after the active question")
+async def stop_custom_run(run_id: str) -> dict:
+    try:
+        status = custom_jobs.stop(run_id)
+        if status["status"] == "stop_requested":
+            await _wake_worker()
+        return status
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Custom run not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.get("/api/custom-runs/{run_id}/files/{file_path:path}", summary="Download a Custom batch artifact")

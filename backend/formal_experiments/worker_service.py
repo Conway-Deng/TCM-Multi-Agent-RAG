@@ -9,7 +9,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from .jobs import FormalJobService
+from .jobs import FormalJobService, persist_partial_report
 from .registry import frozen_root
 from .store import FormalJobStore
 
@@ -66,7 +66,12 @@ class FormalReplayWorker:
         rows = self.jobs._result_rows(output)
         self.store.replace_executions(job["run_id"], rows)
         status = self.jobs._worker_status(output)
-        status.update(status="running", resume_state="checkpointed", current_stage=status.get("current_stage") or "executing")
+        cancellation_requested = self.store.stop_requested(job["run_id"])
+        status.update(
+            status="stop_requested" if cancellation_requested else "running",
+            resume_state="stop_requested" if cancellation_requested else "checkpointed",
+            current_stage=status.get("current_stage") or ("finishing_current_execution" if cancellation_requested else "executing"),
+        )
         self.store.heartbeat(job["run_id"], self.worker_id, self.lease_seconds, **status)
         self._record_rss()
         return rows
@@ -99,11 +104,12 @@ class FormalReplayWorker:
                         case_id=request.get("case_id"),
                         frozen_root=frozen_root(),
                         output=output,
+                        should_stop=lambda: self.store.stop_requested(job["run_id"]),
                     )
                     while not future.done():
                         self._sync_formal(job, output)
                         time.sleep(self.poll_seconds)
-                    future.result()
+                    stopped = bool(future.result())
             finally:
                 for name, value in previous_environment.items():
                     if value is None:
@@ -118,6 +124,12 @@ class FormalReplayWorker:
             self._sync_formal(job, output)
             self.store.store_artifacts(job["run_id"], output)
         rows = self.store.executions(job["run_id"])
+        if (stopped or self.store.stop_requested(job["run_id"])) and len(rows) < job["total"]:
+            self.store.mark_stopped(job["run_id"])
+            persist_partial_report(self.store, job["run_id"])
+            self.store.delete_checkpoints(job["run_id"])
+            self._checkpoint_files.pop(job["run_id"], None)
+            return
         self.store.update(
             job["run_id"],
             status="complete",
@@ -126,6 +138,7 @@ class FormalReplayWorker:
             failed=sum(item["status"] != "Completed" for item in rows),
             current_stage="complete",
             resume_state="complete",
+            cancellation_requested=0,
             error=None,
             lease_until=None,
         )
@@ -154,6 +167,8 @@ class FormalReplayWorker:
             for sequence, question in enumerate(questions, start=1):
                 if sequence in completed:
                     continue
+                if self.store.stop_requested(job["run_id"]):
+                    break
                 case_id = f"CUSTOM-{sequence:03d}"
                 self.store.heartbeat(
                     job["run_id"], self.worker_id, self.lease_seconds,
@@ -192,6 +207,11 @@ class FormalReplayWorker:
 
         successful, failed = asyncio.run(execute_and_close_provider())
 
+        if self.store.stop_requested(job["run_id"]) and len(completed) < len(questions):
+            self.store.mark_stopped(job["run_id"])
+            persist_partial_report(self.store, job["run_id"])
+            return
+
         summary = {
             "result_origin": "new_exploratory_run",
             "formal_paper_reproduction": False,
@@ -210,23 +230,31 @@ class FormalReplayWorker:
         )
         self.store.update(
             job["run_id"], status="complete", completed=len(completed), successful=successful,
-            failed=failed, current_stage="complete", resume_state="complete", error=None, lease_until=None,
+            failed=failed, current_stage="complete", resume_state="complete", cancellation_requested=0, error=None, lease_until=None,
         )
 
     def run_job(self, job: dict) -> None:
         self.active_run_id = job["run_id"]
         try:
+            if self.store.stop_requested(job["run_id"]):
+                self.store.mark_stopped(job["run_id"])
+                persist_partial_report(self.store, job["run_id"])
+                return
             if job.get("job_kind") == "custom":
                 self._run_custom(job)
             else:
                 self._run_formal(job)
         except Exception as exc:
             self._checkpoint_files.pop(job["run_id"], None)
-            self.store.update(
-                job["run_id"], status="failed", current_stage="failed",
-                resume_state="checkpointed_for_resume", error=f"{type(exc).__name__}: {exc}",
-                lease_until=None,
-            )
+            if self.store.stop_requested(job["run_id"]):
+                self.store.mark_stopped(job["run_id"])
+                persist_partial_report(self.store, job["run_id"])
+            else:
+                self.store.update(
+                    job["run_id"], status="failed", current_stage="failed",
+                    resume_state="checkpointed_for_resume", error=f"{type(exc).__name__}: {exc}",
+                    lease_until=None,
+                )
         finally:
             self._record_rss()
             self.active_run_id = None

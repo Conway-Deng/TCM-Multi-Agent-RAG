@@ -107,9 +107,25 @@ class FormalJobStore:
                     request_json TEXT NOT NULL,
                     metadata_json TEXT NOT NULL,
                     worker_id TEXT,
-                    lease_until DOUBLE PRECISION
+                    lease_until DOUBLE PRECISION,
+                    cancellation_requested INTEGER NOT NULL DEFAULT 0,
+                    stop_requested_at DOUBLE PRECISION,
+                    stopped_at DOUBLE PRECISION
                 )
             """)
+            if self.kind == "postgres":  # pragma: no cover - deployed PostgreSQL
+                cursor.execute("ALTER TABLE formal_jobs ADD COLUMN IF NOT EXISTS cancellation_requested INTEGER NOT NULL DEFAULT 0")
+                cursor.execute("ALTER TABLE formal_jobs ADD COLUMN IF NOT EXISTS stop_requested_at DOUBLE PRECISION")
+                cursor.execute("ALTER TABLE formal_jobs ADD COLUMN IF NOT EXISTS stopped_at DOUBLE PRECISION")
+            else:
+                cursor.execute("PRAGMA table_info(formal_jobs)")
+                existing_columns = {str(row[1]) for row in cursor.fetchall()}
+                if "cancellation_requested" not in existing_columns:
+                    cursor.execute("ALTER TABLE formal_jobs ADD COLUMN cancellation_requested INTEGER NOT NULL DEFAULT 0")
+                if "stop_requested_at" not in existing_columns:
+                    cursor.execute("ALTER TABLE formal_jobs ADD COLUMN stop_requested_at DOUBLE PRECISION")
+                if "stopped_at" not in existing_columns:
+                    cursor.execute("ALTER TABLE formal_jobs ADD COLUMN stopped_at DOUBLE PRECISION")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS formal_executions (
                     run_id TEXT NOT NULL,
@@ -192,6 +208,7 @@ class FormalJobStore:
         value = self._row(row, columns)
         value["request"] = json.loads(value.pop("request_json"))
         value["metadata"] = json.loads(value.pop("metadata_json"))
+        value["cancellation_requested"] = bool(value.get("cancellation_requested"))
         value["elapsed_seconds"] = round(time.time() - (value.get("started_at") or value["created_at"]), 3)
         return value
 
@@ -211,15 +228,15 @@ class FormalJobStore:
             cursor = connection.cursor()
             if self.kind == "sqlite":
                 cursor.execute("BEGIN IMMEDIATE")
-                cursor.execute("SELECT run_id FROM formal_jobs WHERE status = 'queued' OR (status = 'running' AND lease_until < ?) ORDER BY created_at LIMIT 1", (now,))
+                cursor.execute("SELECT run_id FROM formal_jobs WHERE status = 'queued' OR (status IN ('running', 'stop_requested') AND (lease_until IS NULL OR lease_until < ?)) ORDER BY created_at LIMIT 1", (now,))
             else:  # pragma: no cover - deployed PostgreSQL
-                cursor.execute("SELECT run_id FROM formal_jobs WHERE status = 'queued' OR (status = 'running' AND lease_until < %s) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1", (now,))
+                cursor.execute("SELECT run_id FROM formal_jobs WHERE status = 'queued' OR (status IN ('running', 'stop_requested') AND (lease_until IS NULL OR lease_until < %s)) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1", (now,))
             row = cursor.fetchone()
             if row is None:
                 return None
             run_id = row[0]
             cursor.execute(
-                self._sql("UPDATE formal_jobs SET status = 'running', resume_state = 'running', worker_id = ?, lease_until = ?, started_at = COALESCE(started_at, ?), updated_at = ? WHERE run_id = ?"),
+                self._sql("UPDATE formal_jobs SET status = CASE WHEN cancellation_requested = 1 THEN 'stop_requested' ELSE 'running' END, resume_state = CASE WHEN cancellation_requested = 1 THEN 'stop_requested' ELSE 'running' END, worker_id = ?, lease_until = ?, started_at = COALESCE(started_at, ?), updated_at = ? WHERE run_id = ?"),
                 (worker_id, now + lease_seconds, now, now, run_id),
             )
         return self.get(run_id)
@@ -233,6 +250,50 @@ class FormalJobStore:
         if job["status"] != "failed":
             raise ValueError("Only a failed replay job can be resumed")
         self.update(run_id, status="queued", resume_state="queued", error=None, worker_id=None, lease_until=None)
+        return self.get(run_id)
+
+    def request_stop(self, run_id: str) -> dict[str, Any]:
+        """Persist an idempotent cooperative stop request without interrupting active work."""
+        self.initialize()
+        now = time.time()
+        with self.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(self._sql("SELECT status FROM formal_jobs WHERE run_id = ?"), (run_id,))
+            row = cursor.fetchone()
+            if row is None:
+                raise KeyError(run_id)
+            status = str(row[0])
+            if status in {"complete", "failed"}:
+                raise ValueError(f"A {status} run cannot be stopped")
+            if status == "queued":
+                cursor.execute(
+                    self._sql("UPDATE formal_jobs SET status = 'stopped', resume_state = 'stopped', current_stage = 'stopped', cancellation_requested = 1, stop_requested_at = COALESCE(stop_requested_at, ?), stopped_at = COALESCE(stopped_at, ?), worker_id = NULL, lease_until = NULL, updated_at = ? WHERE run_id = ?"),
+                    (now, now, now, run_id),
+                )
+            elif status not in {"stopped", "stop_requested"}:
+                cursor.execute(
+                    self._sql("UPDATE formal_jobs SET status = 'stop_requested', resume_state = 'stop_requested', cancellation_requested = 1, stop_requested_at = COALESCE(stop_requested_at, ?), updated_at = ? WHERE run_id = ?"),
+                    (now, now, run_id),
+                )
+        return self.get(run_id)
+
+    def stop_requested(self, run_id: str) -> bool:
+        return bool(self.get(run_id).get("cancellation_requested"))
+
+    def mark_stopped(self, run_id: str) -> dict[str, Any]:
+        now = time.time()
+        self.update(
+            run_id,
+            status="stopped",
+            resume_state="stopped",
+            current_stage="stopped",
+            cancellation_requested=1,
+            stop_requested_at=self.get(run_id).get("stop_requested_at") or now,
+            stopped_at=now,
+            worker_id=None,
+            lease_until=None,
+            error=None,
+        )
         return self.get(run_id)
 
     @staticmethod
@@ -451,7 +512,7 @@ class FormalJobStore:
         self.initialize()
         with self.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT COUNT(*) FROM formal_jobs WHERE status IN ('queued', 'running')")
+            cursor.execute("SELECT COUNT(*) FROM formal_jobs WHERE status IN ('queued', 'running', 'stop_requested')")
             return int(cursor.fetchone()[0])
 
     def queue_summary(self) -> dict[str, int]:
@@ -460,7 +521,7 @@ class FormalJobStore:
             cursor = connection.cursor()
             cursor.execute("SELECT status, COUNT(*) FROM formal_jobs GROUP BY status")
             values = {str(row[0]): int(row[1]) for row in cursor.fetchall()}
-        return {"queued": values.get("queued", 0), "running": values.get("running", 0)}
+        return {"queued": values.get("queued", 0), "running": values.get("running", 0), "stop_requested": values.get("stop_requested", 0)}
 
     def cleanup_old_replays(self, retention_days: int) -> int:
         """Delete old generated jobs only; frozen historical outputs never enter this database."""
@@ -470,7 +531,7 @@ class FormalJobStore:
         cutoff = time.time() - retention_days * 86400
         with self.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute(self._sql("SELECT run_id FROM formal_jobs WHERE status IN ('complete', 'failed') AND updated_at < ?"), (cutoff,))
+            cursor.execute(self._sql("SELECT run_id FROM formal_jobs WHERE status IN ('complete', 'failed', 'stopped') AND updated_at < ?"), (cutoff,))
             run_ids = [row[0] for row in cursor.fetchall()]
             for run_id in run_ids:
                 for table in ("formal_executions", "formal_artifacts", "formal_checkpoints", "formal_checkpoint_chunks"):
