@@ -236,6 +236,8 @@ class ResearchRequest(BaseModel):
     model_profile: ModelProfile | None = None
     model_rotation: Literal[1, 2, 3] = 1
     model_target: ModelTarget | None = None
+    specialist_model_targets: list[ModelTarget] = Field(default_factory=list, max_length=6)
+    consensus_model_target: ModelTarget | None = None
 
     @field_validator("question")
     @classmethod
@@ -247,8 +249,13 @@ class ResearchRequest(BaseModel):
 
     @model_validator(mode="after")
     def model_selection_is_unambiguous(self):
-        if self.model_profile is not None and self.model_target is not None:
-            raise ValueError("model_profile and model_target cannot be used together")
+        selectors = [
+            self.model_profile is not None,
+            self.model_target is not None,
+            bool(self.specialist_model_targets) or self.consensus_model_target is not None,
+        ]
+        if sum(selectors) > 1:
+            raise ValueError("model_profile, model_target, and explicit model assignments cannot be used together")
         return self
 
 

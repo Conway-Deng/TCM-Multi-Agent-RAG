@@ -59,7 +59,13 @@ def specialist_provider_for(
     seat_index: int,
     rotation_id: int,
     model_target: str | None = None,
+    specialist_targets: list[str] | None = None,
 ) -> LLMProvider:
+    if specialist_targets:
+        selected = getattr(specialist_targets[seat_index % len(specialist_targets)], "value", specialist_targets[seat_index % len(specialist_targets)])
+        if selected not in {"qwen", "glm", "deepseek"}:
+            raise ValueError(f"Unsupported specialist model target: {selected}")
+        return configured_model_provider(providers, selected)
     target = getattr(model_target, "value", model_target)
     if target is not None:
         if target not in {"qwen", "glm", "deepseek"}:
@@ -79,8 +85,9 @@ def specialist_provider_for(
     return configured_model_provider(providers, rotation[seat_index % len(rotation)])
 
 
-def consensus_provider_for(providers: ProviderBundle) -> LLMProvider:
-    return configured_model_provider(providers, "consensus")
+def consensus_provider_for(providers: ProviderBundle, model_target: str | None = None) -> LLMProvider:
+    selected = getattr(model_target, "value", model_target)
+    return configured_model_provider(providers, selected or "consensus")
 
 
 def get_provider_bundle(*, force_mock: bool = False) -> ProviderBundle:

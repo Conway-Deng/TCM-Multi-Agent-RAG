@@ -162,6 +162,16 @@ def test_m1_m2_rotations_and_consensus_model_are_frozen() -> None:
     assert consensus_provider_for(bundle).model == QWEN
 
 
+def test_explicit_custom_specialist_and_consensus_assignments_use_configured_providers() -> None:
+    bundle = _bundle()
+    targets = [ModelTarget.QWEN, ModelTarget.GLM, ModelTarget.DEEPSEEK]
+    assert [
+        specialist_provider_for(bundle, None, seat_index=seat, rotation_id=1, specialist_targets=targets).model
+        for seat in range(6)
+    ] == [QWEN, GLM, DEEPSEEK, QWEN, GLM, DEEPSEEK]
+    assert consensus_provider_for(bundle, ModelTarget.GLM).model == GLM
+
+
 @pytest.mark.parametrize("model_target, expected_model", [(ModelTarget.QWEN, QWEN), (ModelTarget.GLM, GLM), (ModelTarget.DEEPSEEK, DEEPSEEK)])
 def test_each_configured_model_can_run_independently_and_traces_actual_model(model_target: ModelTarget, expected_model: str) -> None:
     async def run_once():
@@ -194,6 +204,13 @@ def test_model_target_and_profile_cannot_be_combined() -> None:
             question="Explain insomnia in TCM teaching.",
             model_profile=ModelProfile.M2,
             model_target=ModelTarget.GLM,
+        )
+    with pytest.raises(ValueError, match="cannot be used together"):
+        ResearchRequest(
+            question="Explain insomnia in TCM teaching.",
+            model_target=ModelTarget.QWEN,
+            specialist_model_targets=[ModelTarget.QWEN, ModelTarget.GLM],
+            consensus_model_target=ModelTarget.DEEPSEEK,
         )
 
 

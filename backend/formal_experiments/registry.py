@@ -28,13 +28,24 @@ def validate_replay_path(root: Path, path: Path) -> Path:
 
 
 def _full_runs_enabled() -> bool:
-    return os.getenv("FORMAL_ALLOW_FULL_BENCHMARK", "").strip().casefold() in {"1", "true", "yes", "on"}
+    return _cloud_worker_ready() or any(
+        os.getenv(name, "").strip().casefold() in {"1", "true", "yes", "on"}
+        for name in ("FORMAL_DURABLE_JOBS_ENABLED", "FORMAL_ALLOW_FULL_BENCHMARK")
+    )
 
 
 def _provider_ready() -> bool:
-    return (
+    direct_provider = (
         os.getenv("LLM_PROVIDER", "").strip().casefold() == "siliconflow"
         and bool(os.getenv("LLM_API_KEY", "").strip())
+    )
+    return direct_provider or _cloud_worker_ready()
+
+
+def _cloud_worker_ready() -> bool:
+    return bool(
+        os.getenv("FORMAL_WORKER_PUBLIC_URL", "").strip()
+        and os.getenv("FORMAL_DATABASE_URL", "").strip()
     )
 
 
@@ -156,8 +167,16 @@ def public_registry() -> list[dict[str, Any]]:
         missing = [path for path in item.pop("required_paths") if not (root / path).exists()]
         integrity_ok, integrity_errors = verify_deployment_integrity(root, item["experiment_id"])
         item["paper_protocol_locked"] = True
+        item["scheduled_executions"] = item["planned_executions"]
         item["historical_results_label"] = "Historical paper result"
         item["replay_results_label"] = "New replay result"
+        item["historical_result"] = {
+            "label": "Historical paper result",
+            "status": "frozen_read_only",
+            "questions": item["dataset_size"],
+            "scheduled_executions": item["planned_executions"],
+            "historical_results_modified": False,
+        }
         item["artifact_root_configured"] = not missing and integrity_ok
         item["hash_verification"] = "PASS" if integrity_ok else "FAIL"
         item["provider_configured"] = _provider_ready()
@@ -165,8 +184,12 @@ def public_registry() -> list[dict[str, Any]]:
         item["missing_artifacts"] = missing
         online = item.pop("online_run_modes")
         local = item.pop("local_run_modes")
+        cloud_worker = _cloud_worker_ready()
         item["run_capabilities"] = {
-            mode: {"state": "READY ONLINE" if mode in online else "LOCAL FULL REPLAY" if mode in local else "UNAVAILABLE", "reason": "" if mode in online else "Requires FORMAL_ALLOW_FULL_BENCHMARK=true and a persistent local worker." if mode in local else "The frozen protocol does not expose this mode."}
+            mode: {
+                "state": "READY ONLINE" if mode in online or (mode == "full_benchmark" and mode in local and cloud_worker) else "LOCAL FULL REPLAY" if mode in local else "UNAVAILABLE",
+                "reason": "" if mode in online or (mode == "full_benchmark" and mode in local and cloud_worker) else "Requires the durable experiment worker." if mode in local else "The frozen protocol does not expose this mode.",
+            }
             for mode in ("one_case", "paired", "full_benchmark")
         }
         if missing or not integrity_ok:

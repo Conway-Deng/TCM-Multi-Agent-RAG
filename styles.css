@@ -4635,7 +4635,6 @@ body {
 .paper-config-fields div, .experiment-guide dl div, .formal-job-grid div { padding: .7rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
 .paper-config-fields dt, .experiment-guide dt, .formal-job-grid span { color: var(--text-muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 .paper-config-fields dd, .experiment-guide dd { margin: .25rem 0 0; line-height: 1.4; }
-.paper-config-fields dd::after { content: "  🔒"; font-size: .72rem; }
 .paper-condition-controls { display: flex; flex-wrap: wrap; gap: .55rem; margin: .8rem 0; }
 .paper-condition-controls label { display: flex; gap: .45rem; align-items: flex-start; padding: .65rem .75rem; border: 1px solid var(--border); border-radius: 9px; background: #fff; }
 .paper-condition-controls input { margin-top: .18rem; }
@@ -4656,12 +4655,22 @@ body {
 .formal-run-buttons button:disabled { cursor: not-allowed; opacity: .5; }
 .formal-job-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }
 .formal-job-grid strong { display: block; margin-top: .25rem; }
+.formal-progress-heading { display: flex; justify-content: space-between; gap: 1rem; margin: .9rem 0 .4rem; }
+.formal-job-panel progress { width: 100%; height: .7rem; accent-color: var(--accent); }
+.formal-execution-stream { display: grid; gap: .35rem; max-height: 18rem; margin: 1rem 0; padding: 0; overflow: auto; list-style: none; }
+.formal-execution-stream li { display: grid; grid-template-columns: 3rem minmax(8rem, 1fr) minmax(4rem, .6fr) auto; gap: .6rem; align-items: center; padding: .5rem .65rem; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: .82rem; }
+.formal-execution-number { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.formal-result-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 .formal-job-panel pre { max-height: 22rem; overflow: auto; white-space: pre-wrap; }
 .formal-job-downloads { display: flex; flex-wrap: wrap; gap: .45rem; margin: .75rem 0; }
 .custom-workbench-label { margin-bottom: 1rem; padding: .75rem; border-left: 3px solid var(--warning); background: #fff9ed; }
 .custom-workbench-label p { margin: 0; }
-@media (max-width: 860px) { .formal-experiment-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-capability-statuses { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading { display: grid; } }
+.custom-model-assignment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }
+.custom-model-assignment-grid label, .custom-question-count-row label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .78rem; font-weight: 800; }
+.custom-model-assignment-grid select, .custom-question-count-row select, .custom-question-count-row input { width: 100%; padding: .7rem .75rem; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); font: inherit; }
+.custom-question-count-row { display: grid; grid-template-columns: repeat(2, minmax(0, 14rem)); gap: .7rem; }
+@media (max-width: 860px) { .formal-experiment-cards, .formal-result-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid, .custom-model-assignment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-result-columns, .custom-model-assignment-grid, .custom-question-count-row { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading { display: grid; } .formal-execution-stream li { grid-template-columns: 2.5rem 1fr; } }
 
 .research-notation-card {
   margin-top: .8rem;

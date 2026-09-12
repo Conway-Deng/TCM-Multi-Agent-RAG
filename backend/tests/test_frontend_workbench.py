@@ -10,7 +10,7 @@ def test_research_selector_uses_controlled_c1_and_separates_legacy_demo() -> Non
     assert "C1 · Single-RAG baseline" in HTML
     assert "Legacy Demo" in HTML
     assert "16-entry compatibility fixture. Not used for formal experiments" in HTML
-    assert "/api/research/run" in JS
+    assert "/api/custom-runs" in JS
     assert "Use Research Compare C1" not in HTML
 
 
@@ -41,40 +41,27 @@ def test_export_contract_is_secret_safe_and_supports_run_and_compare() -> None:
     assert "backend/.env" not in JS
 
 
-def test_runtime_model_selector_and_payload_contract() -> None:
-    assert "<span>Step 4</span>Multi-Agent model configuration" in HTML
-    assert 'id="consensus-model-target"' in HTML
-    assert 'id="consensus-model-profile"' in HTML
-    assert '<option value="qwen" selected>Qwen · Qwen/Qwen3-8B</option>' in HTML
-    assert '<option value="glm">GLM · THUDM/GLM-Z1-9B-0414</option>' in HTML
-    assert '<option value="deepseek">DeepSeek · deepseek-ai/DeepSeek-R1-0528-Qwen3-8B</option>' in HTML
-    assert HTML.count('name="interactive-model-configuration"') == 5
-    assert 'name="interactive-model-configuration" value="target:qwen" checked' in HTML
-    assert 'name="interactive-model-configuration" value="target:glm"' in HTML
-    assert 'name="interactive-model-configuration" value="target:deepseek"' in HTML
-    assert 'name="interactive-model-configuration" value="profile:M1"' in HTML
-    assert 'name="interactive-model-configuration" value="profile:M2"' in HTML
-    assert "profile ? { model_profile: profile } : { model_target: $('#consensus-model-target').value || 'qwen' }" in JS
+def test_custom_model_assignment_and_batch_payload_contract() -> None:
+    assert "<span>Step 4</span>Model assignments" in HTML
+    assert all(f'id="specialist-model-{seat}"' in HTML for seat in ("a", "b", "c"))
+    assert 'id="custom-consensus-model"' in HTML
+    assert 'id="custom-question-count"' in HTML
+    for count in ("1", "5", "10", "20", "50", "100", "custom"):
+        assert f'<option value="{count}"' in HTML
+    assert "specialist_model_targets:" in JS
+    assert "consensus_model_target:" in JS
     assert "...selectedModelConfigurationPayload()" in JS
-    assert "M1 · Homogeneous Multi-Agent" in HTML
-    assert "Qwen × 3 specialist agents" in HTML
-    assert all(label in HTML for label in ("Agent A · Qwen ✓", "Agent B · Qwen ✓", "Agent C · Qwen ✓"))
-    assert "M2 · Heterogeneous Multi-Agent" in HTML
-    assert "Qwen + GLM + DeepSeek" in HTML
-    assert all(label in HTML for label in ("Qwen ✓", "GLM ✓", "DeepSeek ✓", "Consensus · Qwen"))
-    assert "Specialist seat assignment follows the configured model rotation." in HTML
-    assert "Interactive demonstration of the model configurations evaluated in A3. Formal A3 results were produced under the frozen experimental protocol." in HTML
-    assert "Formal A3 reproduction" not in HTML
-    assert "Published experiment rerun" not in HTML
+    payload_source = JS[JS.index("function selectedModelConfigurationPayload"):JS.index("function selectedCustomQuestionCount")]
+    assert "model_profile:" not in payload_source
+    assert "\n      model_target:" not in payload_source
+    assert "questions: questions.slice(0, requestedCount)" in JS
+    assert "await api('/api/custom-runs'" in JS
+    assert "Run Custom Experiment" in HTML
 
 
-def test_multi_model_profile_warning_and_trace_diagnostics() -> None:
-    assert "C1 is a single-agent baseline. M1/M2 are Multi-Agent configurations and are most meaningful for Multi-Agent / Debate architectures." in HTML
-    assert "input.disabled = isC1" in JS
-    assert "if (isC1 && profile.value)" in JS
-    assert "target.value = 'qwen'" in JS
-    assert "Advanced provider diagnostics" in HTML
-    assert "Provider diagnostic only; not the A3 Multi-Agent comparison." in HTML
+def test_custom_mode_remains_exploratory_and_trace_diagnostics_remain() -> None:
+    assert "C1 uses only Specialist A" in HTML
+    assert "Custom runs are exploratory and do not reproduce a formal paper experiment." in HTML
     assert "Models in provider attempts" in HTML
     assert "attemptedModels" in JS
     assert ".map((attempt) => attempt.model).filter(Boolean)" in JS

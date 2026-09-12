@@ -59,6 +59,8 @@ def _extract_finish_reason(data: dict[str, Any]) -> str | None:
 
 
 class OpenAICompatibleLLMProvider:
+    _shared_http_client: httpx.AsyncClient | None = None
+
     def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
         self.name = provider_name
         self.api_key = api_key
@@ -88,14 +90,16 @@ class OpenAICompatibleLLMProvider:
             frequency_penalty=frequency_penalty,
         )
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.post(
-                    f"{self.base_url}/chat/completions",
-                    headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
-                    json=payload,
-                )
-                response.raise_for_status()
-                data = response.json()
+            if self.__class__._shared_http_client is None or getattr(self.__class__._shared_http_client, "is_closed", False):
+                self.__class__._shared_http_client = httpx.AsyncClient(timeout=None)
+            response = await self.__class__._shared_http_client.post(
+                f"{self.base_url}/chat/completions",
+                headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            data = response.json()
             content = _extract_chat_content(data)
             finish_reason = _extract_finish_reason(data)
             usage = data.get("usage", {})
@@ -120,3 +124,11 @@ class OpenAICompatibleLLMProvider:
             raise ProviderUnavailable("LLM provider returned a malformed response", error_type="malformed_response") from exc
         except httpx.HTTPError as exc:
             raise ProviderUnavailable("LLM provider unavailable", error_type="unknown") from exc
+
+    @classmethod
+    async def close_shared_http_client(cls) -> None:
+        if cls._shared_http_client is not None and not getattr(cls._shared_http_client, "is_closed", False):
+            close = getattr(cls._shared_http_client, "aclose", None)
+            if close is not None:
+                await close()
+        cls._shared_http_client = None

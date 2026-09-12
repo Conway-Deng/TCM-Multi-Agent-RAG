@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import asyncio
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import perf_counter
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
+import httpx
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from agents import AGENT_REGISTRY
@@ -16,7 +19,8 @@ from config import get_settings
 from corpus import corpus_stats
 from judges import JUDGE_REGISTRY
 from formal_experiments import formal_jobs, public_registry
-from formal_experiments.schemas import FormalRunRequest, FormalRunStatus
+from formal_experiments.jobs import custom_jobs
+from formal_experiments.schemas import CustomRunRequest, CustomRunStatus, FormalRunRequest, FormalRunStatus
 from orchestration import CONDITION_REGISTRY, ResearchWorkbench, get_run
 from retrieval import RETRIEVER_REGISTRY, RetrievalEngine
 from schemas.research import CompareRequest, CompareResponse, ResearchRequest, ResearchRunResult, RetrievalItem, RetrievalStrategy
@@ -27,13 +31,56 @@ load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 settings = get_settings()
 
 
+def _control_plane_only() -> bool:
+    return os.getenv("RENDER_API_CONTROL_PLANE_ONLY", "").strip().casefold() in {"1", "true", "yes", "on"}
+
+
+async def _wake_worker() -> bool:
+    url = os.getenv("FORMAL_WORKER_PUBLIC_URL", "").strip().rstrip("/")
+    if not url:
+        return False
+    token = os.getenv("FORMAL_WORKER_WAKE_TOKEN", "").strip()
+    headers = {"X-Worker-Wake-Token": token} if token else {}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(f"{url}/wake", headers=headers)
+            response.raise_for_status()
+        return True
+    except httpx.HTTPError:
+        # The durable job remains queued. The periodic heartbeat or the
+        # worker's next cold start can claim it safely.
+        return False
+
+
+async def _worker_keepalive() -> None:
+    interval = max(120, min(300, int(os.getenv("FORMAL_WORKER_HEARTBEAT_SECONDS", "180"))))
+    while True:
+        await asyncio.sleep(interval)
+        if formal_jobs.store.active_count() > 0:
+            await _wake_worker()
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # In required local-research mode this loads and validates corpus selection
-    # before the server accepts traffic. Missing artifacts fail startup loudly.
-    corpus_stats()
-    yield
-    await OpenAICompatibleClient.close_shared_http_client()
+    keepalive_task = None
+    if _control_plane_only():
+        formal_jobs.store.initialize()
+        keepalive_task = asyncio.create_task(_worker_keepalive())
+    else:
+        # Local execution mode validates its selected corpus before accepting traffic.
+        corpus_stats()
+    try:
+        yield
+    finally:
+        if keepalive_task is not None:
+            keepalive_task.cancel()
+            try:
+                await keepalive_task
+            except asyncio.CancelledError:
+                pass
+        formal_jobs.store.close()
+        custom_jobs.store.close()
+        await OpenAICompatibleClient.close_shared_http_client()
 
 
 app = FastAPI(
@@ -71,6 +118,27 @@ async def validation_exception_handler(_, exc: RequestValidationError) -> JSONRe
 
 @app.get("/health")
 async def health() -> dict[str, object]:
+    if _control_plane_only():
+        return {
+            "status": "ok",
+            "service": "TCM Multi-Agent RAG control plane",
+            "version": app.version,
+            "scope": "tcm_only",
+            "runtime_profile": "cloud_control_plane",
+            "corpus_mode": "worker_only",
+            "corpus_name": "Loaded by experiment worker only",
+            "corpus_version": "worker_managed",
+            "corpus_chunk_count": 0,
+            "corpus_source_count": 0,
+            "active_corpus": "not_loaded_in_api",
+            "provider_mode": "worker_managed",
+            "provider_configured": "worker_managed",
+            "provider_ready": bool(os.getenv("FORMAL_WORKER_PUBLIC_URL", "").strip()),
+            "llm_execution_enabled": False,
+            "mock_mode": False,
+            "research_mode": True,
+            "strict_medical_safety": settings.strict_medical_safety,
+        }
     corpus = corpus_stats()
     return {
         "status": "ok",
@@ -96,21 +164,29 @@ async def health() -> dict[str, object]:
 
 @app.post("/api/tcm/consult", response_model=TCMConsultResponse, summary="Run the conventional TCM Single RAG interface")
 async def tcm_consult(request: TCMConsultRequest) -> TCMConsultResponse:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Direct execution is disabled on the cloud control plane.")
     return await consult(request)
 
 
 @app.post("/api/tcm/multi-agent/consult", response_model=ResearchRunResult, summary="Run a TCM specialist multi-agent condition")
 async def multi_agent_consult(request: ResearchRequest) -> ResearchRunResult:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Queue a Custom experiment for the cloud worker.")
     return await ResearchWorkbench().run(request)
 
 
 @app.post("/api/research/run", response_model=ResearchRunResult, summary="Run one controlled research condition")
 async def research_run(request: ResearchRequest) -> ResearchRunResult:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Queue a Custom experiment for the cloud worker.")
     return await ResearchWorkbench().run(request)
 
 
 @app.post("/api/research/compare", response_model=CompareResponse, summary="Compare multiple conditions on the same question")
 async def research_compare(request: CompareRequest) -> CompareResponse:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Direct comparison is disabled on the cloud control plane.")
     return await ResearchWorkbench().compare(request)
 
 
@@ -159,11 +235,19 @@ class RetrievalSearchRequest(BaseModel):
 
 @app.post("/api/retrieval/search", response_model=list[RetrievalItem], summary="Inspect a retrieval strategy directly")
 async def retrieval_search(request: RetrievalSearchRequest) -> list[RetrievalItem]:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Retrieval executes only on the cloud experiment worker.")
     return await RetrievalEngine().search(request.query, strategy=request.retrieval_strategy, top_k=request.top_k, topics=request.topics)
 
 
 @app.get("/api/corpus/stats")
 async def api_corpus_stats() -> dict[str, object]:
+    if _control_plane_only():
+        return {
+            "corpus_name": "Loaded by experiment worker only", "corpus_version": "worker_managed",
+            "chunk_count": 0, "source_count": 0, "corpus_mode": "worker_only",
+            "active_corpus": "not_loaded_in_api", "runtime_profile": "cloud_control_plane",
+        }
     return corpus_stats()
 
 
@@ -175,7 +259,9 @@ async def formal_experiments() -> list[dict]:
 @app.post("/api/formal-runs", response_model=FormalRunStatus, status_code=202, summary="Start a new replay of a frozen paper protocol")
 async def create_formal_run(request: FormalRunRequest) -> dict:
     try:
-        return formal_jobs.create(request)
+        status = formal_jobs.create(request)
+        await _wake_worker()
+        return status
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -185,23 +271,25 @@ async def formal_run_status(run_id: str) -> dict:
     try:
         return formal_jobs.get(run_id)
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 
 
 @app.get("/api/formal-runs/{run_id}/results", summary="Read replay results without historical paper outputs")
-async def formal_run_results(run_id: str) -> dict:
+async def formal_run_results(run_id: str, after: int = 0) -> dict:
     try:
-        return formal_jobs.results(run_id)
+        return formal_jobs.results(run_id, after=max(0, after))
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 
 
 @app.post("/api/formal-runs/{run_id}/resume", response_model=FormalRunStatus, status_code=202, summary="Resume a failed replay from its isolated output directory")
 async def resume_formal_run(run_id: str) -> dict:
     try:
-        return formal_jobs.resume(run_id)
+        status = formal_jobs.resume(run_id)
+        await _wake_worker()
+        return status
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
@@ -209,9 +297,47 @@ async def resume_formal_run(run_id: str) -> dict:
 @app.get("/api/formal-runs/{run_id}/files/{file_path:path}", summary="Download a generated replay artifact")
 async def formal_run_file(run_id: str, file_path: str):
     try:
-        path = formal_jobs.file(run_id, file_path)
-        return FileResponse(path, filename=path.name)
+        media_type, content = formal_jobs.file(run_id, file_path)
+        filename = Path(file_path).name.replace('"', "")
+        return Response(
+            content=content,
+            media_type=media_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Formal replay run not found in this process.") from exc
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/custom-runs", response_model=CustomRunStatus, status_code=202, summary="Queue an exploratory Custom Workbench batch")
+async def create_custom_run(request: CustomRunRequest) -> dict:
+    status = custom_jobs.create(request)
+    await _wake_worker()
+    return status
+
+
+@app.get("/api/custom-runs/{run_id}", response_model=CustomRunStatus, summary="Read Custom batch status")
+async def custom_run_status(run_id: str) -> dict:
+    try:
+        return custom_jobs.get(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Custom run not found.") from exc
+
+
+@app.get("/api/custom-runs/{run_id}/results", summary="Read incremental Custom batch results")
+async def custom_run_results(run_id: str, after: int = 0) -> dict:
+    try:
+        return custom_jobs.results(run_id, after=max(0, after))
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Custom run not found.") from exc
+
+
+@app.get("/api/custom-runs/{run_id}/files/{file_path:path}", summary="Download a Custom batch artifact")
+async def custom_run_file(run_id: str, file_path: str):
+    try:
+        media_type, content = custom_jobs.file(run_id, file_path)
+        filename = Path(file_path).name.replace('"', "")
+        return Response(content=content, media_type=media_type, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=404, detail="Custom run file not found.") from exc

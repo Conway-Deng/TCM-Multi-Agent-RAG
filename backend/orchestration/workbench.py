@@ -11,7 +11,7 @@ from config import get_settings
 from corpus import corpus_stats, corpus_version
 from judges import run_judges
 from prompts import prompt_metadata
-from providers import get_provider_bundle, specialist_provider_for
+from providers import consensus_provider_for, get_provider_bundle, specialist_provider_for
 from providers.base import GenerationResult, LLMProvider
 from providers.local import DeterministicMockLLM
 from providers.openai_compatible import ProviderUnavailable
@@ -194,11 +194,12 @@ def _agent_prompt(agent, question: str, language: str, baseline: ResearchAgentOu
 
 
 class ResearchWorkbench:
-    def __init__(self, *, force_mock: bool = False) -> None:
+    def __init__(self, *, force_mock: bool = False, cache_results: bool = True) -> None:
         self.settings = get_settings()
         self.providers = get_provider_bundle(force_mock=force_mock)
         self.retriever = RetrievalEngine()
         self.planner = QueryPlannerAgent()
+        self.cache_results = cache_results
 
     async def _run_agent(self, agent, request, plan, evidence, target_plan, *, llm_enabled: bool, provider: LLMProvider):
         baseline = await agent.answer(
@@ -321,7 +322,8 @@ class ResearchWorkbench:
                 RunState.EVIDENCE_INSUFFICIENT: "The limited corpus does not cover this question well enough, so the system abstained.",
             }[plan.scope_state]
             result = self._abstention(run_id, request, condition, plan, answer, timings, started)
-            _RUN_CACHE[run_id] = result
+            if self.cache_results:
+                _RUN_CACHE[run_id] = result
             return result
 
         evidence = []
@@ -404,6 +406,7 @@ class ResearchWorkbench:
                         seat_index=seat_index,
                         rotation_id=request.model_rotation,
                         model_target=request.model_target,
+                        specialist_targets=request.specialist_model_targets,
                     ),
                 )
                 for seat_index, agent in enumerate(agents)
@@ -422,10 +425,52 @@ class ResearchWorkbench:
             timings.append(StageTiming(stage="judges", latency_ms=round((time.perf_counter() - stage) * 1000)))
             separate_targets = bool(target_plan and not target_plan["relationship_evidence_ids"])
             final_answer, _, _, confidence = _synthesis(outputs, condition, debate_trace, judges, separate_targets=separate_targets)
+            consensus_token_usage = {"prompt_tokens": 0, "completion_tokens": 0}
+            if request.consensus_model_target is not None and llm_enabled and outputs:
+                consensus_provider = consensus_provider_for(self.providers, request.consensus_model_target)
+                provider_calls += 1
+                consensus_started = time.perf_counter()
+                try:
+                    consensus_result = await consensus_provider.generate(
+                        system=(
+                            "You are the consensus writer for an exploratory TCM research workbench. "
+                            "Rewrite only the supplied evidence-scoped synthesis. Preserve every citation token, "
+                            "uncertainty, disagreement, and safety limitation. Do not add diagnosis, dosage, or treatment certainty."
+                        ),
+                        prompt=final_answer,
+                        temperature=0.0,
+                        max_tokens=512,
+                    )
+                    final_answer = consensus_result.text.strip()
+                    consensus_token_usage = {
+                        "prompt_tokens": consensus_result.prompt_tokens,
+                        "completion_tokens": consensus_result.completion_tokens,
+                    }
+                    successful_provider_calls += 1
+                    provider_attempts.append(ProviderAttempt(
+                        attempt=1,
+                        provider=consensus_result.provider,
+                        model=consensus_result.model,
+                        elapsed_ms=round((time.perf_counter() - consensus_started) * 1000),
+                        success=True,
+                        finish_reason=consensus_result.finish_reason,
+                    ))
+                except ProviderUnavailable as exc:
+                    provider_errors.append(str(exc))
+                    provider_attempts.append(ProviderAttempt(
+                        attempt=1,
+                        provider=consensus_provider.name,
+                        model=consensus_provider.model,
+                        elapsed_ms=round((time.perf_counter() - consensus_started) * 1000),
+                        success=False,
+                        http_status=exc.http_status,
+                        error_type=exc.error_type,
+                        error=str(exc),
+                    ))
             citations = list({(item.evidence_id, item.source_id): item for output in outputs for item in output.citations}.values())
             token_usage = {
-                "prompt_tokens": sum(output.token_usage.get("prompt_tokens", 0) for output in outputs),
-                "completion_tokens": sum(output.token_usage.get("completion_tokens", 0) for output in outputs),
+                "prompt_tokens": sum(output.token_usage.get("prompt_tokens", 0) for output in outputs) + consensus_token_usage["prompt_tokens"],
+                "completion_tokens": sum(output.token_usage.get("completion_tokens", 0) for output in outputs) + consensus_token_usage["completion_tokens"],
             }
             fallback_used = bool(provider_errors)
             generation_mode = (
@@ -524,7 +569,8 @@ class ResearchWorkbench:
             generation_mode=generation_mode,
         )
         result.metrics = _metrics(result)
-        _RUN_CACHE[run_id] = result
+        if self.cache_results:
+            _RUN_CACHE[run_id] = result
         return result
 
     def _abstention(self, run_id, request, condition, plan, answer, timings, started) -> ResearchRunResult:

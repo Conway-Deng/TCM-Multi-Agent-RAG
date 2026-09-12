@@ -17,9 +17,11 @@ ROOT = BACKEND.parent
 sys.path.insert(0, str(BACKEND))
 
 from formal_experiments import worker
-from formal_experiments.jobs import FormalJobService
-from formal_experiments.registry import frozen_root, public_registry, verify_deployment_integrity
-from formal_experiments.schemas import FormalRunRequest
+from formal_experiments.jobs import CustomJobService, FormalJobService
+from formal_experiments.registry import frozen_root, public_registry, validate_replay_path, verify_deployment_integrity
+from formal_experiments.schemas import CustomRunRequest, FormalRunRequest
+from formal_experiments.store import FormalJobStore
+from formal_experiments.worker_service import FormalReplayWorker
 
 
 EXPERIMENT_IDS = [
@@ -67,18 +69,17 @@ def test_repository_relative_assets_and_hashes_pass(monkeypatch: pytest.MonkeyPa
         assert studies[experiment_id]["run_capabilities"]["full_benchmark"]["state"] == "LOCAL FULL REPLAY"
 
 
-def test_relative_roots_are_resolved_from_repository(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_relative_frozen_root_is_resolved_from_repository(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", ".")
-    monkeypatch.setenv("FORMAL_REPLAY_ROOT", "research/replays")
     assert frozen_root() == ROOT.resolve()
-    assert FormalJobService().replay_root == (ROOT / "research/replays").resolve()
+    assert "TemporaryDirectory" in (ROOT / "backend/formal_experiments/worker_service.py").read_text(encoding="utf-8")
+    assert "FORMAL_REPLAY_ROOT" not in (ROOT / "backend/formal_experiments/worker_service.py").read_text(encoding="utf-8")
 
 
 def test_replay_root_cannot_target_deployed_or_frozen_directories(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", str(ROOT))
-    monkeypatch.setenv("FORMAL_REPLAY_ROOT", "research/experiments/rq4_debate_vs_multiagent/formal_run_v1")
     with pytest.raises(ValueError, match="must not target"):
-        _ = FormalJobService().replay_root
+        validate_replay_path(ROOT, ROOT / "research/experiments/rq4_debate_vs_multiagent/formal_run_v1")
 
 
 def test_a3_nested_formal_outputs_are_visible_to_job_service(tmp_path: Path) -> None:
@@ -144,6 +145,14 @@ def test_condition_controls_and_exact_frozen_semantics(monkeypatch: pytest.Monke
     assert studies["retrieval_ablation"]["available_run_modes"] == ["full_benchmark"]
     for experiment_id in EXPERIMENT_IDS[1:]:
         assert studies[experiment_id]["available_run_modes"] == ["one_case", "paired", "full_benchmark"]
+    assert {key: value["scheduled_executions"] for key, value in studies.items()} == {
+        "retrieval_ablation": 520,
+        "rq1_architecture": 200,
+        "rq4_debate": 200,
+        "research_b": 480,
+        "research_c": 264,
+        "a3_v1_3": 200,
+    }
 
 
 def test_original_adapters_resolve_exact_deployed_runners() -> None:
@@ -166,6 +175,14 @@ assert callable(rq4.request_execution) and callable(rq4.execution_order)
         capture_output=True, text=True, check=False,
     )
     assert completed.returncode == 0, completed.stderr
+
+
+def test_retrieval_adapter_pins_frozen_remote_models() -> None:
+    source = (ROOT / "backend/formal_experiments/worker.py").read_text(encoding="utf-8")
+    assert '"EMBEDDING_PROVIDER": "siliconflow"' in source
+    assert '"EMBEDDING_MODEL": "BAAI/bge-m3"' in source
+    assert '"RERANK_PROVIDER": "siliconflow"' in source
+    assert '"RERANK_MODEL": "BAAI/bge-reranker-v2-m3"' in source
 
 
 def test_no_machine_specific_production_dependency() -> None:
@@ -193,21 +210,136 @@ def test_replay_manifest_is_separate_and_frozen_runner_is_unchanged(monkeypatch:
     monkeypatch.setenv("LLM_PROVIDER", "siliconflow")
     monkeypatch.setenv("LLM_API_KEY", "offline-test-placeholder")
 
-    class DormantThread:
-        def __init__(self, *_, **__): pass
-        def start(self): pass
-
-    monkeypatch.setattr("formal_experiments.jobs.threading.Thread", DormantThread)
-    monkeypatch.setattr(FormalJobService, "replay_root", property(lambda self: tmp_path / "replays"))
-    service = FormalJobService()
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
+    service = FormalJobService(store)
     status = service.create(FormalRunRequest(experiment_id="research_b", run_mode="paired", case_id="RB-CAND-0001"))
-    output = Path(status["replay_output_dir"])
+    assert status["replay_output_dir"].startswith("research_b/")
+    claimed = store.claim_next("offline-test-worker")
+    assert claimed is not None
+    output = tmp_path / "disposable-worker" / "replay"
+    assert not output.exists()
+    output.mkdir(parents=True)
+    service._write_manifest(output, claimed["request"], claimed["metadata"], claimed)
     manifest = json.loads((output / "replay_manifest.json").read_text(encoding="utf-8"))
     assert manifest["result_origin"] == "new_replay"
     assert manifest["historical_results_modified"] is False
-    assert tmp_path / "replays" in output.parents
+    assert tmp_path / "disposable-worker" in output.parents
     assert ROOT / "research/research_b/formal_run_v1" not in output.parents
     assert hashlib.sha256(runner.read_bytes()).hexdigest() == before
+
+
+def test_web_create_does_not_resolve_worker_replay_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", str(ROOT))
+    monkeypatch.setenv("FORMAL_DURABLE_JOBS_ENABLED", "true")
+    monkeypatch.setenv("LLM_PROVIDER", "siliconflow")
+    monkeypatch.setenv("LLM_API_KEY", "offline-test-placeholder")
+    monkeypatch.delenv("FORMAL_REPLAY_ROOT", raising=False)
+    service = FormalJobService(FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}"))
+    status = service.create(FormalRunRequest(
+        experiment_id="rq1_architecture", run_mode="full_benchmark", confirm_full_benchmark=True,
+    ))
+    assert status["status"] == "queued"
+    assert status["replay_output_dir"].startswith("rq1_architecture/replay-rq1_architecture-")
+    assert not Path(status["replay_output_dir"]).is_absolute()
+    assert "FORMAL_REPLAY_ROOT" not in (ROOT / "backend/formal_experiments/jobs.py").read_text(encoding="utf-8")
+
+
+def test_durable_store_reconnects_and_streams_incremental_rows(tmp_path: Path) -> None:
+    database = f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    now = 1.0
+    job = {
+        "run_id": "replay-test", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "queued", "completed": 0, "total": 200, "current_condition": None,
+        "current_case": None, "successful": 0, "failed": 0, "created_at": now,
+        "started_at": None, "updated_at": now, "resume_state": "queued",
+        "replay_output_dir": "rq1_architecture/replay-test", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {"planned_executions": 200})
+    claimed = FormalJobStore(database).claim_next("worker-1")
+    assert claimed is not None and claimed["status"] == "running"
+    store.replace_executions("replay-test", [
+        {"question_id": "Q-001", "condition": "C1", "run_status": "PASS"},
+        {"question_id": "Q-001", "condition": "C2", "run_status": "PASS_WITH_RETRY"},
+    ])
+    assert FormalJobStore(database).executions("replay-test", after=1, include_payload=True) == [{
+        "sequence": 2, "case_id": "Q-001", "condition": "C2", "status": "Completed",
+        "result": {"question_id": "Q-001", "condition": "C2", "run_status": "PASS_WITH_RETRY"},
+    }]
+
+
+def test_worker_sync_persists_rows_without_running_provider(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
+    now = 1.0
+    output = tmp_path / "worker-disk" / "rq1_architecture" / "replay-test"; output.mkdir(parents=True)
+    job = {
+        "run_id": "replay-test", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "running", "completed": 0, "total": 2, "current_condition": None,
+        "current_case": None, "successful": 0, "failed": 0, "created_at": now,
+        "started_at": now, "updated_at": now, "resume_state": "running",
+        "replay_output_dir": "rq1_architecture/replay-test", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {"planned_executions": 2})
+    (output / "results.jsonl").write_text(json.dumps({"question_id": "Q-001", "condition": "C1", "run_status": "PASS"}) + "\n", encoding="utf-8")
+    rows = FormalReplayWorker(store, worker_id="worker-1")._sync_formal(store.get("replay-test"), output)
+    assert len(rows) == 1
+    assert store.get("replay-test")["completed"] == 1
+    assert store.executions("replay-test")[0]["status"] == "Completed"
+
+
+def test_expired_worker_lease_is_reclaimed_without_losing_progress(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
+    now = 1.0
+    job = {
+        "run_id": "replay-test", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "running", "completed": 73, "total": 200, "current_condition": "C1",
+        "current_case": "Q-037", "successful": 72, "failed": 1, "created_at": now,
+        "started_at": now, "updated_at": now, "resume_state": "running",
+        "replay_output_dir": "rq1_architecture/replay-test", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {"planned_executions": 200})
+    store.update("replay-test", worker_id="dead-worker", lease_until=0)
+    reclaimed = FormalJobStore(store.database_url).claim_next("replacement-worker")
+    assert reclaimed is not None
+    assert reclaimed["completed"] == 73 and reclaimed["successful"] == 72 and reclaimed["failed"] == 1
+    assert reclaimed["worker_id"] == "replacement-worker" and reclaimed["status"] == "running"
+
+
+def test_generated_final_metrics_and_downloads_are_persisted(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
+    output = tmp_path / "replay"; (output / "final_analysis").mkdir(parents=True)
+    (output / "final_analysis" / "objective_metrics.json").write_text(json.dumps({"full_recall": 0.8}), encoding="utf-8")
+    (output / "results.jsonl").write_text("{}\n", encoding="utf-8")
+    (output / "cache").mkdir(); (output / "cache" / "large.bin").write_bytes(b"cache")
+    store.initialize()
+    store.store_artifacts("replay-test", output)
+    assert store.final_metrics("replay-test") == {"final_analysis/objective_metrics.json": {"full_recall": 0.8}}
+    assert {item["name"] for item in store.artifacts("replay-test")} == {"final_analysis/objective_metrics.json", "results.jsonl"}
+
+
+def test_web_download_uses_database_and_not_worker_filesystem(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import main
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
+    now = 1.0
+    job = {
+        "run_id": "replay-test", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "complete", "completed": 200, "total": 200, "current_condition": "C2",
+        "current_case": "Q-100", "successful": 200, "failed": 0, "created_at": now,
+        "started_at": now, "updated_at": now, "resume_state": "complete",
+        "replay_output_dir": "rq1_architecture/replay-test", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {"planned_executions": 200})
+    artifact_source = tmp_path / "artifact-source"; artifact_source.mkdir()
+    (artifact_source / "objective_metrics.json").write_bytes(b'{"full_recall":0.8}')
+    store.store_artifacts("replay-test", artifact_source)
+    service = FormalJobService(store)
+    monkeypatch.setattr(main, "formal_jobs", service)
+    response = TestClient(main.app).get("/api/formal-runs/replay-test/files/objective_metrics.json")
+    assert response.status_code == 200
+    assert response.content == b'{"full_recall":0.8}'
+    assert response.headers["content-type"].startswith("application/json")
 
 
 def test_rq4_adapter_writes_only_to_replay_directory(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -260,16 +392,17 @@ def test_rq4_adapter_writes_only_to_replay_directory(monkeypatch: pytest.MonkeyP
     assert file_hashes(frozen_dir) == before
 
 
-def test_frontend_capabilities_and_custom_workbench_are_preserved() -> None:
+def test_frontend_guided_mode_is_one_click_and_custom_workbench_is_preserved() -> None:
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     js = (ROOT / "research-app.js").read_text(encoding="utf-8")
     assert "Guided Paper Experiments" in html and "Custom Research Workbench" in html
     assert 'id="consensus-form" class="custom-research-workbench"' in html
-    assert 'id="formal-capability-statuses"' in html
-    assert "READY ONLINE" in js and "LOCAL FULL REPLAY" in js and "UNAVAILABLE" in js
-    assert "selectedFormalExperiment.run_capabilities" in js
+    assert html.count('id="run-paper-experiment"') == 1
+    assert all(value not in html for value in ('id="formal-case-id"', 'id="run-formal-one"', 'id="run-formal-paired"', 'id="run-formal-full"', 'id="formal-capability-statuses"'))
+    assert "Run Paper Experiment" in html
+    assert "run_mode: 'full_benchmark'" in js and "confirm_full_benchmark: true" in js
     assert "setPaperWorkbenchMode('guided')" in js
-    assert "/api/formal-runs" in js and "/api/research/run" in js
+    assert "/api/formal-runs" in js and "/api/custom-runs" in js
     formal_run_source = js[js.index("async function startFormalRun"):js.index("function showMessage")]
     assert "model_target" not in formal_run_source and "model_profile" not in formal_run_source
     assert "Historical paper result" in (ROOT / "backend/formal_experiments/registry.py").read_text(encoding="utf-8")
@@ -287,3 +420,138 @@ def test_job_api_exposes_registry_and_rejects_control_leakage(monkeypatch: pytes
         "experiment_id": "research_b", "run_mode": "paired", "model_target": "qwen",
     })
     assert response.status_code == 422
+
+
+def custom_request(*questions: str) -> CustomRunRequest:
+    return CustomRunRequest(
+        questions=list(questions), condition_id="C2", retrieval_strategy="R2",
+        specialist_model_targets=["qwen", "glm", "deepseek"], consensus_model_target="qwen",
+        active_agents=["syndrome", "herbal"], active_judges=["evidence", "safety"],
+    )
+
+
+def test_control_plane_queues_and_wakes_without_loading_corpus(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import main
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'control.sqlite3').as_posix()}")
+    monkeypatch.setattr(main, "formal_jobs", FormalJobService(store))
+    monkeypatch.setattr(main, "custom_jobs", CustomJobService(store))
+    monkeypatch.setattr(main, "corpus_stats", lambda: (_ for _ in ()).throw(AssertionError("control plane loaded corpus")))
+    monkeypatch.setenv("RENDER_API_CONTROL_PLANE_ONLY", "true")
+    monkeypatch.setenv("FORMAL_EXPERIMENT_ROOT", str(ROOT))
+    monkeypatch.setenv("FORMAL_DATABASE_URL", "postgresql://configured-for-registry")
+    monkeypatch.setenv("FORMAL_WORKER_PUBLIC_URL", "https://worker.invalid")
+    wakes = []
+
+    async def fake_wake() -> bool:
+        wakes.append(True)
+        return True
+
+    monkeypatch.setattr(main, "_wake_worker", fake_wake)
+    with TestClient(main.app) as client:
+        health = client.get("/health")
+        assert health.status_code == 200 and health.json()["runtime_profile"] == "cloud_control_plane"
+        queued = client.post("/api/custom-runs", json=custom_request("Question one?").model_dump(mode="json"))
+        assert queued.status_code == 202 and queued.json()["status"] == "queued"
+        assert client.post("/api/research/run", json={"question": "Must not execute here"}).status_code == 503
+    assert wakes == [True]
+
+
+def test_checkpoint_round_trip_restores_partial_formal_state(tmp_path: Path) -> None:
+    database = f"sqlite:///{(tmp_path / 'checkpoint.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    source = tmp_path / "source"; source.mkdir()
+    rows = [
+        {"case_id": f"RB-CAND-{index:04d}", "condition": "J1" if index % 2 else "J2", "usable": True}
+        for index in range(1, 127)
+    ]
+    (source / "results.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    (source / "run_progress.json").write_text(json.dumps({"completed": 126, "planned": 480}), encoding="utf-8")
+    assert store.store_checkpoints("replay-partial", source) == 2
+    restored = tmp_path / "fresh-worker"; restored.mkdir()
+    assert FormalJobStore(database).restore_checkpoints("replay-partial", restored) == 2
+    assert FormalJobService._result_rows(restored) == rows
+    assert not source.samefile(restored)
+
+
+def test_custom_worker_resumes_without_repeating_persisted_questions(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import orchestration.workbench as workbench_module
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'custom.sqlite3').as_posix()}")
+    service = CustomJobService(store)
+    status = service.create(custom_request("First question?", "Second question?", "Third question?"))
+    store.upsert_execution(status["run_id"], 1, {"question_id": "CUSTOM-001", "condition_id": "C2", "final_answer": "persisted"})
+    calls = []
+
+    class Result:
+        def __init__(self, question: str) -> None: self.question = question
+        def model_dump(self, mode: str) -> dict: return {"condition_id": "C2", "final_answer": self.question}
+
+    class FakeWorkbench:
+        def __init__(self, **kwargs): assert kwargs == {"cache_results": False}
+        async def run(self, request):
+            calls.append(request.question)
+            return Result(request.question)
+
+    monkeypatch.setattr(workbench_module, "ResearchWorkbench", FakeWorkbench)
+    worker_service = FormalReplayWorker(store, worker_id="replacement-worker")
+    assert worker_service.run_once() is True
+    assert calls == ["Second question?", "Third question?"]
+    final = service.get(status["run_id"])
+    assert final["status"] == "complete" and final["completed"] == 3
+    assert len(store.executions(status["run_id"])) == 3
+
+
+def test_worker_web_health_and_wake_are_lightweight(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import formal_experiments.worker_web as worker_web
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'worker-web.sqlite3').as_posix()}")
+    monkeypatch.setattr(worker_web, "store", store)
+    monkeypatch.setattr(worker_web, "worker", FormalReplayWorker(store, worker_id="web-worker"))
+    monkeypatch.setenv("FORMAL_WORKER_WAKE_TOKEN", "offline-token")
+    with TestClient(worker_web.app) as client:
+        health = client.get("/health")
+        assert health.status_code == 200
+        assert health.json()["single_concurrency"] is True
+        assert client.post("/wake").status_code == 401
+        assert client.post("/wake", headers={"X-Worker-Wake-Token": "offline-token"}).status_code == 202
+
+
+def test_worker_loop_executes_only_one_claimed_job_at_a_time(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'single-worker.sqlite3').as_posix()}")
+    service = CustomJobService(store)
+    first = service.create(custom_request("First queued question?"))
+    second = service.create(custom_request("Second queued question?"))
+    active = 0
+    peak = 0
+
+    class RecordingWorker(FormalReplayWorker):
+        def run_job(self, job):
+            nonlocal active, peak
+            active += 1; peak = max(peak, active)
+            self.store.update(job["run_id"], status="complete", completed=1, successful=1, current_stage="complete")
+            active -= 1
+
+    assert RecordingWorker(store, worker_id="single").run_until_idle() == 2
+    assert peak == 1
+    assert service.get(first["run_id"])["status"] == "complete"
+    assert service.get(second["run_id"])["status"] == "complete"
+
+
+def test_retention_deletes_only_old_generated_database_runs(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'retention.sqlite3').as_posix()}")
+    now = 1.0
+    job = {
+        "run_id": "old-new-replay", "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "complete", "completed": 200, "total": 200, "current_condition": "C2",
+        "current_case": "Q-100", "successful": 200, "failed": 0, "created_at": now,
+        "started_at": now, "updated_at": now, "resume_state": "complete",
+        "replay_output_dir": "disposable", "persistence": "database", "error": None,
+    }
+    store.create(job, {}, {})
+    with store.connect() as connection:
+        connection.cursor().execute("UPDATE formal_jobs SET updated_at = 0 WHERE run_id = 'old-new-replay'")
+    assert store.cleanup_old_replays(1) == 1
+    with pytest.raises(KeyError): store.get("old-new-replay")

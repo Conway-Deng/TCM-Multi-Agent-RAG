@@ -183,26 +183,6 @@
     return condition.id + ' · ' + condition.name + (condition.stage ? ' · ' + condition.stage : '');
   }
 
-  function updateFormalRunButtons() {
-    if (!selectedFormalExperiment) return;
-    const modes = selectedFormalExperiment.available_run_modes || [];
-    const controls = [
-      ['one_case', 'Run One Case', $('#run-one-case')],
-      ['paired', 'Run Paired Comparison', $('#run-paired')],
-      ['full_benchmark', 'Full Formal Replay — Local worker required 🔒', $('#run-full-benchmark')],
-    ];
-    const statuses = $('#formal-capability-statuses'); statuses.replaceChildren();
-    controls.forEach(([mode, label, button]) => {
-      const capability = (selectedFormalExperiment.run_capabilities || {})[mode] || { state: 'UNAVAILABLE', reason: 'Capability was not reported by the backend.' };
-      button.disabled = mode === 'full_benchmark' || !modes.includes(mode);
-      button.title = button.disabled ? (mode === 'full_benchmark' ? 'Run locally with a persistent worker.' : capability.reason || capability.state) : '';
-      const item = element('div', 'formal-capability');
-      item.append(element('span', '', label), element('strong', capability.state === 'READY ONLINE' ? 'capability-ready' : capability.state === 'LOCAL FULL REPLAY' ? 'capability-local' : 'capability-unavailable', capability.state));
-      if (capability.reason) item.append(element('small', '', capability.reason));
-      statuses.append(item);
-    });
-  }
-
   function selectFormalExperiment(item) {
     selectedFormalExperiment = item;
     paperConfigurationApplied = true;
@@ -212,25 +192,16 @@
     setText('#paper-config-title', item.number + ' · ' + item.title);
     const fields = $('#paper-config-fields'); fields.replaceChildren();
     [
-      ['Experiment', item.paper_label], ['Research question', item.research_question], ['Dataset', item.dataset],
-      ['Cases / questions', String(item.dataset_size)], ['Conditions', item.conditions.map(formalConditionLabel).join(' | ')],
-      ['Model(s)', item.models.join(' | ')], ['Provider', item.provider], ['Retrieval', item.retrieval],
-      ['Architecture', item.architecture], ['Consensus model', item.consensus_model], ['Primary metrics', item.primary_metrics.join(', ')],
+      ['Research question', item.research_question], ['Dataset', item.dataset],
+      ['Original questions / cases', String(item.dataset_size)], ['Scheduled executions', String(item.scheduled_executions || item.planned_executions)],
+      ['Paper conditions', item.conditions.map(formalConditionLabel).join(' | ')], ['Model(s)', item.models.join(' | ')],
+      ['Retrieval', item.retrieval], ['Architecture', item.architecture],
     ].forEach(([label, value]) => fields.append(lockedField(label, value)));
-    const controls = $('#paper-condition-controls'); controls.replaceChildren();
-    const seen = new Set();
-    item.conditions.forEach((condition) => {
-      const key = (condition.stage || '') + ':' + condition.id;
-      if (seen.has(key)) return; seen.add(key);
-      const label = element('label'); const input = element('input'); input.type = 'radio'; input.name = 'formal-condition'; input.value = condition.id; input.dataset.stage = condition.stage || ''; input.checked = controls.children.length === 0;
-      label.append(input, element('span', '', formalConditionLabel(condition))); controls.append(label);
-    });
-    setText('#guide-question', item.research_question); setText('#guide-changes', item.what_changes); setText('#guide-fixed', item.what_stays_fixed);
-    setText('#guide-provider', item.models.join(' / ') + ' · ' + item.provider); setText('#guide-dataset', item.dataset); setText('#guide-metric', item.primary_metrics.join(', '));
     $('#formal-job-panel').hidden = true;
     $('#formal-empty-state').hidden = false;
-    showMessage($('#formal-run-message'), item.disabled_reason || 'Locked paper configuration applied automatically.');
-    updateFormalRunButtons();
+    const canRun = (item.available_run_modes || []).includes('full_benchmark');
+    $('#run-paper-experiment').disabled = !canRun;
+    showMessage($('#formal-run-message'), item.disabled_reason || (canRun ? '' : 'Paper replay service is not currently available.'));
   }
 
   function renderFormalRegistry(items) {
@@ -245,22 +216,37 @@
   }
 
   async function loadFormalRegistry() {
-    try { renderFormalRegistry(await apiGet('/api/formal-experiments')); }
+    try {
+      renderFormalRegistry(await apiGet('/api/formal-experiments'));
+      const savedRun = localStorage.getItem('medirag-formal-run-id');
+      if (savedRun) { activeFormalRunId = savedRun; await refreshFormalRun(); }
+    }
     catch (error) { $('#formal-experiment-cards').replaceChildren(element('p', 'consensus-message', 'Formal experiment registry unavailable: ' + error.message)); }
+  }
+
+  function elapsedClock(seconds) {
+    const total = Math.max(0, Math.floor(Number(seconds || 0)));
+    const hours = String(Math.floor(total / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+    const remainder = String(total % 60).padStart(2, '0');
+    return hours + ':' + minutes + ':' + remainder;
   }
 
   function renderFormalStatus(status) {
     activeFormalRunId = status.run_id;
+    localStorage.setItem('medirag-formal-run-id', status.run_id);
     $('#formal-empty-state').hidden = true;
     $('#formal-job-panel').hidden = false;
     setText('#formal-job-title', status.experiment_id + ' · ' + status.run_id); setText('#formal-job-status', status.status);
-    setText('#formal-job-progress', status.completed + ' / ' + status.total); setText('#formal-job-condition', status.current_condition || '—');
-    setText('#formal-job-case', status.current_case || '—'); setText('#formal-job-outcomes', status.successful + ' / ' + status.failed);
-    setText('#formal-job-elapsed', Number(status.elapsed_seconds || 0).toFixed(1) + ' s'); setText('#formal-job-resume-state', status.resume_state);
-    $('#resume-formal-run').disabled = status.status !== 'failed';
+    const completed = Number(status.completed || 0); const total = Number(status.total || 0); const percent = total ? Math.min(100, Math.round(completed / total * 100)) : 0;
+    setText('#formal-job-progress', completed + ' / ' + total + ' completed'); setText('#formal-job-percent', percent + '%');
+    $('#formal-progress-bar').max = Math.max(1, total); $('#formal-progress-bar').value = completed;
+    setText('#formal-job-current', [status.current_case, status.current_condition].filter(Boolean).join(' · ') || 'Waiting for worker');
+    setText('#formal-job-outcomes', status.successful + ' / ' + status.failed); setText('#formal-job-elapsed', elapsedClock(status.elapsed_seconds));
+    if (status.status === 'complete' || status.status === 'failed') $('#run-paper-experiment').disabled = false;
+    loadFormalResults();
     if (formalRunTimer) { clearTimeout(formalRunTimer); formalRunTimer = null; }
     if (status.status === 'queued' || status.status === 'running') formalRunTimer = setTimeout(refreshFormalRun, 2500);
-    if (status.status === 'complete' || status.status === 'failed') loadFormalResults();
   }
 
   async function refreshFormalRun() {
@@ -273,25 +259,32 @@
     if (!activeFormalRunId) return;
     try {
       const data = await apiGet('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/results');
-      setText('#formal-job-results', JSON.stringify(data, null, 2));
+      setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {}, results: data.results }, null, 2));
+      setText('#formal-historical-results', JSON.stringify(data.historical_paper_results || { label: 'Historical paper result', status: 'frozen_read_only' }, null, 2));
+      const stream = $('#formal-execution-stream'); stream.replaceChildren();
+      (data.results || []).forEach((execution) => {
+        const item = element('li');
+        item.append(element('span', 'formal-execution-number', String(execution.sequence).padStart(3, '0')), element('span', '', execution.case_id || '—'), element('span', '', execution.condition || '—'), element('strong', '', execution.status));
+        stream.append(item);
+      });
+      if (data.status && data.status.status === 'running') {
+        const running = element('li', 'is-running');
+        running.append(element('span', 'formal-execution-number', String((data.results || []).length + 1).padStart(3, '0')), element('span', '', data.status.current_case || '—'), element('span', '', data.status.current_condition || '—'), element('strong', '', 'Running'));
+        stream.append(running);
+      }
       const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
       (data.downloads || []).forEach((file) => { const link = element('a', 'secondary-action', file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
     }
     catch (error) { setText('#formal-job-results', error.message); }
   }
 
-  async function startFormalRun(runMode) {
+  async function startFormalRun() {
     if (!selectedFormalExperiment || !paperConfigurationApplied) return;
-    if (runMode === 'full_benchmark' && !window.confirm('Start a new full benchmark replay? This may make many provider calls and replay files may not be durable on hosted infrastructure.')) return;
-    if (runMode === 'full_benchmark') return;
-    const selected = $('input[name="formal-condition"]:checked');
-    const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: runMode };
-    if (runMode === 'one_case') body.condition = selected ? selected.value : selectedFormalExperiment.conditions[0].id;
-    const caseId = $('#formal-case-id').value.trim(); if (caseId && runMode !== 'full_benchmark') body.case_id = caseId;
-    if (runMode === 'full_benchmark') body.confirm_full_benchmark = true;
+    const button = $('#run-paper-experiment'); button.disabled = true;
+    const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: 'full_benchmark', confirm_full_benchmark: true };
     showMessage($('#formal-run-message'), '');
-    try { renderFormalStatus(await api('/api/formal-runs', body)); }
-    catch (error) { showMessage($('#formal-run-message'), error.message); }
+    try { $('#formal-execution-stream').replaceChildren(); renderFormalStatus(await api('/api/formal-runs', body)); }
+    catch (error) { showMessage($('#formal-run-message'), error.message); button.disabled = false; }
   }
 
   function showMessage(node, message) {
@@ -519,9 +512,9 @@
     currentResearchRun = data; const traceData = data.trace || {}; const outputs = data.agent_outputs || []; const active = outputs.filter((agent) => !agent.abstained); const abstained = outputs.filter((agent) => agent.abstained);
     const selectedCount = (traceData.active_agents || outputs).length || 1; const coverage = Math.round((active.length / selectedCount) * 100); const activeSupport = active.length ? Math.round(active.reduce((sum, agent) => sum + (agent.confidence || 0), 0) / active.length * 100) : 0;
     const presentation = researchRunPresentation(traceData, data);
-    const requestedProfile = traceData.experiment_config?.model_profile || $('#consensus-model-profile').value;
-    const requestedTarget = traceData.experiment_config?.model_target || $('#consensus-model-target').value;
-    const requestedModel = requestedProfile ? runtimeModelProfiles[requestedProfile] || requestedProfile : runtimeModels[requestedTarget] || requestedTarget || 'Legacy default';
+    const configuredSpecialists = traceData.experiment_config?.specialist_model_targets || [$('#specialist-model-a').value, $('#specialist-model-b').value, $('#specialist-model-c').value];
+    const configuredConsensus = traceData.experiment_config?.consensus_model_target || $('#custom-consensus-model').value;
+    const requestedModel = 'Specialists: ' + configuredSpecialists.map((target) => runtimeModels[target] || target).join(' / ') + ' · Consensus: ' + (runtimeModels[configuredConsensus] || configuredConsensus);
     const attemptedModels = [...new Set((traceData.provider_attempts || []).map((attempt) => attempt.model).filter(Boolean))];
     const attemptedProvider = (traceData.provider_attempts || []).find((attempt) => attempt.provider)?.provider;
     const runProvider = traceData.provider && traceData.provider !== 'none' ? traceData.provider : attemptedProvider || traceData.provider_configured || 'Provider not reported';
@@ -566,14 +559,7 @@
   $$('.language-btn').forEach((button) => button.addEventListener('click', () => applyLanguage(button.dataset.lang)));
   $('#guided-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('guided'));
   $('#custom-mode-tab').addEventListener('click', () => setPaperWorkbenchMode('custom'));
-  $('#run-one-case').addEventListener('click', () => startFormalRun('one_case'));
-  $('#run-paired').addEventListener('click', () => startFormalRun('paired'));
-  $('#refresh-formal-run').addEventListener('click', refreshFormalRun);
-  $('#resume-formal-run').addEventListener('click', async () => {
-    if (!activeFormalRunId) return;
-    try { renderFormalStatus(await api('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/resume', {})); }
-    catch (error) { showMessage($('#formal-run-message'), error.message); }
-  });
+  $('#run-paper-experiment').addEventListener('click', startFormalRun);
   $$('.tcm-sample').forEach((button) => button.addEventListener('click', () => { $('#tcm-question').value = button.dataset.question; $('#tcm-question').focus(); }));
 
   $('#tcm-consult-form').addEventListener('submit', async (event) => {
@@ -626,17 +612,10 @@
   }
   function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
   function setResearchControlsDisabled(disabled) {
-    $$('#consensus-form textarea, #consensus-form select, #consensus-form input[type="radio"]').forEach((control) => { control.disabled = disabled; });
-    if (!disabled) updateModelArchitectureState();
-    setText('#consensus-submit-label', disabled ? 'Running experiment…' : 'Run experiment');
+    $$('#consensus-form textarea, #consensus-form select, #consensus-form input').forEach((control) => { control.disabled = disabled; });
+    setText('#consensus-submit-label', disabled ? 'Running custom experiment…' : 'Run Custom Experiment');
   }
-  function updateModelArchitectureState() {
-    const isC1 = $('#consensus-strategy').value === 'C1'; const target = $('#consensus-model-target'); const profile = $('#consensus-model-profile'); const radios = $$('input[name="interactive-model-configuration"]');
-    radios.filter((input) => input.value.startsWith('profile:')).forEach((input) => { input.disabled = isC1; });
-    const profileGrid = $('#model-profile-card-grid'); profileGrid.classList.toggle('is-disabled', isC1); profileGrid.setAttribute('aria-disabled', String(isC1)); $('#model-profile-architecture-warning').hidden = !isC1;
-    if (isC1 && profile.value) { profile.value = ''; target.value = 'qwen'; radios.forEach((input) => { input.checked = input.value === 'target:qwen'; }); }
-  }
-  function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); updateModelArchitectureState(); }
+  function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); }
   function bindChoiceGroup(name, selectSelector) {
     const select = $(selectSelector);
     const radios = $$('input[name="' + name + '"]');
@@ -645,19 +624,90 @@
     select.addEventListener('change', syncFromSelect);
     syncFromSelect();
   }
-  function bindModelConfiguration() {
-    const target = $('#consensus-model-target'); const profile = $('#consensus-model-profile'); const radios = $$('input[name="interactive-model-configuration"]');
-    const syncRadios = () => { const selected = profile.value ? 'profile:' + profile.value : 'target:' + (target.value || 'qwen'); radios.forEach((input) => { input.checked = input.value === selected; }); updateConditionHelp(); };
-    radios.forEach((input) => input.addEventListener('change', () => { if (!input.checked) return; const [kind, value] = input.value.split(':'); if (kind === 'profile') { profile.value = value; target.value = ''; } else { target.value = value; profile.value = ''; } syncRadios(); }));
-    target.addEventListener('change', () => { if (target.value) profile.value = ''; syncRadios(); }); profile.addEventListener('change', () => { if (profile.value) target.value = ''; syncRadios(); }); syncRadios();
+  function selectedModelConfigurationPayload() {
+    return {
+      specialist_model_targets: [$('#specialist-model-a').value, $('#specialist-model-b').value, $('#specialist-model-c').value],
+      consensus_model_target: $('#custom-consensus-model').value,
+    };
   }
-  function selectedModelConfigurationPayload() { const profile = $('#consensus-model-profile').value; return profile ? { model_profile: profile } : { model_target: $('#consensus-model-target').value || 'qwen' }; }
-  bindChoiceGroup('architecture-condition', '#consensus-strategy'); bindChoiceGroup('retrieval-strategy', '#consensus-retrieval'); bindModelConfiguration();
+  function selectedCustomQuestionCount() {
+    const selected = $('#custom-question-count').value;
+    return selected === 'custom' ? Number($('#custom-question-count-value').value) : Number(selected);
+  }
+  function updateCustomQuestionCount() { $('#custom-question-count-label').hidden = $('#custom-question-count').value !== 'custom'; }
+  let activeCustomRunId = null;
+  let customRunTimer = null;
+  let customResultCursor = 0;
+
+  async function refreshCustomRun() {
+    if (!activeCustomRunId) return;
+    try {
+      const status = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId));
+      const results = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/results?after=' + customResultCursor);
+      const newRows = results.results || [];
+      if (newRows.length) {
+        customResultCursor = Math.max(customResultCursor, ...newRows.map((row) => Number(row.sequence || 0)));
+        const latest = [...newRows].reverse().find((row) => row.result && !row.result.error);
+        if (latest) renderResearchRun(latest.result);
+      }
+      setText('#consensus-progress-status', status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? 'Running question ' + Math.min(status.completed + 1, status.total) + ' of ' + status.total + '…' : status.status === 'complete' ? 'Run complete' : 'Run failed');
+      setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
+      if (status.status === 'queued' || status.status === 'running') {
+        clearTimeout(customRunTimer);
+        customRunTimer = setTimeout(refreshCustomRun, 2500);
+        return;
+      }
+      researchRequestActive = false;
+      setResearchControlsDisabled(false);
+      $('#consensus-submit').disabled = false;
+      $('#consensus-submit').classList.remove('is-loading');
+      $('#consensus-form').setAttribute('aria-busy', 'false');
+      stopResearchProgress(status.status === 'complete' ? 'complete' : 'failed');
+      showMessage($('#consensus-message'), status.status === 'complete'
+        ? status.completed + ' of ' + status.total + ' custom questions completed in the cloud. The latest response is shown below.'
+        : status.error || 'The Custom experiment failed.');
+    }
+    catch (error) {
+      if (String(error.message).includes('Custom run not found')) {
+        localStorage.removeItem('medirag-custom-run-id'); activeCustomRunId = null; researchRequestActive = false;
+        setResearchControlsDisabled(false); $('#consensus-submit').disabled = false; $('#consensus-submit').classList.remove('is-loading'); $('#consensus-form').setAttribute('aria-busy', 'false'); stopResearchProgress('failed');
+        return showMessage($('#consensus-message'), 'The previous Custom run is no longer retained. Start a new experiment when ready.');
+      }
+      clearTimeout(customRunTimer);
+      customRunTimer = setTimeout(refreshCustomRun, 5000);
+      showMessage($('#consensus-message'), 'Waiting to reconnect to the queued Custom experiment: ' + error.message);
+    }
+  }
+
+  async function resumeSavedCustomRun() {
+    const saved = localStorage.getItem('medirag-custom-run-id');
+    if (!saved) return;
+    activeCustomRunId = saved;
+    researchRequestActive = true;
+    setResearchControlsDisabled(true);
+    $('#consensus-submit').disabled = true;
+    $('#consensus-submit').classList.add('is-loading');
+    $('#consensus-form').setAttribute('aria-busy', 'true');
+    startResearchProgress();
+    await refreshCustomRun();
+  }
+
+  bindChoiceGroup('architecture-condition', '#consensus-strategy'); bindChoiceGroup('retrieval-strategy', '#consensus-retrieval');
+  $('#custom-question-count').addEventListener('change', updateCustomQuestionCount); updateCustomQuestionCount();
   $('#consensus-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const question = $('#consensus-question').value.trim(); if (question.length < 3) return showMessage(message, 'Please enter a longer question.');
+    event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const questionText = $('#consensus-question').value.trim(); const questions = questionText.split(/\r?\n/).map((question) => question.trim()).filter(Boolean); const requestedCount = selectedCustomQuestionCount();
+    if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 100) return showMessage(message, 'Choose a question count from 1 to 100.');
+    if (questions.length < requestedCount || questions.slice(0, requestedCount).some((question) => question.length < 3)) return showMessage(message, 'Enter at least ' + requestedCount + ' valid question' + (requestedCount === 1 ? '' : 's') + ', one per line.');
     researchRequestActive = true; showMessage(message, ''); setResearchControlsDisabled(true); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); $('#research-fallback-banner').hidden = true; startResearchProgress();
-    try { const data = await api('/api/research/run', { question, condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, ...selectedModelConfigurationPayload(), active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true }); setResearchProgress('processing'); renderResearchRun(data); stopResearchProgress('complete'); }
-    catch (error) { stopResearchProgress('failed'); showMessage(message, error.message + '. Verify the research backend is online and try again.'); } finally { researchRequestActive = false; setResearchControlsDisabled(false); button.disabled = false; button.classList.remove('is-loading'); event.currentTarget.setAttribute('aria-busy', 'false'); }
+    try {
+      customResultCursor = 0;
+      const status = await api('/api/custom-runs', { questions: questions.slice(0, requestedCount), condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, ...selectedModelConfigurationPayload(), active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true });
+      activeCustomRunId = status.run_id;
+      localStorage.setItem('medirag-custom-run-id', activeCustomRunId);
+      setText('#consensus-progress-status', 'Queued for cloud worker…');
+      await refreshCustomRun();
+    }
+    catch (error) { researchRequestActive = false; stopResearchProgress('failed'); showMessage(message, error.message + '. Verify the research backend is online and try again.'); setResearchControlsDisabled(false); button.disabled = false; button.classList.remove('is-loading'); event.currentTarget.setAttribute('aria-busy', 'false'); }
   });
 
   $('#research-compare-form').addEventListener('submit', async (event) => {
@@ -696,7 +746,7 @@
     $('.prototype-status').classList.toggle('is-live', true);
   }).catch(() => { setText('.prototype-status span:last-child', 'Backend offline · static interface remains available'); setText('#runtime-location', 'Backend unavailable'); setText('#runtime-corpus', 'Corpus not confirmed'); setText('#runtime-chunks', '— chunks'); setText('#runtime-provider', 'Provider not confirmed'); setText('#runtime-model', '—'); setText('#runtime-llm', 'Backend unavailable'); $('#runtime-llm').classList.remove('is-success'); $('#workbench-runtime-strip').classList.add('is-offline'); });
 
-  applyLanguage('en'); updateConditionHelp(); setPaperWorkbenchMode('guided'); loadFormalRegistry();
+  applyLanguage('en'); updateConditionHelp(); setPaperWorkbenchMode('guided'); loadFormalRegistry(); resumeSavedCustomRun();
   if (location.hash === '#workbench' || location.hash === '#legacy-demo' || location.hash === '#research-workbench' || location.hash === '#research-compare') {
     setView('workbench');
     setMode(location.hash === '#research-compare' ? 'compare' : location.hash === '#legacy-demo' ? 'single' : 'multi');

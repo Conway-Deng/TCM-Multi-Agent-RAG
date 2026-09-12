@@ -1,33 +1,24 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
-import threading
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
-from .registry import experiment, frozen_root, validate_replay_path
-from .schemas import FormalRunRequest
+from .registry import experiment
+from .schemas import CustomRunRequest, FormalRunRequest
+from .store import FormalJobStore
 
 
 APP_ROOT = Path(__file__).resolve().parents[2]
 
 
 class FormalJobService:
-    def __init__(self) -> None:
-        self._lock = threading.Lock()
-        self._jobs: dict[str, dict[str, Any]] = {}
+    """Durable API facade; execution belongs to the separate worker service."""
 
-    @property
-    def replay_root(self) -> Path:
-        configured = os.getenv("FORMAL_REPLAY_ROOT", "").strip()
-        path = Path(configured) if configured else Path("research/replays")
-        resolved = (path if path.is_absolute() else APP_ROOT / path).resolve()
-        return validate_replay_path(frozen_root(), resolved)
+    def __init__(self, store: FormalJobStore | None = None) -> None:
+        self.store = store or FormalJobStore()
 
     def create(self, request: FormalRunRequest) -> dict[str, Any]:
         metadata = experiment(request.experiment_id)
@@ -39,128 +30,200 @@ class FormalJobService:
         if request.condition and request.condition not in valid_conditions:
             raise ValueError("Condition is not part of this paper protocol")
         run_id = f"replay-{request.experiment_id}-{uuid.uuid4().hex[:12]}"
-        output = self.replay_root / request.experiment_id / run_id
-        output.mkdir(parents=True, exist_ok=False)
+        replay_workspace = f"{request.experiment_id}/{run_id}"
         now = time.time()
         job = {
-            "run_id": run_id, "experiment_id": request.experiment_id, "run_mode": request.run_mode,
-            "status": "queued", "completed": 0, "total": self._total(request, metadata),
-            "current_condition": request.condition, "current_case": request.case_id,
-            "successful": 0, "failed": 0, "started_at": now, "elapsed_seconds": 0,
-            "resume_state": "queued", "replay_output_dir": str(output), "error": None,
-            "persistence": "process-local job state; replay files are not guaranteed durable on hosted ephemeral filesystems",
-            "_request": request,
+            "run_id": run_id,
+            "job_kind": "formal",
+            "experiment_id": request.experiment_id,
+            "run_mode": request.run_mode,
+            "status": "queued",
+            "completed": 0,
+            "total": self._total(request, metadata),
+            "current_stage": "queued",
+            "current_condition": request.condition,
+            "current_case": request.case_id,
+            "successful": 0,
+            "failed": 0,
+            "created_at": now,
+            "started_at": None,
+            "updated_at": now,
+            "resume_state": "queued",
+            "replay_output_dir": replay_workspace,
+            "persistence": "PostgreSQL source of truth; execution is performed by a separate cloud worker",
+            "error": None,
         }
-        self._write_manifest(output, request, metadata, job)
-        with self._lock:
-            self._jobs[run_id] = job
-        threading.Thread(target=self._run, args=(run_id, request, output), daemon=True, name=run_id).start()
+        request_value = request.model_dump(mode="json")
+        metadata_value = {
+            key: metadata[key]
+            for key in ("experiment_id", "runner", "dataset_path", "conditions", "models", "provider", "planned_executions", "dataset_size")
+        }
+        self.store.create(job, request_value, metadata_value)
         return self.get(run_id)
 
     @staticmethod
     def _total(request: FormalRunRequest, metadata: dict[str, Any]) -> int:
-        if request.run_mode == "one_case": return 1
-        if request.run_mode == "paired": return 2
+        if request.run_mode == "one_case":
+            return 1
+        if request.run_mode == "paired":
+            return 2
         return metadata.get("planned_executions", metadata["dataset_size"] * len({item["id"] for item in metadata["conditions"]}))
 
     @staticmethod
-    def _write_manifest(output: Path, request: FormalRunRequest, metadata: dict[str, Any], job: dict[str, Any]) -> None:
+    def _write_manifest(output: Path, request: dict[str, Any], metadata: dict[str, Any], job: dict[str, Any]) -> None:
         value = {
-            "result_origin": "new_replay", "historical_results_modified": False,
-            "request": request.model_dump(), "paper_protocol": {key: metadata[key] for key in ("experiment_id", "runner", "dataset_path", "conditions", "models", "provider")},
-            "job": {key: value for key, value in job.items() if not key.startswith("_")},
+            "result_origin": "new_replay",
+            "historical_results_modified": False,
+            "request": request,
+            "paper_protocol": metadata,
+            "job": job,
         }
         (output / "replay_manifest.json").write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    def _run(self, run_id: str, request: FormalRunRequest, output: Path) -> None:
-        self._update(run_id, status="running", resume_state="running")
-        command = [
-            sys.executable, "-m", "formal_experiments.worker", "--experiment", request.experiment_id,
-            "--run-mode", request.run_mode, "--frozen-root", str(frozen_root()), "--output", str(output),
-        ]
-        if request.condition: command.extend(["--condition", request.condition])
-        if request.case_id: command.extend(["--case-id", request.case_id])
-        env = os.environ.copy(); env["PYTHONPATH"] = str(APP_ROOT / "backend") + os.pathsep + env.get("PYTHONPATH", "")
-        try:
-            with (output / "worker.stdout.log").open("w", encoding="utf-8") as stdout, (output / "worker.stderr.log").open("w", encoding="utf-8") as stderr:
-                completed = subprocess.run(command, cwd=frozen_root(), env=env, stdout=stdout, stderr=stderr, check=False)
-            worker = self._worker_status(output)
-            if completed.returncode:
-                error = (output / "worker.stderr.log").read_text(encoding="utf-8", errors="replace")[-2000:]
-                self._update(run_id, **worker, status="failed", resume_state="replay_files_retained", error=error or f"worker exited {completed.returncode}")
-            else:
-                worker["completed"] = self._jobs[run_id]["total"]
-                self._update(run_id, **worker, status="complete", resume_state="complete")
-        except Exception as exc:
-            self._update(run_id, status="failed", resume_state="replay_files_retained", error=f"{type(exc).__name__}: {exc}")
+    @staticmethod
+    def _result_rows(output: Path) -> list[dict[str, Any]]:
+        candidates = (
+            output / "results.jsonl",
+            output / "formal_results.jsonl",
+            output / "formal" / "formal_results.jsonl",
+            output / "stage1" / "results.jsonl",
+            output / "stage2" / "results.jsonl",
+        )
+        rows: list[dict[str, Any]] = []
+        for path in candidates:
+            if path.exists():
+                for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        rows.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        # A polling read may overlap the writer's final append. The next poll sees the complete row.
+                        continue
+        return rows
 
     @staticmethod
     def _worker_status(output: Path) -> dict[str, Any]:
         path = output / "worker_status.json"
         data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        value = {key: data[key] for key in ("completed", "current_condition", "current_case", "successful", "failed") if key in data}
+        value = {key: data[key] for key in ("completed", "current_stage", "current_condition", "current_case", "successful", "failed") if key in data}
         progress_paths = [output / "run_progress.json", output / "formal" / "run_progress.json", output / "runtime" / "runtime_state.json"]
         for progress_path in progress_paths:
             if progress_path.exists():
                 progress = json.loads(progress_path.read_text(encoding="utf-8"))
                 value["completed"] = progress.get("completed_canonical", progress.get("completed", value.get("completed", 0)))
+                if progress.get("stage"):
+                    value["current_stage"] = progress["stage"]
                 value["current_condition"] = progress.get("current_condition", value.get("current_condition"))
                 value["current_case"] = progress.get("current_question_id", progress.get("current_case", value.get("current_case")))
-        for result_path in (output / "results.jsonl", output / "formal_results.jsonl", output / "formal" / "formal_results.jsonl", output / "stage2" / "results.jsonl"):
-            if result_path.exists():
-                rows = [json.loads(line) for line in result_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-                value["completed"] = max(value.get("completed", 0), len(rows))
-                value["successful"] = sum(bool(row.get("usable", row.get("run_status") in {"PASS", "PASS_WITH_RETRY"})) for row in rows)
-                value["failed"] = len(rows) - value["successful"]
-                if rows:
-                    value["current_condition"] = rows[-1].get("condition")
-                    value["current_case"] = rows[-1].get("case_id", rows[-1].get("question_id"))
+        rows = FormalJobService._result_rows(output)
+        if rows:
+            value["completed"] = max(value.get("completed", 0), len(rows))
+            value["successful"] = sum(FormalJobService._row_completed(row) for row in rows)
+            value["failed"] = len(rows) - value["successful"]
+            value["current_condition"] = rows[-1].get("condition", rows[-1].get("condition_id"))
+            value["current_case"] = rows[-1].get("case_id", rows[-1].get("question_id"))
         return value
 
-    def _update(self, run_id: str, **values: Any) -> None:
-        with self._lock:
-            self._jobs[run_id].update(values)
+    @staticmethod
+    def _row_completed(row: dict[str, Any]) -> bool:
+        if "usable" in row:
+            return bool(row["usable"])
+        if "run_status" in row:
+            return row["run_status"] in {"PASS", "PASS_WITH_RETRY"}
+        return not bool(row.get("error"))
 
     def get(self, run_id: str) -> dict[str, Any]:
-        with self._lock:
-            if run_id not in self._jobs: raise KeyError(run_id)
-            result = dict(self._jobs[run_id])
-        result.update(self._worker_status(Path(result["replay_output_dir"])))
-        result["elapsed_seconds"] = round(time.time() - result["started_at"], 3)
-        result.pop("started_at", None)
-        result.pop("_request", None)
-        return result
+        value = self.store.get(run_id)
+        for key in ("request", "metadata", "created_at", "started_at", "updated_at", "worker_id", "lease_until"):
+            value.pop(key, None)
+        return value
 
     def resume(self, run_id: str) -> dict[str, Any]:
-        with self._lock:
-            if run_id not in self._jobs: raise KeyError(run_id)
-            job = self._jobs[run_id]
-            if job["status"] not in {"failed"}:
-                raise ValueError("Only a failed replay job can be resumed")
-            request = job["_request"]
-            output = Path(job["replay_output_dir"])
-            job.update(status="queued", error=None, resume_state="queued", started_at=time.time())
-        threading.Thread(target=self._run, args=(run_id, request, output), daemon=True, name=f"{run_id}-resume").start()
+        self.store.request_resume(run_id)
         return self.get(run_id)
 
-    def results(self, run_id: str) -> dict[str, Any]:
-        status = self.get(run_id); output = Path(status["replay_output_dir"])
-        files = []
-        for path in output.rglob("*"):
-            if path.is_file() and path.name not in {"worker.stdout.log", "worker.stderr.log"}:
-                files.append({"name": str(path.relative_to(output)).replace("\\", "/"), "size": path.stat().st_size})
-        rows = []
-        for name in ("results.jsonl", "formal_results.jsonl", "formal/formal_results.jsonl"):
-            path = output / name
-            if path.exists(): rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        return {"result_origin": "new_replay", "historical_paper_results": None, "status": status, "results": rows, "downloads": files}
+    def results(self, run_id: str, *, after: int = 0) -> dict[str, Any]:
+        status = self.get(run_id)
+        metadata = experiment(status["experiment_id"])
+        return {
+            "result_origin": "new_replay",
+            "historical_paper_results": metadata.get("historical_result"),
+            "status": status,
+            "results": self.store.executions(run_id, after=after),
+            "final_metrics": self.store.final_metrics(run_id),
+            "downloads": self.store.artifacts(run_id),
+        }
 
-    def file(self, run_id: str, relative_path: str) -> Path:
-        output = Path(self.get(run_id)["replay_output_dir"]).resolve()
-        candidate = (output / relative_path).resolve()
-        if candidate == output or output not in candidate.parents or not candidate.is_file():
-            raise ValueError("Replay file not found")
-        return candidate
+    def file(self, run_id: str, relative_path: str) -> tuple[str, bytes]:
+        self.get(run_id)
+        return self.store.artifact(run_id, relative_path)
 
 
 formal_jobs = FormalJobService()
+
+
+class CustomJobService:
+    """Control-plane facade for exploratory batches executed by the worker."""
+
+    def __init__(self, store: FormalJobStore | None = None) -> None:
+        self.store = store or FormalJobStore()
+
+    def create(self, request: CustomRunRequest) -> dict[str, Any]:
+        run_id = f"custom-{uuid.uuid4().hex[:16]}"
+        now = time.time()
+        job = {
+            "run_id": run_id,
+            "job_kind": "custom",
+            "experiment_id": "custom_workbench",
+            "run_mode": "custom_batch",
+            "status": "queued",
+            "completed": 0,
+            "total": len(request.questions),
+            "current_stage": "queued",
+            "current_condition": request.condition_id.value,
+            "current_case": None,
+            "successful": 0,
+            "failed": 0,
+            "created_at": now,
+            "started_at": None,
+            "updated_at": now,
+            "resume_state": "queued",
+            "replay_output_dir": f"custom/{run_id}",
+            "persistence": "durable PostgreSQL queue/results; execution is performed by the cloud worker",
+            "error": None,
+        }
+        metadata = {
+            "result_origin": "new_exploratory_run",
+            "formal_paper_reproduction": False,
+            "question_count": len(request.questions),
+        }
+        self.store.create(job, request.model_dump(mode="json"), metadata)
+        return self.get(run_id)
+
+    def get(self, run_id: str) -> dict[str, Any]:
+        value = self.store.get(run_id)
+        if value.get("job_kind") != "custom":
+            raise KeyError(run_id)
+        keep = {
+            "run_id", "status", "completed", "total", "current_stage", "current_case",
+            "successful", "failed", "elapsed_seconds", "resume_state", "persistence", "error",
+        }
+        return {key: value[key] for key in keep if key in value}
+
+    def results(self, run_id: str, *, after: int = 0) -> dict[str, Any]:
+        return {
+            "result_origin": "new_exploratory_run",
+            "formal_paper_reproduction": False,
+            "status": self.get(run_id),
+            "results": self.store.executions(run_id, after=after, include_payload=True),
+            "final_metrics": self.store.final_metrics(run_id),
+            "downloads": self.store.artifacts(run_id),
+        }
+
+    def file(self, run_id: str, relative_path: str) -> tuple[str, bytes]:
+        self.get(run_id)
+        return self.store.artifact(run_id, relative_path)
+
+
+custom_jobs = CustomJobService()

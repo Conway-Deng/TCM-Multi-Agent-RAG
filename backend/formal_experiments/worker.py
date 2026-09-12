@@ -221,8 +221,16 @@ def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id:
 
 def _run_retrieval(root: Path, output: Path) -> None:
     _require_frozen_qwen_provider()
-    os.environ["TCM_CORPUS_MODE"] = "required"
-    os.environ["TCM_CORPUS_PATH"] = str(root / "research/corpus/tcm_v1/chunks.jsonl")
+    os.environ.update({
+        "TCM_CORPUS_MODE": "required",
+        "TCM_CORPUS_PATH": str(root / "research/corpus/tcm_v1/chunks.jsonl"),
+        "EMBEDDING_PROVIDER": "siliconflow",
+        "EMBEDDING_API_KEY": os.environ["LLM_API_KEY"],
+        "EMBEDDING_MODEL": "BAAI/bge-m3",
+        "RERANK_PROVIDER": "siliconflow",
+        "RERANK_API_KEY": os.environ["LLM_API_KEY"],
+        "RERANK_MODEL": "BAAI/bge-reranker-v2-m3",
+    })
     warmer = _load(root / "research/retrieval_ablation/warm_formal_cache.py", "frozen_retrieval_cache_warmer")
     cache_dir = output / "cache"
     warmer.warm(cache_dir)
@@ -319,6 +327,37 @@ def _run_rq4(root: Path, output: Path, mode: str, condition: str | None, case_id
     _write(output / "replay_isolation.json", {"result_origin": "new_replay", "historical_results_modified": False, "output_root": str(output), "conditions": sorted(allowed)})
 
 
+def run_replay(
+    *,
+    experiment_id: str,
+    run_mode: str,
+    frozen_root: Path,
+    output: Path,
+    condition: str | None = None,
+    case_id: str | None = None,
+) -> None:
+    """Run one exact replay adapter inside a worker-owned disposable workspace."""
+    from formal_experiments.registry import validate_replay_path, verify_deployment_integrity
+    root = frozen_root.resolve()
+    integrity_ok, integrity_errors = verify_deployment_integrity(root, experiment_id)
+    if not integrity_ok:
+        raise RuntimeError("Formal asset integrity verification failed: " + ", ".join(integrity_errors))
+    output = validate_replay_path(root, output); output.mkdir(parents=True, exist_ok=True)
+    _status(output, status="running", completed=0, total=0, successful=0, failed=0)
+    actions = {
+        "retrieval_ablation": lambda: _run_retrieval(root, output),
+        "rq1_architecture": lambda: _run_rq1(root, output, run_mode, condition, case_id),
+        "rq4_debate": lambda: _run_rq4(root, output, run_mode, condition, case_id),
+        "research_b": lambda: _run_research_b(root, output, run_mode, condition, case_id),
+        "research_c": lambda: _run_research_c(root, output, run_mode, condition, case_id),
+        "a3_v1_3": lambda: _run_a3(root, output, run_mode, condition, case_id),
+    }
+    if experiment_id not in actions:
+        raise RuntimeError("No replay-safe adapter is available for this experiment")
+    actions[experiment_id]()
+    _status(output, status="complete", resume_state="complete")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", required=True)
@@ -328,24 +367,14 @@ def main() -> None:
     parser.add_argument("--frozen-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    from formal_experiments.registry import validate_replay_path, verify_deployment_integrity
-    integrity_ok, integrity_errors = verify_deployment_integrity(args.frozen_root.resolve(), args.experiment)
-    if not integrity_ok:
-        raise RuntimeError("Formal asset integrity verification failed: " + ", ".join(integrity_errors))
-    output = validate_replay_path(args.frozen_root, args.output); output.mkdir(parents=True, exist_ok=True)
-    _status(output, status="running", completed=0, total=0, successful=0, failed=0)
-    actions = {
-        "retrieval_ablation": lambda: _run_retrieval(args.frozen_root, output),
-        "rq1_architecture": lambda: _run_rq1(args.frozen_root, output, args.run_mode, args.condition, args.case_id),
-        "rq4_debate": lambda: _run_rq4(args.frozen_root, output, args.run_mode, args.condition, args.case_id),
-        "research_b": lambda: _run_research_b(args.frozen_root, output, args.run_mode, args.condition, args.case_id),
-        "research_c": lambda: _run_research_c(args.frozen_root, output, args.run_mode, args.condition, args.case_id),
-        "a3_v1_3": lambda: _run_a3(args.frozen_root, output, args.run_mode, args.condition, args.case_id),
-    }
-    if args.experiment not in actions:
-        raise RuntimeError("No replay-safe adapter is available for this experiment")
-    actions[args.experiment]()
-    _status(output, status="complete", resume_state="complete")
+    run_replay(
+        experiment_id=args.experiment,
+        run_mode=args.run_mode,
+        condition=args.condition,
+        case_id=args.case_id,
+        frozen_root=args.frozen_root,
+        output=args.output,
+    )
 
 
 if __name__ == "__main__":
