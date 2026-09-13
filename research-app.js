@@ -691,6 +691,14 @@
   let customRunTimer = null;
   let customResultCursor = 0;
 
+  function setCustomRestoreLoading(visible) { $('#custom-restore-loading').hidden = !visible; }
+  function yieldForCustomRestorePaint() {
+    return new Promise((resolve) => {
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(resolve);
+      else setTimeout(resolve, 0);
+    });
+  }
+
   async function refreshCustomRun(restored = false) {
     if (!activeCustomRunId) return;
     try {
@@ -750,15 +758,21 @@
 
   async function resumeSavedCustomRun() {
     const saved = localStorage.getItem('medirag-custom-run-id');
-    if (!saved) return;
-    activeCustomRunId = saved;
-    researchRequestActive = true;
-    setResearchControlsDisabled(true);
-    $('#consensus-submit').disabled = true;
-    $('#consensus-submit').classList.add('is-loading');
-    $('#consensus-form').setAttribute('aria-busy', 'true');
-    researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgressVisualState('restoring'); setResearchProgress('restoring'); setText('#consensus-progress-elapsed', '—');
-    await refreshCustomRun(true);
+    if (!saved) { setCustomRestoreLoading(false); return; }
+    setCustomRestoreLoading(true);
+    try {
+      await yieldForCustomRestorePaint();
+      activeCustomRunId = saved;
+      researchRequestActive = true;
+      setResearchControlsDisabled(true);
+      $('#consensus-submit').disabled = true;
+      $('#consensus-submit').classList.add('is-loading');
+      $('#consensus-form').setAttribute('aria-busy', 'true');
+      researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgressVisualState('restoring'); setResearchProgress('restoring'); setText('#consensus-progress-elapsed', '—');
+      await refreshCustomRun(true);
+    } finally {
+      setCustomRestoreLoading(false);
+    }
   }
 
   async function stopCustomRun() {

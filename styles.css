@@ -4677,9 +4677,17 @@ body {
 .custom-workbench-label { margin-bottom: 1rem; padding: .75rem; border-left: 3px solid var(--warning); background: #fff9ed; }
 .custom-workbench-label p { margin: 0; }
 .custom-model-assignment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }
+.custom-question-helper { display: flex; align-items: flex-start; gap: .45rem; margin-top: .65rem; padding: .55rem .7rem; border: 1px solid rgba(39,95,131,.18); border-radius: .5rem; background: rgba(39,95,131,.05); color: var(--text-secondary); font-size: .9rem; font-weight: 600; }
+.custom-question-helper::before { content: 'ⓘ'; flex: 0 0 auto; color: var(--accent, #275f83); font-size: 1rem; line-height: 1.35; }
 .custom-model-assignment-grid label, .custom-question-count-row label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .78rem; font-weight: 800; }
 .custom-model-assignment-grid select, .custom-question-count-row select, .custom-question-count-row input { width: 100%; padding: .7rem .75rem; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); font: inherit; }
 .custom-question-count-row { display: grid; grid-template-columns: repeat(2, minmax(0, 14rem)); gap: .7rem; }
+.custom-restore-loading[hidden] { display: none !important; }
+.custom-restore-loading { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1.25rem; background: rgba(15,23,42,.18); }
+.custom-restore-loading-card { display: grid; justify-items: center; gap: .55rem; max-width: 28rem; padding: 1.35rem 1.5rem; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-strong, #fff); box-shadow: 0 16px 40px rgba(16,42,67,.16); color: var(--text-primary); text-align: center; }
+.custom-restore-loading-card > span:last-child { color: var(--text-secondary); font-size: .88rem; }
+.custom-restore-spinner { width: 1.45rem; height: 1.45rem; border: 3px solid rgba(39,95,131,.2); border-top-color: var(--accent, #275f83); border-radius: 50%; animation: custom-restore-spin .75s linear infinite; }
+@keyframes custom-restore-spin { to { transform: rotate(360deg); } }
 @media (max-width: 860px) { .formal-experiment-cards, .formal-result-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid, .custom-model-assignment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-result-columns, .custom-model-assignment-grid, .custom-question-count-row { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading { display: grid; } .formal-execution-stream li { grid-template-columns: 2.5rem 1fr; } }
 

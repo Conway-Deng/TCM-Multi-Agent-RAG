@@ -62,6 +62,10 @@ def test_custom_model_assignment_and_batch_payload_contract() -> None:
 
 def test_custom_question_textarea_has_multi_question_helper() -> None:
     assert "For multiple questions, enter one question per line in this box." in HTML
+    assert 'class="selection-help custom-question-helper"' in HTML
+    assert ".custom-question-helper" in CSS
+    assert "font-weight: 600" in CSS
+    assert "background: rgba(39,95,131,.05)" in CSS
     textarea_position = HTML.index('id="consensus-question"')
     helper_position = HTML.index("For multiple questions, enter one question per line in this box.")
     assert helper_position > textarea_position
@@ -178,3 +182,18 @@ def test_guided_progress_and_rendering_contract_remain_separate() -> None:
     assert "function renderFormalStatus" in JS
     assert "Run Paper Experiment" in HTML
     assert "clearCustomResultDisplay()" not in JS[JS.index("function refreshFormalRun"):JS.index("function selectFormalExperiment")]
+
+
+def test_custom_restore_loading_paints_and_always_clears() -> None:
+    resume = JS[JS.index("async function resumeSavedCustomRun"):JS.index("async function stopCustomRun")]
+    assert 'id="custom-restore-loading"' in HTML
+    assert 'class="custom-restore-spinner"' in HTML
+    assert "if (!saved) { setCustomRestoreLoading(false); return; }" in resume
+    assert "setCustomRestoreLoading(true)" in resume
+    assert "await yieldForCustomRestorePaint()" in resume
+    assert "await refreshCustomRun(true)" in resume
+    assert "finally" in resume
+    assert "setCustomRestoreLoading(false)" in resume
+    assert "typeof requestAnimationFrame === 'function'" in JS
+    assert "if (customActive && !researchProgressTimer) startResearchProgress()" in JS
+    assert "stopResearchProgress(status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : 'failed')" in JS
