@@ -529,6 +529,9 @@
     } else confidenceNode.append(element('p', 'muted-note', unavailable));
   }
   function renderResearchRun(data, options = {}) {
+    const detailLoading = $('#custom-detail-loading'); const detailContent = $('#custom-detail-content');
+    if (detailLoading) detailLoading.hidden = true;
+    if (detailContent) detailContent.hidden = false;
     currentResearchRun = data; const traceData = data.trace || {}; const outputs = data.agent_outputs || []; const active = outputs.filter((agent) => !agent.abstained); const abstained = outputs.filter((agent) => agent.abstained);
     const selectedCount = (traceData.active_agents || outputs).length || 1; const coverage = Math.round((active.length / selectedCount) * 100); const activeSupport = active.length ? Math.round(active.reduce((sum, agent) => sum + (agent.confidence || 0), 0) / active.length * 100) : 0;
     const presentation = researchRunPresentation(traceData, data);
@@ -676,12 +679,18 @@
     const selected = $('#custom-question-count').value;
     return selected === 'custom' ? Number($('#custom-question-count-value').value) : Number(selected);
   }
-  function updateCustomQuestionCount() { $('#custom-question-count-label').hidden = $('#custom-question-count').value !== 'custom'; }
+  function updateCustomQuestionCount() {
+    const custom = $('#custom-question-count').value === 'custom'; const label = $('#custom-question-count-label'); const input = $('#custom-question-count-value');
+    label.hidden = false; label.classList.toggle('is-disabled', !custom); label.setAttribute('aria-disabled', String(!custom)); input.disabled = !custom;
+    if (custom) input.removeAttribute('tabindex'); else input.tabIndex = -1;
+  }
   function clearCustomResultDisplay() {
     currentResearchRun = null;
     currentCustomSummary = null;
     $('#consensus-results').hidden = true;
     $('#consensus-results').dataset.hasResult = 'false';
+    $('#custom-detail-loading').hidden = true;
+    $('#custom-detail-content').hidden = true;
     $('#research-fallback-banner').hidden = true;
     ['#consensus-summary-text', '#consensus-evidence', '#consensus-agents', '#consensus-abstaining-list', '#consensus-agreements', '#consensus-disagreements', '#consensus-judges', '#consensus-safety', '#consensus-limitations'].forEach((selector) => $(selector).replaceChildren());
     $('#consensus-trace').textContent = '';
@@ -709,11 +718,18 @@
   }
   function customSummaryLatency(summary) { return typeof summary.latency_ms === 'number' ? (summary.latency_ms / 1000).toFixed(1) + ' s' : '—'; }
 
+  function placeCustomDetail() {
+    const section = $('#custom-question-results'); const container = $('#custom-question-results-list'); const detail = $('#consensus-results');
+    if (selectedCustomSequence === null) { section.after(detail); return; }
+    const card = [...container.querySelectorAll('.custom-question-result-card')].find((item) => Number(item.dataset.sequence) === selectedCustomSequence);
+    if (card) card.after(detail); else section.after(detail);
+  }
+
   function renderCustomQuestionResults() {
     const rows = orderedCustomResultSummaries(); const total = Number(customRunStatusSnapshot?.total || rows.length);
-    const section = $('#custom-question-results'); const container = $('#custom-question-results-list'); const fragment = document.createDocumentFragment();
+    const section = $('#custom-question-results'); const container = $('#custom-question-results-list'); const detail = $('#consensus-results'); const fragment = document.createDocumentFragment();
     rows.forEach((summary) => {
-      const card = element('article', 'custom-question-result-card' + (summary.status === 'Failed' ? ' is-failed' : '') + (Number(summary.sequence) === selectedCustomSequence ? ' is-selected' : ''));
+      const card = element('article', 'custom-question-result-card' + (summary.status === 'Failed' ? ' is-failed' : '') + (Number(summary.sequence) === selectedCustomSequence ? ' is-selected' : '')); card.dataset.sequence = String(summary.sequence);
       const header = element('div', 'custom-question-result-heading'); header.append(element('span', 'muted-badge', summary.sequence + ' of ' + total), element('span', 'status-badge', summary.status || 'Completed')); card.append(header);
       card.append(element('h3', '', summary.question || summary.question_id || 'Question unavailable'));
       card.append(element('span', 'custom-final-answer-label', summary.condition === 'C1' ? 'Final answer' : 'Final integrated answer'));
@@ -731,13 +747,14 @@
     section.dataset.hasResults = String(rows.length > 0);
     section.hidden = rows.length === 0 || $('#custom-mode-tab').getAttribute('aria-selected') !== 'true';
     ['#print-custom-qa', '#download-custom-qa-json', '#download-custom-qa-csv'].forEach((selector) => { $(selector).disabled = rows.length === 0; });
+    placeCustomDetail();
   }
 
   function clearCustomBatchDisplay() {
     customDetailRequestToken += 1;
     customResultSummaries.clear(); customRunStatusSnapshot = null; selectedCustomSequence = null; customSelectionManual = false;
     $('#custom-question-results-list').replaceChildren(); $('#custom-question-results').dataset.hasResults = 'false'; $('#custom-question-results').hidden = true;
-    setText('#custom-question-results-count', '0 persisted questions'); clearCustomResultDisplay();
+    setText('#custom-question-results-count', '0 persisted questions'); clearCustomResultDisplay(); $('#custom-question-results').after($('#consensus-results'));
   }
 
   async function selectCustomResult(sequence, manual = false) {
@@ -750,7 +767,11 @@
     clearCustomResultDisplay();
     setText('#selected-question-position', 'Question ' + summary.sequence + ' of ' + Number(customRunStatusSnapshot?.total || customResultSummaries.size));
     setText('#selected-question-text', summary.question || summary.question_id || 'Question unavailable');
+    placeCustomDetail();
+    const loading = $('#custom-detail-loading'); loading.hidden = false; setText('#custom-detail-loading-title', 'Loading question details…'); setText('#custom-detail-loading-detail', 'Retrieving the saved answer, evidence, and specialist outputs.'); $('#custom-detail-retry').hidden = true; $('#consensus-results').hidden = false;
     try {
+      await yieldForCustomDetailPaint();
+      if (requestToken !== customDetailRequestToken) return;
       const row = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/results/' + selectedCustomSequence);
       if (requestToken !== customDetailRequestToken || Number(row.sequence) !== selectedCustomSequence) return;
       currentCustomSummary = summary;
@@ -758,7 +779,7 @@
       setText('#selected-question-position', 'Question ' + summary.sequence + ' of ' + Number(customRunStatusSnapshot?.total || customResultSummaries.size));
       setText('#selected-question-text', summary.question || summary.question_id || 'Question unavailable');
     } catch (error) {
-      if (requestToken === customDetailRequestToken) showMessage($('#consensus-message'), 'Unable to load the selected question details: ' + error.message);
+      if (requestToken === customDetailRequestToken) { loading.hidden = false; setText('#custom-detail-loading-title', 'Unable to load question details'); setText('#custom-detail-loading-detail', error.message || 'The saved result could not be retrieved.'); const retry = $('#custom-detail-retry'); retry.hidden = false; retry.onclick = () => selectCustomResult(selectedCustomSequence, true); $('#custom-detail-content').hidden = true; $('#consensus-results').hidden = false; }
     }
   }
 
@@ -802,6 +823,12 @@
   }
 
   function setCustomRestoreLoading(visible) { $('#custom-restore-loading').hidden = !visible; }
+  function yieldForCustomDetailPaint() {
+    return new Promise((resolve) => {
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(resolve);
+      else setTimeout(resolve, 0);
+    });
+  }
   function yieldForCustomRestorePaint() {
     return new Promise((resolve) => {
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(resolve);
@@ -838,6 +865,7 @@
         partialDownloads.hidden = false;
       } else partialDownloads.hidden = true;
       if (customActive) {
+        showMessage($('#consensus-message'), status.completed + ' of ' + status.total + ' custom questions completed so far. Persisted answers are shown below as they finish.');
         clearTimeout(customRunTimer);
         customRunTimer = setTimeout(refreshCustomRun, 2500);
         return;
@@ -852,7 +880,7 @@
       setText('#consensus-progress-status', status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
       setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
       showMessage($('#consensus-message'), status.status === 'complete'
-        ? (restored ? 'Restored completed run. ' : '') + status.completed + ' of ' + status.total + ' custom questions completed in the cloud. The latest response is shown below.'
+        ? (restored ? 'Restored completed run. ' : '') + status.completed + ' of ' + status.total + ' custom questions completed in the cloud. All persisted answers are shown below.'
         : status.status === 'stopped'
         ? (restored ? 'Restored partial run. ' : '') + 'Stopped after ' + status.completed + ' / ' + status.total + ' executions. Partial replay — not directly comparable to the complete paper result.'
         : status.error || 'The Custom experiment failed.');

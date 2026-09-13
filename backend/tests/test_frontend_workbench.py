@@ -215,6 +215,48 @@ def test_custom_question_results_use_lightweight_summaries_and_one_detail_panel(
     assert "!customSelectionManual || selectedCustomSequence === null" in JS
 
 
+def test_custom_question_count_uses_preset_as_source_of_truth() -> None:
+    count_logic = JS[JS.index("function selectedCustomQuestionCount"):JS.index("function clearCustomResultDisplay")]
+    assert "return selected === 'custom' ? Number($('#custom-question-count-value').value) : Number(selected);" in count_logic
+    assert "label.hidden = false" in count_logic
+    assert "input.disabled = !custom" in count_logic
+    assert "label.classList.toggle('is-disabled', !custom)" in count_logic
+    assert "input.tabIndex = -1" in count_logic
+    assert "questions: questions.slice(0, requestedCount)" in JS
+    assert '#custom-question-count-label" hidden' not in HTML
+    assert "custom-question-count-row input:disabled" in CSS
+
+
+def test_selected_custom_detail_is_inline_single_tree_with_loading_and_retry() -> None:
+    assert 'id="custom-detail-loading"' in HTML
+    assert 'Loading question details…' in HTML
+    assert 'Retrieving the saved answer, evidence, and specialist outputs.' in HTML
+    assert 'id="custom-detail-content"' in HTML
+    assert HTML.count('id="consensus-results"') == 1
+    placement = JS[JS.index("function placeCustomDetail"):JS.index("function renderCustomQuestionResults")]
+    assert "card.after(detail)" in placement
+    assert "section.after(detail)" in placement
+    selection = JS[JS.index("async function selectCustomResult"):JS.index("function customQaExport")]
+    assert "card.dataset.sequence" in JS
+    assert "loading.hidden = false" in selection
+    assert "await yieldForCustomDetailPaint()" in selection
+    assert "requestToken !== customDetailRequestToken" in selection
+    assert "retry.onclick = () => selectCustomResult(selectedCustomSequence, true)" in selection
+    assert "renderResearchRun(row.result, { scroll: manual })" in selection
+    assert ".custom-detail-loading" in CSS
+    assert ".custom-detail-content[hidden]" in CSS
+
+
+def test_custom_detail_switch_and_restore_do_not_duplicate_full_result_trees() -> None:
+    render = JS[JS.index("function renderCustomQuestionResults"):JS.index("function clearCustomBatchDisplay")]
+    assert "container.replaceChildren(fragment)" in render
+    assert "placeCustomDetail()" in render
+    assert "customResultSummaries.set(Number(row.sequence), row)" in JS
+    clear = JS[JS.index("function clearCustomBatchDisplay"):JS.index("async function selectCustomResult")]
+    assert "selectedCustomSequence = null" in clear
+    assert "$('#custom-question-results').after($('#consensus-results'))" in clear
+
+
 def test_custom_cards_exports_and_print_keep_question_answer_pairs_lightweight() -> None:
     assert "Question results" in HTML
     assert "Print Q&amp;A Report" in HTML

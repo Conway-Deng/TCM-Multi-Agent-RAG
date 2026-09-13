@@ -4681,6 +4681,8 @@ body {
 .custom-question-helper::before { content: 'ⓘ'; flex: 0 0 auto; color: var(--accent, #275f83); font-size: 1rem; line-height: 1.35; }
 .custom-model-assignment-grid label, .custom-question-count-row label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .78rem; font-weight: 800; }
 .custom-model-assignment-grid select, .custom-question-count-row select, .custom-question-count-row input { width: 100%; padding: .7rem .75rem; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); font: inherit; }
+.custom-question-count-row label.is-disabled { opacity: .62; }
+.custom-question-count-row input:disabled { cursor: not-allowed; background: var(--surface); color: var(--text-muted); }
 .custom-question-count-row { display: grid; grid-template-columns: repeat(2, minmax(0, 14rem)); gap: .7rem; }
 .custom-question-results { display: grid; gap: 1rem; margin-top: 1rem; padding: 1.1rem; }
 .custom-question-results[hidden] { display: none !important; }
@@ -4699,6 +4701,12 @@ body {
 .custom-question-result-card .secondary-action { justify-self: start; }
 .selected-question-context { padding: 1rem 1.1rem; }
 .selected-question-context h2 { margin: .35rem 0 0; color: var(--text-primary); font-size: 1.1rem; line-height: 1.45; }
+.custom-detail-content[hidden] { display: none !important; }
+.custom-detail-loading[hidden] { display: none !important; }
+.custom-detail-loading { display: grid; justify-items: start; gap: .55rem; padding: 1.2rem 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-strong, #fff); color: var(--text-primary); }
+.custom-detail-loading > span { color: var(--text-secondary); font-size: .9rem; }
+.custom-detail-spinner { width: 1.35rem; height: 1.35rem; border: 3px solid rgba(39,95,131,.2); border-top-color: var(--accent, #275f83); border-radius: 50%; animation: custom-detail-spin .75s linear infinite; }
+@keyframes custom-detail-spin { to { transform: rotate(360deg); } }
 .custom-print-report[hidden] { display: none !important; }
 .custom-print-report { background: #fff; color: #111; }
 .custom-print-metadata { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #bbb; }
