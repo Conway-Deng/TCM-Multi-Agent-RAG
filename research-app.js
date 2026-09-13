@@ -150,8 +150,8 @@
     return data;
   }
 
-  async function apiGet(path) {
-    const response = await fetch(API + path, { headers: { Accept: 'application/json' } });
+  async function apiGet(path, signal) {
+    const response = await fetch(API + path, { headers: { Accept: 'application/json' }, signal });
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed (' + response.status + ')');
     return data;
@@ -168,6 +168,11 @@
   let formalRenderedStatusKey = '';
   let formalSummaryLoad = null;
   let formalSummaryLoadToken = 0;
+  let selectedFormalSequence = null;
+  let selectedFormalDetail = null;
+  let formalDetailRequestToken = 0;
+  let formalDetailAbortController = null;
+  let formalDetailPanel = null;
   let paperConfigurationApplied = false;
 
   const FORMAL_SUMMARY_FIELDS = [
@@ -189,6 +194,7 @@
   }
 
   function clearFormalResultRows() {
+    clearFormalExecutionDetail();
     formalSummaryLoadToken += 1;
     formalSummaryLoad = null;
     formalResultCursor = 0;
@@ -294,6 +300,223 @@
     return fields;
   }
 
+  function ensureFormalDetailPanel() {
+    if (formalDetailPanel) return formalDetailPanel;
+    const panel = element('li', 'formal-execution-detail');
+    panel.id = 'formal-execution-detail';
+    const heading = element('div', 'formal-execution-detail-heading');
+    heading.append(element('span', 'section-eyebrow', 'Selected execution'), element('h4', '', 'Full execution details'));
+    const loading = element('div', 'formal-execution-detail-loading'); loading.id = 'formal-detail-loading';
+    loading.append(element('span', 'formal-detail-spinner'), element('strong', '', 'Loading execution details…'));
+    const error = element('div', 'formal-execution-detail-error'); error.id = 'formal-detail-error'; error.hidden = true;
+    const errorText = element('p', '', 'Could not load execution details.');
+    const retry = element('button', 'secondary-action', 'Retry'); retry.type = 'button'; retry.id = 'formal-detail-retry';
+    retry.addEventListener('click', () => { if (selectedFormalSequence !== null) loadFormalExecutionDetail(selectedFormalSequence); });
+    error.append(errorText, retry);
+    const content = element('div', 'formal-execution-detail-content'); content.id = 'formal-detail-content'; content.hidden = true;
+    panel.append(heading, loading, error, content);
+    formalDetailPanel = panel;
+    return panel;
+  }
+
+  function setFormalDetailPanelState(state) {
+    const panel = ensureFormalDetailPanel();
+    panel.querySelector('h4').textContent = selectedFormalSequence === null ? 'Full execution details' : 'Execution ' + String(selectedFormalSequence).padStart(3, '0') + ' details';
+    const loading = panel.querySelector('#formal-detail-loading');
+    const error = panel.querySelector('#formal-detail-error');
+    const content = panel.querySelector('#formal-detail-content');
+    loading.hidden = state !== 'loading';
+    error.hidden = state !== 'error';
+    content.hidden = state !== 'loaded';
+    if (state !== 'loaded') content.replaceChildren();
+  }
+
+  function syncFormalDetailSelection() {
+    $$('.formal-detail-toggle').forEach((button) => {
+      const expanded = Number(button.dataset.sequence) === selectedFormalSequence;
+      button.textContent = expanded ? 'Hide full details' : 'View full details';
+      button.setAttribute('aria-expanded', String(expanded));
+      button.closest('.formal-execution-card')?.classList.toggle('is-selected', expanded);
+    });
+    if (selectedFormalSequence === null) {
+      if (formalDetailPanel?.isConnected) formalDetailPanel.remove();
+      return;
+    }
+    const card = $('#formal-execution-stream').querySelector('[data-formal-sequence="' + selectedFormalSequence + '"]');
+    if (card) card.after(ensureFormalDetailPanel());
+    else if (formalDetailPanel?.isConnected) formalDetailPanel.remove();
+  }
+
+  function clearFormalExecutionDetail() {
+    formalDetailRequestToken += 1;
+    if (formalDetailAbortController) formalDetailAbortController.abort();
+    formalDetailAbortController = null;
+    selectedFormalSequence = null;
+    selectedFormalDetail = null;
+    if (formalDetailPanel) formalDetailPanel.querySelector('#formal-detail-content')?.replaceChildren();
+    syncFormalDetailSelection();
+  }
+
+  function formalDetailText(value) {
+    if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
+    return String(value);
+  }
+
+  function appendFormalDetailField(container, label, value, { wide = false, cited = false } = {}) {
+    if (value === undefined || value === null || value === '' || (Array.isArray(value) && !value.length)) return;
+    const wrapper = element('div', wide ? 'is-wide' : '');
+    const description = element('dd');
+    if (cited) renderCitedText(description, value);
+    else description.textContent = formalDetailText(value);
+    wrapper.append(element('dt', '', label), description);
+    container.append(wrapper);
+  }
+
+  function sanitizedFormalTechnical(value) {
+    if (Array.isArray(value)) return value.map(sanitizedFormalTechnical);
+    if (!value || typeof value !== 'object') return value;
+    return Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !/(api[_-]?key|authorization|password|secret|token|credential)/i.test(key))
+      .map(([key, item]) => [key, sanitizedFormalTechnical(item)]));
+  }
+
+  function formalTechnicalData(result) {
+    const keys = [
+      'run_status', 'http_status', 'generation_mode', 'fallback', 'error', 'retry_count', 'retries_count',
+      'provider_attempts', 'provider_attempts_count', 'model_call_counts', 'debate', 'process_data',
+      'initial_stage', 'initial_audits', 'critique_stage', 'critique_audits', 'revision_stage',
+      'revision_audits', 'consensus_stage', 'consensus_audit', 'stage_statuses',
+    ];
+    Object.keys(result).filter((key) => /sha256|_hash$/.test(key)).forEach((key) => keys.push(key));
+    return sanitizedFormalTechnical(Object.fromEntries(keys
+      .filter((key, index) => keys.indexOf(key) === index && Object.prototype.hasOwnProperty.call(result, key))
+      .map((key) => [key, result[key]])));
+  }
+
+  function renderFormalExecutionDetail(row) {
+    const result = row?.result && typeof row.result === 'object' ? row.result : {};
+    const summaryType = formalResultRows.get(Number(row.sequence))?.summary_type || 'execution';
+    const content = ensureFormalDetailPanel().querySelector('#formal-detail-content');
+    content.replaceChildren();
+    const fields = element('dl', 'formal-execution-detail-fields');
+    appendFormalDetailField(fields, 'Execution', row.sequence);
+    appendFormalDetailField(fields, 'Case', row.case_id || result.case_id || result.question_id);
+    appendFormalDetailField(fields, 'Condition', row.condition || result.condition || result.condition_id || result.retrieval_condition);
+    appendFormalDetailField(fields, 'Status', row.status);
+    if (summaryType === 'retrieval') {
+      appendFormalDetailField(fields, 'Stage', result.stage);
+      appendFormalDetailField(fields, 'Retrieval condition', result.retrieval_condition || result.condition);
+      ['chunk_recall_at_1', 'chunk_recall_at_4', 'chunk_recall_at_8', 'gold_evidence_recall', 'hit_at_1', 'hit_at_4', 'hit_at_8', 'source_recall'].forEach((key) => appendFormalDetailField(fields, key.replaceAll('_', ' '), result[key]));
+      appendFormalDetailField(fields, 'Retrieved evidence IDs', result.retrieved_ids || result.retrieved_chunk_ids, { wide: true });
+      appendFormalDetailField(fields, 'Answer', result.answer, { wide: true, cited: true });
+      appendFormalDetailField(fields, 'Citation IDs', result.citation_ids, { wide: true });
+      appendFormalDetailField(fields, 'Usable', formalBoolean(result.usable));
+      appendFormalDetailField(fields, 'Fallback', formalBoolean(result.fallback));
+      appendFormalDetailField(fields, 'Latency', result.retrieval_latency_ms !== undefined ? result.retrieval_latency_ms + ' ms' : result.latency_ms !== undefined ? result.latency_ms + ' ms' : null);
+      appendFormalDetailField(fields, 'Model', result.model_actually_called || result.model);
+      appendFormalDetailField(fields, 'Provider', result.provider);
+    } else if (summaryType === 'architecture' || summaryType === 'debate') {
+      appendFormalDetailField(fields, 'Full answer', result.full_answer, { wide: true, cited: true });
+      appendFormalDetailField(fields, 'Retrieved evidence IDs', result.retrieved_evidence_ids, { wide: true });
+      appendFormalDetailField(fields, 'Model', result.model_actually_called || result.model);
+      appendFormalDetailField(fields, 'Provider', result.provider);
+      appendFormalDetailField(fields, 'Participating agents', result.participating_agents, { wide: true });
+      appendFormalDetailField(fields, 'Debate enabled', formalBoolean(result.debate?.enabled));
+      appendFormalDetailField(fields, 'Debate rounds', result.debate?.rounds);
+      appendFormalDetailField(fields, 'Consensus answer', result.debate?.final_consensus?.answer, { wide: true, cited: true });
+      appendFormalDetailField(fields, 'Usable', formalBoolean(result.usable));
+      appendFormalDetailField(fields, 'Fallback', formalBoolean(result.fallback));
+      appendFormalDetailField(fields, 'Latency', result.latency_ms !== undefined ? result.latency_ms + ' ms' : null);
+    } else if (summaryType === 'judgment') {
+      appendFormalDetailField(fields, 'Prediction', result.prediction);
+      appendFormalDetailField(fields, 'Confidence', result.confidence);
+      appendFormalDetailField(fields, 'Reason', result.reason, { wide: true });
+      appendFormalDetailField(fields, 'Reference label', result.reference_label);
+      appendFormalDetailField(fields, 'Usable', formalBoolean(result.usable));
+      appendFormalDetailField(fields, 'Latency', result.latency_ms !== undefined ? result.latency_ms + ' ms' : null);
+      appendFormalDetailField(fields, 'Model', result.model_actually_called || result.model);
+      appendFormalDetailField(fields, 'Provider', result.provider);
+    } else if (summaryType === 'conflict') {
+      appendFormalDetailField(fields, 'Prediction', result.prediction);
+      appendFormalDetailField(fields, 'Answer', result.answer, { wide: true, cited: true });
+      appendFormalDetailField(fields, 'Confidence', result.confidence);
+      appendFormalDetailField(fields, 'Preserves both viewpoints', formalBoolean(result.preserves_both_viewpoints));
+      appendFormalDetailField(fields, 'Cites both sources', formalBoolean(result.cites_both_sources));
+      appendFormalDetailField(fields, 'Expresses uncertainty', formalBoolean(result.expresses_uncertainty));
+      appendFormalDetailField(fields, 'Reason', result.reason, { wide: true });
+      appendFormalDetailField(fields, 'Reference label', result.reference_label);
+      appendFormalDetailField(fields, 'Usable', formalBoolean(result.usable));
+      appendFormalDetailField(fields, 'Latency', result.latency_ms !== undefined ? result.latency_ms + ' ms' : null);
+      appendFormalDetailField(fields, 'Model', result.model_actually_called || result.model);
+      appendFormalDetailField(fields, 'Provider', result.provider);
+    } else if (summaryType === 'multi_model_consensus') {
+      appendFormalDetailField(fields, 'Final answer', result.final_answer, { wide: true, cited: true });
+      appendFormalDetailField(fields, 'Evidence IDs', result.evidence_ids, { wide: true });
+      appendFormalDetailField(fields, 'Cited evidence IDs', result.citations?.cited_evidence_ids, { wide: true });
+      appendFormalDetailField(fields, 'Retrieved evidence IDs', result.citations?.retrieved_evidence_ids, { wide: true });
+      appendFormalDetailField(fields, 'Citation precision', result.citations?.citation_precision);
+      appendFormalDetailField(fields, 'Citation recall', result.citations?.citation_recall);
+      appendFormalDetailField(fields, 'Consensus model', result.consensus_model);
+      appendFormalDetailField(fields, 'Usable', formalBoolean(result.usable));
+      appendFormalDetailField(fields, 'Latency', result.total_latency_seconds !== undefined ? result.total_latency_seconds + ' s' : null);
+    }
+    content.append(fields);
+    const technical = formalTechnicalData(result);
+    if (Object.keys(technical).length) {
+      const details = element('details', 'formal-execution-technical');
+      details.append(element('summary', '', 'Technical details'), element('pre', '', JSON.stringify(technical, null, 2)));
+      content.append(details);
+    }
+    setFormalDetailPanelState('loaded');
+  }
+
+  function yieldForFormalDetailPaint() {
+    return new Promise((resolve) => {
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(resolve);
+      else setTimeout(resolve, 0);
+    });
+  }
+
+  async function loadFormalExecutionDetail(sequence) {
+    const requestedSequence = Number(sequence);
+    const requestedRunId = activeFormalRunId;
+    if (!requestedRunId || selectedFormalSequence !== requestedSequence) return;
+    const token = ++formalDetailRequestToken;
+    if (formalDetailAbortController) formalDetailAbortController.abort();
+    const controller = new AbortController();
+    formalDetailAbortController = controller;
+    selectedFormalDetail = null;
+    setFormalDetailPanelState('loading');
+    try {
+      await yieldForFormalDetailPaint();
+      if (token !== formalDetailRequestToken || requestedRunId !== activeFormalRunId || requestedSequence !== selectedFormalSequence) return;
+      const row = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/results/' + requestedSequence, controller.signal);
+      if (token !== formalDetailRequestToken || requestedRunId !== activeFormalRunId || requestedSequence !== selectedFormalSequence || Number(row.sequence) !== requestedSequence) return;
+      selectedFormalDetail = row;
+      renderFormalExecutionDetail(row);
+    } catch (error) {
+      if (error.name !== 'AbortError' && token === formalDetailRequestToken && requestedRunId === activeFormalRunId && requestedSequence === selectedFormalSequence) setFormalDetailPanelState('error');
+    } finally {
+      if (formalDetailRequestToken === token) formalDetailAbortController = null;
+    }
+  }
+
+  function toggleFormalExecutionDetail(sequence) {
+    const nextSequence = Number(sequence);
+    if (selectedFormalSequence === nextSequence) {
+      clearFormalExecutionDetail();
+      return;
+    }
+    formalDetailRequestToken += 1;
+    if (formalDetailAbortController) formalDetailAbortController.abort();
+    formalDetailAbortController = null;
+    selectedFormalSequence = nextSequence;
+    selectedFormalDetail = null;
+    syncFormalDetailSelection();
+    setFormalDetailPanelState('loading');
+    loadFormalExecutionDetail(nextSequence);
+  }
+
   function renderFormalExecutionCards(total, status) {
     const stream = $('#formal-execution-stream');
     const statusKey = [total, status?.status, status?.current_case, status?.current_condition].join('|');
@@ -313,6 +536,11 @@
         summary.append(wrapper);
       });
       if (summary.children.length) item.append(summary);
+      item.dataset.formalSequence = String(execution.sequence);
+      const detailButton = element('button', 'secondary-action formal-detail-toggle', selectedFormalSequence === execution.sequence ? 'Hide full details' : 'View full details');
+      detailButton.type = 'button'; detailButton.dataset.sequence = String(execution.sequence); detailButton.setAttribute('aria-controls', 'formal-execution-detail'); detailButton.setAttribute('aria-expanded', String(selectedFormalSequence === execution.sequence));
+      detailButton.addEventListener('click', () => toggleFormalExecutionDetail(execution.sequence));
+      item.append(detailButton);
       stream.append(item);
     });
     if (status && ['running', 'stop_requested'].includes(status.status)) {
@@ -322,6 +550,7 @@
       running.append(heading);
       stream.append(running);
     }
+    syncFormalDetailSelection();
     stream.scrollTop = scrollTop;
     formalRenderedRevision = formalResultRevision;
     formalRenderedStatusKey = statusKey;
@@ -350,6 +579,7 @@
   }
 
   function selectFormalExperiment(item) {
+    clearFormalExecutionDetail();
     selectedFormalExperiment = item;
     paperConfigurationApplied = true;
     activeFormalRunId = null;
@@ -404,6 +634,7 @@
   }
 
   function renderFormalStatus(status, options = {}) {
+    if (activeFormalRunId && activeFormalRunId !== status.run_id) clearFormalExecutionDetail();
     activeFormalRunId = status.run_id;
     localStorage.setItem('medirag-formal-run-id', status.run_id);
     $('#formal-empty-state').hidden = true;

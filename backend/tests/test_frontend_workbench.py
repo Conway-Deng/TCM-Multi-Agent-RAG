@@ -100,6 +100,7 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
 
 def test_guided_formal_results_use_incremental_lightweight_execution_cards() -> None:
     formal = JS[JS.index("let formalExperiments"):JS.index("async function startFormalRun")]
+    summary_projection = JS[JS.index("const FORMAL_SUMMARY_FIELDS"):JS.index("function ensureFormalDetailPanel")]
     loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
     assert "let formalResultCursor = 0" in formal
     assert "const formalResultRows = new Map()" in formal
@@ -119,11 +120,11 @@ def test_guided_formal_results_use_incremental_lightweight_execution_cards() -> 
     assert "result:" not in loading
     assert "/results/' + encodeURIComponent(activeFormalRunId) + '/" not in loading
     for forbidden in ("provider_attempts", "initial_stage", "critique_stage", "revision_stage", "retrieved_evidence_ids"):
-        assert forbidden not in formal
+        assert forbidden not in summary_projection
 
 
 def test_guided_formal_scientific_cards_map_six_experiment_families() -> None:
-    mapping = JS[JS.index("function formalSummaryFields"):JS.index("function renderFormalExecutionCards")]
+    mapping = JS[JS.index("function formalSummaryFields"):JS.index("function ensureFormalDetailPanel")]
     for summary_type in ("retrieval", "architecture", "debate", "judgment", "conflict", "multi_model_consensus"):
         assert f"case '{summary_type}'" in mapping
     for label in (
@@ -142,6 +143,80 @@ def test_guided_formal_scientific_cards_map_six_experiment_families() -> None:
     multi_model = mapping[mapping.index("case 'multi_model_consensus'"):mapping.index("default:")]
     assert "execution.answer_excerpt" in multi_model and "execution.consensus_model" in multi_model
     assert "initial_stage" not in mapping and "critique_stage" not in mapping and "revision_stage" not in mapping
+
+
+def test_guided_cards_have_one_shared_view_hide_detail_control() -> None:
+    state = JS[JS.index("let formalExperiments"):JS.index("const FORMAL_SUMMARY_FIELDS")]
+    renderer = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
+    detail = JS[JS.index("function ensureFormalDetailPanel"):JS.index("function renderFormalExecutionCards")]
+    assert "let formalDetailPanel = null" in state
+    assert "if (formalDetailPanel) return formalDetailPanel" in detail
+    assert "panel.id = 'formal-execution-detail'" in detail
+    assert "item.append(detailButton)" in renderer
+    assert "View full details" in renderer and "Hide full details" in renderer
+    assert "aria-controls', 'formal-execution-detail'" in renderer
+    assert "aria-expanded" in renderer
+    assert "card.after(ensureFormalDetailPanel())" in detail
+    assert HTML.count('id="formal-execution-detail"') == 0
+
+
+def test_guided_detail_toggle_fetches_only_selected_sequence_and_collapses_without_fetch() -> None:
+    detail = JS[JS.index("async function loadFormalExecutionDetail"):JS.index("function renderFormalExecutionCards")]
+    toggle = detail[detail.index("function toggleFormalExecutionDetail"):]
+    assert "'/results/' + requestedSequence" in detail
+    assert "Loading execution details…" in JS
+    collapse = toggle[toggle.index("if (selectedFormalSequence === nextSequence)"):toggle.index("selectedFormalSequence = nextSequence")]
+    assert "clearFormalExecutionDetail()" in collapse and "return" in collapse
+    assert "loadFormalExecutionDetail" not in collapse and "apiGet" not in collapse
+    assert toggle.index("selectedFormalSequence = nextSequence") < toggle.index("syncFormalDetailSelection()") < toggle.index("loadFormalExecutionDetail(nextSequence)")
+    assert "selectedFormalDetail = null" in toggle
+
+
+def test_guided_detail_request_is_abortable_and_stale_safe_across_selection_and_run_changes() -> None:
+    state = JS[JS.index("let formalExperiments"):JS.index("const FORMAL_SUMMARY_FIELDS")]
+    detail = JS[JS.index("function clearFormalExecutionDetail"):JS.index("function renderFormalExecutionCards")]
+    status = JS[JS.index("function renderFormalStatus"):JS.index("async function refreshFormalRun")]
+    clear_results = JS[JS.index("function clearFormalResultRows"):JS.index("function setFormalSummaryFeedback")]
+    assert "let formalDetailRequestToken = 0" in state and "let formalDetailAbortController = null" in state
+    assert "formalDetailAbortController.abort()" in detail
+    assert "const token = ++formalDetailRequestToken" in detail
+    guard = "token !== formalDetailRequestToken || requestedRunId !== activeFormalRunId || requestedSequence !== selectedFormalSequence"
+    assert detail.count(guard) >= 2
+    assert "Number(row.sequence) !== requestedSequence" in detail
+    assert "selectedFormalDetail = row" in detail
+    assert "clearFormalExecutionDetail()" in clear_results
+    assert "activeFormalRunId !== status.run_id" in status and "clearFormalExecutionDetail()" in status
+
+
+def test_guided_detail_restore_stays_collapsed_and_error_retry_is_sequence_scoped() -> None:
+    registry = JS[JS.index("async function loadFormalRegistry"):JS.index("function elapsedClock")]
+    panel = JS[JS.index("function ensureFormalDetailPanel"):JS.index("function setFormalDetailPanelState")]
+    detail = JS[JS.index("async function loadFormalExecutionDetail"):JS.index("function renderFormalExecutionCards")]
+    assert "clearFormalResultRows()" in registry
+    assert "loadFormalExecutionDetail" not in registry and "toggleFormalExecutionDetail" not in registry
+    assert "Could not load execution details." in panel and "Retry" in panel
+    assert "loadFormalExecutionDetail(selectedFormalSequence)" in panel
+    assert "error.name !== 'AbortError'" in detail and "setFormalDetailPanelState('error')" in detail
+
+
+def test_guided_detail_memory_and_execution_scope_exclude_run_aggregates() -> None:
+    state = JS[JS.index("let formalExperiments"):JS.index("const FORMAL_SUMMARY_FIELDS")]
+    rendering = JS[JS.index("function renderFormalExecutionDetail"):JS.index("function yieldForFormalDetailPaint")]
+    assert "let selectedFormalDetail = null" in state
+    assert "formalDetailCache" not in JS and "formalDetailResults" not in JS
+    assert "final_metrics" not in rendering and "historical_paper_results" not in rendering
+    assert "row?.result" in rendering
+    for expected in (
+        "result.full_answer", "result.retrieved_evidence_ids", "result.prediction", "result.confidence",
+        "result.reason", "result.preserves_both_viewpoints", "result.cites_both_sources",
+        "result.expresses_uncertainty", "result.final_answer", "result.consensus_model",
+        "result.retrieved_ids || result.retrieved_chunk_ids",
+    ):
+        assert expected in rendering
+    retrieval = rendering[rendering.index("if (summaryType === 'retrieval')"):rendering.index("else if (summaryType === 'architecture'")]
+    assert "result.answer" in retrieval
+    assert "|| 'Answer unavailable'" not in retrieval
+    assert "Technical details" in rendering and "details" in rendering
 
 
 def test_guided_execution_cards_keep_run_and_historical_metrics_separate() -> None:

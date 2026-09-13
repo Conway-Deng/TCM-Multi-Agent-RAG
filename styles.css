@@ -4668,11 +4668,29 @@ body {
 .formal-execution-card.is-failed .formal-execution-status { color: var(--danger); }
 .formal-execution-card.is-running { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: var(--accent-soft); }
 .formal-execution-card.is-running .formal-execution-status { color: var(--accent-strong); }
+.formal-execution-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(39,95,131,.1); }
+.formal-execution-card .formal-detail-toggle { justify-self: start; }
 .formal-scientific-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; margin: 0; padding-top: .65rem; border-top: 1px solid var(--border); }
 .formal-scientific-summary > div { min-width: 0; }
 .formal-scientific-summary > div.is-wide { grid-column: 1 / -1; }
 .formal-scientific-summary dt { color: var(--text-muted); font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .formal-scientific-summary dd { margin: .22rem 0 0; color: var(--text-primary); line-height: 1.5; overflow-wrap: anywhere; }
+.formal-execution-detail { display: grid; gap: .85rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); border-radius: 10px; background: var(--accent-soft); }
+.formal-execution-detail-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
+.formal-execution-detail-heading h4 { margin: 0; color: var(--text-primary); }
+.formal-execution-detail-loading, .formal-execution-detail-error { display: flex; align-items: center; gap: .65rem; padding: .7rem .8rem; border-radius: 8px; background: #fff; }
+.formal-execution-detail-loading[hidden], .formal-execution-detail-error[hidden], .formal-execution-detail-content[hidden] { display: none !important; }
+.formal-execution-detail-error { flex-wrap: wrap; color: var(--danger); }
+.formal-execution-detail-error p { width: 100%; margin: 0; font-weight: 700; }
+.formal-detail-spinner { width: 1.15rem; height: 1.15rem; border: 3px solid rgba(39,95,131,.2); border-top-color: var(--accent); border-radius: 50%; animation: custom-detail-spin .75s linear infinite; }
+.formal-execution-detail-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; margin: 0; padding: .8rem; border-radius: 8px; background: #fff; }
+.formal-execution-detail-fields > div { min-width: 0; }
+.formal-execution-detail-fields > div.is-wide { grid-column: 1 / -1; }
+.formal-execution-detail-fields dt { color: var(--text-muted); font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.formal-execution-detail-fields dd { margin: .22rem 0 0; color: var(--text-primary); line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
+.formal-execution-technical { padding: .7rem .8rem; border-radius: 8px; background: #fff; }
+.formal-execution-technical summary { cursor: pointer; color: var(--accent-strong); font-weight: 800; }
+.formal-execution-technical pre { margin-bottom: 0; }
 .formal-result-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 .formal-job-panel pre { max-height: 22rem; overflow: auto; white-space: pre-wrap; }
 .formal-job-downloads { display: flex; flex-wrap: wrap; gap: .45rem; margin: .75rem 0; }
@@ -4741,7 +4759,7 @@ body {
   body.is-printing-custom-qa #custom-print-report { display: block !important; position: absolute; inset: 0; padding: .5in; }
 }
 @media (max-width: 860px) { .formal-experiment-cards, .formal-result-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid, .custom-model-assignment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-result-columns, .custom-model-assignment-grid, .custom-question-count-row, .formal-scientific-summary { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading { display: grid; } .formal-execution-card-heading { grid-template-columns: 4rem 1fr; } .formal-execution-status { grid-column: 2; } }
+@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-result-columns, .custom-model-assignment-grid, .custom-question-count-row, .formal-scientific-summary, .formal-execution-detail-fields { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading, .formal-execution-detail-heading { display: grid; } .formal-execution-card-heading { grid-template-columns: 4rem 1fr; } .formal-execution-status { grid-column: 2; } }
 
 .research-notation-card {
   margin-top: .8rem;
