@@ -236,6 +236,9 @@ def test_selected_custom_detail_is_inline_single_tree_with_loading_and_retry() -
     placement = JS[JS.index("function placeCustomDetail"):JS.index("function renderCustomQuestionResults")]
     assert "card.after(detail)" in placement
     assert "section.after(detail)" in placement
+    render = JS[JS.index("function renderCustomQuestionResults"):JS.index("function clearCustomBatchDisplay")]
+    assert "if (detail && detail.parentElement === container) section.after(detail);" in render
+    assert render.index("section.after(detail)") < render.index("container.replaceChildren(fragment)")
     selection = JS[JS.index("async function selectCustomResult"):JS.index("function customQaExport")]
     assert "card.dataset.sequence" in JS
     assert "loading.hidden = false" in selection
@@ -254,7 +257,13 @@ def test_custom_detail_switch_and_restore_do_not_duplicate_full_result_trees() -
     assert "customResultSummaries.set(Number(row.sequence), row)" in JS
     clear = JS[JS.index("function clearCustomBatchDisplay"):JS.index("async function selectCustomResult")]
     assert "selectedCustomSequence = null" in clear
+    assert "if (detail && detail.parentElement === $('#custom-question-results-list')) $('#custom-question-results').after(detail);" in clear
     assert "$('#custom-question-results').after($('#consensus-results'))" in clear
+
+
+def test_reenabling_custom_controls_reapplies_preset_count_disabled_state() -> None:
+    controls = JS[JS.index("function setResearchControlsDisabled"):JS.index("function updateConditionHelp")]
+    assert "if (!disabled) updateCustomQuestionCount();" in controls
 
 
 def test_custom_cards_exports_and_print_keep_question_answer_pairs_lightweight() -> None:

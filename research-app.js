@@ -658,6 +658,7 @@
   function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgressVisualState(stage); setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
   function setResearchControlsDisabled(disabled) {
     $$('#consensus-form textarea, #consensus-form select, #consensus-form input').forEach((control) => { control.disabled = disabled; });
+    if (!disabled) updateCustomQuestionCount();
     setText('#consensus-submit-label', disabled ? 'Running custom experiment…' : 'Run Custom Experiment');
   }
   function updateConditionHelp() { const condition = $('#consensus-strategy').value; setText('#condition-help', conditionDescriptions[condition]); setText('#retrieval-help', retrievalDescriptions[$('#consensus-retrieval').value]); }
@@ -720,6 +721,7 @@
 
   function placeCustomDetail() {
     const section = $('#custom-question-results'); const container = $('#custom-question-results-list'); const detail = $('#consensus-results');
+    if (!section || !container || !detail) return;
     if (selectedCustomSequence === null) { section.after(detail); return; }
     const card = [...container.querySelectorAll('.custom-question-result-card')].find((item) => Number(item.dataset.sequence) === selectedCustomSequence);
     if (card) card.after(detail); else section.after(detail);
@@ -742,6 +744,7 @@
       }
       fragment.append(card);
     });
+    if (detail && detail.parentElement === container) section.after(detail);
     container.replaceChildren(fragment);
     setText('#custom-question-results-count', rows.length + ' persisted question' + (rows.length === 1 ? '' : 's'));
     section.dataset.hasResults = String(rows.length > 0);
@@ -753,6 +756,7 @@
   function clearCustomBatchDisplay() {
     customDetailRequestToken += 1;
     customResultSummaries.clear(); customRunStatusSnapshot = null; selectedCustomSequence = null; customSelectionManual = false;
+    const detail = $('#consensus-results'); if (detail && detail.parentElement === $('#custom-question-results-list')) $('#custom-question-results').after(detail);
     $('#custom-question-results-list').replaceChildren(); $('#custom-question-results').dataset.hasResults = 'false'; $('#custom-question-results').hidden = true;
     setText('#custom-question-results-count', '0 persisted questions'); clearCustomResultDisplay(); $('#custom-question-results').after($('#consensus-results'));
   }
