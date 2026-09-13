@@ -161,7 +161,145 @@
   let selectedFormalExperiment = null;
   let activeFormalRunId = null;
   let formalRunTimer = null;
+  let formalResultCursor = 0;
+  const formalResultRows = new Map();
   let paperConfigurationApplied = false;
+
+  const FORMAL_SUMMARY_FIELDS = [
+    'sequence', 'case_id', 'condition', 'status', 'summary_type', 'stage',
+    'chunk_recall_at_4', 'gold_evidence_recall', 'hit_at_4', 'retrieved_count', 'citation_count',
+    'answer_excerpt', 'latency_ms', 'latency_seconds', 'usable', 'fallback', 'provider', 'model',
+    'debate_enabled', 'prediction', 'confidence', 'reason_excerpt', 'preserves_both_viewpoints',
+    'cites_both_sources', 'expresses_uncertainty', 'consensus_model', 'citation_precision', 'citation_recall',
+  ];
+
+  function orderedFormalResultRows() { return [...formalResultRows.values()].sort((left, right) => Number(left.sequence) - Number(right.sequence)); }
+
+  function compactFormalSummary(execution) {
+    const summary = {};
+    FORMAL_SUMMARY_FIELDS.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(execution, field)) summary[field] = execution[field];
+    });
+    return summary;
+  }
+
+  function clearFormalResultRows() {
+    formalResultCursor = 0;
+    formalResultRows.clear();
+    $('#formal-execution-stream').replaceChildren();
+  }
+
+  function formalBoolean(value) { return value === true ? 'Yes' : value === false ? 'No' : null; }
+
+  function formalEvidenceSummary(execution) {
+    const values = [];
+    if (execution.retrieved_count !== undefined) values.push(execution.retrieved_count + ' retrieved');
+    if (execution.citation_count !== undefined) values.push(execution.citation_count + ' cited');
+    return values.join(' · ') || null;
+  }
+
+  function formalSummaryFields(execution) {
+    const fields = [];
+    const add = (label, value, wide = false) => {
+      if (value !== undefined && value !== null && value !== '') fields.push({ label, value: String(value), wide });
+    };
+    const addBoolean = (label, value) => add(label, formalBoolean(value));
+    switch (execution.summary_type) {
+      case 'retrieval':
+        add('Stage', execution.stage);
+        add('Answer', execution.answer_excerpt, true);
+        add('Recall@4', execution.chunk_recall_at_4);
+        add('Gold evidence recall', execution.gold_evidence_recall);
+        add('Hit@4', execution.hit_at_4);
+        add('Evidence', formalEvidenceSummary(execution));
+        add('Latency', execution.latency_ms === undefined ? null : execution.latency_ms + ' ms');
+        addBoolean('Usable', execution.usable);
+        addBoolean('Fallback', execution.fallback);
+        break;
+      case 'architecture':
+        add('Answer', execution.answer_excerpt, true);
+        add('Evidence', formalEvidenceSummary(execution));
+        add('Model', execution.model);
+        add('Provider', execution.provider);
+        add('Latency', execution.latency_ms === undefined ? null : execution.latency_ms + ' ms');
+        addBoolean('Usable', execution.usable);
+        addBoolean('Fallback', execution.fallback);
+        break;
+      case 'debate':
+        add('Answer', execution.answer_excerpt, true);
+        addBoolean('Debate enabled', execution.debate_enabled);
+        add('Evidence', formalEvidenceSummary(execution));
+        add('Latency', execution.latency_ms === undefined ? null : execution.latency_ms + ' ms');
+        addBoolean('Usable', execution.usable);
+        addBoolean('Fallback', execution.fallback);
+        break;
+      case 'judgment':
+        add('Prediction', execution.prediction);
+        add('Confidence', execution.confidence);
+        add('Reason', execution.reason_excerpt, true);
+        addBoolean('Usable', execution.usable);
+        add('Latency', execution.latency_ms === undefined ? null : execution.latency_ms + ' ms');
+        break;
+      case 'conflict': {
+        add('Prediction', execution.prediction);
+        add('Answer', execution.answer_excerpt, true);
+        const governance = [
+          formalBoolean(execution.preserves_both_viewpoints) === null ? null : (execution.preserves_both_viewpoints ? '✓' : '✗') + ' viewpoints',
+          formalBoolean(execution.cites_both_sources) === null ? null : (execution.cites_both_sources ? '✓' : '✗') + ' citations',
+          formalBoolean(execution.expresses_uncertainty) === null ? null : (execution.expresses_uncertainty ? '✓' : '✗') + ' uncertainty',
+        ].filter(Boolean).join(' · ');
+        add('Governance', governance);
+        add('Confidence', execution.confidence);
+        addBoolean('Usable', execution.usable);
+        add('Latency', execution.latency_ms === undefined ? null : execution.latency_ms + ' ms');
+        break;
+      }
+      case 'multi_model_consensus': {
+        add('Final consensus', execution.answer_excerpt, true);
+        add('Consensus model', execution.consensus_model);
+        const citationMetrics = [];
+        if (execution.citation_precision !== undefined) citationMetrics.push('precision ' + execution.citation_precision);
+        if (execution.citation_recall !== undefined) citationMetrics.push('recall ' + execution.citation_recall);
+        const evidence = formalEvidenceSummary(execution); if (evidence) citationMetrics.push(evidence);
+        add('Citations', citationMetrics.join(' · '));
+        addBoolean('Usable', execution.usable);
+        add('Latency', execution.latency_seconds === undefined ? null : execution.latency_seconds + ' s');
+        break;
+      }
+      default:
+        break;
+    }
+    return fields;
+  }
+
+  function renderFormalExecutionCards(total, status) {
+    const stream = $('#formal-execution-stream');
+    const scrollTop = stream.scrollTop;
+    stream.replaceChildren();
+    orderedFormalResultRows().forEach((execution) => {
+      const item = element('li', 'formal-execution-card');
+      item.classList.toggle('is-failed', String(execution.status || '').toLowerCase() === 'failed');
+      const heading = element('div', 'formal-execution-card-heading');
+      heading.append(element('span', 'formal-execution-number', String(execution.sequence).padStart(3, '0') + ' / ' + total), element('strong', 'formal-execution-identity', (execution.case_id || '—') + ' · ' + (execution.condition || '—')), element('span', 'formal-execution-status', execution.status || 'Completed'));
+      item.append(heading);
+      const summary = element('dl', 'formal-scientific-summary');
+      formalSummaryFields(execution).forEach((field) => {
+        const wrapper = element('div', field.wide ? 'is-wide' : '');
+        wrapper.append(element('dt', '', field.label), element('dd', '', field.value));
+        summary.append(wrapper);
+      });
+      if (summary.children.length) item.append(summary);
+      stream.append(item);
+    });
+    if (status && ['running', 'stop_requested'].includes(status.status)) {
+      const running = element('li', 'formal-execution-card is-running');
+      const heading = element('div', 'formal-execution-card-heading');
+      heading.append(element('span', 'formal-execution-number', String(formalResultRows.size + 1).padStart(3, '0') + ' / ' + total), element('strong', 'formal-execution-identity', (status.current_case || '—') + ' · ' + (status.current_condition || '—')), element('span', 'formal-execution-status', status.status === 'stop_requested' ? 'Finishing safely' : 'Running'));
+      running.append(heading);
+      stream.append(running);
+    }
+    stream.scrollTop = scrollTop;
+  }
 
   function setPaperWorkbenchMode(mode) {
     const guided = mode === 'guided';
@@ -221,7 +359,7 @@
     try {
       renderFormalRegistry(await apiGet('/api/formal-experiments'));
       const savedRun = localStorage.getItem('medirag-formal-run-id');
-      if (savedRun) { activeFormalRunId = savedRun; await refreshFormalRun(); }
+      if (savedRun) { clearFormalResultRows(); activeFormalRunId = savedRun; await refreshFormalRun(); }
     }
     catch (error) { $('#formal-experiment-cards').replaceChildren(element('p', 'consensus-message', 'Formal experiment registry unavailable: ' + error.message)); }
   }
@@ -270,21 +408,28 @@
 
   async function loadFormalResults() {
     if (!activeFormalRunId) return;
+    const requestedRunId = activeFormalRunId;
     try {
-      const data = await apiGet('/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/results');
-      setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {}, results: data.results }, null, 2));
+      let after = formalResultCursor;
+      let data;
+      do {
+        data = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/summaries?after=' + after + '&limit=50');
+        if (requestedRunId !== activeFormalRunId) return;
+        (data.results || []).forEach((execution) => {
+          const sequence = Number(execution.sequence);
+          if (!Number.isInteger(sequence)) return;
+          formalResultRows.set(sequence, compactFormalSummary({ ...execution, sequence }));
+          after = Math.max(after, sequence);
+        });
+        const nextCursor = Number(data.next_cursor);
+        if (Number.isInteger(nextCursor)) after = Math.max(after, nextCursor);
+        if (data.has_more && after <= formalResultCursor) throw new Error('Formal summary cursor did not advance.');
+        formalResultCursor = Math.max(formalResultCursor, after);
+      } while (data.has_more);
+      const orderedRows = orderedFormalResultRows();
+      setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }, null, 2));
       setText('#formal-historical-results', JSON.stringify(data.historical_paper_results || { label: 'Historical paper result', status: 'frozen_read_only' }, null, 2));
-      const stream = $('#formal-execution-stream'); stream.replaceChildren();
-      (data.results || []).forEach((execution) => {
-        const item = element('li');
-        item.append(element('span', 'formal-execution-number', String(execution.sequence).padStart(3, '0')), element('span', '', execution.case_id || '—'), element('span', '', execution.condition || '—'), element('strong', '', execution.status));
-        stream.append(item);
-      });
-      if (data.status && ['running', 'stop_requested'].includes(data.status.status)) {
-        const running = element('li', 'is-running');
-        running.append(element('span', 'formal-execution-number', String((data.results || []).length + 1).padStart(3, '0')), element('span', '', data.status.current_case || '—'), element('span', '', data.status.current_condition || '—'), element('strong', '', data.status.status === 'stop_requested' ? 'Finishing safely' : 'Running'));
-        stream.append(running);
-      }
+      renderFormalExecutionCards(Number(data.status?.total || orderedRows.length), data.status);
       const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
       (data.downloads || []).forEach((file) => { const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' }; const link = element('a', 'secondary-action', labels[file.name] || file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
     }
@@ -296,7 +441,7 @@
     const button = $('#run-paper-experiment'); button.disabled = true;
     const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: 'full_benchmark', confirm_full_benchmark: true };
     showMessage($('#formal-run-message'), '');
-    try { $('#formal-execution-stream').replaceChildren(); renderFormalStatus(await api('/api/formal-runs', body)); }
+    try { clearFormalResultRows(); renderFormalStatus(await api('/api/formal-runs', body)); }
     catch (error) { showMessage($('#formal-run-message'), error.message); button.disabled = false; }
   }
 

@@ -364,6 +364,25 @@ class FormalJobStore:
             "result": json.loads(row[4]),
         }
 
+    def execution_batch(self, run_id: str, after: int = 0, *, limit: int = 50) -> list[dict[str, Any]]:
+        """Return a bounded ordered batch of complete rows for server-side projection."""
+        self.initialize()
+        bounded_limit = max(1, int(limit))
+        with self.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                self._sql("SELECT sequence, case_id, condition_id, status, payload_json FROM formal_executions WHERE run_id = ? AND sequence > ? ORDER BY sequence LIMIT ?"),
+                (run_id, after, bounded_limit),
+            )
+            rows = cursor.fetchall()
+        return [{
+            "sequence": row[0],
+            "case_id": row[1],
+            "condition": row[2],
+            "status": row[3],
+            "result": json.loads(row[4]),
+        } for row in rows]
+
     def execution_summaries(self, run_id: str, after: int = 0) -> list[dict[str, Any]]:
         """Project persisted payloads into lightweight Q&A rows for polling and restore."""
         self.initialize()

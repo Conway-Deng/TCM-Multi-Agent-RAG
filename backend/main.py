@@ -7,7 +7,7 @@ from pathlib import Path
 from time import perf_counter
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 import httpx
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -278,6 +278,14 @@ async def formal_run_status(run_id: str) -> dict:
 async def formal_run_results(run_id: str, after: int = 0) -> dict:
     try:
         return formal_jobs.results(run_id, after=max(0, after))
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
+
+
+@app.get("/api/formal-runs/{run_id}/summaries", summary="Read bounded lightweight formal execution summaries")
+async def formal_run_summaries(run_id: str, after: int = 0, limit: int = Query(default=50, ge=1, le=50)) -> dict:
+    try:
+        return formal_jobs.summaries(run_id, after=max(0, after), limit=limit)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 

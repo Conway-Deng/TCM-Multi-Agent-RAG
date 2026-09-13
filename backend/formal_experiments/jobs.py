@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import time
 import uuid
 from datetime import datetime, timezone
@@ -19,6 +20,107 @@ APP_ROOT = Path(__file__).resolve().parents[2]
 
 def _iso_timestamp(value: float | None) -> str | None:
     return datetime.fromtimestamp(value, timezone.utc).isoformat().replace("+00:00", "Z") if value else None
+
+
+def _compact_text(value: Any, limit: int = 280) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = " ".join(value.split())
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+
+def _citation_count(text: Any) -> int | None:
+    if not isinstance(text, str):
+        return None
+    return len(set(re.findall(r"\[(tcmv1-[^\]]+)\]", text)))
+
+
+def _formal_execution_summary(experiment_id: str, row: dict[str, Any]) -> dict[str, Any]:
+    """Project exactly one persisted execution into a compact scientific summary."""
+    result = row.get("result") if isinstance(row.get("result"), dict) else {}
+    summary: dict[str, Any] = {
+        "sequence": row["sequence"],
+        "case_id": row.get("case_id") or result.get("case_id") or result.get("question_id"),
+        "condition": row.get("condition") or result.get("condition") or result.get("condition_id") or result.get("retrieval_condition"),
+        "status": row.get("status"),
+    }
+
+    def include(name: str, value: Any) -> None:
+        if value is not None:
+            summary[name] = value
+
+    if experiment_id == "retrieval_ablation":
+        summary["summary_type"] = "retrieval"
+        include("stage", result.get("stage"))
+        for metric in ("chunk_recall_at_4", "gold_evidence_recall", "hit_at_4"):
+            include(metric, result.get(metric))
+        retrieved = result.get("retrieved_ids")
+        if not isinstance(retrieved, list):
+            retrieved = result.get("retrieved_chunk_ids")
+        include("retrieved_count", len(retrieved) if isinstance(retrieved, list) else None)
+        citations = result.get("citation_ids")
+        include("citation_count", len(citations) if isinstance(citations, list) else None)
+        include("answer_excerpt", _compact_text(result.get("answer")))
+        include("latency_ms", result.get("retrieval_latency_ms", result.get("latency_ms")))
+        include("usable", result.get("usable"))
+        include("fallback", result.get("fallback"))
+    elif experiment_id == "rq1_architecture":
+        summary["summary_type"] = "architecture"
+        answer = result.get("full_answer")
+        include("answer_excerpt", _compact_text(answer))
+        evidence = result.get("retrieved_evidence_ids")
+        include("retrieved_count", len(evidence) if isinstance(evidence, list) else None)
+        include("citation_count", _citation_count(answer))
+        include("provider", result.get("provider"))
+        include("model", result.get("model_actually_called") or result.get("model"))
+        include("latency_ms", result.get("latency_ms"))
+        include("fallback", result.get("fallback"))
+        include("usable", result.get("usable"))
+    elif experiment_id == "rq4_debate":
+        summary["summary_type"] = "debate"
+        answer = result.get("full_answer")
+        debate = result.get("debate") if isinstance(result.get("debate"), dict) else {}
+        include("answer_excerpt", _compact_text(answer))
+        include("debate_enabled", debate.get("enabled"))
+        evidence = result.get("retrieved_evidence_ids")
+        include("retrieved_count", len(evidence) if isinstance(evidence, list) else None)
+        include("citation_count", _citation_count(answer))
+        include("latency_ms", result.get("latency_ms"))
+        include("fallback", result.get("fallback"))
+        include("usable", result.get("usable"))
+    elif experiment_id == "research_b":
+        summary["summary_type"] = "judgment"
+        include("prediction", result.get("prediction"))
+        include("confidence", result.get("confidence"))
+        include("reason_excerpt", _compact_text(result.get("reason")))
+        include("usable", result.get("usable"))
+        include("latency_ms", result.get("latency_ms"))
+    elif experiment_id == "research_c":
+        summary["summary_type"] = "conflict"
+        include("prediction", result.get("prediction"))
+        include("answer_excerpt", _compact_text(result.get("answer")))
+        include("preserves_both_viewpoints", result.get("preserves_both_viewpoints"))
+        include("cites_both_sources", result.get("cites_both_sources"))
+        include("expresses_uncertainty", result.get("expresses_uncertainty"))
+        include("confidence", result.get("confidence"))
+        include("usable", result.get("usable"))
+        include("latency_ms", result.get("latency_ms"))
+    elif experiment_id == "a3_v1_3":
+        summary["summary_type"] = "multi_model_consensus"
+        include("answer_excerpt", _compact_text(result.get("final_answer")))
+        include("consensus_model", result.get("consensus_model"))
+        citations = result.get("citations") if isinstance(result.get("citations"), dict) else {}
+        cited = citations.get("cited_evidence_ids")
+        retrieved = citations.get("retrieved_evidence_ids")
+        include("citation_count", len(cited) if isinstance(cited, list) else None)
+        include("retrieved_count", len(retrieved) if isinstance(retrieved, list) else None)
+        include("citation_precision", citations.get("citation_precision"))
+        include("citation_recall", citations.get("citation_recall"))
+        include("usable", result.get("usable"))
+        include("latency_seconds", result.get("total_latency_seconds"))
+    else:
+        summary["summary_type"] = "execution"
+    return summary
 
 
 def persist_partial_report(store: FormalJobStore, run_id: str) -> dict[str, Any]:
@@ -254,6 +356,23 @@ class FormalJobService:
     def result(self, run_id: str, sequence: int) -> dict[str, Any]:
         self.get(run_id)
         return self.store.execution(run_id, sequence)
+
+    def summaries(self, run_id: str, *, after: int = 0, limit: int = 50) -> dict[str, Any]:
+        status = self.get(run_id)
+        bounded_limit = max(1, min(50, int(limit)))
+        rows = self.store.execution_batch(run_id, after=after, limit=bounded_limit + 1)
+        page = rows[:bounded_limit]
+        metadata = experiment(status["experiment_id"])
+        return {
+            "status": status,
+            "results": [_formal_execution_summary(status["experiment_id"], row) for row in page],
+            "next_cursor": int(page[-1]["sequence"]) if page else max(0, after),
+            "has_more": len(rows) > bounded_limit,
+            "limit": bounded_limit,
+            "final_metrics": self.store.final_metrics(run_id),
+            "historical_paper_results": metadata.get("historical_result"),
+            "downloads": self.store.artifacts(run_id),
+        }
 
     def file(self, run_id: str, relative_path: str) -> tuple[str, bytes]:
         self.get(run_id)

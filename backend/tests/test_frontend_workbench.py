@@ -98,6 +98,72 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
     assert "JSON.stringify(safeRunExport(data), null, 2)" in JS
 
 
+def test_guided_formal_results_use_incremental_lightweight_execution_cards() -> None:
+    formal = JS[JS.index("let formalExperiments"):JS.index("async function startFormalRun")]
+    loading = JS[JS.index("async function loadFormalResults"):JS.index("async function startFormalRun")]
+    assert "let formalResultCursor = 0" in formal
+    assert "const formalResultRows = new Map()" in formal
+    assert "const FORMAL_SUMMARY_FIELDS" in formal
+    assert "compactFormalSummary({ ...execution, sequence })" in loading
+    assert "orderedFormalResultRows()" in formal
+    assert "formalResultRows.set(sequence" in loading
+    assert "formalResultCursor = Math.max(formalResultCursor, after)" in loading
+    assert "'/summaries?after=' + after + '&limit=50'" in loading
+    assert "do {" in loading and "} while (data.has_more)" in loading
+    assert "requestedRunId !== activeFormalRunId" in loading
+    assert "renderFormalExecutionCards(Number(data.status?.total || orderedRows.length), data.status)" in loading
+    assert "String(execution.sequence).padStart(3, '0') + ' / ' + total" in formal
+    assert "execution.case_id || '—'" in formal and "execution.condition || '—'" in formal and "execution.status || 'Completed'" in formal
+    assert "orderedFormalResultRows().forEach" in formal
+    assert "stream.scrollTop = scrollTop" in formal
+    assert "result:" not in loading
+    assert "/results/' + encodeURIComponent(activeFormalRunId) + '/" not in loading
+    for forbidden in ("provider_attempts", "initial_stage", "critique_stage", "revision_stage", "retrieved_evidence_ids"):
+        assert forbidden not in formal
+
+
+def test_guided_formal_scientific_cards_map_six_experiment_families() -> None:
+    mapping = JS[JS.index("function formalSummaryFields"):JS.index("function renderFormalExecutionCards")]
+    for summary_type in ("retrieval", "architecture", "debate", "judgment", "conflict", "multi_model_consensus"):
+        assert f"case '{summary_type}'" in mapping
+    for label in (
+        "Recall@4", "Gold evidence recall", "Hit@4", "Evidence", "Provider", "Debate enabled",
+        "Prediction", "Confidence", "Reason", "Governance", "Final consensus", "Consensus model", "Citations",
+    ):
+        assert f"'{label}'" in mapping
+    judgment = mapping[mapping.index("case 'judgment'"):mapping.index("case 'conflict'")]
+    assert "execution.prediction" in judgment and "execution.confidence" in judgment and "execution.reason_excerpt" in judgment
+    assert "Final answer" not in judgment and "answer_excerpt" not in judgment
+    retrieval = mapping[mapping.index("case 'retrieval'"):mapping.index("case 'architecture'")]
+    assert "execution.answer_excerpt" in retrieval
+    conflict = mapping[mapping.index("case 'conflict'"):mapping.index("case 'multi_model_consensus'")]
+    assert "execution.preserves_both_viewpoints" in conflict
+    assert "execution.cites_both_sources" in conflict and "execution.expresses_uncertainty" in conflict
+    multi_model = mapping[mapping.index("case 'multi_model_consensus'"):mapping.index("default:")]
+    assert "execution.answer_excerpt" in multi_model and "execution.consensus_model" in multi_model
+    assert "initial_stage" not in mapping and "critique_stage" not in mapping and "revision_stage" not in mapping
+
+
+def test_guided_execution_cards_keep_run_and_historical_metrics_separate() -> None:
+    cards = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
+    loading = JS[JS.index("async function loadFormalResults"):JS.index("async function startFormalRun")]
+    assert "final_metrics" not in cards and "historical_paper_results" not in cards
+    assert "JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }" in loading
+    assert "results: orderedRows" not in loading
+    assert "#formal-historical-results" in loading and "data.historical_paper_results" in loading
+    assert "/results/" not in loading
+
+
+def test_guided_formal_cards_clear_on_restore_and_new_run() -> None:
+    registry = JS[JS.index("async function loadFormalRegistry"):JS.index("function elapsedClock")]
+    start = JS[JS.index("async function startFormalRun"):JS.index("async function stopFormalRun")]
+    assert "clearFormalResultRows(); activeFormalRunId = savedRun" in registry
+    assert start.index("clearFormalResultRows()") < start.index("await api('/api/formal-runs'")
+    render = JS[JS.index("function renderFormalExecutionCards"):JS.index("function lockedField")]
+    assert "['running', 'stop_requested'].includes(status.status)" in render
+    assert "formalResultRows.size + 1" in render
+
+
 def test_custom_cloud_result_renders_persisted_evidence_and_runtime_metadata() -> None:
     rendering = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
     assert "const integratedPanel = $('#integrated-judge-panel')" in rendering

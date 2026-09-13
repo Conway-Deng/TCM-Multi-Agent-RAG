@@ -17,7 +17,7 @@ ROOT = BACKEND.parent
 sys.path.insert(0, str(BACKEND))
 
 from formal_experiments import worker
-from formal_experiments.jobs import CustomJobService, FormalJobService
+from formal_experiments.jobs import CustomJobService, FormalJobService, _formal_execution_summary
 from formal_experiments.registry import frozen_root, public_registry, validate_replay_path, verify_deployment_integrity
 from formal_experiments.schemas import CustomRunRequest, FormalRunRequest
 from formal_experiments.store import FormalJobStore
@@ -329,6 +329,119 @@ def test_formal_result_endpoint_returns_only_requested_full_execution(monkeypatc
     assert detail.status_code == 200 and detail.json()["sequence"] == 2
     assert detail.json()["result"]["final_answer"] == "Answer 2"
     assert missing.status_code == 404
+
+
+def test_formal_scientific_summary_projects_each_experiment_without_large_payloads() -> None:
+    fixtures = {
+        "retrieval_ablation": {
+            "stage": "stage1", "chunk_recall_at_4": 0.75, "gold_evidence_recall": 0.5,
+            "hit_at_4": 1, "retrieved_ids": ["ret-1", "ret-2"], "retrieval_latency_ms": 41,
+            "usable": True, "fallback": False, "provider_attempts": [{"large": True}],
+        },
+        "rq1_architecture": {
+            "full_answer": "Architecture answer [tcmv1-one] [tcmv1-two]", "retrieved_evidence_ids": ["one", "two", "three"],
+            "provider": "siliconflow", "model": "Qwen/Qwen3-8B", "latency_ms": 6800, "fallback": False,
+            "provider_attempts": [{"large": True}],
+        },
+        "rq4_debate": {
+            "full_answer": "Debate answer [tcmv1-one]", "retrieved_evidence_ids": ["one", "two"], "latency_ms": 7200,
+            "fallback": False, "debate": {"enabled": True, "initial_outputs": ["large"], "critiques": ["large"], "revisions": ["large"]},
+        },
+        "research_b": {
+            "prediction": "SUPPORTED", "confidence": 0.91, "reason": "The reviewed evidence supports the claim.",
+            "usable": True, "latency_ms": 1500, "provider_attempts": [{"large": True}],
+        },
+        "research_c": {
+            "prediction": "CONTRADICTED", "answer": "The sources report different positions.",
+            "preserves_both_viewpoints": True, "cites_both_sources": False, "expresses_uncertainty": True,
+            "confidence": 0.82, "usable": True, "latency_ms": 1800,
+        },
+        "a3_v1_3": {
+            "final_answer": "Final consensus [tcmv1-one]", "consensus_model": "Qwen/Qwen3-8B",
+            "citations": {"cited_evidence_ids": ["one"], "retrieved_evidence_ids": ["one", "two"], "citation_precision": 1.0, "citation_recall": 0.5},
+            "usable": True, "total_latency_seconds": 37.25, "initial_stage": {"large": True},
+            "critique_stage": {"large": True}, "revision_stage": {"large": True},
+        },
+    }
+    expected_types = {
+        "retrieval_ablation": "retrieval", "rq1_architecture": "architecture", "rq4_debate": "debate",
+        "research_b": "judgment", "research_c": "conflict", "a3_v1_3": "multi_model_consensus",
+    }
+    prohibited = {
+        "provider_attempts", "debate", "initial_outputs", "critiques", "revisions", "initial_stage",
+        "critique_stage", "revision_stage", "retrieved_ids", "retrieved_chunk_ids", "retrieved_evidence_ids",
+        "citation_ids", "citations", "benchmark_sha256", "corpus_sha256", "full_answer", "final_answer", "answer",
+    }
+    for sequence, (experiment_id, payload) in enumerate(fixtures.items(), start=1):
+        summary = _formal_execution_summary(experiment_id, {
+            "sequence": sequence, "case_id": f"CASE-{sequence}", "condition": f"COND-{sequence}",
+            "status": "Completed", "result": payload,
+        })
+        assert summary["sequence"] == sequence and summary["case_id"] == f"CASE-{sequence}"
+        assert summary["condition"] == f"COND-{sequence}" and summary["summary_type"] == expected_types[experiment_id]
+        assert prohibited.isdisjoint(summary)
+
+    retrieval = _formal_execution_summary("retrieval_ablation", {
+        "sequence": 1, "case_id": "R-1", "condition": "R0", "status": "Completed", "result": fixtures["retrieval_ablation"],
+    })
+    assert "answer_excerpt" not in retrieval and retrieval["retrieved_count"] == 2
+    judgment = _formal_execution_summary("research_b", {
+        "sequence": 2, "case_id": "J-1", "condition": "J1", "status": "Completed", "result": fixtures["research_b"],
+    })
+    assert judgment["prediction"] == "SUPPORTED" and judgment["confidence"] == 0.91 and "reason_excerpt" in judgment
+    assert "answer_excerpt" not in judgment
+    conflict = _formal_execution_summary("research_c", {
+        "sequence": 3, "case_id": "K-1", "condition": "K2", "status": "Completed", "result": fixtures["research_c"],
+    })
+    assert conflict["preserves_both_viewpoints"] is True and conflict["cites_both_sources"] is False
+    assert conflict["expresses_uncertainty"] is True
+    multi_model = _formal_execution_summary("a3_v1_3", {
+        "sequence": 4, "case_id": "A3-1", "condition": "M2", "status": "Completed", "result": fixtures["a3_v1_3"],
+    })
+    assert multi_model["answer_excerpt"] == "Final consensus [tcmv1-one]"
+    assert multi_model["citation_count"] == 1 and multi_model["retrieved_count"] == 2
+
+
+def test_formal_summary_endpoint_is_bounded_incremental_and_sequence_isolated(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import formal_experiments.jobs as jobs_module
+    import main
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'formal-summaries.sqlite3').as_posix()}")
+    run_id = "formal-summaries"
+    job = {
+        "run_id": run_id, "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+        "status": "running", "completed": 55, "total": 55, "current_condition": "C2", "current_case": "Q-055",
+        "successful": 55, "failed": 0, "created_at": 1.0, "started_at": 1.0, "updated_at": 1.0,
+        "resume_state": "running", "replay_output_dir": "rq1_architecture/formal-summaries",
+        "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "full_benchmark"}, {"planned_executions": 55})
+    for sequence in range(1, 56):
+        store.upsert_execution(run_id, sequence, {
+            "question_id": f"Q-{sequence:03d}", "condition": "C1" if sequence % 2 else "C2",
+            "full_answer": f"Answer belonging only to sequence {sequence} [tcmv1-{sequence}]",
+            "retrieved_evidence_ids": [f"evidence-{sequence}"], "latency_ms": sequence,
+            "provider_attempts": [{"sequence": sequence}], "benchmark_sha256": f"hash-{sequence}",
+        })
+    monkeypatch.setattr(jobs_module, "experiment", lambda _experiment_id: {"historical_result": {"status": "frozen_read_only"}})
+    service = FormalJobService(store)
+    monkeypatch.setattr(main, "formal_jobs", service)
+    with TestClient(main.app) as client:
+        first = client.get(f"/api/formal-runs/{run_id}/summaries")
+        second = client.get(f"/api/formal-runs/{run_id}/summaries?after=50&limit=50")
+        limited = client.get(f"/api/formal-runs/{run_id}/summaries?after=2&limit=2")
+        too_large = client.get(f"/api/formal-runs/{run_id}/summaries?limit=51")
+    assert first.status_code == 200 and len(first.json()["results"]) == 50
+    assert first.json()["has_more"] is True and first.json()["next_cursor"] == 50
+    assert [row["sequence"] for row in second.json()["results"]] == [51, 52, 53, 54, 55]
+    assert second.json()["has_more"] is False and second.json()["next_cursor"] == 55
+    assert [row["sequence"] for row in limited.json()["results"]] == [3, 4]
+    assert too_large.status_code == 422
+    all_rows = first.json()["results"] + second.json()["results"]
+    assert [row["sequence"] for row in all_rows] == list(range(1, 56))
+    assert all(row["answer_excerpt"] == f"Answer belonging only to sequence {row['sequence']} [tcmv1-{row['sequence']}]" for row in all_rows)
+    assert all("provider_attempts" not in row and "retrieved_evidence_ids" not in row and "benchmark_sha256" not in row for row in all_rows)
 
 
 def test_worker_sync_persists_rows_without_running_provider(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
