@@ -852,13 +852,14 @@
       }
       customRunStatusSnapshot = status;
       renderCustomQuestionResults();
-      const latestSelectable = [...newRows].reverse().find((row) => !row.error && row.status !== 'Failed');
-      if (latestSelectable && (!customSelectionManual || selectedCustomSequence === null)) await selectCustomResult(Number(latestSelectable.sequence), false);
+      const persistedCount = customResultSummaries.size;
+      const totalCount = Number(status.total || persistedCount);
       const customActive = ['queued', 'running', 'stop_requested'].includes(status.status);
       if (customActive && !researchProgressTimer) startResearchProgress();
       setResearchProgressVisualState(status.status);
-      setText('#consensus-progress-status', status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? 'Running question ' + Math.min(status.completed + 1, status.total) + ' of ' + status.total + '…' : status.status === 'stop_requested' ? 'Stopping after the active question…' : status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
-      setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
+      const activeStatus = status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? persistedCount >= totalCount ? 'Finalizing custom run…' : 'Running question ' + (persistedCount + 1) + ' of ' + totalCount + '…' : status.status === 'stop_requested' ? 'Stopping after the active question…' : status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed';
+      setText('#consensus-progress-status', activeStatus);
+      setText('#consensus-progress-detail', persistedCount + ' / ' + totalCount + ' persisted · ' + (persistedCount >= totalCount && status.status === 'running' ? 'waiting for terminal status' : (status.current_stage || status.status)));
       $('#stop-custom-run').hidden = !customActive;
       $('#stop-custom-run').disabled = status.status === 'stop_requested';
       $('#stop-custom-run').textContent = status.status === 'stop_requested' ? 'Stopping after current question…' : 'Stop Run';
@@ -869,7 +870,7 @@
         partialDownloads.hidden = false;
       } else partialDownloads.hidden = true;
       if (customActive) {
-        showMessage($('#consensus-message'), status.completed + ' of ' + status.total + ' custom questions completed so far. Persisted answers are shown below as they finish.');
+        showMessage($('#consensus-message'), persistedCount + ' of ' + totalCount + ' custom questions completed so far. Persisted answers are shown below as they finish.');
         clearTimeout(customRunTimer);
         customRunTimer = setTimeout(refreshCustomRun, 2500);
         return;
@@ -882,11 +883,11 @@
       stopResearchProgress(status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : 'failed');
       if (typeof status.elapsed_seconds === 'number') setText('#consensus-progress-elapsed', elapsedClock(status.elapsed_seconds));
       setText('#consensus-progress-status', status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
-      setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
+      setText('#consensus-progress-detail', persistedCount + ' / ' + totalCount + ' persisted · ' + (status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : (status.current_stage || status.status)));
       showMessage($('#consensus-message'), status.status === 'complete'
-        ? (restored ? 'Restored completed run. ' : '') + status.completed + ' of ' + status.total + ' custom questions completed in the cloud. All persisted answers are shown below.'
+        ? (restored ? 'Restored completed run. ' : '') + persistedCount + ' of ' + totalCount + ' custom questions completed in the cloud. All persisted answers are shown below.'
         : status.status === 'stopped'
-        ? (restored ? 'Restored partial run. ' : '') + 'Stopped after ' + status.completed + ' / ' + status.total + ' executions. Partial replay — not directly comparable to the complete paper result.'
+        ? (restored ? 'Restored partial run. ' : '') + 'Stopped after ' + persistedCount + ' / ' + totalCount + ' executions. Partial replay — not directly comparable to the complete paper result.'
         : status.error || 'The Custom experiment failed.');
     }
     catch (error) {

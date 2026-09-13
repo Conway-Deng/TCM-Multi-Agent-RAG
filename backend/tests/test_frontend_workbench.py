@@ -153,6 +153,29 @@ def test_saved_custom_run_restore_distinguishes_active_and_terminal_states() -> 
     assert "await refreshCustomRun(true)" in resume
 
 
+def test_custom_polling_never_auto_opens_question_details() -> None:
+    refresh = JS[JS.index("async function refreshCustomRun"):JS.index("async function resumeSavedCustomRun")]
+    assert "latestSelectable" not in refresh
+    assert "selectCustomResult(" not in refresh
+    assert "renderCustomQuestionResults()" in refresh
+    assert "persistedCount = customResultSummaries.size" in refresh
+    assert "persistedCount + ' of ' + totalCount + ' custom questions completed so far." in refresh
+    assert "setText('#consensus-progress-detail', persistedCount + ' / ' + totalCount" in refresh
+    assert "customResultSummaries.size" in JS
+    restore = JS[JS.index("async function resumeSavedCustomRun"):JS.index("async function stopCustomRun")]
+    assert "await refreshCustomRun(true)" in restore
+    assert "selectCustomResult(" not in restore
+
+
+def test_custom_progress_uses_persisted_cards_and_has_finalizing_state() -> None:
+    refresh = JS[JS.index("async function refreshCustomRun"):JS.index("async function resumeSavedCustomRun")]
+    assert "persistedCount + 1" in refresh
+    assert "persistedCount >= totalCount ? 'Finalizing custom run…'" in refresh
+    assert "waiting for terminal status" in refresh
+    assert "Running question ' + (persistedCount + 1) + ' of ' + totalCount" in refresh
+    assert "status.completed" not in refresh
+
+
 def test_new_custom_run_clears_previous_result_before_queueing() -> None:
     clearing = JS[JS.index("function clearCustomResultDisplay"):JS.index("let activeCustomRunId")]
     submit = JS[JS.index("$('#consensus-form').addEventListener('submit'"):JS.index("$('#research-compare-form')")]
@@ -212,7 +235,8 @@ def test_custom_question_results_use_lightweight_summaries_and_one_detail_panel(
     assert "clearCustomResultDisplay()" in JS
     assert "customSelectionManual" in JS
     assert "if (manual) customSelectionManual = true" in JS
-    assert "!customSelectionManual || selectedCustomSequence === null" in JS
+    refresh = JS[JS.index("async function refreshCustomRun"):JS.index("async function resumeSavedCustomRun")]
+    assert "selectCustomResult(" not in refresh
 
 
 def test_custom_question_count_uses_preset_as_source_of_truth() -> None:
