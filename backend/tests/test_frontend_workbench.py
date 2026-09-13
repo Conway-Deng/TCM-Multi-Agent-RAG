@@ -223,10 +223,110 @@ def test_guided_execution_cards_keep_run_and_historical_metrics_separate() -> No
     cards = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
     loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
     assert "final_metrics" not in cards and "historical_paper_results" not in cards
-    assert "JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }" in loading
     assert "results: orderedRows" not in loading
-    assert "#formal-historical-results" in loading and "data.historical_paper_results" in loading
+    assert "formal-job-results" not in HTML and "formal-historical-results" not in HTML
+    assert "experiment-summary" not in loading
     assert "/results/" not in loading
+
+
+def test_guided_experiment_summary_uses_only_normalized_endpoint_and_separate_panels() -> None:
+    summary = JS[JS.index("const FORMAL_RATE_METRICS"):JS.index("function setFormalSummaryFeedback")]
+    assert 'id="formal-experiment-summary"' in HTML
+    assert 'id="formal-experiment-summary-content"' in HTML
+    assert "'New Replay Result'" in summary
+    assert "'Historical Paper Result'" in summary
+    assert "'/experiment-summary'" in summary
+    assert "new_replay" in summary and "historical_paper" in summary and "comparison" in summary
+    assert "formalResultRows" not in summary and "orderedFormalResultRows" not in summary
+    assert "final_metrics" not in summary and "historical_paper_results" not in summary
+
+
+def test_guided_experiment_summary_renders_availability_and_frozen_truthfully() -> None:
+    panel = JS[JS.index("function renderFormalAggregatePanel"):JS.index("function renderFormalComparison")]
+    comparison = JS[JS.index("function renderFormalComparison"):JS.index("function renderFormalExperimentSummary")]
+    assert "availability === 'available'" in panel
+    assert "availability === 'partial'" in panel
+    assert "availability === 'unavailable'" in panel
+    assert "Partial aggregate data" in panel
+    assert "data.reason || 'Aggregate data is unavailable.'" in panel
+    assert "data.note || 'Partial aggregate data.'" in panel
+    assert "data.frozen_read_only === true" in panel
+    assert "Frozen · read only" in panel
+    assert "comparison.comparable_metrics" in comparison
+    assert "item.metric" in comparison
+    assert "Partial replay — not directly comparable to the complete paper result." in comparison
+
+
+def test_guided_experiment_summary_has_explicit_six_experiment_scientific_mappings() -> None:
+    groups = JS[JS.index("function formalAggregateGroups"):JS.index("function renderFormalAggregateGroup")]
+    for experiment_id in ("retrieval_ablation", "rq1_architecture", "rq4_debate", "research_b", "research_c", "a3_v1_3"):
+        assert f"experimentId === '{experiment_id}'" in groups
+    for condition in ("R0", "R3", "J1", "J2", "K1", "K2"):
+        assert f"'{condition}'" in groups
+    for field in (
+        "difference_j2_minus_j1", "paired_usable_cases", "paired_accuracy_discordance",
+        "accuracy_diff_j2_minus_j1", "macro_f1_diff_j2_minus_j1", "mcnemar_p_value",
+        "difference_k2_minus_k1", "reliability", "paired_statistics", "canonical_executions",
+        "m1_executions", "m2_executions", "complete_usable_pairs_for_quality",
+        "usable_rate", "citation_recall", "citation_precision", "latency_seconds", "provider_by_model",
+    ):
+        assert field in groups
+    assert "Available aggregate metadata" in groups and "['records']" in groups
+    assert "reduce(" not in groups and "mean(" not in groups
+
+
+def test_guided_experiment_summary_formats_only_whitelisted_scientific_values() -> None:
+    formatting = JS[JS.index("const FORMAL_RATE_METRICS"):JS.index("function flattenFormalAggregateMetrics")]
+    for rate in (
+        "usable_rate", "citation_recall", "citation_precision", "accuracy", "macro_f1",
+        "dual_citation_rate", "dual_viewpoint_rate", "uncertainty_rate",
+        "citation_coverage", "viewpoint_preservation",
+    ):
+        assert f"'{rate}'" in formatting
+    assert "FORMAL_RATE_METRICS.has" in formatting
+    assert "percentage points" in formatting
+    assert "toExponential(2)" in formatting
+    assert "+ ' ms'" in formatting and "+ ' s'" in formatting
+    assert "value * 100" in formatting
+    assert "typeof value !== 'number'" in formatting
+
+
+def test_guided_experiment_summary_loading_retry_and_stale_run_protection() -> None:
+    loader = JS[JS.index("function setFormalExperimentSummaryState"):JS.index("function setFormalSummaryFeedback")]
+    assert "Loading experiment summary…" in loader
+    assert "Could not load experiment summary." in loader
+    assert "'Retry'" in loader
+    assert "loadFormalExperimentSummary({ force: true })" in loader
+    assert "formalAggregateLoad?.runId === requestedRunId" in loader
+    assert "const token = ++formalAggregateRequestToken" in loader
+    stale_guard = "token !== formalAggregateRequestToken || requestedRunId !== activeFormalRunId"
+    assert stale_guard in loader
+    assert "formalAggregateAbortController.abort()" in loader
+    assert "formalResultRows.clear" not in loader and "clearFormalExecutionDetail" not in loader
+
+
+def test_guided_experiment_summary_fetches_on_restore_and_terminal_transition_only() -> None:
+    status = JS[JS.index("function renderFormalStatus"):JS.index("async function refreshFormalRun")]
+    result_poll = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
+    clear = JS[JS.index("function clearFormalResultRows"):JS.index("const FORMAL_RATE_METRICS")]
+    assert "options.restoring" in status and "loadFormalExperimentSummary()" in status
+    assert "const terminal = status.status === 'complete' || status.status === 'failed' || stopped" in status
+    assert "formalAggregateTerminalKey !== terminalKey" in status
+    assert "loadFormalExperimentSummary({ force: true })" in status
+    assert "experiment-summary" not in result_poll
+    assert "clearFormalExperimentSummary()" in clear
+    assert "formalAggregateSummary = null" in JS
+
+
+def test_guided_summary_ui_does_not_change_execution_detail_or_custom_workbench_contract() -> None:
+    detail = JS[JS.index("function ensureFormalDetailPanel"):JS.index("function renderFormalExecutionCards")]
+    custom = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
+    assert "formal-execution-detail" in detail
+    assert "'/results/' + requestedSequence" in detail
+    assert "selectedFormalDetail = row" in detail
+    assert "experiment-summary" not in detail
+    assert "experiment-summary" not in custom
+    assert "renderEvidence(data)" in custom
 
 
 def test_guided_formal_cards_clear_on_restore_and_new_run() -> None:

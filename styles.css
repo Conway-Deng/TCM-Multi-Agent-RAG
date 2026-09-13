@@ -4691,8 +4691,38 @@ body {
 .formal-execution-technical { padding: .7rem .8rem; border-radius: 8px; background: #fff; }
 .formal-execution-technical summary { cursor: pointer; color: var(--accent-strong); font-weight: 800; }
 .formal-execution-technical pre { margin-bottom: 0; }
-.formal-result-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
-.formal-job-panel pre { max-height: 22rem; overflow: auto; white-space: pre-wrap; }
+.formal-aggregate-summary { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.formal-aggregate-heading h3 { margin: .15rem 0 .75rem; }
+.formal-aggregate-content { display: grid; gap: .8rem; }
+.formal-aggregate-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; align-items: start; }
+.formal-aggregate-panel, .formal-aggregate-comparison { display: grid; gap: .75rem; min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+.formal-aggregate-panel.is-unavailable { background: var(--surface); }
+.formal-aggregate-panel.is-partial, .formal-aggregate-comparison.is-partial { border-color: color-mix(in srgb, var(--warning) 40%, var(--border)); background: #fffaf0; }
+.formal-aggregate-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.formal-aggregate-panel-heading h4 { margin: 0; color: var(--text-primary); }
+.formal-aggregate-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; }
+.formal-frozen-badge, .formal-availability-badge { flex: 0 0 auto; border-radius: 999px; padding: .3rem .55rem; background: var(--accent-soft); color: var(--accent-strong); font-size: .7rem; font-weight: 850; }
+.formal-aggregate-panel.is-partial .formal-availability-badge, .formal-aggregate-comparison.is-partial .formal-availability-badge { background: #fff0cb; color: #795300; }
+.formal-aggregate-panel.is-unavailable .formal-availability-badge, .formal-aggregate-comparison.is-unavailable .formal-availability-badge { background: #eef1f4; color: var(--text-muted); }
+.formal-aggregate-note, .formal-aggregate-unavailable, .formal-partial-warning, .formal-aggregate-pending { margin: 0; padding: .7rem .8rem; border-radius: 8px; color: var(--text-secondary); line-height: 1.5; }
+.formal-aggregate-note, .formal-partial-warning { background: #fff4d9; }
+.formal-aggregate-unavailable, .formal-aggregate-pending { background: var(--surface); }
+.formal-aggregate-metric-group { display: grid; gap: .45rem; }
+.formal-aggregate-metric-group + .formal-aggregate-metric-group { padding-top: .7rem; border-top: 1px solid var(--border); }
+.formal-aggregate-metric-group h5 { margin: 0; color: var(--accent-strong); font-size: .82rem; }
+.formal-aggregate-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; margin: 0; }
+.formal-aggregate-metric-grid > div { min-width: 0; padding: .55rem .6rem; border-radius: 8px; background: var(--surface); }
+.formal-aggregate-metric-grid dt { color: var(--text-muted); font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.formal-aggregate-metric-grid dd { margin: .18rem 0 0; color: var(--text-primary); font-weight: 750; overflow-wrap: anywhere; }
+.formal-aggregate-sources { padding-top: .2rem; border-top: 1px solid var(--border); }
+.formal-aggregate-sources summary { cursor: pointer; color: var(--text-muted); font-size: .76rem; font-weight: 750; }
+.formal-aggregate-sources p { margin: .45rem 0 0; color: var(--text-muted); font-size: .72rem; overflow-wrap: anywhere; }
+.formal-aggregate-comparison > p { margin: 0; }
+.formal-comparable-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem 1rem; margin: 0; padding-left: 1.2rem; color: var(--text-secondary); }
+.formal-aggregate-state { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; padding: .85rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.formal-aggregate-state p { flex: 1 1 15rem; margin: 0; }
+.formal-aggregate-state.is-error { border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); background: #fff8f7; }
+.formal-download-section { margin-top: 1rem; }
 .formal-job-downloads { display: flex; flex-wrap: wrap; gap: .45rem; margin: .75rem 0; }
 .formal-job-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .55rem; }
 .stop-run-action { min-height: 40px; cursor: pointer; border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); border-radius: .55rem; padding: .55rem .85rem; background: #fff7f6; color: var(--danger); font: inherit; font-weight: 800; }
@@ -4758,8 +4788,8 @@ body {
   body.is-printing-custom-qa #custom-print-report * { visibility: visible !important; }
   body.is-printing-custom-qa #custom-print-report { display: block !important; position: absolute; inset: 0; padding: .5in; }
 }
-@media (max-width: 860px) { .formal-experiment-cards, .formal-result-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid, .custom-model-assignment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-result-columns, .custom-model-assignment-grid, .custom-question-count-row, .formal-scientific-summary, .formal-execution-detail-fields { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading, .formal-execution-detail-heading { display: grid; } .formal-execution-card-heading { grid-template-columns: 4rem 1fr; } .formal-execution-status { grid-column: 2; } }
+@media (max-width: 860px) { .formal-experiment-cards, .formal-aggregate-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formal-job-grid, .custom-model-assignment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .paper-mode-switch, .formal-experiment-cards, .paper-config-fields, .experiment-guide dl, .formal-job-grid, .formal-aggregate-columns, .formal-aggregate-metric-grid, .formal-comparable-metrics, .custom-model-assignment-grid, .custom-question-count-row, .formal-scientific-summary, .formal-execution-detail-fields { grid-template-columns: 1fr; } .guided-heading, .paper-configuration-heading, .formal-execution-detail-heading, .formal-aggregate-panel-heading { display: grid; } .formal-aggregate-badges { justify-content: flex-start; } .formal-execution-card-heading { grid-template-columns: 4rem 1fr; } .formal-execution-status { grid-column: 2; } }
 
 .research-notation-card {
   margin-top: .8rem;

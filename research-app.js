@@ -173,6 +173,12 @@
   let formalDetailRequestToken = 0;
   let formalDetailAbortController = null;
   let formalDetailPanel = null;
+  let formalAggregateSummary = null;
+  let formalAggregateRunId = null;
+  let formalAggregateLoad = null;
+  let formalAggregateRequestToken = 0;
+  let formalAggregateAbortController = null;
+  let formalAggregateTerminalKey = '';
   let paperConfigurationApplied = false;
 
   const FORMAL_SUMMARY_FIELDS = [
@@ -195,6 +201,7 @@
 
   function clearFormalResultRows() {
     clearFormalExecutionDetail();
+    clearFormalExperimentSummary();
     formalSummaryLoadToken += 1;
     formalSummaryLoad = null;
     formalResultCursor = 0;
@@ -203,6 +210,256 @@
     formalRenderedRevision = -1;
     formalRenderedStatusKey = '';
     $('#formal-execution-stream').replaceChildren();
+  }
+
+  const FORMAL_RATE_METRICS = new Set([
+    'usable_rate', 'citation_recall', 'citation_precision', 'accuracy', 'macro_f1',
+    'dual_citation_rate', 'dual_viewpoint_rate', 'uncertainty_rate', 'citation_coverage',
+    'viewpoint_preservation', 'r0_rate', 'r3_rate', 'chunk_recall_at_1',
+    'chunk_recall_at_4', 'chunk_recall_at_8', 'gold_evidence_recall', 'hit_at_1',
+    'hit_at_4', 'hit_at_8', 'source_recall', 'gold_fact_recall', 'partial_or_better_recall',
+  ]);
+
+  function clearFormalExperimentSummary() {
+    formalAggregateRequestToken += 1;
+    if (formalAggregateAbortController) formalAggregateAbortController.abort();
+    formalAggregateAbortController = null;
+    formalAggregateLoad = null;
+    formalAggregateSummary = null;
+    formalAggregateRunId = null;
+    formalAggregateTerminalKey = '';
+    const content = $('#formal-experiment-summary-content');
+    if (content) content.replaceChildren(element('p', 'formal-aggregate-pending', 'Final aggregate metrics will be available when this replay reaches a terminal state.'));
+  }
+
+  function formalMetricLabel(name) {
+    const labels = {
+      macro_f1: 'Macro-F1', usable: 'Usable', total: 'Total', usable_rate: 'Usable rate',
+      citation_recall: 'Citation recall', citation_precision: 'Citation precision', accuracy: 'Accuracy',
+      mean_latency_ms: 'Mean latency', median_latency_ms: 'Median latency', p95_ms: 'P95 latency',
+      mean_ms: 'Mean latency', median_ms: 'Median latency', latency_seconds: 'Latency',
+      dual_citation_rate: 'Dual citation rate', dual_viewpoint_rate: 'Dual viewpoint rate',
+      uncertainty_rate: 'Uncertainty rate', citation_coverage: 'Citation coverage',
+      viewpoint_preservation: 'Viewpoint preservation', canonical_executions: 'Canonical executions',
+      m1_executions: 'M1 executions', m2_executions: 'M2 executions',
+      complete_usable_pairs_for_quality: 'Complete usable pairs', paired_usable_cases: 'Paired usable cases',
+      paired_accuracy_discordance: 'Paired accuracy discordance', difference_j2_minus_j1: 'J2 − J1 difference',
+      difference_k2_minus_k1: 'K2 − K1 difference', mcnemar_p_value: 'McNemar p-value',
+      provider_by_model: 'Provider by model', records: 'Aggregate records',
+    };
+    if (labels[name]) return labels[name];
+    return String(name).replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function formalNumber(value, digits = 2) {
+    if (!Number.isFinite(value)) return String(value);
+    if (Number.isInteger(value)) return value.toLocaleString();
+    return value.toLocaleString(undefined, { maximumFractionDigits: digits });
+  }
+
+  function isFormalDifferenceRate(path) {
+    return path.some((part) => /(^difference$|difference_.*|.*_diff_.*)/i.test(part))
+      && (path.some((part) => FORMAL_RATE_METRICS.has(String(part).toLowerCase()))
+        || path.some((part) => /^(accuracy|macro_f1)_diff_|^difference_(r3_minus_r0|k2_minus_k1)$/i.test(part)));
+  }
+
+  function isFormalRate(path) {
+    return path.some((part) => FORMAL_RATE_METRICS.has(String(part).toLowerCase()) || /^(j1|j2)_(accuracy|macro_f1)$/i.test(part));
+  }
+
+  function formalAggregateRowLabel(path) {
+    const leaf = path[path.length - 1];
+    const parent = path[path.length - 2];
+    const context = (/^(R0|R3|J1|J2|K1|K2|M1|M2)$/i.test(String(parent || ''))
+      || path.some((part) => part === 'provider_by_model')) ? parent : null;
+    return context ? String(context) + ' · ' + formalMetricLabel(leaf) : formalMetricLabel(leaf);
+  }
+
+  function formatFormalAggregateValue(value, path) {
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value !== 'number') return String(value);
+    const leaf = String(path[path.length - 1] || '').toLowerCase();
+    if (/p_value|p-value|mcnemar.*p/.test(leaf)) return Math.abs(value) < .001 && value !== 0 ? value.toExponential(2) : formalNumber(value, 6);
+    if (isFormalDifferenceRate(path)) return formalNumber(value * 100, 2) + ' percentage points';
+    if (isFormalRate(path)) return formalNumber(value * 100, 2) + '%';
+    if (path.some((part) => /latency.*ms|_ms$/i.test(part)) || /^(mean|median|p95)_ms$/.test(leaf)) return formalNumber(value, 2) + ' ms';
+    if (path.some((part) => /latency_seconds/i.test(part))) return formalNumber(value, 2) + ' s';
+    return formalNumber(value, 4);
+  }
+
+  function flattenFormalAggregateMetrics(value, path = [], rows = []) {
+    if (value === null || value === undefined || value === '') return rows;
+    if (Array.isArray(value)) {
+      rows.push({ label: formalAggregateRowLabel(path), value: value.map((item) => typeof item === 'number' ? formalNumber(item, 4) : String(item)).join(' – ') });
+      return rows;
+    }
+    if (typeof value !== 'object') {
+      rows.push({ label: formalAggregateRowLabel(path), value: formatFormalAggregateValue(value, path) });
+      return rows;
+    }
+    Object.entries(value).forEach(([key, item]) => flattenFormalAggregateMetrics(item, [...path, key], rows));
+    return rows;
+  }
+
+  function pickFormalFields(value, names) {
+    if (!value || typeof value !== 'object') return {};
+    return Object.fromEntries(names.filter((name) => Object.prototype.hasOwnProperty.call(value, name)).map((name) => [name, value[name]]));
+  }
+
+  function formalAggregateGroups(experimentId, origin, metrics) {
+    const group = (title, value, path) => ({ title, value, path });
+    if (experimentId === 'retrieval_ablation') {
+      if (origin === 'new_replay') return ['R0', 'R3'].filter((condition) => metrics[condition]).map((condition) => group(condition, metrics[condition], [condition]));
+      return [
+        group('Primary R0 vs R3 result', metrics.primary, ['primary']),
+        group('Citation', metrics.citation, ['citation']),
+        group('Retrieval confirmation', metrics.retrieval_confirmation, ['retrieval_confirmation']),
+        group('Latency', metrics.latency, ['latency']),
+        group('Secondary results', metrics.secondary, ['secondary']),
+      ];
+    }
+    if (experimentId === 'rq1_architecture') return [];
+    if (experimentId === 'rq4_debate') return [group('Available aggregate metadata', pickFormalFields(metrics, ['records']), [])];
+    if (experimentId === 'research_b') {
+      if (origin === 'new_replay') return [
+        group('J1', metrics.J1, ['J1']), group('J2', metrics.J2, ['J2']),
+        group('Differences and paired results', pickFormalFields(metrics, ['difference_j2_minus_j1', 'paired_usable_cases', 'paired_accuracy_discordance']), []),
+      ];
+      return [
+        group('J1', pickFormalFields(metrics, ['j1_usable', 'j1_accuracy', 'j1_macro_f1']), []),
+        group('J2', pickFormalFields(metrics, ['j2_usable', 'j2_accuracy', 'j2_macro_f1']), []),
+        group('Differences and paired result', pickFormalFields(metrics, ['accuracy_diff_j2_minus_j1', 'macro_f1_diff_j2_minus_j1', 'mcnemar_p_value']), []),
+        group('Authoritative latency', metrics.authoritative_latency, ['authoritative_latency']),
+      ];
+    }
+    if (experimentId === 'research_c') {
+      if (origin === 'new_replay') return [
+        group('K1', metrics.K1, ['K1']), group('K2', metrics.K2, ['K2']),
+        group('Differences and paired results', pickFormalFields(metrics, ['difference_k2_minus_k1', 'paired_usable_cases', 'paired_accuracy_discordance']), []),
+      ];
+      return [
+        group('K1', { ...pickFormalFields(metrics.K1, ['accuracy', 'macro_f1']), reliability: metrics.reliability?.K1, latency: metrics.latency?.K1 }, ['K1']),
+        group('K2', { ...pickFormalFields(metrics.K2, ['accuracy', 'macro_f1']), reliability: metrics.reliability?.K2, latency: metrics.latency?.K2 }, ['K2']),
+        group('Paired statistics', metrics.paired_statistics, ['paired_statistics']),
+      ];
+    }
+    if (experimentId === 'a3_v1_3') return [
+      group('Execution coverage', pickFormalFields(metrics, ['canonical_executions', 'm1_executions', 'm2_executions', 'complete_usable_pairs_for_quality']), []),
+      group('M1 vs M2 quality and latency', pickFormalFields(metrics, ['usable_rate', 'citation_recall', 'citation_precision', 'latency_seconds']), []),
+      group('Provider by model', metrics.provider_by_model, ['provider_by_model']),
+    ];
+    return [group('Available aggregate data', metrics, [])];
+  }
+
+  function renderFormalAggregateGroup(parent, definition) {
+    if (!definition.value || typeof definition.value !== 'object' || !Object.keys(definition.value).length) return;
+    const rows = flattenFormalAggregateMetrics(definition.value, definition.path || []);
+    if (!rows.length) return;
+    const section = element('section', 'formal-aggregate-metric-group');
+    section.append(element('h5', '', definition.title));
+    const grid = element('dl', 'formal-aggregate-metric-grid');
+    rows.forEach((row) => {
+      const item = element('div'); item.append(element('dt', '', row.label), element('dd', '', row.value)); grid.append(item);
+    });
+    section.append(grid); parent.append(section);
+  }
+
+  function renderFormalAggregatePanel(parent, title, origin, data, experimentId) {
+    const availability = data?.availability || 'unavailable';
+    const panel = element('section', 'formal-aggregate-panel is-' + availability);
+    const heading = element('div', 'formal-aggregate-panel-heading');
+    heading.append(element('h4', '', title));
+    const badges = element('div', 'formal-aggregate-badges');
+    if (origin === 'historical_paper' && availability === 'available' && data.frozen_read_only === true) badges.append(element('span', 'formal-frozen-badge', 'Frozen · read only'));
+    badges.append(element('span', 'formal-availability-badge', availability === 'available' ? 'Available' : availability === 'partial' ? 'Partial aggregate data' : 'Unavailable'));
+    heading.append(badges); panel.append(heading);
+    if (availability === 'partial') panel.append(element('p', 'formal-aggregate-note', data.note || 'Partial aggregate data.'));
+    if (availability === 'unavailable') panel.append(element('p', 'formal-aggregate-unavailable', data.reason || 'Aggregate data is unavailable.'));
+    if ((availability === 'available' || availability === 'partial') && data.metrics && Object.keys(data.metrics).length) {
+      formalAggregateGroups(experimentId, origin, data.metrics).forEach((definition) => renderFormalAggregateGroup(panel, definition));
+    }
+    if (Array.isArray(data.source_files) && data.source_files.length) {
+      const sources = element('details', 'formal-aggregate-sources');
+      sources.append(element('summary', '', 'Source data'), element('p', '', data.source_files.join(' · '))); panel.append(sources);
+    }
+    parent.append(panel);
+  }
+
+  function renderFormalComparison(parent, data, status) {
+    const comparison = data || { availability: 'unavailable', comparable_metrics: [] };
+    const section = element('section', 'formal-aggregate-comparison is-' + comparison.availability);
+    const heading = element('div', 'formal-aggregate-panel-heading');
+    heading.append(element('h4', '', 'Comparison'), element('span', 'formal-availability-badge', formalMetricLabel(comparison.availability || 'unavailable'))); section.append(heading);
+    if (comparison.note) section.append(element('p', 'formal-aggregate-note', comparison.note));
+    if (comparison.reason) section.append(element('p', 'formal-aggregate-unavailable', comparison.reason));
+    if (Array.isArray(comparison.comparable_metrics) && comparison.comparable_metrics.length) {
+      const list = element('ul', 'formal-comparable-metrics');
+      comparison.comparable_metrics.forEach((item) => list.append(element('li', '', item.metric)));
+      section.append(element('p', '', 'Metrics explicitly comparable in both sources:'), list);
+    }
+    if (status === 'stopped') section.append(element('p', 'formal-partial-warning', 'Partial replay — not directly comparable to the complete paper result.'));
+    parent.append(section);
+  }
+
+  function renderFormalExperimentSummary(data) {
+    const content = $('#formal-experiment-summary-content');
+    content.replaceChildren();
+    const columns = element('div', 'formal-aggregate-columns');
+    renderFormalAggregatePanel(columns, 'New Replay Result', 'new_replay', data.new_replay, data.experiment_id);
+    renderFormalAggregatePanel(columns, 'Historical Paper Result', 'historical_paper', data.historical_paper, data.experiment_id);
+    content.append(columns);
+    renderFormalComparison(content, data.comparison, data.status);
+  }
+
+  function setFormalExperimentSummaryState(state, message) {
+    const content = $('#formal-experiment-summary-content');
+    if (!content) return;
+    const wrapper = element('div', 'formal-aggregate-state is-' + state);
+    if (state === 'loading') wrapper.append(element('span', 'formal-detail-spinner'));
+    wrapper.append(element('p', '', message));
+    if (state === 'error') {
+      const retry = element('button', 'secondary-action', 'Retry'); retry.type = 'button';
+      retry.addEventListener('click', () => loadFormalExperimentSummary({ force: true })); wrapper.append(retry);
+    }
+    content.replaceChildren(wrapper);
+  }
+
+  function loadFormalExperimentSummary({ force = false } = {}) {
+    if (!activeFormalRunId) return Promise.resolve(null);
+    const requestedRunId = activeFormalRunId;
+    if (formalAggregateLoad?.runId === requestedRunId) {
+      if (force) formalAggregateLoad.refreshAfter = true;
+      return formalAggregateLoad.promise;
+    }
+    if (!force && formalAggregateRunId === requestedRunId && formalAggregateSummary) {
+      renderFormalExperimentSummary(formalAggregateSummary);
+      return Promise.resolve(formalAggregateSummary);
+    }
+    const token = ++formalAggregateRequestToken;
+    if (formalAggregateAbortController) formalAggregateAbortController.abort();
+    const controller = new AbortController(); formalAggregateAbortController = controller;
+    setFormalExperimentSummaryState('loading', 'Loading experiment summary…');
+    const promise = (async () => {
+      try {
+        const data = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/experiment-summary', controller.signal);
+        if (token !== formalAggregateRequestToken || requestedRunId !== activeFormalRunId) return null;
+        formalAggregateSummary = data; formalAggregateRunId = requestedRunId;
+        renderFormalExperimentSummary(data);
+        return data;
+      }
+      catch (error) {
+        if (error.name !== 'AbortError' && token === formalAggregateRequestToken && requestedRunId === activeFormalRunId) setFormalExperimentSummaryState('error', 'Could not load experiment summary.');
+        return null;
+      }
+      finally {
+        const refreshAfter = formalAggregateLoad?.token === token && formalAggregateLoad.refreshAfter;
+        if (formalAggregateLoad?.token === token) formalAggregateLoad = null;
+        if (formalAggregateRequestToken === token) formalAggregateAbortController = null;
+        if (refreshAfter && requestedRunId === activeFormalRunId) loadFormalExperimentSummary({ force: true });
+      }
+    })();
+    formalAggregateLoad = { runId: requestedRunId, token, promise, refreshAfter: false };
+    return promise;
   }
 
   function setFormalSummaryFeedback(message, restoring = false) {
@@ -580,6 +837,7 @@
 
   function selectFormalExperiment(item) {
     clearFormalExecutionDetail();
+    clearFormalExperimentSummary();
     selectedFormalExperiment = item;
     paperConfigurationApplied = true;
     activeFormalRunId = null;
@@ -634,7 +892,10 @@
   }
 
   function renderFormalStatus(status, options = {}) {
-    if (activeFormalRunId && activeFormalRunId !== status.run_id) clearFormalExecutionDetail();
+    if (activeFormalRunId && activeFormalRunId !== status.run_id) {
+      clearFormalExecutionDetail();
+      clearFormalExperimentSummary();
+    }
     activeFormalRunId = status.run_id;
     localStorage.setItem('medirag-formal-run-id', status.run_id);
     $('#formal-empty-state').hidden = true;
@@ -658,6 +919,18 @@
     $$('.formal-experiment-card').forEach((card) => { card.disabled = active; });
     if (status.status === 'complete' || status.status === 'failed' || stopped) $('#run-paper-experiment').disabled = false;
     loadFormalResults(options);
+    const terminal = status.status === 'complete' || status.status === 'failed' || stopped;
+    if (terminal) {
+      const terminalKey = [status.run_id, status.status, status.completed, status.failed].join('|');
+      if (formalAggregateTerminalKey !== terminalKey) {
+        formalAggregateTerminalKey = terminalKey;
+        loadFormalExperimentSummary({ force: true });
+      }
+    } else if (options.restoring) {
+      loadFormalExperimentSummary();
+    } else if (formalAggregateRunId !== status.run_id && !formalAggregateLoad) {
+      setFormalExperimentSummaryState('pending', 'Final aggregate metrics will be available when this replay reaches a terminal state.');
+    }
     if (formalRunTimer) { clearTimeout(formalRunTimer); formalRunTimer = null; }
     if (active) formalRunTimer = setTimeout(refreshFormalRun, 2500);
   }
@@ -707,8 +980,6 @@
         } while (data.has_more);
         if (token !== formalSummaryLoadToken || requestedRunId !== activeFormalRunId) return;
         const orderedRows = orderedFormalResultRows();
-        setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }, null, 2));
-        setText('#formal-historical-results', JSON.stringify(data.historical_paper_results || { label: 'Historical paper result', status: 'frozen_read_only' }, null, 2));
         renderFormalExecutionCards(Number(data.status?.total || orderedRows.length), data.status);
         const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
         (data.downloads || []).forEach((file) => { const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' }; const link = element('a', 'secondary-action', labels[file.name] || file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
