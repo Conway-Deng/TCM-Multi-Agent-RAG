@@ -100,7 +100,7 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
 
 def test_guided_formal_results_use_incremental_lightweight_execution_cards() -> None:
     formal = JS[JS.index("let formalExperiments"):JS.index("async function startFormalRun")]
-    loading = JS[JS.index("async function loadFormalResults"):JS.index("async function startFormalRun")]
+    loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
     assert "let formalResultCursor = 0" in formal
     assert "const formalResultRows = new Map()" in formal
     assert "const FORMAL_SUMMARY_FIELDS" in formal
@@ -146,7 +146,7 @@ def test_guided_formal_scientific_cards_map_six_experiment_families() -> None:
 
 def test_guided_execution_cards_keep_run_and_historical_metrics_separate() -> None:
     cards = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
-    loading = JS[JS.index("async function loadFormalResults"):JS.index("async function startFormalRun")]
+    loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
     assert "final_metrics" not in cards and "historical_paper_results" not in cards
     assert "JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }" in loading
     assert "results: orderedRows" not in loading
@@ -157,11 +157,55 @@ def test_guided_execution_cards_keep_run_and_historical_metrics_separate() -> No
 def test_guided_formal_cards_clear_on_restore_and_new_run() -> None:
     registry = JS[JS.index("async function loadFormalRegistry"):JS.index("function elapsedClock")]
     start = JS[JS.index("async function startFormalRun"):JS.index("async function stopFormalRun")]
-    assert "clearFormalResultRows(); activeFormalRunId = savedRun" in registry
+    assert registry.index("clearFormalResultRows()") < registry.index("activeFormalRunId = savedRun")
     assert start.index("clearFormalResultRows()") < start.index("await api('/api/formal-runs'")
     render = JS[JS.index("function renderFormalExecutionCards"):JS.index("function lockedField")]
     assert "['running', 'stop_requested'].includes(status.status)" in render
     assert "formalResultRows.size + 1" in render
+
+
+def test_guided_formal_summary_loading_is_single_flight_and_run_scoped() -> None:
+    state = JS[JS.index("let formalExperiments"):JS.index("const FORMAL_SUMMARY_FIELDS")]
+    clear = JS[JS.index("function clearFormalResultRows"):JS.index("function setFormalSummaryFeedback")]
+    refresh = JS[JS.index("async function refreshFormalRun"):JS.index("function loadFormalResults")]
+    loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
+    assert "let formalSummaryLoad = null" in state and "let formalSummaryLoadToken = 0" in state
+    assert "formalSummaryLoad?.runId === requestedRunId" in loading
+    assert "return formalSummaryLoad.promise" in loading
+    assert "const token = ++formalSummaryLoadToken" in loading
+    assert "token !== formalSummaryLoadToken || requestedRunId !== activeFormalRunId" in loading
+    assert "formalSummaryLoad = { runId: requestedRunId, token, promise }" in loading
+    assert "formalSummaryLoad?.token === token" in loading
+    assert "formalSummaryLoadToken += 1" in clear and "formalSummaryLoad = null" in clear
+    assert "const requestedRunId = activeFormalRunId" in refresh
+    assert "requestedRunId !== activeFormalRunId" in refresh
+    assert "requestedRunId === activeFormalRunId" in refresh
+    assert "const pageStart = after" in loading
+    assert "data.has_more && after <= pageStart" in loading
+    assert "data.has_more && after <= formalResultCursor" not in loading
+
+
+def test_guided_restore_feedback_and_summary_errors_preserve_cards() -> None:
+    registry = JS[JS.index("async function loadFormalRegistry"):JS.index("function elapsedClock")]
+    loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
+    assert "Restoring saved experiment results…" in registry
+    assert registry.index("Restoring saved experiment results…") < registry.index("await refreshFormalRun({ restoring: true })")
+    assert "restoring && formalResultRows.size === 0" in loading
+    assert "clearFormalSummaryFeedback()" in loading
+    assert "Could not refresh experiment results. Existing cards are preserved; reload to retry." in loading
+    failure = loading[loading.index("catch (error)"):loading.index("finally")]
+    assert "formalResultRows.clear" not in failure and "clearFormalResultRows" not in failure
+    assert ".is-formal-restoring" in CSS
+
+
+def test_guided_cards_skip_full_rerender_when_data_and_status_are_unchanged() -> None:
+    render = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
+    loading = JS[JS.index("function loadFormalResults"):JS.index("async function startFormalRun")]
+    assert render.index("formalRenderedRevision === formalResultRevision") < render.index("stream.replaceChildren()")
+    assert "formalRenderedStatusKey === statusKey" in render
+    assert "formalRenderedRevision = formalResultRevision" in render
+    assert "formalRenderedStatusKey = statusKey" in render
+    assert "formalResultRevision += 1" in loading
 
 
 def test_custom_cloud_result_renders_persisted_evidence_and_runtime_metadata() -> None:

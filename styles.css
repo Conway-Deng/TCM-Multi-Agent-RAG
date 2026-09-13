@@ -4095,6 +4095,7 @@ body {
 .consensus-spinner { display: none; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.35); border-top-color: white; border-radius: 50%; animation: west-spin .75s linear infinite; }
 .consensus-submit.is-loading .consensus-spinner { display: inline-block; }
 .consensus-message { margin: .9rem 0 0; color: #b91c1c; font-weight: 700; }
+.consensus-message.is-formal-restoring { color: var(--accent-strong, #1f5374); }
 .consensus-results { display: grid; gap: 1rem; margin-top: 1rem; }
 .consensus-results[hidden] { display: none !important; }
 .consensus-summary h3 { margin: .75rem 0 .5rem; }

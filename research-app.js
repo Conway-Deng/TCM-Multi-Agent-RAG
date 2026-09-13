@@ -163,6 +163,11 @@
   let formalRunTimer = null;
   let formalResultCursor = 0;
   const formalResultRows = new Map();
+  let formalResultRevision = 0;
+  let formalRenderedRevision = -1;
+  let formalRenderedStatusKey = '';
+  let formalSummaryLoad = null;
+  let formalSummaryLoadToken = 0;
   let paperConfigurationApplied = false;
 
   const FORMAL_SUMMARY_FIELDS = [
@@ -184,9 +189,26 @@
   }
 
   function clearFormalResultRows() {
+    formalSummaryLoadToken += 1;
+    formalSummaryLoad = null;
     formalResultCursor = 0;
     formalResultRows.clear();
+    formalResultRevision += 1;
+    formalRenderedRevision = -1;
+    formalRenderedStatusKey = '';
     $('#formal-execution-stream').replaceChildren();
+  }
+
+  function setFormalSummaryFeedback(message, restoring = false) {
+    const node = $('#formal-run-message');
+    node.dataset.formalSummaryFeedback = message ? 'true' : 'false';
+    node.classList.toggle('is-formal-restoring', Boolean(message && restoring));
+    showMessage(node, message);
+  }
+
+  function clearFormalSummaryFeedback() {
+    const node = $('#formal-run-message');
+    if (node.dataset.formalSummaryFeedback === 'true') setFormalSummaryFeedback('');
   }
 
   function formalBoolean(value) { return value === true ? 'Yes' : value === false ? 'No' : null; }
@@ -274,6 +296,8 @@
 
   function renderFormalExecutionCards(total, status) {
     const stream = $('#formal-execution-stream');
+    const statusKey = [total, status?.status, status?.current_case, status?.current_condition].join('|');
+    if (formalRenderedRevision === formalResultRevision && formalRenderedStatusKey === statusKey) return;
     const scrollTop = stream.scrollTop;
     stream.replaceChildren();
     orderedFormalResultRows().forEach((execution) => {
@@ -299,6 +323,8 @@
       stream.append(running);
     }
     stream.scrollTop = scrollTop;
+    formalRenderedRevision = formalResultRevision;
+    formalRenderedStatusKey = statusKey;
   }
 
   function setPaperWorkbenchMode(mode) {
@@ -359,7 +385,12 @@
     try {
       renderFormalRegistry(await apiGet('/api/formal-experiments'));
       const savedRun = localStorage.getItem('medirag-formal-run-id');
-      if (savedRun) { clearFormalResultRows(); activeFormalRunId = savedRun; await refreshFormalRun(); }
+      if (savedRun) {
+        clearFormalResultRows();
+        activeFormalRunId = savedRun;
+        setFormalSummaryFeedback('Restoring saved experiment results…', true);
+        await refreshFormalRun({ restoring: true });
+      }
     }
     catch (error) { $('#formal-experiment-cards').replaceChildren(element('p', 'consensus-message', 'Formal experiment registry unavailable: ' + error.message)); }
   }
@@ -372,7 +403,7 @@
     return hours + ':' + minutes + ':' + remainder;
   }
 
-  function renderFormalStatus(status) {
+  function renderFormalStatus(status, options = {}) {
     activeFormalRunId = status.run_id;
     localStorage.setItem('medirag-formal-run-id', status.run_id);
     $('#formal-empty-state').hidden = true;
@@ -395,52 +426,81 @@
     if (stopped) setText('#formal-stop-summary', 'Stopped after ' + completed + ' / ' + total + ' executions · Partial replay — not directly comparable to the complete paper result.');
     $$('.formal-experiment-card').forEach((card) => { card.disabled = active; });
     if (status.status === 'complete' || status.status === 'failed' || stopped) $('#run-paper-experiment').disabled = false;
-    loadFormalResults();
+    loadFormalResults(options);
     if (formalRunTimer) { clearTimeout(formalRunTimer); formalRunTimer = null; }
     if (active) formalRunTimer = setTimeout(refreshFormalRun, 2500);
   }
 
-  async function refreshFormalRun() {
-    if (!activeFormalRunId) return;
-    try { renderFormalStatus(await apiGet('/api/formal-runs/' + encodeURIComponent(activeFormalRunId))); }
-    catch (error) { showMessage($('#formal-run-message'), error.message); }
-  }
-
-  async function loadFormalResults() {
+  async function refreshFormalRun(options = {}) {
     if (!activeFormalRunId) return;
     const requestedRunId = activeFormalRunId;
     try {
-      let after = formalResultCursor;
-      let data;
-      do {
-        data = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/summaries?after=' + after + '&limit=50');
-        if (requestedRunId !== activeFormalRunId) return;
-        (data.results || []).forEach((execution) => {
-          const sequence = Number(execution.sequence);
-          if (!Number.isInteger(sequence)) return;
-          formalResultRows.set(sequence, compactFormalSummary({ ...execution, sequence }));
-          after = Math.max(after, sequence);
-        });
-        const nextCursor = Number(data.next_cursor);
-        if (Number.isInteger(nextCursor)) after = Math.max(after, nextCursor);
-        if (data.has_more && after <= formalResultCursor) throw new Error('Formal summary cursor did not advance.');
-        formalResultCursor = Math.max(formalResultCursor, after);
-      } while (data.has_more);
-      const orderedRows = orderedFormalResultRows();
-      setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }, null, 2));
-      setText('#formal-historical-results', JSON.stringify(data.historical_paper_results || { label: 'Historical paper result', status: 'frozen_read_only' }, null, 2));
-      renderFormalExecutionCards(Number(data.status?.total || orderedRows.length), data.status);
-      const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
-      (data.downloads || []).forEach((file) => { const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' }; const link = element('a', 'secondary-action', labels[file.name] || file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(activeFormalRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
+      const status = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId));
+      if (requestedRunId !== activeFormalRunId) return;
+      renderFormalStatus(status, options);
     }
-    catch (error) { setText('#formal-job-results', error.message); }
+    catch (error) {
+      if (requestedRunId === activeFormalRunId) setFormalSummaryFeedback(error.message);
+    }
+  }
+
+  function loadFormalResults({ restoring = false } = {}) {
+    if (!activeFormalRunId) return;
+    const requestedRunId = activeFormalRunId;
+    if (formalSummaryLoad?.runId === requestedRunId) return formalSummaryLoad.promise;
+    const token = ++formalSummaryLoadToken;
+    if (restoring && formalResultRows.size === 0) setFormalSummaryFeedback('Restoring saved experiment results…', true);
+    const promise = (async () => {
+      try {
+        let after = formalResultCursor;
+        let data;
+        do {
+          const pageStart = after;
+          data = await apiGet('/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/summaries?after=' + after + '&limit=50');
+          if (token !== formalSummaryLoadToken || requestedRunId !== activeFormalRunId) return;
+          (data.results || []).forEach((execution) => {
+            const sequence = Number(execution.sequence);
+            if (!Number.isInteger(sequence)) return;
+            const summary = compactFormalSummary({ ...execution, sequence });
+            const previous = formalResultRows.get(sequence);
+            if (!previous || JSON.stringify(previous) !== JSON.stringify(summary)) {
+              formalResultRows.set(sequence, summary);
+              formalResultRevision += 1;
+            }
+            after = Math.max(after, sequence);
+          });
+          const nextCursor = Number(data.next_cursor);
+          if (Number.isInteger(nextCursor)) after = Math.max(after, nextCursor);
+          if (data.has_more && after <= pageStart) throw new Error('Formal summary cursor did not advance.');
+          formalResultCursor = Math.max(formalResultCursor, after);
+        } while (data.has_more);
+        if (token !== formalSummaryLoadToken || requestedRunId !== activeFormalRunId) return;
+        const orderedRows = orderedFormalResultRows();
+        setText('#formal-job-results', JSON.stringify({ status: data.status, final_metrics: data.final_metrics || {} }, null, 2));
+        setText('#formal-historical-results', JSON.stringify(data.historical_paper_results || { label: 'Historical paper result', status: 'frozen_read_only' }, null, 2));
+        renderFormalExecutionCards(Number(data.status?.total || orderedRows.length), data.status);
+        const downloads = $('#formal-job-downloads'); downloads.replaceChildren();
+        (data.downloads || []).forEach((file) => { const labels = { 'partial_report.md': 'Download Partial Report', 'partial_results.csv': 'Download CSV', 'partial_results.json': 'Download JSON' }; const link = element('a', 'secondary-action', labels[file.name] || file.name); link.href = API + '/api/formal-runs/' + encodeURIComponent(requestedRunId) + '/files/' + file.name.split('/').map(encodeURIComponent).join('/'); downloads.append(link); });
+        clearFormalSummaryFeedback();
+      }
+      catch (error) {
+        if (token === formalSummaryLoadToken && requestedRunId === activeFormalRunId) {
+          setFormalSummaryFeedback('Could not refresh experiment results. Existing cards are preserved; reload to retry.');
+        }
+      }
+      finally {
+        if (formalSummaryLoad?.token === token) formalSummaryLoad = null;
+      }
+    })();
+    formalSummaryLoad = { runId: requestedRunId, token, promise };
+    return promise;
   }
 
   async function startFormalRun() {
     if (!selectedFormalExperiment || !paperConfigurationApplied) return;
     const button = $('#run-paper-experiment'); button.disabled = true;
     const body = { experiment_id: selectedFormalExperiment.experiment_id, run_mode: 'full_benchmark', confirm_full_benchmark: true };
-    showMessage($('#formal-run-message'), '');
+    setFormalSummaryFeedback('');
     try { clearFormalResultRows(); renderFormalStatus(await api('/api/formal-runs', body)); }
     catch (error) { showMessage($('#formal-run-message'), error.message); button.disabled = false; }
   }
