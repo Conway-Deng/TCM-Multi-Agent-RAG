@@ -4670,6 +4670,10 @@ body {
 .stop-run-action:disabled { cursor: wait; opacity: .65; }
 .formal-stop-summary { margin: .75rem 0; padding: .7rem .8rem; border-left: 3px solid var(--warning); background: #fff8e8; color: var(--text-primary); font-weight: 750; }
 #custom-partial-downloads { width: 100%; margin-bottom: 0; }
+.research-progress.is-terminal .research-progress-bar span { animation: none; transform: none; }
+.research-progress.is-complete .research-progress-bar span { width: 100%; }
+.research-progress.is-stopped .research-progress-bar span { background: var(--warning); }
+.research-progress.is-failed .research-progress-bar span { background: var(--danger); }
 .custom-workbench-label { margin-bottom: 1rem; padding: .75rem; border-left: 3px solid var(--warning); background: #fff9ed; }
 .custom-workbench-label p { margin: 0; }
 .custom-model-assignment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }

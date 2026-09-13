@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HTML = (ROOT / "index.html").read_text(encoding="utf-8")
 JS = (ROOT / "research-app.js").read_text(encoding="utf-8")
+CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
 def test_research_selector_uses_controlled_c1_and_separates_legacy_demo() -> None:
@@ -126,3 +127,46 @@ def test_guided_and_custom_runs_expose_graceful_stop_and_partial_downloads() -> 
     assert "Download Partial Report" in JS
     assert "Partial replay — not directly comparable to the complete paper result." in JS
     assert "['queued', 'running', 'stop_requested']" in JS
+
+
+def test_saved_custom_run_restore_distinguishes_active_and_terminal_states() -> None:
+    refresh = JS[JS.index("async function refreshCustomRun"):JS.index("async function resumeSavedCustomRun")]
+    resume = JS[JS.index("async function resumeSavedCustomRun"):JS.index("async function stopCustomRun")]
+    assert "refreshCustomRun(restored = false)" in refresh
+    assert "['queued', 'running', 'stop_requested'].includes(status.status)" in refresh
+    assert "if (customActive && !researchProgressTimer) startResearchProgress()" in refresh
+    assert "setResearchControlsDisabled(false)" in refresh
+    assert "Restored completed run." in refresh
+    assert "setResearchProgressVisualState('restoring')" in resume
+    assert "await refreshCustomRun(true)" in resume
+
+
+def test_new_custom_run_clears_previous_result_before_queueing() -> None:
+    clearing = JS[JS.index("function clearCustomResultDisplay"):JS.index("let activeCustomRunId")]
+    submit = JS[JS.index("$('#consensus-form').addEventListener('submit'"):JS.index("$('#research-compare-form')")]
+    assert "currentResearchRun = null" in clearing
+    assert "$('#consensus-results').hidden = true" in clearing
+    assert "$('#consensus-trace').textContent = ''" in clearing
+    assert "'#consensus-evidence'" in clearing
+    assert "'#consensus-agents'" in clearing
+    assert submit.index("clearCustomResultDisplay()") < submit.index("startResearchProgress()")
+    assert submit.index("clearCustomResultDisplay()") < submit.index("await api('/api/custom-runs'")
+
+
+def test_custom_progress_animates_only_for_active_states() -> None:
+    assert "new Set(['queued', 'running', 'stop_requested'])" in JS
+    assert "setResearchProgressVisualState('queued')" in JS
+    assert "progress.classList.toggle('is-terminal', !active)" in JS
+    assert "stopResearchProgress(status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : 'failed')" in JS
+    assert ".research-progress-bar span" in CSS and "animation: research-progress" in CSS
+    assert ".research-progress.is-terminal .research-progress-bar span { animation: none; transform: none; }" in CSS
+    assert ".research-progress.is-complete .research-progress-bar span { width: 100%; }" in CSS
+    assert ".research-progress.is-stopped .research-progress-bar span" in CSS
+    assert ".research-progress.is-failed .research-progress-bar span" in CSS
+
+
+def test_guided_progress_and_rendering_contract_remain_separate() -> None:
+    assert "function refreshFormalRun" in JS
+    assert "function renderFormalStatus" in JS
+    assert "Run Paper Experiment" in HTML
+    assert "clearCustomResultDisplay()" not in JS[JS.index("function refreshFormalRun"):JS.index("function selectFormalExperiment")]

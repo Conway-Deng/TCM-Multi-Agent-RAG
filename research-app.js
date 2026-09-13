@@ -623,23 +623,34 @@
   });
 
   let researchRequestActive = false; let researchProgressTimer = null; let researchProgressStarted = 0; let researchProgressStage = 'connecting';
+  const activeResearchProgressStates = new Set(['queued', 'running', 'stop_requested']);
+  function setResearchProgressVisualState(status) {
+    const progress = $('#consensus-progress'); const active = activeResearchProgressStates.has(status);
+    progress.classList.toggle('is-active', active); progress.classList.toggle('is-terminal', !active);
+    ['complete', 'stopped', 'failed'].forEach((terminalStatus) => progress.classList.toggle('is-' + terminalStatus, status === terminalStatus));
+  }
   function setResearchProgress(stage) {
     researchProgressStage = stage;
     const messages = {
       connecting: ['Connecting to research backend…', 'Elapsed time is measured directly; no percentage is estimated.'],
       waking: ['Backend may be waking from an idle state.', 'Your experiment is still running.'],
       processing: ['Processing retrieved evidence and model output…', 'The backend response has returned and the workbench is preparing the result.'],
+      queued: ['Run queued', 'The cloud worker will begin this custom experiment shortly.'],
+      running: ['Run in progress', 'Completed rows will appear as the cloud worker finishes them.'],
+      stop_requested: ['Stop requested', 'The current atomic execution will finish before the run stops.'],
+      restoring: ['Restoring saved run', 'Checking its durable status before marking it active or complete.'],
       complete: ['Run complete', 'The completed response and trace are shown below.'],
+      stopped: ['Run stopped', 'Completed rows remain available as a partial replay result.'],
       failed: ['Request failed', 'Check the message below, then retry when the backend is available.'],
     };
     const message = messages[stage] || messages.connecting;
     setText('#consensus-progress-status', message[0]); setText('#consensus-progress-detail', message[1]);
   }
   function startResearchProgress() {
-    researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; setResearchProgress('connecting'); setText('#consensus-progress-elapsed', '0.0 s'); clearInterval(researchProgressTimer);
+    researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; setResearchProgressVisualState('queued'); setResearchProgress('connecting'); setText('#consensus-progress-elapsed', '0.0 s'); clearInterval(researchProgressTimer);
     researchProgressTimer = setInterval(() => { const elapsed = performance.now() - researchProgressStarted; setText('#consensus-progress-elapsed', (elapsed / 1000).toFixed(1) + ' s'); if (elapsed >= 8000 && researchProgressStage === 'connecting') setResearchProgress('waking'); }, 250);
   }
-  function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
+  function stopResearchProgress(stage = 'complete') { clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgressVisualState(stage); setResearchProgress(stage); setText('#consensus-progress-elapsed', ((performance.now() - researchProgressStarted) / 1000).toFixed(1) + ' s'); }
   function setResearchControlsDisabled(disabled) {
     $$('#consensus-form textarea, #consensus-form select, #consensus-form input').forEach((control) => { control.disabled = disabled; });
     setText('#consensus-submit-label', disabled ? 'Running custom experiment…' : 'Run Custom Experiment');
@@ -664,11 +675,23 @@
     return selected === 'custom' ? Number($('#custom-question-count-value').value) : Number(selected);
   }
   function updateCustomQuestionCount() { $('#custom-question-count-label').hidden = $('#custom-question-count').value !== 'custom'; }
+  function clearCustomResultDisplay() {
+    currentResearchRun = null;
+    $('#consensus-results').hidden = true;
+    $('#research-fallback-banner').hidden = true;
+    ['#consensus-summary-text', '#consensus-evidence', '#consensus-agents', '#consensus-abstaining-list', '#consensus-agreements', '#consensus-disagreements', '#consensus-judges', '#consensus-safety', '#consensus-limitations'].forEach((selector) => $(selector).replaceChildren());
+    $('#consensus-trace').textContent = '';
+    $('#consensus-debate-section').hidden = true;
+    $('#consensus-judge-section').hidden = true;
+    $('#abstained-specialists').hidden = true;
+    setText('#evidence-count-badge', '0 items');
+    ['#summary-condition', '#summary-retrieval', '#summary-model', '#summary-status', '#summary-corpus', '#summary-calls', '#summary-latency', '#summary-fallback', '#summary-participants', '#consensus-run-id', '#consensus-generation-badge', '#active-agent-support', '#specialist-coverage', '#consensus-confidence', '#consensus-latency', '#consensus-requested-model', '#consensus-model', '#consensus-attempted-models', '#consensus-provider', '#consensus-api-calls', '#consensus-successful-calls', '#consensus-call-failures', '#consensus-generation-mode', '#consensus-fallback', '#consensus-corpus', '#consensus-fixture-used', '#consensus-embedding', '#consensus-reranker', '#consensus-participating', '#consensus-abstaining', '#consensus-stages', '#consensus-score-formula'].forEach((selector) => setText(selector, '—'));
+  }
   let activeCustomRunId = null;
   let customRunTimer = null;
   let customResultCursor = 0;
 
-  async function refreshCustomRun() {
+  async function refreshCustomRun(restored = false) {
     if (!activeCustomRunId) return;
     try {
       const status = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId));
@@ -680,6 +703,8 @@
         if (latest) renderResearchRun(latest.result);
       }
       const customActive = ['queued', 'running', 'stop_requested'].includes(status.status);
+      if (customActive && !researchProgressTimer) startResearchProgress();
+      setResearchProgressVisualState(status.status);
       setText('#consensus-progress-status', status.status === 'queued' ? 'Queued for cloud worker…' : status.status === 'running' ? 'Running question ' + Math.min(status.completed + 1, status.total) + ' of ' + status.total + '…' : status.status === 'stop_requested' ? 'Stopping after the active question…' : status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
       setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
       $('#stop-custom-run').hidden = !customActive;
@@ -701,11 +726,14 @@
       $('#consensus-submit').disabled = false;
       $('#consensus-submit').classList.remove('is-loading');
       $('#consensus-form').setAttribute('aria-busy', 'false');
-      stopResearchProgress(status.status === 'complete' || status.status === 'stopped' ? 'complete' : 'failed');
+      stopResearchProgress(status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : 'failed');
+      if (typeof status.elapsed_seconds === 'number') setText('#consensus-progress-elapsed', elapsedClock(status.elapsed_seconds));
+      setText('#consensus-progress-status', status.status === 'complete' ? 'Run complete' : status.status === 'stopped' ? 'Partial replay result' : 'Run failed');
+      setText('#consensus-progress-detail', status.completed + ' / ' + status.total + ' persisted · ' + (status.current_stage || status.status));
       showMessage($('#consensus-message'), status.status === 'complete'
-        ? status.completed + ' of ' + status.total + ' custom questions completed in the cloud. The latest response is shown below.'
+        ? (restored ? 'Restored completed run. ' : '') + status.completed + ' of ' + status.total + ' custom questions completed in the cloud. The latest response is shown below.'
         : status.status === 'stopped'
-        ? 'Stopped after ' + status.completed + ' / ' + status.total + ' executions. Partial replay — not directly comparable to the complete paper result.'
+        ? (restored ? 'Restored partial run. ' : '') + 'Stopped after ' + status.completed + ' / ' + status.total + ' executions. Partial replay — not directly comparable to the complete paper result.'
         : status.error || 'The Custom experiment failed.');
     }
     catch (error) {
@@ -729,8 +757,8 @@
     $('#consensus-submit').disabled = true;
     $('#consensus-submit').classList.add('is-loading');
     $('#consensus-form').setAttribute('aria-busy', 'true');
-    startResearchProgress();
-    await refreshCustomRun();
+    researchProgressStarted = performance.now(); $('#consensus-progress').hidden = false; clearInterval(researchProgressTimer); researchProgressTimer = null; setResearchProgressVisualState('restoring'); setResearchProgress('restoring'); setText('#consensus-progress-elapsed', '—');
+    await refreshCustomRun(true);
   }
 
   async function stopCustomRun() {
@@ -747,9 +775,9 @@
     event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const questionText = $('#consensus-question').value.trim(); const questions = questionText.split(/\r?\n/).map((question) => question.trim()).filter(Boolean); const requestedCount = selectedCustomQuestionCount();
     if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 100) return showMessage(message, 'Choose a question count from 1 to 100.');
     if (questions.length < requestedCount || questions.slice(0, requestedCount).some((question) => question.length < 3)) return showMessage(message, 'Enter at least ' + requestedCount + ' valid question' + (requestedCount === 1 ? '' : 's') + ', one per line.');
-    researchRequestActive = true; showMessage(message, ''); setResearchControlsDisabled(true); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); $('#research-fallback-banner').hidden = true; startResearchProgress();
+    clearTimeout(customRunTimer); customRunTimer = null; activeCustomRunId = null; customResultCursor = 0; clearCustomResultDisplay();
+    researchRequestActive = true; showMessage(message, ''); setResearchControlsDisabled(true); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); startResearchProgress();
     try {
-      customResultCursor = 0;
       const status = await api('/api/custom-runs', { questions: questions.slice(0, requestedCount), condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, ...selectedModelConfigurationPayload(), active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true });
       activeCustomRunId = status.run_id;
       localStorage.setItem('medirag-custom-run-id', activeCustomRunId);
