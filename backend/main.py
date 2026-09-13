@@ -290,6 +290,14 @@ async def formal_run_summaries(run_id: str, after: int = 0, limit: int = Query(d
         raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 
 
+@app.get("/api/formal-runs/{run_id}/experiment-summary", summary="Read normalized replay and frozen paper aggregate metrics")
+async def formal_run_experiment_summary(run_id: str) -> dict:
+    try:
+        return formal_jobs.experiment_summary(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
+
+
 @app.get("/api/formal-runs/{run_id}/results/{sequence}", summary="Read one complete persisted formal execution")
 async def formal_run_result(run_id: str, sequence: int) -> dict:
     try:

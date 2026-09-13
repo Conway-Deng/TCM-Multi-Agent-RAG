@@ -1012,3 +1012,171 @@ def test_formal_worker_finishes_active_atomic_row_before_stopping(monkeypatch: p
     assert {item["name"] for item in store.artifacts("replay-safe-boundary")} >= {
         "partial_report.md", "partial_results.csv", "partial_results.json",
     }
+
+
+def _create_summary_job(
+    store: FormalJobStore,
+    run_id: str,
+    experiment_id: str,
+    *,
+    status: str = "complete",
+    completed: int = 1,
+    total: int = 1,
+) -> None:
+    store.create({
+        "run_id": run_id, "experiment_id": experiment_id, "run_mode": "full_benchmark",
+        "status": status, "completed": completed, "total": total, "current_condition": None,
+        "current_case": None, "successful": completed, "failed": 0, "created_at": 1.0,
+        "started_at": 1.0, "updated_at": 1.0, "resume_state": status,
+        "replay_output_dir": f"{experiment_id}/{run_id}", "persistence": "durable", "error": None,
+    }, {"experiment_id": experiment_id, "run_mode": "full_benchmark"}, {"experiment_id": experiment_id})
+
+
+def test_experiment_summary_endpoint_projects_retrieval_and_unknown_run(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    from fastapi.testclient import TestClient
+    import formal_experiments.jobs as jobs_module
+    import main
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'summary-retrieval.sqlite3').as_posix()}")
+    _create_summary_job(store, "summary-retrieval", "retrieval_ablation")
+    store.store_artifact_bytes("summary-retrieval", "stage2/objective_metrics.json", json.dumps({
+        "R0": {"usable": 60, "total": 60, "usable_rate": 1.0, "mean_latency_ms": 5000,
+               "citation_recall": 0.9, "citation_precision": 0.3, "not_exposed": "large"},
+        "R3": {"usable": 59, "total": 60, "usable_rate": 0.9833, "mean_latency_ms": 5300,
+               "citation_recall": 0.91, "citation_precision": 0.31},
+    }).encode("utf-8"))
+    monkeypatch.setattr(jobs_module, "APP_ROOT", ROOT)
+    monkeypatch.setattr(store, "executions", lambda *args, **kwargs: pytest.fail("execution rows must not be read"))
+    frozen = ROOT / "research/retrieval_ablation/formal_stage2/stage2_final_results.json"
+    before = hashlib.sha256(frozen.read_bytes()).hexdigest()
+    monkeypatch.setattr(main, "formal_jobs", FormalJobService(store))
+    with TestClient(main.app) as client:
+        response = client.get("/api/formal-runs/summary-retrieval/experiment-summary")
+        missing = client.get("/api/formal-runs/not-a-run/experiment-summary")
+    value = response.json()
+    assert response.status_code == 200 and missing.status_code == 404
+    assert set(value) == {"experiment_id", "run_id", "status", "new_replay", "historical_paper", "comparison"}
+    assert value["new_replay"]["availability"] == "available"
+    assert value["new_replay"]["source_files"] == ["stage2/objective_metrics.json"]
+    assert value["new_replay"]["metrics"]["R0"]["citation_recall"] == 0.9
+    assert "not_exposed" not in value["new_replay"]["metrics"]["R0"]
+    assert value["historical_paper"]["availability"] == "available"
+    assert value["historical_paper"]["source_files"] == [
+        "research/retrieval_ablation/formal_stage2/stage2_final_results.json",
+    ]
+    assert value["historical_paper"]["frozen_read_only"] is True
+    assert value["comparison"]["availability"] == "partial"
+    assert hashlib.sha256(frozen.read_bytes()).hexdigest() == before
+
+
+def test_experiment_summary_projects_research_b_and_c_aggregates(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    import formal_experiments.jobs as jobs_module
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'summary-bc.sqlite3').as_posix()}")
+    _create_summary_job(store, "summary-b", "research_b", completed=480, total=480)
+    _create_summary_job(store, "summary-c", "research_c", completed=264, total=264)
+    b_analysis = {
+        "J1": {"accuracy": 0.3, "macro_f1": 0.2, "usable": 239, "total": 240,
+               "usable_rate": 0.9958, "mean_latency_ms": 100, "median_latency_ms": 90,
+               "confusion_matrix": {"large": True}},
+        "J2": {"accuracy": 0.8, "macro_f1": 0.7, "usable": 240, "total": 240,
+               "usable_rate": 1.0, "mean_latency_ms": 80, "median_latency_ms": 70},
+        "difference_j2_minus_j1": {"accuracy": 0.5, "macro_f1": 0.5},
+        "paired_usable_cases": 239,
+        "paired_accuracy_discordance": {"J1_correct_J2_wrong": 1, "J2_correct_J1_wrong": 120},
+    }
+    c_analysis = {
+        "K1": {"accuracy": 0.7, "macro_f1": 0.6, "usable": 132, "total": 132,
+               "usable_rate": 1.0, "dual_citation_rate": 0.0, "dual_viewpoint_rate": 0.0,
+               "uncertainty_rate": 0.0, "mean_latency_ms": 100, "median_latency_ms": 90},
+        "K2": {"accuracy": 0.8, "macro_f1": 0.75, "usable": 132, "total": 132,
+               "usable_rate": 1.0, "dual_citation_rate": 0.7, "dual_viewpoint_rate": 0.6,
+               "uncertainty_rate": 0.8, "mean_latency_ms": 120, "median_latency_ms": 110},
+        "difference_k2_minus_k1": {"accuracy": 0.1, "macro_f1": 0.15},
+        "paired_usable_cases": 132,
+        "paired_accuracy_discordance": {"K1_correct_K2_wrong": 2, "K2_correct_K1_wrong": 4},
+    }
+    store.store_artifact_bytes("summary-b", "analysis.json", json.dumps(b_analysis).encode("utf-8"))
+    store.store_artifact_bytes("summary-c", "analysis.json", json.dumps(c_analysis).encode("utf-8"))
+    monkeypatch.setattr(jobs_module, "APP_ROOT", ROOT)
+    b_frozen = ROOT / "research/research_b/formal_run_v1/final_analysis/research_b_final_manifest.json"
+    c_frozen = ROOT / "research/research_c/formal_run_v1/research_c_final_results.json"
+    before = {path: hashlib.sha256(path.read_bytes()).hexdigest() for path in (b_frozen, c_frozen)}
+
+    b = FormalJobService(store).experiment_summary("summary-b")
+    c = FormalJobService(store).experiment_summary("summary-c")
+    assert b["new_replay"]["availability"] == b["historical_paper"]["availability"] == "available"
+    assert b["new_replay"]["metrics"]["J1"]["accuracy"] == 0.3
+    assert "confusion_matrix" not in b["new_replay"]["metrics"]["J1"]
+    assert b["historical_paper"]["metrics"]["j2_accuracy"] == 0.8292
+    assert b["comparison"]["availability"] == "available"
+    assert c["new_replay"]["metrics"]["K2"]["dual_citation_rate"] == 0.7
+    assert c["historical_paper"]["metrics"]["reliability"]["K2"]["citation_coverage"] == 0.7348484848484849
+    assert any(
+        item["new_replay"] == "K2.dual_citation_rate"
+        and item["historical_paper"] == "reliability.K2.citation_coverage"
+        for item in c["comparison"]["comparable_metrics"]
+    )
+    assert all(hashlib.sha256(path.read_bytes()).hexdigest() == digest for path, digest in before.items())
+
+
+def test_experiment_summary_truthfully_excludes_missing_historical_aggregates(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    import formal_experiments.jobs as jobs_module
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'summary-missing.sqlite3').as_posix()}")
+    for experiment_id in ("rq1_architecture", "rq4_debate", "a3_v1_3"):
+        _create_summary_job(store, f"summary-{experiment_id}", experiment_id)
+    store.store_artifact_bytes("summary-rq4_debate", "objective_metrics.json", json.dumps({
+        "records": 200, "scores": [{"question_id": "must-not-be-returned", "citation_recall": 1.0}],
+    }).encode("utf-8"))
+    store.store_artifact_bytes("summary-a3_v1_3", "formal/objective_metrics.json", json.dumps({
+        "canonical_executions": 200, "m1_executions": 100, "m2_executions": 100,
+        "complete_usable_pairs_for_quality": 90, "usable_rate": {"M1": 1.0, "M2": 0.9},
+        "citation_recall": {"M1_mean": 0.8, "M2_mean": 0.7},
+        "provider_by_model": {"Qwen/Qwen3-8B": {"successful_calls": 100}},
+    }).encode("utf-8"))
+    monkeypatch.setattr(jobs_module, "APP_ROOT", ROOT)
+    service = FormalJobService(store)
+    architecture = service.experiment_summary("summary-rq1_architecture")
+    debate = service.experiment_summary("summary-rq4_debate")
+    a3 = service.experiment_summary("summary-a3_v1_3")
+    assert architecture["new_replay"]["availability"] == "unavailable"
+    assert architecture["historical_paper"]["availability"] == "unavailable"
+    assert debate["new_replay"] == {
+        "availability": "partial", "metrics": {"records": 200}, "source_files": ["objective_metrics.json"],
+        "note": "Only existing aggregate record metadata is available; per-record scores are not returned or recomputed.",
+    }
+    assert debate["historical_paper"]["availability"] == "unavailable"
+    assert a3["new_replay"]["availability"] == "available"
+    assert a3["historical_paper"]["availability"] == "unavailable"
+    assert a3["historical_paper"]["source_files"] == []
+    assert "smoke validation and aborted runs are excluded" in a3["historical_paper"]["reason"].casefold()
+    assert all("smoke" not in path.casefold() and "formal_aborted" not in path.casefold()
+               for path in a3["historical_paper"]["source_files"])
+    assert all(value["comparison"]["availability"] == "unavailable" for value in (architecture, debate, a3))
+
+
+def test_experiment_summary_marks_stopped_run_partial_without_row_recomputation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    import formal_experiments.jobs as jobs_module
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'summary-stopped.sqlite3').as_posix()}")
+    _create_summary_job(store, "summary-stopped", "research_b", status="stopped", completed=10, total=480)
+    store.upsert_execution("summary-stopped", 1, {"case_id": "RB-001", "condition": "J1", "usable": True})
+    monkeypatch.setattr(store, "executions", lambda *args, **kwargs: pytest.fail("execution rows must not be aggregated"))
+    monkeypatch.setattr(jobs_module, "APP_ROOT", ROOT)
+    value = FormalJobService(store).experiment_summary("summary-stopped")
+    assert value["status"] == "stopped"
+    assert value["new_replay"]["availability"] == "partial"
+    assert value["new_replay"]["metrics"] == {}
+    assert value["new_replay"]["note"] == "Partial replay — aggregate paper metrics are not available from an incomplete run."
+    assert value["historical_paper"]["availability"] == "available"
+    assert value["comparison"]["availability"] == "partial"
+    assert value["comparison"]["comparable_metrics"] == []

@@ -18,6 +18,144 @@ from .store import FormalJobStore
 APP_ROOT = Path(__file__).resolve().parents[2]
 
 
+_REPLAY_AGGREGATE_FILES: dict[str, tuple[str, ...]] = {
+    "retrieval_ablation": ("stage2/objective_metrics.json",),
+    "rq1_architecture": (),
+    "rq4_debate": ("objective_metrics.json",),
+    "research_b": ("analysis.json",),
+    "research_c": ("analysis.json",),
+    "a3_v1_3": ("formal/objective_metrics.json",),
+}
+
+# Frozen historical access is intentionally limited to these trusted paths.
+# Missing RQ1, RQ4 and A3 aggregates are reported as unavailable rather than
+# reconstructed from execution rows, smoke outputs, or aborted runs.
+_HISTORICAL_AGGREGATE_FILES: dict[str, tuple[str, ...]] = {
+    "retrieval_ablation": (
+        "research/retrieval_ablation/formal_stage2/stage2_final_results.json",
+    ),
+    "rq1_architecture": (),
+    "rq4_debate": (),
+    "research_b": (
+        "research/research_b/formal_run_v1/final_analysis/research_b_final_manifest.json",
+    ),
+    "research_c": (
+        "research/research_c/formal_run_v1/research_c_final_results.json",
+    ),
+    "a3_v1_3": (),
+}
+
+_HISTORICAL_UNAVAILABLE_REASONS = {
+    "rq1_architecture": "No machine-readable frozen aggregate metric file is available.",
+    "rq4_debate": "The frozen manifest exists, but its referenced aggregate metric files are absent.",
+    "a3_v1_3": "No completed frozen A3 aggregate exists; smoke validation and aborted runs are excluded.",
+}
+
+# Research C aliases are limited to metrics with the same definition in the
+# replay analysis and frozen result. No other field names are normalized.
+_COMPARABLE_METRICS: dict[str, list[dict[str, str]]] = {
+    "retrieval_ablation": [
+        {"metric": f"{condition} citation recall", "new_replay": f"{condition}.citation_recall", "historical_paper": f"citation.citation_recall.{condition}"}
+        for condition in ("R0", "R3")
+    ] + [
+        {"metric": f"{condition} citation precision", "new_replay": f"{condition}.citation_precision", "historical_paper": f"citation.citation_precision.{condition}"}
+        for condition in ("R0", "R3")
+    ] + [
+        {"metric": f"{condition} mean generation latency", "new_replay": f"{condition}.mean_latency_ms", "historical_paper": f"latency.generation_latency_ms.{condition}.mean"}
+        for condition in ("R0", "R3")
+    ],
+    "research_b": [
+        {"metric": f"{condition} {metric}", "new_replay": f"{condition}.{metric}", "historical_paper": f"{condition.casefold()}_{metric}"}
+        for condition in ("J1", "J2") for metric in ("accuracy", "macro_f1")
+    ] + [
+        {"metric": f"{condition} {label} latency", "new_replay": f"{condition}.{source}", "historical_paper": f"authoritative_latency.{condition}.{target}"}
+        for condition in ("J1", "J2")
+        for label, source, target in (("mean", "mean_latency_ms", "mean_ms"), ("median", "median_latency_ms", "median_ms"))
+    ],
+    "research_c": [
+        {"metric": f"{condition} {metric}", "new_replay": f"{condition}.{metric}", "historical_paper": f"{condition}.{metric}"}
+        for condition in ("K1", "K2") for metric in ("accuracy", "macro_f1")
+    ] + [
+        {"metric": f"{condition} {label} latency", "new_replay": f"{condition}.{source}", "historical_paper": f"latency.{condition}.{target}"}
+        for condition in ("K1", "K2")
+        for label, source, target in (("mean", "mean_latency_ms", "mean_ms"), ("median", "median_latency_ms", "median_ms"))
+    ] + [
+        {"metric": f"{condition} citation coverage", "new_replay": f"{condition}.dual_citation_rate", "historical_paper": f"reliability.{condition}.citation_coverage"}
+        for condition in ("K1", "K2")
+    ] + [
+        {"metric": f"{condition} viewpoint preservation", "new_replay": f"{condition}.dual_viewpoint_rate", "historical_paper": f"reliability.{condition}.viewpoint_preservation"}
+        for condition in ("K1", "K2")
+    ] + [
+        {"metric": f"{condition} uncertainty rate", "new_replay": f"{condition}.uncertainty_rate", "historical_paper": f"reliability.{condition}.uncertainty_rate"}
+        for condition in ("K1", "K2")
+    ],
+}
+
+
+def _selected_fields(value: Any, names: tuple[str, ...]) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    return {name: value[name] for name in names if name in value}
+
+
+def _condition_projection(value: Any, conditions: tuple[str, ...], fields: tuple[str, ...]) -> dict[str, Any]:
+    return {
+        condition: _selected_fields(value.get(condition), fields)
+        for condition in conditions
+        if isinstance(value, dict) and isinstance(value.get(condition), dict)
+    }
+
+
+def _project_replay_metrics(experiment_id: str, value: dict[str, Any]) -> dict[str, Any]:
+    if experiment_id == "retrieval_ablation":
+        return _condition_projection(value, ("R0", "R3"), (
+            "usable", "total", "usable_rate", "mean_latency_ms", "citation_recall", "citation_precision",
+        ))
+    if experiment_id == "rq4_debate":
+        return _selected_fields(value, ("records",))
+    if experiment_id == "research_b":
+        metrics = _condition_projection(value, ("J1", "J2"), (
+            "accuracy", "macro_f1", "usable", "total", "usable_rate", "mean_latency_ms", "median_latency_ms",
+        ))
+        metrics.update(_selected_fields(value, (
+            "difference_j2_minus_j1", "paired_usable_cases", "paired_accuracy_discordance",
+        )))
+        return metrics
+    if experiment_id == "research_c":
+        metrics = _condition_projection(value, ("K1", "K2"), (
+            "accuracy", "macro_f1", "usable", "total", "usable_rate", "dual_citation_rate",
+            "dual_viewpoint_rate", "uncertainty_rate", "mean_latency_ms", "median_latency_ms",
+        ))
+        metrics.update(_selected_fields(value, (
+            "difference_k2_minus_k1", "paired_usable_cases", "paired_accuracy_discordance",
+        )))
+        return metrics
+    if experiment_id == "a3_v1_3":
+        return _selected_fields(value, (
+            "canonical_executions", "m1_executions", "m2_executions", "complete_usable_pairs_for_quality",
+            "usable_rate", "citation_recall", "citation_precision", "latency_seconds", "provider_by_model",
+        ))
+    return {}
+
+
+def _project_historical_metrics(experiment_id: str, value: dict[str, Any]) -> dict[str, Any]:
+    if experiment_id == "retrieval_ablation":
+        return _selected_fields(value, (
+            "status", "primary", "secondary", "retrieval_confirmation", "citation", "latency",
+        ))
+    if experiment_id == "research_b":
+        return _selected_fields(value, (
+            "total_executions", "j1_usable", "j2_usable", "j1_accuracy", "j1_macro_f1",
+            "j2_accuracy", "j2_macro_f1", "accuracy_diff_j2_minus_j1",
+            "macro_f1_diff_j2_minus_j1", "mcnemar_p_value", "authoritative_latency",
+        ))
+    if experiment_id == "research_c":
+        return _selected_fields(value, (
+            "K1", "K2", "paired_statistics", "latency", "reliability", "scheduled_executions", "provider_attempts",
+        ))
+    return {}
+
+
 def _iso_timestamp(value: float | None) -> str | None:
     return datetime.fromtimestamp(value, timezone.utc).isoformat().replace("+00:00", "Z") if value else None
 
@@ -339,6 +477,134 @@ class FormalJobService:
     def resume(self, run_id: str) -> dict[str, Any]:
         self.store.request_resume(run_id)
         return self.get(run_id)
+
+    def _replay_aggregate(self, run_id: str, experiment_id: str) -> tuple[dict[str, Any], list[str]]:
+        metrics: dict[str, Any] = {}
+        source_files: list[str] = []
+        for name in _REPLAY_AGGREGATE_FILES.get(experiment_id, ()):
+            try:
+                _, content = self.store.artifact(run_id, name)
+                value = json.loads(content)
+            except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(value, dict):
+                continue
+            projected = _project_replay_metrics(experiment_id, value)
+            if projected:
+                metrics.update(projected)
+                source_files.append(name)
+        return metrics, source_files
+
+    @staticmethod
+    def _historical_aggregate(experiment_id: str) -> tuple[dict[str, Any], list[str]]:
+        metrics: dict[str, Any] = {}
+        source_files: list[str] = []
+        root = APP_ROOT.resolve()
+        for relative in _HISTORICAL_AGGREGATE_FILES.get(experiment_id, ()):
+            path = (root / relative).resolve()
+            if root != path and root not in path.parents:
+                continue
+            try:
+                value = json.loads(path.read_bytes())
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(value, dict):
+                continue
+            projected = _project_historical_metrics(experiment_id, value)
+            if projected:
+                metrics.update(projected)
+                source_files.append(relative)
+        return metrics, source_files
+
+    def experiment_summary(self, run_id: str) -> dict[str, Any]:
+        status = self.get(run_id)
+        experiment_id = status["experiment_id"]
+        replay_metrics, replay_files = self._replay_aggregate(run_id, experiment_id)
+        incomplete_note = "Partial replay — aggregate paper metrics are not available from an incomplete run."
+
+        if status["status"] != "complete":
+            replay = {
+                "availability": "partial",
+                "metrics": replay_metrics,
+                "source_files": replay_files,
+                "note": incomplete_note,
+            }
+        elif experiment_id == "rq1_architecture":
+            replay = {
+                "availability": "unavailable",
+                "metrics": {},
+                "source_files": [],
+                "reason": "No aggregate artifact is produced by the current formal replay.",
+            }
+        elif experiment_id == "rq4_debate" and replay_metrics:
+            replay = {
+                "availability": "partial",
+                "metrics": replay_metrics,
+                "source_files": replay_files,
+                "note": "Only existing aggregate record metadata is available; per-record scores are not returned or recomputed.",
+            }
+        elif replay_metrics:
+            replay = {
+                "availability": "available",
+                "metrics": replay_metrics,
+                "source_files": replay_files,
+            }
+        else:
+            replay = {
+                "availability": "unavailable",
+                "metrics": {},
+                "source_files": [],
+                "reason": "No generated aggregate artifact is available for this replay.",
+            }
+
+        historical_metrics, historical_files = self._historical_aggregate(experiment_id)
+        if historical_metrics:
+            historical = {
+                "availability": "available",
+                "metrics": historical_metrics,
+                "source_files": historical_files,
+                "frozen_read_only": True,
+            }
+        else:
+            historical = {
+                "availability": "unavailable",
+                "metrics": {},
+                "source_files": [],
+                "frozen_read_only": True,
+                "reason": _HISTORICAL_UNAVAILABLE_REASONS.get(
+                    experiment_id, "No whitelisted frozen aggregate metric file is available."
+                ),
+            }
+
+        comparable = _COMPARABLE_METRICS.get(experiment_id, [])
+        if replay["availability"] == "available" and historical["availability"] == "available" and comparable:
+            comparison = {
+                "availability": "partial" if experiment_id == "retrieval_ablation" else "available",
+                "comparable_metrics": comparable,
+            }
+            if experiment_id == "retrieval_ablation":
+                comparison["note"] = "Only metrics present in both aggregate artifacts are listed."
+        elif replay["availability"] == "partial" and historical["availability"] == "available":
+            comparison = {
+                "availability": "partial",
+                "comparable_metrics": [],
+                "note": incomplete_note if status["status"] != "complete" else "Replay paper-level aggregate metrics are incomplete.",
+            }
+        else:
+            comparison = {
+                "availability": "unavailable",
+                "comparable_metrics": [],
+                "reason": "Comparable aggregate metrics are not available from both replay and frozen historical sources.",
+            }
+
+        return {
+            "experiment_id": experiment_id,
+            "run_id": run_id,
+            "status": status["status"],
+            "new_replay": replay,
+            "historical_paper": historical,
+            "comparison": comparison,
+        }
 
     def results(self, run_id: str, *, after: int = 0) -> dict[str, Any]:
         status = self.get(run_id)
