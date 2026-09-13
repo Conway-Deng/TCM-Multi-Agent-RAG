@@ -60,6 +60,14 @@ def test_custom_model_assignment_and_batch_payload_contract() -> None:
     assert "Run Custom Experiment" in HTML
 
 
+def test_custom_question_textarea_has_multi_question_helper() -> None:
+    assert "For multiple questions, enter one question per line in this box." in HTML
+    textarea_position = HTML.index('id="consensus-question"')
+    helper_position = HTML.index("For multiple questions, enter one question per line in this box.")
+    assert helper_position > textarea_position
+    assert "For multiple questions, enter one question per line above. The selected count determines how many lines are run." in HTML
+
+
 def test_custom_mode_remains_exploratory_and_trace_diagnostics_remain() -> None:
     assert "C1 uses only Specialist A" in HTML
     assert "Custom runs are exploratory and do not reproduce a formal paper experiment." in HTML
