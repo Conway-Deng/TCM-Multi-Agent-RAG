@@ -740,7 +740,8 @@
       [customSummaryGeneration(summary), (summary.models || []).join(' / ') || summary.model || null, customSummaryLatency(summary), summary.fallback === true ? 'Fallback: Yes' : null].filter(Boolean).forEach((value) => metadata.append(element('span', '', value)));
       card.append(metadata);
       if (!summary.error && summary.status !== 'Failed') {
-        const button = element('button', 'secondary-action', 'View full details'); button.type = 'button'; button.setAttribute('aria-pressed', String(Number(summary.sequence) === selectedCustomSequence)); button.addEventListener('click', () => selectCustomResult(Number(summary.sequence), true)); card.append(button);
+        const expanded = Number(summary.sequence) === selectedCustomSequence;
+        const button = element('button', 'secondary-action', expanded ? 'Hide full details' : 'View full details'); button.type = 'button'; button.setAttribute('aria-expanded', String(expanded)); button.setAttribute('aria-controls', 'consensus-results'); button.addEventListener('click', () => expanded ? collapseCustomResult() : selectCustomResult(Number(summary.sequence), true)); card.append(button);
       }
       fragment.append(card);
     });
@@ -759,6 +760,14 @@
     const detail = $('#consensus-results'); if (detail && detail.parentElement === $('#custom-question-results-list')) $('#custom-question-results').after(detail);
     $('#custom-question-results-list').replaceChildren(); $('#custom-question-results').dataset.hasResults = 'false'; $('#custom-question-results').hidden = true;
     setText('#custom-question-results-count', '0 persisted questions'); clearCustomResultDisplay(); $('#custom-question-results').after($('#consensus-results'));
+  }
+
+  function collapseCustomResult() {
+    customDetailRequestToken += 1;
+    selectedCustomSequence = null;
+    currentCustomSummary = null;
+    clearCustomResultDisplay();
+    renderCustomQuestionResults();
   }
 
   async function selectCustomResult(sequence, manual = false) {

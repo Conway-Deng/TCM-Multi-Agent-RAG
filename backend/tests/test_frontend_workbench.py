@@ -274,6 +274,20 @@ def test_selected_custom_detail_is_inline_single_tree_with_loading_and_retry() -
     assert ".custom-detail-content[hidden]" in CSS
 
 
+def test_custom_detail_toggle_collapses_without_fetching() -> None:
+    render = JS[JS.index("function renderCustomQuestionResults"):JS.index("function clearCustomBatchDisplay")]
+    assert "const expanded = Number(summary.sequence) === selectedCustomSequence" in render
+    assert "expanded ? 'Hide full details' : 'View full details'" in render
+    assert "button.setAttribute('aria-expanded', String(expanded))" in render
+    assert "expanded ? collapseCustomResult() : selectCustomResult(Number(summary.sequence), true)" in render
+    collapse = JS[JS.index("function collapseCustomResult"):JS.index("async function selectCustomResult")]
+    assert "customDetailRequestToken += 1" in collapse
+    assert "selectedCustomSequence = null" in collapse
+    assert "clearCustomResultDisplay()" in collapse
+    assert "renderCustomQuestionResults()" in collapse
+    assert "apiGet(" not in collapse
+
+
 def test_custom_detail_switch_and_restore_do_not_duplicate_full_result_trees() -> None:
     render = JS[JS.index("function renderCustomQuestionResults"):JS.index("function clearCustomBatchDisplay")]
     assert "container.replaceChildren(fragment)" in render
