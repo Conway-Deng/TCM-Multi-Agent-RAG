@@ -346,6 +346,63 @@ class FormalJobStore:
             values.append(value)
         return values
 
+    def execution(self, run_id: str, sequence: int) -> dict[str, Any]:
+        """Return one persisted execution payload without loading sibling results."""
+        self.initialize()
+        with self.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(self._sql("SELECT sequence, case_id, condition_id, status, payload_json FROM formal_executions WHERE run_id = ? AND sequence = ?"), (run_id, sequence))
+            row = cursor.fetchone()
+        if row is None:
+            raise KeyError((run_id, sequence))
+        return {
+            "sequence": row[0],
+            "case_id": row[1],
+            "condition": row[2],
+            "status": row[3],
+            "result": json.loads(row[4]),
+        }
+
+    def execution_summaries(self, run_id: str, after: int = 0) -> list[dict[str, Any]]:
+        """Project persisted payloads into lightweight Q&A rows for polling and restore."""
+        self.initialize()
+        with self.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(self._sql("SELECT sequence, case_id, condition_id, status, payload_json FROM formal_executions WHERE run_id = ? AND sequence > ? ORDER BY sequence"), (run_id, after))
+            rows = cursor.fetchall()
+        summaries: list[dict[str, Any]] = []
+        for row in rows:
+            result = json.loads(row[4])
+            trace = result.get("trace") if isinstance(result.get("trace"), dict) else {}
+            retrieval = result.get("retrieval") if isinstance(result.get("retrieval"), list) else []
+            agent_outputs = result.get("agent_outputs") if isinstance(result.get("agent_outputs"), list) else []
+            models = list(dict.fromkeys(
+                str(model) for model in [*(agent.get("model") for agent in agent_outputs if isinstance(agent, dict)), trace.get("model")]
+                if model
+            ))
+            question = result.get("question")
+            if not question and isinstance(result.get("planner"), dict):
+                question = result["planner"].get("normalized_question")
+            fallback = trace.get("fallback_usage") if isinstance(trace.get("fallback_usage"), bool) else None
+            latency = trace.get("latency_ms") if isinstance(trace.get("latency_ms"), (int, float)) else None
+            summaries.append({
+                "sequence": row[0],
+                "question_id": result.get("question_id") or row[1],
+                "question": question,
+                "final_answer": result.get("final_answer"),
+                "status": row[3],
+                "error": result.get("error"),
+                "condition": result.get("condition_id") or row[2],
+                "retrieval": trace.get("retrieval_strategy"),
+                "model": trace.get("model"),
+                "models": models,
+                "generation_mode": trace.get("generation_mode") or result.get("generation_mode"),
+                "fallback": fallback,
+                "latency_ms": latency,
+                "evidence_count": len(retrieval),
+            })
+        return summaries
+
     @staticmethod
     def _media_type(path: str) -> str:
         suffix = Path(path).suffix.casefold()

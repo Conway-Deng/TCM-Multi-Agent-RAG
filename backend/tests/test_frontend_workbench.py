@@ -33,8 +33,8 @@ def test_navigation_and_results_contract_is_present() -> None:
 
 
 def test_export_contract_is_secret_safe_and_supports_run_and_compare() -> None:
-    assert "Download JSON" in HTML
-    assert "Download CSV" in HTML
+    assert "Download Selected JSON" in HTML
+    assert "Download Selected CSV" in HTML
     assert "Download Comparison JSON" in HTML
     assert "Download Comparison CSV" in HTML
     assert "safeRunExport" in JS
@@ -99,7 +99,7 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
 
 
 def test_custom_cloud_result_renders_persisted_evidence_and_runtime_metadata() -> None:
-    rendering = JS[JS.index("function renderResearchRun(data)"):JS.index("function renderCompare(data)")]
+    rendering = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
     assert "const integratedPanel = $('#integrated-judge-panel')" in rendering
     assert "if (integratedPanel)" in rendering
     assert rendering.index("renderEvidence(data)") < rendering.index("setText('#consensus-latency'")
@@ -119,7 +119,7 @@ def test_custom_cloud_result_renders_persisted_evidence_and_runtime_metadata() -
 
 
 def test_custom_runtime_renderer_does_not_fabricate_missing_metadata() -> None:
-    rendering = JS[JS.index("function renderResearchRun(data)"):JS.index("function renderCompare(data)")]
+    rendering = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
     assert "const requestedModel = requestedModelParts.join(' · ') || '—'" in rendering
     assert "attemptedModels.join(', ') || '—'" in rendering
     assert "typeof traceData.fallback_usage === 'boolean'" in rendering
@@ -161,8 +161,8 @@ def test_new_custom_run_clears_previous_result_before_queueing() -> None:
     assert "$('#consensus-trace').textContent = ''" in clearing
     assert "'#consensus-evidence'" in clearing
     assert "'#consensus-agents'" in clearing
-    assert submit.index("clearCustomResultDisplay()") < submit.index("startResearchProgress()")
-    assert submit.index("clearCustomResultDisplay()") < submit.index("await api('/api/custom-runs'")
+    assert submit.index("clearCustomBatchDisplay()") < submit.index("startResearchProgress()")
+    assert submit.index("clearCustomBatchDisplay()") < submit.index("await api('/api/custom-runs'")
 
 
 def test_custom_progress_animates_only_for_active_states() -> None:
@@ -197,3 +197,51 @@ def test_custom_restore_loading_paints_and_always_clears() -> None:
     assert "typeof requestAnimationFrame === 'function'" in JS
     assert "if (customActive && !researchProgressTimer) startResearchProgress()" in JS
     assert "stopResearchProgress(status.status === 'complete' ? 'complete' : status.status === 'stopped' ? 'stopped' : 'failed')" in JS
+
+
+def test_custom_question_results_use_lightweight_summaries_and_one_detail_panel() -> None:
+    assert 'id="custom-question-results"' in HTML
+    assert 'id="custom-question-results-list"' in HTML
+    assert HTML.count('id="consensus-results"') == 1
+    assert "const customResultSummaries = new Map()" in JS
+    assert "orderedCustomResultSummaries()" in JS
+    assert "/results/summary?after=" in JS
+    assert "/results/' + selectedCustomSequence" in JS
+    assert "newRows.forEach((row) => customResultSummaries.set(Number(row.sequence), row))" in JS
+    assert "container.replaceChildren(fragment)" in JS
+    assert "clearCustomResultDisplay()" in JS
+    assert "customSelectionManual" in JS
+    assert "if (manual) customSelectionManual = true" in JS
+    assert "!customSelectionManual || selectedCustomSequence === null" in JS
+
+
+def test_custom_cards_exports_and_print_keep_question_answer_pairs_lightweight() -> None:
+    assert "Question results" in HTML
+    assert "Print Q&amp;A Report" in HTML
+    assert "Download All Q&amp;A JSON" in HTML
+    assert "Download All Q&amp;A CSV" in HTML
+    assert "Download Selected JSON" in HTML and "Download Selected CSV" in HTML
+    cards = JS[JS.index("function renderCustomQuestionResults"):JS.index("function clearCustomBatchDisplay")]
+    assert "summary.question" in cards and "summary.final_answer" in cards
+    assert "summary.condition === 'C1' ? 'Final answer' : 'Final integrated answer'" in cards
+    assert "summary.error || summary.final_answer" in cards
+    export = JS[JS.index("function customQaExport"):JS.index("function customQaCsv")]
+    assert "question: row.question" in export and "final_answer: row.final_answer" in export
+    assert "trace" not in export and "provider_attempts" not in export
+    csv = JS[JS.index("function customQaCsv"):JS.index("function buildCustomPrintReport")]
+    assert "'sequence', 'question_id', 'question', 'final_answer'" in csv
+    printing = JS[JS.index("function buildCustomPrintReport"):JS.index("function printCustomQaReport")]
+    assert "data.questions.forEach" in printing
+    assert "item.question" in printing and "item.final_answer" in printing
+    assert "trace" not in printing and "provider_attempts" not in printing
+
+
+def test_selected_multi_agent_detail_keeps_semantic_outputs_separate() -> None:
+    rendering = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
+    assert "const outputs = data.agent_outputs || []" in rendering
+    assert "Model: ' + agent.model" in rendering
+    assert "ABSTAINED" in rendering
+    assert "agent.abstention_reason" in rendering
+    assert "data.condition_id === 'C1' ? 'Final answer' : 'Final integrated answer'" in rendering
+    assert "traceData.provider_attempts" in rendering
+    assert rendering.index("const outputs = data.agent_outputs || []") < rendering.index("traceData.provider_attempts")

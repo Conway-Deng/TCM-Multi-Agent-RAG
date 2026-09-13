@@ -568,6 +568,63 @@ def test_custom_persistence_preserves_evidence_and_runtime_metadata_for_frontend
     assert persisted["trace"] == result["trace"]
 
 
+def test_custom_summary_and_detail_split_scales_to_100_questions(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import main
+
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'custom-summary.sqlite3').as_posix()}")
+    service = CustomJobService(store)
+    questions = [f"Exact question {index}?" for index in range(1, 101)]
+    created = service.create(custom_request(*questions))
+    for sequence, question in enumerate(questions, start=1):
+        result = {
+            "run_id": f"research-{sequence}",
+            "question_id": f"CUSTOM-{sequence:03d}",
+            "question": question,
+            "condition_id": "C2",
+            "final_answer": f"Exact final answer {sequence}.",
+            "generation_mode": "llm",
+            "agent_outputs": [
+                {"agent_id": "syndrome", "model": "Qwen/Qwen3-8B", "abstained": False},
+                {"agent_id": "herbal", "model": "THUDM/GLM-Z1-9B-0414", "abstained": sequence % 2 == 0},
+            ],
+            "retrieval": [{"chunk_id": f"tcmv1-{sequence:03d}"}],
+            "trace": {
+                "retrieval_strategy": "R2",
+                "model": "Qwen/Qwen3-8B",
+                "generation_mode": "llm",
+                "fallback_usage": False,
+                "latency_ms": 1000 + sequence,
+                "provider_attempts": [{"provider": "siliconflow", "model": "Qwen/Qwen3-8B"}],
+            },
+        }
+        store.upsert_execution(created["run_id"], sequence, result)
+
+    summaries = service.result_summaries(created["run_id"])["results"]
+    assert len(summaries) == 100
+    assert [item["sequence"] for item in summaries] == list(range(1, 101))
+    assert summaries[0]["question"] == questions[0] and summaries[0]["final_answer"] == "Exact final answer 1."
+    assert summaries[-1]["question"] == questions[-1] and summaries[-1]["final_answer"] == "Exact final answer 100."
+    assert all("result" not in item and "trace" not in item and "agent_outputs" not in item and "provider_attempts" not in item for item in summaries)
+    assert summaries[0]["models"] == ["Qwen/Qwen3-8B", "THUDM/GLM-Z1-9B-0414"]
+    assert len(service.result_summaries(created["run_id"], after=99)["results"]) == 1
+    detail = service.result(created["run_id"], 100)
+    assert detail["sequence"] == 100 and detail["result"]["question"] == questions[-1]
+    assert detail["result"]["trace"]["provider_attempts"]
+    full_size = len(json.dumps(service.results(created["run_id"])["results"], ensure_ascii=False).encode("utf-8"))
+    summary_size = len(json.dumps(summaries, ensure_ascii=False).encode("utf-8"))
+    assert summary_size < full_size
+
+    monkeypatch.setattr(main, "custom_jobs", service)
+    with TestClient(main.app) as client:
+        summary_response = client.get(f"/api/custom-runs/{created['run_id']}/results/summary")
+        detail_response = client.get(f"/api/custom-runs/{created['run_id']}/results/100")
+        missing_response = client.get(f"/api/custom-runs/{created['run_id']}/results/101")
+    assert summary_response.status_code == 200 and len(summary_response.json()["results"]) == 100
+    assert detail_response.status_code == 200 and detail_response.json()["result"]["final_answer"] == "Exact final answer 100."
+    assert missing_response.status_code == 404
+
+
 def test_worker_web_health_and_wake_are_lightweight(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     from fastapi.testclient import TestClient
     import formal_experiments.worker_web as worker_web
@@ -682,6 +739,9 @@ def test_partial_report_exports_completed_rows_only(tmp_path: Path) -> None:
     })
     stopped = service.stop(created["run_id"])
     assert stopped["status"] == "stopped"
+    stopped_summaries = service.result_summaries(created["run_id"])
+    assert stopped_summaries["result_origin"] == "partial_replay_result"
+    assert len(stopped_summaries["results"]) == 1
     _, json_content = service.file(created["run_id"], "partial_results.json")
     report = json.loads(json_content)
     assert report["completed_execution_count"] == 1

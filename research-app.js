@@ -167,6 +167,8 @@
     const guided = mode === 'guided';
     $('#guided-paper-experiments').hidden = !guided;
     $('#consensus-form').hidden = guided;
+    $('#custom-question-results').hidden = guided || $('#custom-question-results').dataset.hasResults !== 'true';
+    $('#consensus-results').hidden = guided || $('#consensus-results').dataset.hasResult !== 'true';
     $('#guided-mode-tab').setAttribute('aria-selected', String(guided));
     $('#custom-mode-tab').setAttribute('aria-selected', String(!guided));
     $('#guided-mode-tab').tabIndex = guided ? 0 : -1;
@@ -526,7 +528,7 @@
       if (!caps.length) confidenceNode.append(element('div', 'integrated-judge-row', 'Caps applied: none'));
     } else confidenceNode.append(element('p', 'muted-note', unavailable));
   }
-  function renderResearchRun(data) {
+  function renderResearchRun(data, options = {}) {
     currentResearchRun = data; const traceData = data.trace || {}; const outputs = data.agent_outputs || []; const active = outputs.filter((agent) => !agent.abstained); const abstained = outputs.filter((agent) => agent.abstained);
     const selectedCount = (traceData.active_agents || outputs).length || 1; const coverage = Math.round((active.length / selectedCount) * 100); const activeSupport = active.length ? Math.round(active.reduce((sum, agent) => sum + (agent.confidence || 0), 0) / active.length * 100) : 0;
     const presentation = researchRunPresentation(traceData, data);
@@ -544,10 +546,10 @@
     setText('#consensus-strategy-badge', data.condition_id + ' · ' + data.condition_name); setText('#consensus-run-id', data.run_id); setText('#summary-retrieval', (traceData.retrieval_strategy || '—') + ' · ' + ({ R0: 'Lexical', R1: 'Dense', R2: 'Hybrid', R3: 'Hybrid + rerank' }[traceData.retrieval_strategy] || ''));
     setText('#summary-condition', data.condition_id + ' · ' + data.condition_name); setText('#summary-corpus', (traceData.corpus_name || '—') + ' · ' + (traceData.corpus_chunk_count || 0).toLocaleString() + ' chunks'); setText('#summary-model', runModel); setText('#summary-calls', (traceData.provider_calls || 0) + ' / ' + (traceData.successful_provider_calls || 0) + ' succeeded'); setText('#summary-latency', ((traceData.latency_ms || 0) / 1000).toFixed(1) + ' s'); setText('#summary-status', presentation.label); setText('#summary-fallback', traceData.fallback_usage === true ? 'Yes' : 'No'); setText('#summary-participants', active.map((agent) => readableAgent(agent.agent_id, agent.agent_name)).join(', ') || 'None');
     const summaryStatus = $('#summary-status'); summaryStatus.className = 'status-badge ' + (traceData.fallback_usage === true ? 'status-warning' : presentation.label === 'Live LLM' ? 'status-success' : 'status-neutral');
-    setText('#active-agent-support', activeSupport + '%'); setText('#specialist-coverage', active.length + ' / ' + selectedCount); setText('#specialist-coverage-note', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '%'); setText('#consensus-generation-badge', presentation.badge); renderCitedText($('#consensus-summary-text'), data.final_answer);
+    setText('#active-agent-support', activeSupport + '%'); setText('#specialist-coverage', active.length + ' / ' + selectedCount); setText('#specialist-coverage-note', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); setText('#consensus-confidence', Math.round((data.confidence || 0) * 100) + '%'); setText('#consensus-generation-badge', presentation.badge); setText('#integrated-answer-heading', data.condition_id === 'C1' ? 'Final answer' : 'Final integrated answer'); renderCitedText($('#consensus-summary-text'), data.final_answer);
     const runStatus = $('#research-fallback-banner'); runStatus.className = 'research-alert ' + presentation.className; setText('#research-run-status-title', presentation.title); setText('#research-run-status-detail', presentation.detail); runStatus.hidden = false;
-    const agents = $('#consensus-agents'); agents.replaceChildren(); active.forEach((agent) => { const card = element('article', 'specialist-card'); const heading = element('div', 'specialist-card-heading'); heading.append(element('div', 'specialist-card-title', readableAgent(agent.agent_id, agent.agent_name))); heading.append(element('span', 'status-badge status-active', 'ACTIVE')); card.append(heading); const meta = element('div', 'specialist-card-meta'); meta.append(element('span', '', 'Generation: ' + (agent.generation_mode === 'llm' ? 'LLM' : 'Deterministic'))); meta.append(element('span', '', 'Evidence support: ' + Math.round((agent.confidence || 0) * 100) + '%')); card.append(meta); const answer = element('p', 'specialist-answer'); renderCitedText(answer, (agent.claims || []).map((claim) => claim.text).join(' ') || 'No evidence-linked claim.'); card.append(answer); agents.append(card); });
-    const abstainDetails = $('#abstained-specialists'); abstainDetails.hidden = !abstained.length; setText('#abstained-count', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); const abstainList = $('#consensus-abstaining-list'); abstainList.replaceChildren(); abstained.forEach((agent) => { const row = element('div', 'abstained-row'); row.append(element('strong', '', readableAgent(agent.agent_id, agent.agent_name))); row.append(element('span', '', agent.abstention_reason || 'No scoped evidence matched.')); abstainList.append(row); });
+    const agents = $('#consensus-agents'); agents.replaceChildren(); active.forEach((agent) => { const card = element('article', 'specialist-card'); const heading = element('div', 'specialist-card-heading'); heading.append(element('div', 'specialist-card-title', readableAgent(agent.agent_id, agent.agent_name))); heading.append(element('span', 'status-badge status-active', 'ACTIVE')); card.append(heading); const meta = element('div', 'specialist-card-meta'); if (agent.model) meta.append(element('span', '', 'Model: ' + agent.model)); meta.append(element('span', '', 'Generation: ' + (agent.generation_mode === 'llm' ? 'LLM' : 'Deterministic'))); meta.append(element('span', '', 'Evidence support: ' + Math.round((agent.confidence || 0) * 100) + '%')); card.append(meta); const answer = element('p', 'specialist-answer'); renderCitedText(answer, (agent.claims || []).map((claim) => claim.text).join(' ') || 'No evidence-linked claim.'); card.append(answer); agents.append(card); });
+    const abstainDetails = $('#abstained-specialists'); abstainDetails.hidden = !abstained.length; setText('#abstained-count', abstained.length + ' specialist' + (abstained.length === 1 ? '' : 's') + ' abstained'); const abstainList = $('#consensus-abstaining-list'); abstainList.replaceChildren(); abstained.forEach((agent) => { const row = element('div', 'abstained-row'); row.append(element('strong', '', readableAgent(agent.agent_id, agent.agent_name))); row.append(element('span', 'status-badge status-warning', 'ABSTAINED')); row.append(element('span', '', agent.abstention_reason || 'No scoped evidence matched.')); abstainList.append(row); });
     const debateVisible = Boolean(traceData.debate_enabled) || (data.agreements || []).length || (data.disagreements || []).length; $('#consensus-debate-section').hidden = !debateVisible; if (debateVisible) { renderList($('#consensus-agreements'), data.agreements || [], 'No explicit agreement detected.'); renderList($('#consensus-disagreements'), data.disagreements || [], 'No explicit disagreement detected.'); }
     const judgesVisible = Boolean(traceData.judges_enabled) || (data.judge_outputs || []).length; $('#consensus-judge-section').hidden = !judgesVisible; const judges = $('#consensus-judges'); judges.replaceChildren(); (data.judge_outputs || []).forEach((judge) => { const card = element('article', 'judge-card'); card.append(element('strong', '', judge.judge_name + ' · ' + Math.round((judge.score || 0) * 100) + '%')); card.append(element('p', '', (judge.findings || []).join(' ') || judge.reasoning_summary)); judges.append(card); });
     const integratedVisible = Boolean(data.evidence_support || data.conflict_status || data.safety_assessment || data.evidence_confidence); const integratedPanel = $('#integrated-judge-panel'); if (integratedPanel) { integratedPanel.hidden = !integratedVisible; if (integratedVisible) renderIntegratedJudges(data); }
@@ -560,7 +562,7 @@
     const stageSummary = typeof traceData.debate_enabled === 'boolean' && typeof traceData.judges_enabled === 'boolean' ? 'termination=' + (traceData.termination_stage || 'completed') + ' · debate=' + traceData.debate_enabled + ' · judges=' + traceData.judges_enabled : '—';
     const corpusSummary = traceData.corpus_name ? traceData.corpus_name + (typeof traceData.corpus_chunk_count === 'number' ? ' · ' + traceData.corpus_chunk_count.toLocaleString() + ' chunks' : '') + (traceData.corpus_mode ? ' · mode=' + traceData.corpus_mode : '') : '—';
     setText('#consensus-latency', typeof traceData.latency_ms === 'number' ? traceData.latency_ms + ' ms' : '—'); setText('#consensus-requested-model', requestedModel); setText('#consensus-model', runModel); setText('#consensus-attempted-models', attemptedModels.join(', ') || '—'); setText('#consensus-provider', runProvider === 'siliconflow' ? 'SiliconFlow' : runProvider); setText('#consensus-api-calls', reportedNumber(traceData.provider_calls)); setText('#consensus-successful-calls', reportedNumber(traceData.successful_provider_calls)); setText('#consensus-call-failures', reportedNumber(traceData.failed_provider_calls)); setText('#consensus-generation-mode', traceData.generation_mode || data.generation_mode || '—'); setText('#consensus-fallback', typeof traceData.fallback_usage === 'boolean' ? traceData.fallback_usage ? 'Yes' : 'No' : '—'); setText('#consensus-corpus', corpusSummary); setText('#consensus-fixture-used', traceData.retrieval_strategy || '—'); setText('#consensus-embedding', reportedPair(traceData.embedding_provider, traceData.embedding_model)); setText('#consensus-reranker', reportedPair(traceData.reranker_provider, traceData.reranker)); setText('#consensus-participating', participating); setText('#consensus-abstaining', abstaining); setText('#consensus-stages', stageSummary); setText('#consensus-score-formula', traceData.support_score_formula || '—'); $('#consensus-trace').textContent = JSON.stringify(safeRunExport(data), null, 2);
-    $('#consensus-results').hidden = false; $('#consensus-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#consensus-results').dataset.hasResult = 'true'; $('#consensus-results').hidden = $('#custom-mode-tab').getAttribute('aria-selected') !== 'true'; if (options.scroll !== false) $('#consensus-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function renderCompare(data) {
@@ -677,7 +679,9 @@
   function updateCustomQuestionCount() { $('#custom-question-count-label').hidden = $('#custom-question-count').value !== 'custom'; }
   function clearCustomResultDisplay() {
     currentResearchRun = null;
+    currentCustomSummary = null;
     $('#consensus-results').hidden = true;
+    $('#consensus-results').dataset.hasResult = 'false';
     $('#research-fallback-banner').hidden = true;
     ['#consensus-summary-text', '#consensus-evidence', '#consensus-agents', '#consensus-abstaining-list', '#consensus-agreements', '#consensus-disagreements', '#consensus-judges', '#consensus-safety', '#consensus-limitations'].forEach((selector) => $(selector).replaceChildren());
     $('#consensus-trace').textContent = '';
@@ -690,6 +694,112 @@
   let activeCustomRunId = null;
   let customRunTimer = null;
   let customResultCursor = 0;
+  const customResultSummaries = new Map();
+  let customRunStatusSnapshot = null;
+  let selectedCustomSequence = null;
+  let currentCustomSummary = null;
+  let customSelectionManual = false;
+  let customDetailRequestToken = 0;
+
+  function orderedCustomResultSummaries() { return [...customResultSummaries.values()].sort((left, right) => Number(left.sequence) - Number(right.sequence)); }
+  function customSummaryGeneration(summary) {
+    if (summary.fallback === true) return 'Fallback';
+    if (summary.generation_mode === 'llm') return 'Live LLM';
+    return summary.generation_mode || '—';
+  }
+  function customSummaryLatency(summary) { return typeof summary.latency_ms === 'number' ? (summary.latency_ms / 1000).toFixed(1) + ' s' : '—'; }
+
+  function renderCustomQuestionResults() {
+    const rows = orderedCustomResultSummaries(); const total = Number(customRunStatusSnapshot?.total || rows.length);
+    const section = $('#custom-question-results'); const container = $('#custom-question-results-list'); const fragment = document.createDocumentFragment();
+    rows.forEach((summary) => {
+      const card = element('article', 'custom-question-result-card' + (summary.status === 'Failed' ? ' is-failed' : '') + (Number(summary.sequence) === selectedCustomSequence ? ' is-selected' : ''));
+      const header = element('div', 'custom-question-result-heading'); header.append(element('span', 'muted-badge', summary.sequence + ' of ' + total), element('span', 'status-badge', summary.status || 'Completed')); card.append(header);
+      card.append(element('h3', '', summary.question || summary.question_id || 'Question unavailable'));
+      card.append(element('span', 'custom-final-answer-label', summary.condition === 'C1' ? 'Final answer' : 'Final integrated answer'));
+      card.append(element('p', summary.error ? 'custom-result-error' : 'custom-final-answer', summary.error || summary.final_answer || 'Final answer unavailable.'));
+      const metadata = element('div', 'custom-question-result-meta');
+      [customSummaryGeneration(summary), (summary.models || []).join(' / ') || summary.model || null, customSummaryLatency(summary), summary.fallback === true ? 'Fallback: Yes' : null].filter(Boolean).forEach((value) => metadata.append(element('span', '', value)));
+      card.append(metadata);
+      if (!summary.error && summary.status !== 'Failed') {
+        const button = element('button', 'secondary-action', 'View full details'); button.type = 'button'; button.setAttribute('aria-pressed', String(Number(summary.sequence) === selectedCustomSequence)); button.addEventListener('click', () => selectCustomResult(Number(summary.sequence), true)); card.append(button);
+      }
+      fragment.append(card);
+    });
+    container.replaceChildren(fragment);
+    setText('#custom-question-results-count', rows.length + ' persisted question' + (rows.length === 1 ? '' : 's'));
+    section.dataset.hasResults = String(rows.length > 0);
+    section.hidden = rows.length === 0 || $('#custom-mode-tab').getAttribute('aria-selected') !== 'true';
+    ['#print-custom-qa', '#download-custom-qa-json', '#download-custom-qa-csv'].forEach((selector) => { $(selector).disabled = rows.length === 0; });
+  }
+
+  function clearCustomBatchDisplay() {
+    customDetailRequestToken += 1;
+    customResultSummaries.clear(); customRunStatusSnapshot = null; selectedCustomSequence = null; customSelectionManual = false;
+    $('#custom-question-results-list').replaceChildren(); $('#custom-question-results').dataset.hasResults = 'false'; $('#custom-question-results').hidden = true;
+    setText('#custom-question-results-count', '0 persisted questions'); clearCustomResultDisplay();
+  }
+
+  async function selectCustomResult(sequence, manual = false) {
+    const summary = customResultSummaries.get(Number(sequence));
+    if (!summary || summary.error || summary.status === 'Failed') return;
+    if (manual) customSelectionManual = true;
+    selectedCustomSequence = Number(sequence); renderCustomQuestionResults();
+    if (currentCustomSummary?.sequence === selectedCustomSequence && currentResearchRun) return;
+    const requestToken = ++customDetailRequestToken;
+    clearCustomResultDisplay();
+    setText('#selected-question-position', 'Question ' + summary.sequence + ' of ' + Number(customRunStatusSnapshot?.total || customResultSummaries.size));
+    setText('#selected-question-text', summary.question || summary.question_id || 'Question unavailable');
+    try {
+      const row = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/results/' + selectedCustomSequence);
+      if (requestToken !== customDetailRequestToken || Number(row.sequence) !== selectedCustomSequence) return;
+      currentCustomSummary = summary;
+      renderResearchRun(row.result, { scroll: manual });
+      setText('#selected-question-position', 'Question ' + summary.sequence + ' of ' + Number(customRunStatusSnapshot?.total || customResultSummaries.size));
+      setText('#selected-question-text', summary.question || summary.question_id || 'Question unavailable');
+    } catch (error) {
+      if (requestToken === customDetailRequestToken) showMessage($('#consensus-message'), 'Unable to load the selected question details: ' + error.message);
+    }
+  }
+
+  function customQaExport() {
+    const rows = orderedCustomResultSummaries(); const first = rows[0] || {};
+    return {
+      run_id: activeCustomRunId,
+      result_origin: customRunStatusSnapshot?.status === 'stopped' ? 'partial_replay_result' : 'new_exploratory_run',
+      formal_paper_reproduction: false,
+      status: customRunStatusSnapshot?.status || null,
+      completed: Number(customRunStatusSnapshot?.completed || rows.length),
+      total: Number(customRunStatusSnapshot?.total || rows.length),
+      condition: first.condition || null,
+      retrieval: first.retrieval || null,
+      models: [...new Set(rows.flatMap((row) => row.models || (row.model ? [row.model] : [])))],
+      questions: rows.map((row) => ({ sequence: row.sequence, question_id: row.question_id, question: row.question, final_answer: row.final_answer, status: row.status, error: row.error, condition: row.condition, retrieval: row.retrieval, model: row.model, models: row.models || [], generation_mode: row.generation_mode, fallback: row.fallback, latency_ms: row.latency_ms, evidence_count: row.evidence_count })),
+    };
+  }
+
+  function customQaCsv() {
+    const rows = [['sequence', 'question_id', 'question', 'final_answer', 'status', 'error', 'condition', 'retrieval', 'model', 'generation_mode', 'fallback', 'latency_ms', 'evidence_count']];
+    orderedCustomResultSummaries().forEach((item) => rows.push([item.sequence, item.question_id || '', item.question || '', item.final_answer || '', item.status || '', item.error || '', item.condition || '', item.retrieval || '', item.model || '', item.generation_mode || '', typeof item.fallback === 'boolean' ? item.fallback : '', typeof item.latency_ms === 'number' ? item.latency_ms : '', item.evidence_count ?? '']));
+    return rows.map((row) => row.map((value) => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  }
+
+  function buildCustomPrintReport() {
+    const data = customQaExport(); const report = $('#custom-print-report'); report.replaceChildren();
+    report.append(element('h1', '', 'TCM Custom Research Workbench'));
+    const metadata = element('div', 'custom-print-metadata');
+    [['Run ID', data.run_id || '—'], ['Condition', data.condition || '—'], ['Retrieval', data.retrieval || '—'], ['Models', data.models.join(', ') || '—'], ['Completed', data.completed + ' / ' + data.total]].forEach(([label, value]) => { const row = element('p'); row.append(element('strong', '', label + ': '), document.createTextNode(String(value))); metadata.append(row); });
+    report.append(metadata);
+    data.questions.forEach((item) => { const section = element('section', 'custom-print-question'); section.append(element('h2', '', 'Question ' + item.sequence), element('p', 'custom-print-question-text', item.question || item.question_id || 'Question unavailable'), element('h3', '', item.condition === 'C1' ? 'Final answer' : 'Final integrated answer'), element('p', '', item.error || item.final_answer || 'Final answer unavailable.')); report.append(section); });
+    return report;
+  }
+
+  function printCustomQaReport() {
+    if (!customResultSummaries.size) return;
+    const report = buildCustomPrintReport(); report.hidden = false; report.setAttribute('aria-hidden', 'false'); document.body.classList.add('is-printing-custom-qa');
+    try { window.print(); }
+    finally { document.body.classList.remove('is-printing-custom-qa'); report.hidden = true; report.setAttribute('aria-hidden', 'true'); report.replaceChildren(); }
+  }
 
   function setCustomRestoreLoading(visible) { $('#custom-restore-loading').hidden = !visible; }
   function yieldForCustomRestorePaint() {
@@ -703,13 +813,16 @@
     if (!activeCustomRunId) return;
     try {
       const status = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId));
-      const results = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/results?after=' + customResultCursor);
+      const results = await apiGet('/api/custom-runs/' + encodeURIComponent(activeCustomRunId) + '/results/summary?after=' + customResultCursor);
       const newRows = results.results || [];
       if (newRows.length) {
         customResultCursor = Math.max(customResultCursor, ...newRows.map((row) => Number(row.sequence || 0)));
-        const latest = [...newRows].reverse().find((row) => row.result && !row.result.error);
-        if (latest) renderResearchRun(latest.result);
+        newRows.forEach((row) => customResultSummaries.set(Number(row.sequence), row));
       }
+      customRunStatusSnapshot = status;
+      renderCustomQuestionResults();
+      const latestSelectable = [...newRows].reverse().find((row) => !row.error && row.status !== 'Failed');
+      if (latestSelectable && (!customSelectionManual || selectedCustomSequence === null)) await selectCustomResult(Number(latestSelectable.sequence), false);
       const customActive = ['queued', 'running', 'stop_requested'].includes(status.status);
       if (customActive && !researchProgressTimer) startResearchProgress();
       setResearchProgressVisualState(status.status);
@@ -747,7 +860,7 @@
     catch (error) {
       if (String(error.message).includes('Custom run not found')) {
         localStorage.removeItem('medirag-custom-run-id'); activeCustomRunId = null; researchRequestActive = false;
-        setResearchControlsDisabled(false); $('#consensus-submit').disabled = false; $('#consensus-submit').classList.remove('is-loading'); $('#consensus-form').setAttribute('aria-busy', 'false'); stopResearchProgress('failed');
+        clearCustomBatchDisplay(); setResearchControlsDisabled(false); $('#consensus-submit').disabled = false; $('#consensus-submit').classList.remove('is-loading'); $('#consensus-form').setAttribute('aria-busy', 'false'); stopResearchProgress('failed');
         return showMessage($('#consensus-message'), 'The previous Custom run is no longer retained. Start a new experiment when ready.');
       }
       clearTimeout(customRunTimer);
@@ -762,6 +875,7 @@
     setCustomRestoreLoading(true);
     try {
       await yieldForCustomRestorePaint();
+      clearCustomBatchDisplay(); customResultCursor = 0;
       activeCustomRunId = saved;
       researchRequestActive = true;
       setResearchControlsDisabled(true);
@@ -789,7 +903,7 @@
     event.preventDefault(); if (researchRequestActive) return; const message = $('#consensus-message'); const button = $('#consensus-submit'); const questionText = $('#consensus-question').value.trim(); const questions = questionText.split(/\r?\n/).map((question) => question.trim()).filter(Boolean); const requestedCount = selectedCustomQuestionCount();
     if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 100) return showMessage(message, 'Choose a question count from 1 to 100.');
     if (questions.length < requestedCount || questions.slice(0, requestedCount).some((question) => question.length < 3)) return showMessage(message, 'Enter at least ' + requestedCount + ' valid question' + (requestedCount === 1 ? '' : 's') + ', one per line.');
-    clearTimeout(customRunTimer); customRunTimer = null; activeCustomRunId = null; customResultCursor = 0; clearCustomResultDisplay();
+    clearTimeout(customRunTimer); customRunTimer = null; activeCustomRunId = null; customResultCursor = 0; clearCustomBatchDisplay();
     researchRequestActive = true; showMessage(message, ''); setResearchControlsDisabled(true); button.disabled = true; button.classList.add('is-loading'); event.currentTarget.setAttribute('aria-busy', 'true'); startResearchProgress();
     try {
       const status = await api('/api/custom-runs', { questions: questions.slice(0, requestedCount), condition_id: $('#consensus-strategy').value, retrieval_strategy: $('#consensus-retrieval').value, ...selectedModelConfigurationPayload(), active_agents: ['syndrome', 'herbal', 'acupuncture_meridian', 'constitution', 'dietary_therapy', 'lifestyle_yangsheng'], active_judges: ['evidence', 'hallucination', 'safety', 'conflict', 'confidence', 'provenance'], top_k: 4, debate_rounds: 1, include_trace: true });
@@ -812,8 +926,11 @@
 
   $('#copy-run-id').addEventListener('click', () => { if (currentResearchRun?.run_id) navigator.clipboard?.writeText(currentResearchRun.run_id); });
   $('#copy-run-json').addEventListener('click', async (event) => { if (!currentResearchRun) return; const button = event.currentTarget; try { await navigator.clipboard?.writeText(JSON.stringify(safeRunExport(currentResearchRun), null, 2)); button.textContent = 'Copied'; setTimeout(() => { button.textContent = 'Copy JSON'; }, 1400); } catch (_) { button.textContent = 'Copy unavailable'; } });
-  $('#download-run-json').addEventListener('click', () => { if (currentResearchRun) { const exported = safeRunExport(currentResearchRun); exported.question = $('#consensus-question').value; downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.json', JSON.stringify(exported, null, 2), 'application/json;charset=utf-8'); } });
+  $('#download-run-json').addEventListener('click', () => { if (currentResearchRun) { const exported = safeRunExport(currentResearchRun); exported.question = currentCustomSummary?.question || currentResearchRun.question || ''; downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.json', JSON.stringify(exported, null, 2), 'application/json;charset=utf-8'); } });
   $('#download-run-csv').addEventListener('click', () => { if (currentResearchRun) downloadText('tcm-run_' + currentResearchRun.condition_id + '_' + (currentResearchRun.trace?.retrieval_strategy || 'R0') + '_' + currentResearchRun.run_id + '.csv', runCsv(currentResearchRun), 'text/csv;charset=utf-8'); });
+  $('#print-custom-qa').addEventListener('click', printCustomQaReport);
+  $('#download-custom-qa-json').addEventListener('click', () => { if (customResultSummaries.size) downloadText('tcm-custom-qa_' + activeCustomRunId + '.json', JSON.stringify(customQaExport(), null, 2), 'application/json;charset=utf-8'); });
+  $('#download-custom-qa-csv').addEventListener('click', () => { if (customResultSummaries.size) downloadText('tcm-custom-qa_' + activeCustomRunId + '.csv', customQaCsv(), 'text/csv;charset=utf-8'); });
   $('#download-compare-json').addEventListener('click', () => { if (currentComparison) downloadText('tcm-comparison_' + currentComparison.comparison_id + '.json', JSON.stringify(safeRunExport(currentComparison), null, 2), 'application/json;charset=utf-8'); });
   $('#download-compare-csv').addEventListener('click', () => { if (currentComparison) { const rows = [['condition', 'condition_name', 'run_id', 'model', 'provider_calls', 'successful_calls', 'latency_ms', 'fallback', 'evidence_ids']]; (currentComparison.results || []).forEach((result) => { const trace = result.trace || {}; rows.push([result.condition_id, result.condition_name, result.run_id, trace.model || '', trace.provider_calls || 0, trace.successful_provider_calls || 0, trace.latency_ms || 0, Boolean(trace.fallback_usage), (trace.retrieved_evidence_ids || []).join('; ')]); }); downloadText('tcm-comparison_' + currentComparison.comparison_id + '.csv', rows.map((row) => row.map((value) => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\r\n'), 'text/csv;charset=utf-8'); } });
   window.addEventListener('popstate', () => {

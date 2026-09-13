@@ -346,6 +346,22 @@ async def custom_run_results(run_id: str, after: int = 0) -> dict:
         raise HTTPException(status_code=404, detail="Custom run not found.") from exc
 
 
+@app.get("/api/custom-runs/{run_id}/results/summary", summary="Read lightweight incremental Custom Q&A summaries")
+async def custom_run_result_summaries(run_id: str, after: int = 0) -> dict:
+    try:
+        return custom_jobs.result_summaries(run_id, after=max(0, after))
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Custom run not found.") from exc
+
+
+@app.get("/api/custom-runs/{run_id}/results/{sequence}", summary="Read one complete persisted Custom result")
+async def custom_run_result(run_id: str, sequence: int) -> dict:
+    try:
+        return custom_jobs.result(run_id, sequence)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Custom result not found.") from exc
+
+
 @app.post("/api/custom-runs/{run_id}/stop", response_model=CustomRunStatus, status_code=202, summary="Request a cooperative stop after the active question")
 async def stop_custom_run(run_id: str) -> dict:
     try:

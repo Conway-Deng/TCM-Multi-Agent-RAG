@@ -329,6 +329,21 @@ class CustomJobService:
             "downloads": self.store.artifacts(run_id),
         }
 
+    def result_summaries(self, run_id: str, *, after: int = 0) -> dict[str, Any]:
+        status = self.get(run_id)
+        return {
+            "result_origin": "partial_replay_result" if status["status"] == "stopped" else "new_exploratory_run",
+            "result_label": "Partial replay result" if status["status"] == "stopped" else "New exploratory result",
+            "formal_paper_reproduction": False,
+            "status": status,
+            "results": self.store.execution_summaries(run_id, after=after),
+            "downloads": self.store.artifacts(run_id),
+        }
+
+    def result(self, run_id: str, sequence: int) -> dict[str, Any]:
+        self.get(run_id)
+        return self.store.execution(run_id, sequence)
+
     def file(self, run_id: str, relative_path: str) -> tuple[str, bytes]:
         self.get(run_id)
         return self.store.artifact(run_id, relative_path)
