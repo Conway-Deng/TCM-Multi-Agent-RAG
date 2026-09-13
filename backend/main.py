@@ -282,6 +282,14 @@ async def formal_run_results(run_id: str, after: int = 0) -> dict:
         raise HTTPException(status_code=404, detail="Formal replay run not found.") from exc
 
 
+@app.get("/api/formal-runs/{run_id}/results/{sequence}", summary="Read one complete persisted formal execution")
+async def formal_run_result(run_id: str, sequence: int) -> dict:
+    try:
+        return formal_jobs.result(run_id, sequence)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Formal execution result not found.") from exc
+
+
 @app.post("/api/formal-runs/{run_id}/stop", response_model=FormalRunStatus, status_code=202, summary="Request a cooperative stop at the next safe execution boundary")
 async def stop_formal_run(run_id: str) -> dict:
     try:

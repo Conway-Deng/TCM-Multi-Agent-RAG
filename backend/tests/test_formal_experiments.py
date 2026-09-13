@@ -269,6 +269,68 @@ def test_durable_store_reconnects_and_streams_incremental_rows(tmp_path: Path) -
     }]
 
 
+def test_formal_lightweight_projection_omits_payload_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    store = FormalJobStore("sqlite:///unused.sqlite3")
+    store._initialized = True
+    statements: list[str] = []
+
+    class Cursor:
+        def execute(self, sql, params):
+            statements.append(sql)
+            return self
+
+        def fetchall(self):
+            return [(2, "Q-002", "C2", "Completed")]
+
+    class Connection:
+        def cursor(self):
+            return Cursor()
+
+    @contextmanager
+    def fake_connect():
+        yield Connection()
+
+    monkeypatch.setattr(store, "connect", fake_connect)
+    assert store.executions("replay-test", after=1) == [{
+        "sequence": 2, "case_id": "Q-002", "condition": "C2", "status": "Completed",
+    }]
+    assert "payload_json" not in statements[0].split(" FROM ", 1)[0]
+
+
+def test_formal_result_endpoint_returns_only_requested_full_execution(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+    import main
+
+    database = f"sqlite:///{(tmp_path / 'formal-detail.sqlite3').as_posix()}"
+    store = FormalJobStore(database)
+    job = {
+        "run_id": "formal-detail", "experiment_id": "rq1_architecture", "run_mode": "paired",
+        "status": "complete", "completed": 3, "total": 3, "current_condition": "C2",
+        "current_case": "Q-003", "successful": 3, "failed": 0, "created_at": 1.0,
+        "started_at": 1.0, "updated_at": 1.0, "resume_state": "complete",
+        "replay_output_dir": "rq1_architecture/formal-detail", "persistence": "durable", "error": None,
+    }
+    store.create(job, {"experiment_id": "rq1_architecture", "run_mode": "paired"}, {"planned_executions": 3})
+    for sequence in range(1, 4):
+        store.upsert_execution("formal-detail", sequence, {
+            "question_id": f"Q-{sequence:03d}", "condition_id": "C1", "final_answer": f"Answer {sequence}",
+        })
+    service = FormalJobService(store)
+    monkeypatch.setattr(main, "formal_jobs", service)
+    with TestClient(main.app) as client:
+        listing = client.get("/api/formal-runs/formal-detail/results")
+        cursor = client.get("/api/formal-runs/formal-detail/results?after=1")
+        detail = client.get("/api/formal-runs/formal-detail/results/2")
+        missing = client.get("/api/formal-runs/formal-detail/results/4")
+    assert listing.status_code == 200
+    assert [row["sequence"] for row in listing.json()["results"]] == [1, 2, 3]
+    assert all(set(row) == {"sequence", "case_id", "condition", "status"} for row in listing.json()["results"])
+    assert [row["sequence"] for row in cursor.json()["results"]] == [2, 3]
+    assert detail.status_code == 200 and detail.json()["sequence"] == 2
+    assert detail.json()["result"]["final_answer"] == "Answer 2"
+    assert missing.status_code == 404
+
+
 def test_worker_sync_persists_rows_without_running_provider(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     store = FormalJobStore(f"sqlite:///{(tmp_path / 'jobs.sqlite3').as_posix()}")
     now = 1.0

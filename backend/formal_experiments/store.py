@@ -334,9 +334,10 @@ class FormalJobStore:
 
     def executions(self, run_id: str, after: int = 0, *, include_payload: bool = False) -> list[dict[str, Any]]:
         self.initialize()
+        columns = "sequence, case_id, condition_id, status" + (", payload_json" if include_payload else "")
         with self.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute(self._sql("SELECT sequence, case_id, condition_id, status, payload_json FROM formal_executions WHERE run_id = ? AND sequence > ? ORDER BY sequence"), (run_id, after))
+            cursor.execute(self._sql(f"SELECT {columns} FROM formal_executions WHERE run_id = ? AND sequence > ? ORDER BY sequence"), (run_id, after))
             rows = cursor.fetchall()
         values = []
         for row in rows:

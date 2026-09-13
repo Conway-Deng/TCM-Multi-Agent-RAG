@@ -251,6 +251,10 @@ class FormalJobService:
             "downloads": self.store.artifacts(run_id),
         }
 
+    def result(self, run_id: str, sequence: int) -> dict[str, Any]:
+        self.get(run_id)
+        return self.store.execution(run_id, sequence)
+
     def file(self, run_id: str, relative_path: str) -> tuple[str, bytes]:
         self.get(run_id)
         return self.store.artifact(run_id, relative_path)
