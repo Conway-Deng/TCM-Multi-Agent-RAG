@@ -85,6 +85,37 @@ def test_runtime_result_diagnostics_are_truthful_and_complete() -> None:
     assert "JSON.stringify(safeRunExport(data), null, 2)" in JS
 
 
+def test_custom_cloud_result_renders_persisted_evidence_and_runtime_metadata() -> None:
+    rendering = JS[JS.index("function renderResearchRun(data)"):JS.index("function renderCompare(data)")]
+    assert "const integratedPanel = $('#integrated-judge-panel')" in rendering
+    assert "if (integratedPanel)" in rendering
+    assert rendering.index("renderEvidence(data)") < rendering.index("setText('#consensus-latency'")
+    assert "(data.retrieval || []).forEach" in JS
+    assert "card.id = item.chunk_id" in JS
+    assert "(data.retrieval || []).length" in JS
+    for selector in (
+        "#consensus-latency", "#consensus-requested-model", "#consensus-model",
+        "#consensus-attempted-models", "#consensus-provider", "#consensus-api-calls",
+        "#consensus-successful-calls", "#consensus-call-failures",
+        "#consensus-generation-mode", "#consensus-fallback", "#consensus-corpus",
+        "#consensus-fixture-used", "#consensus-embedding", "#consensus-reranker",
+        "#consensus-participating", "#consensus-abstaining", "#consensus-stages",
+        "#consensus-score-formula",
+    ):
+        assert f"setText('{selector}'" in rendering
+
+
+def test_custom_runtime_renderer_does_not_fabricate_missing_metadata() -> None:
+    rendering = JS[JS.index("function renderResearchRun(data)"):JS.index("function renderCompare(data)")]
+    assert "const requestedModel = requestedModelParts.join(' · ') || '—'" in rendering
+    assert "attemptedModels.join(', ') || '—'" in rendering
+    assert "typeof traceData.fallback_usage === 'boolean'" in rendering
+    assert "typeof traceData.latency_ms === 'number'" in rendering
+    assert "traceData.support_score_formula || '—'" in rendering
+    assert "Provider not reported" not in rendering
+    assert "traceData.experiment_config?.specialist_model_targets || [$('#specialist-model-a').value" not in rendering
+
+
 def test_guided_and_custom_runs_expose_graceful_stop_and_partial_downloads() -> None:
     assert 'id="stop-formal-run"' in HTML
     assert 'id="stop-custom-run"' in HTML

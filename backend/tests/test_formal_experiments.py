@@ -22,6 +22,7 @@ from formal_experiments.registry import frozen_root, public_registry, validate_r
 from formal_experiments.schemas import CustomRunRequest, FormalRunRequest
 from formal_experiments.store import FormalJobStore
 from formal_experiments.worker_service import FormalReplayWorker
+from schemas.research import ResearchRunResult
 
 
 EXPERIMENT_IDS = [
@@ -501,6 +502,70 @@ def test_custom_worker_resumes_without_repeating_persisted_questions(monkeypatch
     final = service.get(status["run_id"])
     assert final["status"] == "complete" and final["completed"] == 3
     assert len(store.executions(status["run_id"])) == 3
+
+
+def test_custom_persistence_preserves_evidence_and_runtime_metadata_for_frontend(tmp_path: Path) -> None:
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'custom-rendering.sqlite3').as_posix()}")
+    service = CustomJobService(store)
+    created = service.create(custom_request("What properties are reported for red ginseng?"))
+    result = ResearchRunResult.model_validate({
+        "run_id": "research-result-1",
+        "mode": "tcm_single_rag",
+        "condition_id": "C1",
+        "condition_name": "single_rag",
+        "scope_state": "supported",
+        "planner": {
+            "normalized_question": "What properties are reported for red ginseng?",
+            "language": "en",
+            "intent": "educational_tcm_query",
+        },
+        "retrieval": [{
+            "chunk_id": "tcmv1-red-ginseng-001",
+            "source_id": "tcmbank",
+            "rank": 1,
+            "lexical_score": 0.72,
+            "retrieval_method": "lexical",
+            "chunk_text": "A real persisted corpus excerpt.",
+            "topics": ["red ginseng"],
+            "source_metadata": {"title": "TCMBank"},
+        }],
+        "final_answer": "Source-reported properties are described here [tcmv1-red-ginseng-001].",
+        "citations": [{
+            "evidence_id": "tcmv1-red-ginseng-001",
+            "source_id": "tcmbank",
+            "title": "TCMBank",
+            "provenance_valid": True,
+        }],
+        "trace": {
+            "run_id": "research-result-1",
+            "condition_id": "C1",
+            "experiment_config": {
+                "specialist_model_targets": ["qwen", "glm", "deepseek"],
+                "consensus_model_target": "qwen",
+            },
+            "provider": "siliconflow",
+            "model": "Qwen/Qwen3-8B",
+            "generation_mode": "llm",
+            "provider_calls": 2,
+            "successful_provider_calls": 2,
+            "failed_provider_calls": 0,
+            "fallback_usage": False,
+            "corpus_name": "TCM Research Corpus v1",
+            "corpus_chunk_count": 4461,
+            "corpus_mode": "required",
+            "retrieval_strategy": "R0",
+            "retrieved_evidence_ids": ["tcmv1-red-ginseng-001"],
+            "latency_ms": 37700,
+        },
+        "mock_mode": False,
+        "generation_mode": "llm",
+    }).model_dump(mode="json")
+    store.upsert_execution(created["run_id"], 1, result)
+
+    persisted = service.results(created["run_id"])["results"][0]["result"]
+    assert persisted["retrieval"] == result["retrieval"]
+    assert persisted["citations"] == result["citations"]
+    assert persisted["trace"] == result["trace"]
 
 
 def test_worker_web_health_and_wake_are_lightweight(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
