@@ -101,6 +101,62 @@ async def _embed_with_retry(provider: SiliconFlowEmbeddingProvider, texts: list[
     raise RuntimeError("unreachable")
 
 
+def _stream_final_cache(
+    final_path: Path,
+    *,
+    batch_dir: Path,
+    chunks: tuple[Any, ...],
+    identity: dict[str, str],
+    batch_size: int,
+    total_batches: int,
+) -> None:
+    """Assemble the authoritative document cache while holding one batch at a time."""
+    temporary = final_path.with_suffix(".tmp")
+    seen_ids: set[str] = set()
+    vectors_written = 0
+    try:
+        with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write('{"identity":')
+            json.dump(identity, handle, ensure_ascii=False, separators=(",", ":"))
+            handle.write(',"document_ids":[')
+            for index, chunk in enumerate(chunks):
+                if chunk.chunk_id in seen_ids:
+                    raise RuntimeError("final cache ordering or chunk identity invariant failed")
+                seen_ids.add(chunk.chunk_id)
+                if index:
+                    handle.write(",")
+                json.dump(chunk.chunk_id, handle, ensure_ascii=False, separators=(",", ":"))
+
+            handle.write('],"document_vectors":[')
+            first_vector = True
+            for batch_index in range(total_batches):
+                start = batch_index * batch_size
+                expected_ids = [chunk.chunk_id for chunk in chunks[start : start + batch_size]]
+                vectors = _validate_batch(
+                    _batch_path(batch_dir, batch_index),
+                    batch_index=batch_index,
+                    expected_ids=expected_ids,
+                    identity=identity,
+                )
+                if vectors is None:
+                    raise RuntimeError(f"warmup batch {batch_index} failed validation during finalization")
+                for vector in vectors:
+                    if not first_vector:
+                        handle.write(",")
+                    json.dump(vector, handle, ensure_ascii=False, separators=(",", ":"))
+                    first_vector = False
+                vectors_written += len(vectors)
+                del vectors
+
+            if vectors_written != len(chunks) or len(seen_ids) != len(chunks):
+                raise RuntimeError("final cache ordering or chunk identity invariant failed")
+            handle.write('],"query_vectors":{}}')
+        temporary.replace(final_path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
 async def warm(cache_dir: Path) -> dict[str, Any]:
     os.environ["TCM_CORPUS_MODE"] = "required"
     os.environ["ALLOW_BULK_REMOTE_EMBEDDING"] = "true"
@@ -129,7 +185,6 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
     batch_dir.mkdir(parents=True, exist_ok=True)
     batch_size = int(strict["embedding_batch_size"])
     total_batches = (len(chunks) + batch_size - 1) // batch_size
-    vectors_by_batch: dict[int, list[list[float]]] = {}
     reused = 0
     newly_embedded = 0
     retries = 0
@@ -141,8 +196,8 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
         path = _batch_path(batch_dir, batch_index)
         existing = _validate_batch(path, batch_index=batch_index, expected_ids=ids, identity=identity) if path.exists() else None
         if existing is not None:
-            vectors_by_batch[batch_index] = existing
             reused += len(existing)
+            del existing
             continue
         if path.exists():
             path.unlink()
@@ -154,21 +209,20 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
         temporary = path.with_suffix(".tmp")
         temporary.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
         temporary.replace(path)
-        vectors_by_batch[batch_index] = vectors
         newly_embedded += len(vectors)
+        del payload, vectors
         print(json.dumps({"batch": batch_index + 1, "batches": total_batches, "chunks_embedded": newly_embedded, "reused": reused}), flush=True)
 
-    ordered_vectors = [vector for index in range(total_batches) for vector in vectors_by_batch[index]]
-    ordered_ids = [chunk.chunk_id for chunk in chunks]
-    RetrievalEngine._validate_vectors(ordered_vectors, len(chunks), expected_dimension=1024)
-    if ordered_ids != [chunk.chunk_id for chunk in chunks] or len(set(ordered_ids)) != len(ordered_ids):
-        raise RuntimeError("final cache ordering or chunk identity invariant failed")
     cache_identity_hash = canonical_hash(identity)
     final_path = cache_dir / f"embeddings-{cache_identity_hash}.json"
-    payload = {"identity": identity, "document_ids": ordered_ids, "document_vectors": ordered_vectors, "query_vectors": {}}
-    temporary = final_path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    temporary.replace(final_path)
+    _stream_final_cache(
+        final_path,
+        batch_dir=batch_dir,
+        chunks=chunks,
+        identity=identity,
+        batch_size=batch_size,
+        total_batches=total_batches,
+    )
     report = {
         "status": "PASS",
         "scope": "formal_corpus_embedding_cache_warmup_only",

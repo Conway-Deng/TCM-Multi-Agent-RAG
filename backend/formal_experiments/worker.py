@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from contextlib import contextmanager
+import gc
 import importlib.util
 import json
 import os
@@ -404,6 +405,8 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
     else:
         raise RuntimeError("Retrieval replay warmup must run outside an active event loop")
     asyncio.run(warmer.warm(cache_dir))
+    del warmer
+    gc.collect()
     stage1 = _load(root / "research/retrieval_ablation/runner.py", "frozen_retrieval_stage1")
     stage1.STUDY_ROOT = output
     os.environ["RETRIEVAL_ABLATION_EXECUTION"] = "FORMAL_STAGE1_APPROVED"

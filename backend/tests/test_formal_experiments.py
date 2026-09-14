@@ -1061,7 +1061,7 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
         if path.name == "warm_formal_cache.py":
             return warmer
         if path.name == "runner.py":
-            assert events == [("warm-start", output / "cache"), ("warm-complete", output / "cache")]
+            assert events == [("warm-start", output / "cache"), ("warm-complete", output / "cache"), "gc"]
             events.append(("stage1-loaded", output))
             return stage1
         if path.name == "stage2_runner.py":
@@ -1077,9 +1077,12 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
     monkeypatch.setenv("LLM_API_KEY", "offline-placeholder")
     monkeypatch.setattr(worker, "_require_frozen_qwen_provider", lambda: None)
     monkeypatch.setattr(worker, "_load", fake_load)
+    monkeypatch.setattr(worker.gc, "collect", lambda: events.append("gc") or 0)
 
     assert worker._run_retrieval(root, output) is False
     assert events[0:2] == [("warm-start", output / "cache"), ("warm-complete", output / "cache")]
+    assert events.index(("warm-complete", output / "cache")) < events.index("gc")
+    assert events.index("gc") < events.index(("stage1-loaded", output))
     assert events.index(("warm-complete", output / "cache")) < events.index(("stage1-entered", output / "stage1"))
     assert stage1.STUDY_ROOT == output
     assert stage2.STAGE1 == output / "stage1" and stage2.OUT == output / "stage2"

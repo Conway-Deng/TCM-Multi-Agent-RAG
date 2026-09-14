@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import importlib.util
+import inspect
 import json
 import math
 from pathlib import Path
@@ -109,6 +111,15 @@ def _engine(
     )
 
 
+def _warmup_module():
+    path = BACKEND.parent / "research/retrieval_ablation/warm_formal_cache.py"
+    spec = importlib.util.spec_from_file_location("retrieval_warmup_memory_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_ordinary_constructor_defaults_preserve_nonformal_mode(monkeypatch: pytest.MonkeyPatch) -> None:
     chunks = _chunks()
     monkeypatch.setattr(engine_module, "load_chunks", lambda: chunks)
@@ -190,6 +201,128 @@ def test_cache_identity_and_filename_match_frozen_warmup_schema(tmp_path: Path) 
     assert identity == expected
     assert engine.embedding_cache_identity(provider) == identity
     assert engine._cache_path(identity) == tmp_path / f"embeddings-{digest}.json"
+    assert engine._query_cache_path(identity) == tmp_path / f"query-vectors-{digest}.json"
+
+
+def test_warmup_streams_batches_into_the_unchanged_cache_schema(tmp_path: Path) -> None:
+    warmer = _warmup_module()
+    chunks = _chunks(6)
+    identity = {
+        "corpus_sha256": "corpus-sha",
+        "embedding_provider": "siliconflow",
+        "embedding_model": "BAAI/bge-m3",
+        "preprocessing_version": "chunk-text-v1",
+        "embedding_config_version": "retrieval-ablation-v1",
+    }
+    batch_dir = tmp_path / "batches"
+    batch_dir.mkdir()
+    expected_vectors: list[list[float]] = []
+    batch_size = 2
+    for batch_index, start in enumerate(range(0, len(chunks), batch_size)):
+        batch_chunks = chunks[start : start + batch_size]
+        vectors = [[float(start + offset)] * 1024 for offset in range(len(batch_chunks))]
+        expected_vectors.extend(vectors)
+        warmer._batch_path(batch_dir, batch_index).write_text(
+            json.dumps({
+                "identity": identity,
+                "batch_index": batch_index,
+                "start": start,
+                "chunk_ids": [chunk.chunk_id for chunk in batch_chunks],
+                "vectors": vectors,
+            }, separators=(",", ":")),
+            encoding="utf-8",
+        )
+
+    final_path = tmp_path / "embeddings.json"
+    warmer._stream_final_cache(
+        final_path,
+        batch_dir=batch_dir,
+        chunks=chunks,
+        identity=identity,
+        batch_size=batch_size,
+        total_batches=3,
+    )
+
+    data = json.loads(final_path.read_text(encoding="utf-8"))
+    assert list(data) == ["identity", "document_ids", "document_vectors", "query_vectors"]
+    assert data["identity"] == identity
+    assert data["document_ids"] == [chunk.chunk_id for chunk in chunks]
+    assert data["document_vectors"] == expected_vectors
+    assert data["query_vectors"] == {}
+    source = inspect.getsource(warmer.warm)
+    assert "vectors_by_batch" not in source
+    assert "ordered_vectors" not in source
+
+
+def test_warmup_finalization_holds_only_one_validated_batch(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    warmer = _warmup_module()
+    chunks = _chunks(40)
+
+    class TrackedBatch(list):
+        live = 0
+        maximum_live = 0
+
+        def __init__(self) -> None:
+            super().__init__([[1.0, 0.0]])
+            type(self).live += 1
+            type(self).maximum_live = max(type(self).maximum_live, type(self).live)
+
+        def __del__(self) -> None:
+            type(self).live -= 1
+
+    def validated_batch(_path: Path, *, batch_index: int, expected_ids: list[str], identity: dict[str, str]):
+        assert expected_ids == [f"chunk-{batch_index}"]
+        assert identity == {"cache": "identity"}
+        return TrackedBatch()
+
+    monkeypatch.setattr(warmer, "_validate_batch", validated_batch)
+    final_path = tmp_path / "bounded.json"
+    warmer._stream_final_cache(
+        final_path,
+        batch_dir=tmp_path,
+        chunks=chunks,
+        identity={"cache": "identity"},
+        batch_size=1,
+        total_batches=len(chunks),
+    )
+
+    assert TrackedBatch.maximum_live == 1
+    assert TrackedBatch.live == 0
+
+
+def test_warmup_streaming_rejects_invalid_batch_without_replacing_final_cache(tmp_path: Path) -> None:
+    warmer = _warmup_module()
+    chunks = _chunks(1)
+    identity = {"cache": "identity"}
+    batch_dir = tmp_path / "batches"
+    batch_dir.mkdir()
+    warmer._batch_path(batch_dir, 0).write_text(
+        json.dumps({
+            "identity": identity,
+            "batch_index": 0,
+            "start": 0,
+            "chunk_ids": [chunks[0].chunk_id],
+            "vectors": [[0.0] * 1023],
+        }, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    final_path = tmp_path / "embeddings.json"
+    final_path.write_text("previous-valid-cache", encoding="utf-8")
+
+    with pytest.raises(ProviderUnavailable, match="dimension mismatch"):
+        warmer._stream_final_cache(
+            final_path,
+            batch_dir=batch_dir,
+            chunks=chunks,
+            identity=identity,
+            batch_size=1,
+            total_batches=1,
+        )
+
+    assert final_path.read_text(encoding="utf-8") == "previous-valid-cache"
+    assert not final_path.with_suffix(".tmp").exists()
 
 
 def test_formal_engine_loads_warmup_cache_document_and_query_vectors(
@@ -235,7 +368,7 @@ def test_formal_cache_rejects_document_ordering_mismatch(tmp_path: Path) -> None
         engine._load_embedding_cache(identity)
 
 
-def test_formal_query_vector_is_saved_back_to_warmup_cache(
+def test_formal_query_vector_uses_identity_sidecar_without_rewriting_document_cache(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     query = "new formal query"
@@ -251,17 +384,64 @@ def test_formal_query_vector_is_saved_back_to_warmup_cache(
     }
     cache_path = engine._cache_path(identity)
     cache_path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+    original_document_cache = cache_path.read_bytes()
     monkeypatch.setenv("ALLOW_BULK_REMOTE_EMBEDDING", "true")
 
     asyncio.run(engine.search(query, strategy=RetrievalStrategy.R1, top_k=2))
 
-    saved = json.loads(cache_path.read_text(encoding="utf-8"))
     query_key = hashlib.sha256(query.encode("utf-8")).hexdigest()
+    sidecar_path = engine._query_cache_path(identity)
+    saved = json.loads(sidecar_path.read_text(encoding="utf-8"))
     assert embedding.calls == [[query]]
-    assert saved["identity"] == identity
-    assert saved["document_ids"] == [chunk.chunk_id for chunk in chunks]
-    assert saved["document_vectors"] == payload["document_vectors"]
-    assert saved["query_vectors"] == {query_key: [1.0, 0.0]}
+    assert cache_path.read_bytes() == original_document_cache
+    assert saved == {"identity": identity, "query_vectors": {query_key: [1.0, 0.0]}}
+    assert not sidecar_path.with_suffix(".tmp").exists()
+
+    reloaded_embedding = FakeEmbedding(fail=True)
+    reloaded = _engine(tmp_path, formal_strict=True, chunks=chunks, embedding=reloaded_embedding)
+    reloaded._load_embedding_cache(identity)
+    results = asyncio.run(reloaded.search(query, strategy=RetrievalStrategy.R1, top_k=2))
+    assert len(results) == 2
+    assert reloaded_embedding.calls == []
+
+
+def test_formal_query_sidecar_ignores_mismatched_identity(tmp_path: Path) -> None:
+    chunks = _chunks(2)
+    engine = _engine(tmp_path, formal_strict=True, chunks=chunks)
+    identity = engine.embedding_cache_identity()
+    engine._cache_path(identity).write_text(json.dumps({
+        "identity": identity,
+        "document_ids": [chunk.chunk_id for chunk in chunks],
+        "document_vectors": [[1.0, 0.0], [0.0, 1.0]],
+        "query_vectors": {},
+    }, separators=(",", ":")), encoding="utf-8")
+    engine._query_cache_path(identity).write_text(json.dumps({
+        "identity": {**identity, "corpus_sha256": "wrong-corpus"},
+        "query_vectors": {"not-compatible": [1.0, 0.0]},
+    }, separators=(",", ":")), encoding="utf-8")
+
+    engine._load_embedding_cache(identity)
+
+    assert engine._query_vectors == {}
+
+
+def test_formal_query_sidecar_validates_document_dimension(tmp_path: Path) -> None:
+    chunks = _chunks(2)
+    engine = _engine(tmp_path, formal_strict=True, chunks=chunks)
+    identity = engine.embedding_cache_identity()
+    engine._cache_path(identity).write_text(json.dumps({
+        "identity": identity,
+        "document_ids": [chunk.chunk_id for chunk in chunks],
+        "document_vectors": [[1.0, 0.0], [0.0, 1.0]],
+        "query_vectors": {},
+    }, separators=(",", ":")), encoding="utf-8")
+    engine._query_cache_path(identity).write_text(json.dumps({
+        "identity": identity,
+        "query_vectors": {"wrong-dimension": [1.0, 0.0, 0.0]},
+    }, separators=(",", ":")), encoding="utf-8")
+
+    with pytest.raises(ProviderUnavailable, match="dimension mismatch"):
+        engine._load_embedding_cache(identity)
 
 
 def test_strict_provider_and_model_validation_precedes_provider_calls(

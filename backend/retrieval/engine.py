@@ -123,6 +123,9 @@ class RetrievalEngine:
     def _cache_path(self, identity: dict[str, str]) -> Path:
         return self.cache_dir / f"embeddings-{self._identity_hash(identity)}.json"
 
+    def _query_cache_path(self, identity: dict[str, str]) -> Path:
+        return self.cache_dir / f"query-vectors-{self._identity_hash(identity)}.json"
+
     @staticmethod
     def _validate_vectors(vectors: list[list[float]], expected_count: int, *, expected_dimension: int | None = None) -> int:
         if len(vectors) != expected_count:
@@ -170,7 +173,41 @@ class RetrievalEngine:
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise ProviderUnavailable(f"Embedding cache validation failed: {exc}", error_type="malformed_response") from exc
         self._document_vectors = document_vectors
+        query_vectors.update(self._load_query_cache(identity, expected_dimension=dimension))
         self._query_vectors = query_vectors
+
+    def _load_query_cache(self, identity: dict[str, str], *, expected_dimension: int) -> dict[str, list[float]]:
+        path = self._query_cache_path(identity)
+        if not path.exists():
+            return {}
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("identity") != identity:
+                return {}
+            raw_vectors = data.get("query_vectors", {})
+            if not isinstance(raw_vectors, dict):
+                raise ValueError("query_vectors must be an object")
+            query_vectors = {
+                str(key): [float(value) for value in vector]
+                for key, vector in raw_vectors.items()
+            }
+            for vector in query_vectors.values():
+                self._validate_vectors([vector], 1, expected_dimension=expected_dimension)
+            return query_vectors
+        except ProviderUnavailable:
+            raise
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ProviderUnavailable(f"Query cache validation failed: {exc}", error_type="malformed_response") from exc
+
+    def _save_query_cache(self, identity: dict[str, str], *, expected_dimension: int) -> None:
+        for vector in self._query_vectors.values():
+            self._validate_vectors([vector], 1, expected_dimension=expected_dimension)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        path = self._query_cache_path(identity)
+        temporary = path.with_suffix(".tmp")
+        payload = {"identity": identity, "query_vectors": self._query_vectors}
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        temporary.replace(path)
 
     def _save_embedding_cache(self, identity: dict[str, str]) -> None:
         if self._document_vectors is None:
@@ -270,7 +307,7 @@ class RetrievalEngine:
                 query_vector = (await self._embed_batched(provider, [query], expected_dimension=dimension))[0]
                 self._query_vectors[query_key] = query_vector
                 if self.persistent_cache:
-                    self._save_embedding_cache(identity)
+                    self._save_query_cache(identity, expected_dimension=dimension)
             self.actual_embedding_provider = provider.name
             self.actual_embedding_model = provider.model
         return {chunk.chunk_id: round(_cosine(query_vector, vector), 6) for chunk, vector in zip(self.chunks, self._document_vectors)}

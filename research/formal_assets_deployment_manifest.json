@@ -697,8 +697,8 @@
     },
     {
       "path": "research/retrieval_ablation/warm_formal_cache.py",
-      "sha256": "83c7e94e3aade4d2f689f101cce694f2e1860e19b0b3dc8a6e2df1d5630d3acb",
-      "bytes": 9435
+      "sha256": "d32420b2e7ab0025894cf287e3ad951223899591a48da26c2793dcf461398dbb",
+      "bytes": 11157
     }
   ],
   "experiments": {
