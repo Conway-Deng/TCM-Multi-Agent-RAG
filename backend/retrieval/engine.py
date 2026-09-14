@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from collections import Counter
+import hashlib
+import json
 import math
 import os
+from pathlib import Path
 import re
+from typing import Any
 
-from corpus import load_chunks, load_sources
-from providers import get_provider_bundle
+from corpus import corpus_stats, load_chunks, load_sources
+from providers import ProviderBundle, get_provider_bundle
 from providers.local import LocalHashEmbeddingProvider, LocalOverlapReranker
 from providers.openai_compatible import ProviderUnavailable
 from schemas.research import RetrievalItem, RetrievalStrategy
@@ -17,6 +21,8 @@ def _tokens(text: str) -> list[str]:
 
 
 def _cosine(left: list[float], right: list[float]) -> float:
+    if len(left) != len(right):
+        raise ProviderUnavailable("Embedding dimensions are inconsistent", error_type="malformed_response")
     return max(0.0, min(1.0, sum(a * b for a, b in zip(left, right))))
 
 
@@ -34,19 +40,183 @@ def _expanded_topics(topics: list[str] | None) -> set[str]:
     return {alias for topic in topics or [] for alias in TOPIC_ALIASES.get(topic, {topic})}
 
 
+FORMAL_EMBEDDING_PROVIDER = "siliconflow"
+FORMAL_EMBEDDING_MODEL = "BAAI/bge-m3"
+FORMAL_RERANK_PROVIDER = "siliconflow"
+FORMAL_RERANK_MODEL = "BAAI/bge-reranker-v2-m3"
+DEFAULT_PREPROCESSING_VERSION = "chunk-text-v1"
+DEFAULT_EMBEDDING_CONFIG_VERSION = "retrieval-ablation-v1"
+
+
 class RetrievalEngine:
-    def __init__(self) -> None:
-        self.chunks = load_chunks()
-        self.sources = load_sources()
-        self.providers = get_provider_bundle()
+    def __init__(
+        self,
+        *,
+        formal_strict: bool = False,
+        persistent_cache: bool | None = None,
+        cache_dir: Path | None = None,
+        embedding_batch_size: int = 64,
+        candidate_depth: int = 12,
+        preprocessing_version: str = DEFAULT_PREPROCESSING_VERSION,
+        embedding_config_version: str = DEFAULT_EMBEDDING_CONFIG_VERSION,
+        chunks: tuple[Any, ...] | None = None,
+        sources: dict[str, Any] | None = None,
+        providers: ProviderBundle | None = None,
+        corpus_sha256: str | None = None,
+    ) -> None:
+        self._uses_runtime_corpus = chunks is None
+        self.chunks = chunks if chunks is not None else load_chunks()
+        self.sources = sources if sources is not None else load_sources()
+        self.providers = providers if providers is not None else get_provider_bundle()
+        self.formal_strict = formal_strict
+        self.persistent_cache = formal_strict if persistent_cache is None else persistent_cache
+        self.cache_dir = cache_dir or Path(__file__).resolve().parents[2] / "research" / "retrieval_ablation" / "cache"
+        self.embedding_batch_size = max(1, embedding_batch_size)
+        self.candidate_depth = max(1, candidate_depth)
+        self.preprocessing_version = preprocessing_version
+        self.embedding_config_version = embedding_config_version
+        if corpus_sha256 is not None:
+            self.corpus_sha256 = corpus_sha256
+        elif formal_strict or self.persistent_cache:
+            runtime_sha = corpus_stats().get("corpus_sha256") if chunks is None else None
+            self.corpus_sha256 = str(runtime_sha or self._content_sha256())
+        else:
+            self.corpus_sha256 = ""
         self._doc_counts = [Counter(_tokens(chunk.text + " " + " ".join(chunk.keywords))) for chunk in self.chunks]
         self._average_doc_length = sum(sum(doc.values()) for doc in self._doc_counts) / max(1, len(self._doc_counts))
         self._document_frequency = Counter(token for doc in self._doc_counts for token in doc)
         self._document_vectors: list[list[float]] | None = None
+        self._query_vectors: dict[str, list[float]] = {}
+        self._active_cache_identity: dict[str, str] | None = None
         self.actual_embedding_provider = "none"
         self.actual_embedding_model = "none"
         self.actual_reranker_provider = "none"
         self.actual_reranker_model = "none"
+
+    def _content_sha256(self) -> str:
+        digest = hashlib.sha256()
+        for chunk in self.chunks:
+            digest.update(chunk.chunk_id.encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(chunk.text.encode("utf-8"))
+            digest.update(b"\0")
+        return digest.hexdigest()
+
+    def embedding_cache_identity(self, provider: Any | None = None) -> dict[str, str]:
+        provider = provider or self.providers.embedding
+        if not self.corpus_sha256:
+            runtime_sha = corpus_stats().get("corpus_sha256") if self._uses_runtime_corpus else None
+            self.corpus_sha256 = str(runtime_sha or self._content_sha256())
+        return {
+            "corpus_sha256": self.corpus_sha256,
+            "embedding_provider": str(provider.name),
+            "embedding_model": str(provider.model),
+            "preprocessing_version": self.preprocessing_version,
+            "embedding_config_version": self.embedding_config_version,
+        }
+
+    @staticmethod
+    def _identity_hash(identity: dict[str, str]) -> str:
+        payload = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(payload).hexdigest()
+
+    def _cache_path(self, identity: dict[str, str]) -> Path:
+        return self.cache_dir / f"embeddings-{self._identity_hash(identity)}.json"
+
+    @staticmethod
+    def _validate_vectors(vectors: list[list[float]], expected_count: int, *, expected_dimension: int | None = None) -> int:
+        if len(vectors) != expected_count:
+            raise ProviderUnavailable(
+                f"Embedding count mismatch: expected {expected_count}, returned {len(vectors)}",
+                error_type="malformed_response",
+            )
+        dimensions = {len(vector) for vector in vectors}
+        if not vectors or len(dimensions) != 1 or 0 in dimensions:
+            raise ProviderUnavailable("Embedding dimensions are missing or inconsistent", error_type="malformed_response")
+        dimension = next(iter(dimensions))
+        if expected_dimension is not None and dimension != expected_dimension:
+            raise ProviderUnavailable(
+                f"Embedding dimension mismatch: expected {expected_dimension}, returned {dimension}",
+                error_type="malformed_response",
+            )
+        if any(not math.isfinite(value) for vector in vectors for value in vector):
+            raise ProviderUnavailable("Embedding response contains non-finite values", error_type="malformed_response")
+        return dimension
+
+    def _load_embedding_cache(self, identity: dict[str, str]) -> None:
+        if self._active_cache_identity == identity:
+            return
+        self._document_vectors = None
+        self._query_vectors = {}
+        self._active_cache_identity = identity
+        path = self._cache_path(identity)
+        if not path.exists():
+            return
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("identity") != identity:
+                raise ValueError("cache identity mismatch")
+            expected_ids = [chunk.chunk_id for chunk in self.chunks]
+            if data.get("document_ids") != expected_ids:
+                raise ValueError("cache document ordering mismatch")
+            document_vectors = [[float(value) for value in vector] for vector in data["document_vectors"]]
+            dimension = self._validate_vectors(document_vectors, len(expected_ids))
+            query_vectors = {
+                str(key): [float(value) for value in vector]
+                for key, vector in dict(data.get("query_vectors", {})).items()
+            }
+            for vector in query_vectors.values():
+                self._validate_vectors([vector], 1, expected_dimension=dimension)
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ProviderUnavailable(f"Embedding cache validation failed: {exc}", error_type="malformed_response") from exc
+        self._document_vectors = document_vectors
+        self._query_vectors = query_vectors
+
+    def _save_embedding_cache(self, identity: dict[str, str]) -> None:
+        if self._document_vectors is None:
+            return
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        path = self._cache_path(identity)
+        temporary = path.with_suffix(".tmp")
+        payload = {
+            "identity": identity,
+            "document_ids": [chunk.chunk_id for chunk in self.chunks],
+            "document_vectors": self._document_vectors,
+            "query_vectors": self._query_vectors,
+        }
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        temporary.replace(path)
+
+    async def _embed_batched(self, provider: Any, texts: list[str], *, expected_dimension: int | None = None) -> list[list[float]]:
+        vectors: list[list[float]] = []
+        dimension = expected_dimension
+        for offset in range(0, len(texts), self.embedding_batch_size):
+            batch = texts[offset : offset + self.embedding_batch_size]
+            returned = await provider.embed(batch)
+            batch_dimension = self._validate_vectors(returned, len(batch), expected_dimension=dimension)
+            dimension = dimension or batch_dimension
+            vectors.extend(returned)
+        self._validate_vectors(vectors, len(texts), expected_dimension=dimension)
+        return vectors
+
+    def _validate_formal_embedding_provider(self, provider: Any) -> None:
+        if not self.formal_strict:
+            return
+        if provider.name != FORMAL_EMBEDDING_PROVIDER or provider.model != FORMAL_EMBEDDING_MODEL:
+            raise ProviderUnavailable(
+                f"Formal R1/R2/R3 requires {FORMAL_EMBEDDING_PROVIDER}/{FORMAL_EMBEDDING_MODEL}; "
+                f"got {provider.name}/{provider.model}",
+                error_type="configuration",
+            )
+
+    def _validate_formal_reranker(self, provider: Any) -> None:
+        if not self.formal_strict:
+            return
+        if provider.name != FORMAL_RERANK_PROVIDER or provider.model != FORMAL_RERANK_MODEL:
+            raise ProviderUnavailable(
+                f"Formal R3 requires {FORMAL_RERANK_PROVIDER}/{FORMAL_RERANK_MODEL}; got {provider.name}/{provider.model}",
+                error_type="configuration",
+            )
 
     def _lexical(self, query: str) -> dict[str, float]:
         query_counts = Counter(_tokens(query))
@@ -68,21 +238,41 @@ class RetrievalEngine:
     async def _semantic(self, query: str) -> dict[str, float]:
         provider = self.providers.embedding
         bulk_approved = os.getenv("ALLOW_BULK_REMOTE_EMBEDDING", "false").strip().casefold() in {"1", "true", "yes", "on"}
-        if provider.name != "local" and not bulk_approved:
-            provider = LocalHashEmbeddingProvider()
-        try:
+        if not self.formal_strict:
+            if provider.name != "local" and not bulk_approved:
+                provider = LocalHashEmbeddingProvider()
+            try:
+                if self._document_vectors is None:
+                    self._document_vectors = await provider.embed([chunk.text for chunk in self.chunks])
+                query_vector = (await provider.embed([query]))[0]
+                self.actual_embedding_provider = provider.name
+                self.actual_embedding_model = provider.model
+            except ProviderUnavailable:
+                local = LocalHashEmbeddingProvider()
+                if self._document_vectors is None or provider.name != "local":
+                    self._document_vectors = await local.embed([chunk.text for chunk in self.chunks])
+                query_vector = (await local.embed([query]))[0]
+                self.actual_embedding_provider = local.name
+                self.actual_embedding_model = local.model
+        else:
+            self._validate_formal_embedding_provider(provider)
+            if not bulk_approved:
+                raise ProviderUnavailable("Formal remote embedding requires ALLOW_BULK_REMOTE_EMBEDDING=true", error_type="configuration")
+            identity = self.embedding_cache_identity(provider)
+            if self.persistent_cache:
+                self._load_embedding_cache(identity)
             if self._document_vectors is None:
-                self._document_vectors = await provider.embed([chunk.text for chunk in self.chunks])
-            query_vector = (await provider.embed([query]))[0]
+                self._document_vectors = await self._embed_batched(provider, [chunk.text for chunk in self.chunks])
+            dimension = self._validate_vectors(self._document_vectors, len(self.chunks))
+            query_key = hashlib.sha256(query.encode("utf-8")).hexdigest()
+            query_vector = self._query_vectors.get(query_key)
+            if query_vector is None:
+                query_vector = (await self._embed_batched(provider, [query], expected_dimension=dimension))[0]
+                self._query_vectors[query_key] = query_vector
+                if self.persistent_cache:
+                    self._save_embedding_cache(identity)
             self.actual_embedding_provider = provider.name
             self.actual_embedding_model = provider.model
-        except ProviderUnavailable:
-            local = LocalHashEmbeddingProvider()
-            if self._document_vectors is None or provider.name != "local":
-                self._document_vectors = await local.embed([chunk.text for chunk in self.chunks])
-            query_vector = (await local.embed([query]))[0]
-            self.actual_embedding_provider = local.name
-            self.actual_embedding_model = local.model
         return {chunk.chunk_id: round(_cosine(query_vector, vector), 6) for chunk, vector in zip(self.chunks, self._document_vectors)}
 
     async def search(
@@ -106,11 +296,19 @@ class RetrievalEngine:
         fusion = {chunk.chunk_id: 1 / (60 + lexical_rank[chunk.chunk_id]) + 1 / (60 + semantic_rank[chunk.chunk_id]) for chunk in allowed}
         rerank_scores: dict[str, float] = {}
         if strategy == RetrievalStrategy.R3:
-            candidates = sorted(allowed, key=lambda chunk: fusion[chunk.chunk_id], reverse=True)[: max(top_k * 3, 10)]
+            if self.formal_strict and top_k > self.candidate_depth:
+                raise ProviderUnavailable("Final top-k exceeds the fixed candidate depth", error_type="configuration")
+            candidate_limit = self.candidate_depth if self.formal_strict else max(top_k * 3, 10)
+            candidates = sorted(allowed, key=lambda chunk: fusion[chunk.chunk_id], reverse=True)[:candidate_limit]
             try:
                 reranker = self.providers.rerank
+                self._validate_formal_reranker(reranker)
                 values = await reranker.rerank(query, [chunk.text for chunk in candidates])
+                if self.formal_strict and (len(values) != len(candidates) or any(not math.isfinite(value) for value in values)):
+                    raise ProviderUnavailable("Reranker returned malformed or partial scores", error_type="malformed_response")
             except ProviderUnavailable:
+                if self.formal_strict:
+                    raise
                 reranker = LocalOverlapReranker()
                 values = await reranker.rerank(query, [chunk.text for chunk in candidates])
             self.actual_reranker_provider = reranker.name
