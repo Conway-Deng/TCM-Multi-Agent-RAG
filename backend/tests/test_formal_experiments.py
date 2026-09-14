@@ -1016,6 +1016,157 @@ def test_formal_cooperative_iterable_stops_only_between_atomic_items() -> None:
     assert started == [1, 2]
 
 
+def _memory_safe_retrieval_cache_fixture(tmp_path: Path):
+    cache_dir = tmp_path / "cache"
+    (cache_dir / "warmup_batches").mkdir(parents=True)
+    identity = {
+        "corpus_sha256": "corpus-sha",
+        "embedding_provider": "siliconflow",
+        "embedding_model": "BAAI/bge-m3",
+        "preprocessing_version": "chunk-text-v1",
+        "embedding_config_version": "retrieval-ablation-v1",
+    }
+    cache_path = cache_dir / "embeddings-identity.json"
+    cache_path.write_text("large final cache must not be parsed", encoding="utf-8")
+    report = {
+        "status": "PASS",
+        "model": "BAAI/bge-m3",
+        "corpus_chunks": 2,
+        "missing": 0,
+        "duplicates": 0,
+        "dimension": 1024,
+        "all_finite": True,
+        "ordering_valid": True,
+        "cache_path": str(cache_path),
+        "cache_identity": identity,
+    }
+    report_path = cache_dir / "cache_warmup_report.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    class Provider:
+        name = "siliconflow"
+        model = "BAAI/bge-m3"
+
+    class Providers:
+        embedding = Provider()
+
+    class Engine:
+        providers = Providers()
+        chunks = [object(), object()]
+
+        def __init__(self) -> None:
+            self.cache_dir = cache_dir
+            self._document_vectors = None
+            self._query_vectors: dict[str, list[float]] = {}
+            self._active_cache_identity = None
+            self.load_calls = 0
+            self.reconstructions = 0
+            self.validation_calls = 0
+
+        def embedding_cache_identity(self, provider) -> dict[str, str]:
+            assert provider is self.providers.embedding
+            return identity
+
+        def _cache_path(self, actual_identity: dict[str, str]) -> Path:
+            assert actual_identity == identity
+            return cache_path
+
+        def _load_embedding_cache(self, actual_identity: dict[str, str]) -> None:
+            self.load_calls += 1
+            if self._active_cache_identity == actual_identity:
+                return
+            self._active_cache_identity = actual_identity
+            self.reconstructions += 1
+            self._document_vectors = [[0.0] * 1024 for _ in self.chunks]
+            self._query_vectors = {"cached-query": [0.0] * 1024}
+
+        def _validate_vectors(
+            self, vectors: list[list[float]], expected_count: int, *, expected_dimension: int | None = None,
+        ) -> int:
+            self.validation_calls += 1
+            assert len(vectors) == expected_count == len(self.chunks)
+            assert expected_dimension == 1024
+            assert all(len(vector) == 1024 for vector in vectors)
+            return 1024
+
+    config = {"formal_strict": {
+        "embedding_provider": "siliconflow",
+        "embedding_model": "BAAI/bge-m3",
+    }}
+    return Engine(), config, report, report_path, cache_path, identity
+
+
+def test_memory_safe_retrieval_validator_never_reads_full_final_cache(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    engine, config, _, _, cache_path, identity = _memory_safe_retrieval_cache_fixture(tmp_path)
+    original_read_text = Path.read_text
+
+    def guarded_read_text(path: Path, *args, **kwargs):
+        if path.resolve() == cache_path.resolve():
+            raise AssertionError("full final embedding cache was read")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", guarded_read_text)
+    cache_info = worker._validate_retrieval_cache_without_full_parse(engine, config)
+
+    assert set(cache_info) == {"path", "identity", "chunks", "dimension", "query_cache_entries"}
+    assert cache_info == {
+        "path": str(cache_path),
+        "identity": identity,
+        "chunks": 2,
+        "dimension": 1024,
+        "query_cache_entries": 1,
+    }
+    assert engine.load_calls == 1
+    assert engine.reconstructions == 1
+    assert engine.validation_calls == 1
+
+    # This mirrors the frozen runner's later load call: the active identity makes it a no-op.
+    engine._load_embedding_cache(identity)
+    assert engine.load_calls == 2
+    assert engine.reconstructions == 1
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    (
+        ("status", "FAIL"),
+        ("cache_identity", {"embedding_provider": "wrong"}),
+        ("cache_path", "wrong-cache.json"),
+        ("corpus_chunks", 1),
+        ("dimension", 768),
+        ("all_finite", False),
+        ("ordering_valid", False),
+        ("missing", 1),
+        ("duplicates", 1),
+        ("model", "wrong-model"),
+    ),
+)
+def test_memory_safe_retrieval_validator_rejects_invalid_warmup_report(
+    tmp_path: Path, field: str, invalid_value: object,
+) -> None:
+    engine, config, report, report_path, _, _ = _memory_safe_retrieval_cache_fixture(tmp_path)
+    report[field] = invalid_value
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match=field):
+        worker._validate_retrieval_cache_without_full_parse(engine, config)
+    assert engine.load_calls == 0
+
+
+@pytest.mark.parametrize(("attribute", "value"), (("name", "local"), ("model", "wrong-model")))
+def test_memory_safe_retrieval_validator_preserves_strict_provider_model_check(
+    tmp_path: Path, attribute: str, value: str,
+) -> None:
+    engine, config, _, _, _, _ = _memory_safe_retrieval_cache_fixture(tmp_path)
+    setattr(engine.providers.embedding, attribute, value)
+
+    with pytest.raises(RuntimeError, match="strict embedding provider/model"):
+        worker._validate_retrieval_cache_without_full_parse(engine, config)
+    assert engine.load_calls == 0
+
+
 def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
@@ -1033,6 +1184,10 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
         STUDY_ROOT: Path | None = None
 
         @staticmethod
+        def _validate_cache(_engine, _config) -> None:
+            raise AssertionError("frozen full-cache validator must be replaced")
+
+        @staticmethod
         def build_stage1_plan() -> list[dict]:
             return []
 
@@ -1040,6 +1195,7 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
         async def execute_stage1(stage1_out: Path) -> None:
             assert events[-1] == ("stage1-loaded", output)
             assert stage1.STUDY_ROOT == output
+            assert stage1._validate_cache is worker._validate_retrieval_cache_without_full_parse
             stage1.build_stage1_plan()
             events.append(("stage1-entered", stage1_out))
 
@@ -1056,6 +1212,7 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
             events.append(("stage2-entered", stage2.STAGE1, stage2.OUT))
 
     warmer, stage1, stage2 = Warmer(), Stage1(), Stage2()
+    original_validate_cache = stage1._validate_cache
 
     def fake_load(path: Path, _name: str):
         if path.name == "warm_formal_cache.py":
@@ -1086,6 +1243,57 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
     assert events.index(("warm-complete", output / "cache")) < events.index(("stage1-entered", output / "stage1"))
     assert stage1.STUDY_ROOT == output
     assert stage2.STAGE1 == output / "stage1" and stage2.OUT == output / "stage2"
+    assert stage1._validate_cache is original_validate_cache
+
+
+def test_retrieval_replay_restores_frozen_validator_after_stage1_exception(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    root = tmp_path / "root"
+    output = tmp_path / "replay"
+
+    class Warmer:
+        @staticmethod
+        async def warm(_cache_dir: Path) -> None:
+            return None
+
+    class Stage1:
+        @staticmethod
+        def _validate_cache(_engine, _config) -> None:
+            raise AssertionError("original validator")
+
+        @staticmethod
+        def build_stage1_plan() -> list[dict]:
+            return []
+
+        @staticmethod
+        async def execute_stage1(_stage1_out: Path) -> None:
+            assert stage1._validate_cache is worker._validate_retrieval_cache_without_full_parse
+            raise ValueError("stage1 failure")
+
+    warmer, stage1 = Warmer(), Stage1()
+    original_validate_cache = stage1._validate_cache
+
+    def fake_load(path: Path, _name: str):
+        if path.name == "warm_formal_cache.py":
+            return warmer
+        if path.name == "runner.py":
+            return stage1
+        raise AssertionError(path)
+
+    for name in (
+        "TCM_CORPUS_MODE", "TCM_CORPUS_PATH", "EMBEDDING_PROVIDER", "EMBEDDING_API_KEY",
+        "EMBEDDING_MODEL", "RERANK_PROVIDER", "RERANK_API_KEY", "RERANK_MODEL",
+        "RETRIEVAL_ABLATION_EXECUTION",
+    ):
+        monkeypatch.setenv(name, "offline-test-placeholder")
+    monkeypatch.setenv("LLM_API_KEY", "offline-placeholder")
+    monkeypatch.setattr(worker, "_require_frozen_qwen_provider", lambda: None)
+    monkeypatch.setattr(worker, "_load", fake_load)
+
+    with pytest.raises(ValueError, match="stage1 failure"):
+        worker._run_retrieval(root, output)
+    assert stage1._validate_cache is original_validate_cache
 
 
 def test_formal_worker_finishes_active_atomic_row_before_stopping(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

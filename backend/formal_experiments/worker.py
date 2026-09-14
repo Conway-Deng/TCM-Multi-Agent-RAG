@@ -384,6 +384,70 @@ def _run_a3(root: Path, output: Path, mode: str, condition: str | None, case_id:
     return False
 
 
+def _validate_retrieval_cache_without_full_parse(engine: Any, config: dict[str, Any]) -> dict[str, Any]:
+    """Validate and preload the formal cache without parsing its full JSON matrix."""
+    strict = config["formal_strict"]
+    provider = engine.providers.embedding
+    if provider.name != strict["embedding_provider"] or provider.model != strict["embedding_model"]:
+        raise RuntimeError("strict embedding provider/model configuration mismatch")
+
+    identity = engine.embedding_cache_identity(provider)
+    cache_path = engine._cache_path(identity)
+    if not cache_path.exists():
+        raise RuntimeError(f"completed BGE cache is missing: {cache_path}")
+
+    batch_dir = engine.cache_dir / "warmup_batches"
+    if not batch_dir.is_dir():
+        raise RuntimeError(f"completed BGE warmup batches are missing: {batch_dir}")
+    report_path = engine.cache_dir / "cache_warmup_report.json"
+    if not report_path.exists():
+        raise RuntimeError(f"completed BGE cache warmup report is missing: {report_path}")
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"completed BGE cache warmup report is invalid: {exc}") from exc
+
+    expected_report = {
+        "status": "PASS",
+        "cache_identity": identity,
+        "corpus_chunks": len(engine.chunks),
+        "dimension": 1024,
+        "all_finite": True,
+        "ordering_valid": True,
+        "missing": 0,
+        "duplicates": 0,
+        "model": strict["embedding_model"],
+    }
+    for field, expected in expected_report.items():
+        if report.get(field) != expected:
+            raise RuntimeError(f"completed BGE cache warmup report mismatch: {field}")
+    if identity.get("embedding_provider") != strict["embedding_provider"]:
+        raise RuntimeError("completed BGE cache warmup report mismatch: embedding_provider")
+    try:
+        reported_cache_path = Path(report["cache_path"])
+    except (KeyError, TypeError) as exc:
+        raise RuntimeError("completed BGE cache warmup report mismatch: cache_path") from exc
+    if reported_cache_path.resolve() != cache_path.resolve():
+        raise RuntimeError("completed BGE cache warmup report mismatch: cache_path")
+
+    engine._load_embedding_cache(identity)
+    document_vectors = engine._document_vectors
+    if document_vectors is None:
+        raise RuntimeError("completed BGE cache did not load document vectors")
+    dimension = engine._validate_vectors(
+        document_vectors,
+        len(engine.chunks),
+        expected_dimension=1024,
+    )
+    return {
+        "path": str(cache_path),
+        "identity": identity,
+        "chunks": len(engine.chunks),
+        "dimension": dimension,
+        "query_cache_entries": len(engine._query_vectors),
+    }
+
+
 def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) -> bool:
     _require_frozen_qwen_provider()
     os.environ.update({
@@ -412,6 +476,7 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
     os.environ["RETRIEVAL_ABLATION_EXECUTION"] = "FORMAL_STAGE1_APPROVED"
     stage1_out = output / "stage1"
     original_plan = stage1.build_stage1_plan
+    original_validate_cache = stage1._validate_cache
     calls = 0
     def cooperative_plan():
         nonlocal calls
@@ -419,6 +484,7 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
         plan = original_plan()
         return plan if calls == 1 else _CooperativeIterable(plan, should_stop)
     stage1.build_stage1_plan = cooperative_plan
+    stage1._validate_cache = _validate_retrieval_cache_without_full_parse
     try:
         try:
             asyncio.run(stage1.execute_stage1(stage1_out))
@@ -427,6 +493,7 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
                 raise
     finally:
         stage1.build_stage1_plan = original_plan
+        stage1._validate_cache = original_validate_cache
     if _stop_requested(should_stop):
         return True
     stage2 = _load(root / "research/retrieval_ablation/stage2_runner.py", "frozen_retrieval_stage2")
