@@ -269,6 +269,46 @@ def test_durable_store_reconnects_and_streams_incremental_rows(tmp_path: Path) -
     }]
 
 
+def test_job_elapsed_time_grows_only_for_active_statuses_and_freezes_for_terminal_statuses(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    import formal_experiments.store as store_module
+
+    clock = [100.0]
+    monkeypatch.setattr(store_module.time, "time", lambda: clock[0])
+    store = FormalJobStore(f"sqlite:///{(tmp_path / 'elapsed.sqlite3').as_posix()}")
+
+    def create(run_id: str) -> None:
+        store.create({
+            "run_id": run_id, "experiment_id": "rq1_architecture", "run_mode": "full_benchmark",
+            "status": "running", "completed": 1, "total": 2, "current_condition": "C1",
+            "current_case": "Q-001", "successful": 1, "failed": 0, "created_at": 100.0,
+            "started_at": 100.0, "updated_at": 100.0, "resume_state": "running",
+            "replay_output_dir": f"rq1_architecture/{run_id}", "persistence": "durable", "error": None,
+        }, {"experiment_id": "rq1_architecture"}, {"planned_executions": 2})
+
+    for run_id in ("active", "stopping", "stopped", "complete", "failed"):
+        create(run_id)
+    clock[0] = 120.0
+    store.update("stopping", status="stop_requested", resume_state="stop_requested")
+    store.update("stopped", status="stopped", resume_state="stopped", stopped_at=118.0)
+    store.update("complete", status="complete", resume_state="complete")
+    store.update("failed", status="failed", resume_state="checkpointed_for_resume")
+
+    assert store.get("active")["elapsed_seconds"] == 20.0
+    assert store.get("stopping")["elapsed_seconds"] == 20.0
+    assert store.get("stopped")["elapsed_seconds"] == 18.0
+    assert store.get("complete")["elapsed_seconds"] == 20.0
+    assert store.get("failed")["elapsed_seconds"] == 20.0
+
+    clock[0] = 500.0
+    assert store.get("active")["elapsed_seconds"] == 400.0
+    assert store.get("stopping")["elapsed_seconds"] == 400.0
+    assert store.get("stopped")["elapsed_seconds"] == 18.0
+    assert store.get("complete")["elapsed_seconds"] == 20.0
+    assert store.get("failed")["elapsed_seconds"] == 20.0
+
+
 def test_formal_lightweight_projection_omits_payload_json(monkeypatch: pytest.MonkeyPatch) -> None:
     store = FormalJobStore("sqlite:///unused.sqlite3")
     store._initialized = True

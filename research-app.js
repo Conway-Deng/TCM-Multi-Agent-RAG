@@ -909,7 +909,7 @@
     const completed = Number(status.completed || 0); const total = Number(status.total || 0); const percent = total ? Math.min(100, Math.round(completed / total * 100)) : 0;
     setText('#formal-job-progress', completed + ' / ' + total + ' completed'); setText('#formal-job-percent', percent + '%');
     $('#formal-progress-bar').max = Math.max(1, total); $('#formal-progress-bar').value = completed;
-    setText('#formal-job-current', [status.current_case, status.current_condition].filter(Boolean).join(' · ') || 'Waiting for worker');
+    setText('#formal-job-current', active ? ([status.current_case, status.current_condition].filter(Boolean).join(' · ') || 'Waiting for worker') : '—');
     setText('#formal-job-outcomes', status.successful + ' / ' + status.failed); setText('#formal-job-elapsed', elapsedClock(status.elapsed_seconds));
     $('#stop-formal-run').hidden = !active;
     $('#stop-formal-run').disabled = stopping;

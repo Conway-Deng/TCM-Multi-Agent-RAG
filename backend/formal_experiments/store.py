@@ -209,7 +209,14 @@ class FormalJobStore:
         value["request"] = json.loads(value.pop("request_json"))
         value["metadata"] = json.loads(value.pop("metadata_json"))
         value["cancellation_requested"] = bool(value.get("cancellation_requested"))
-        value["elapsed_seconds"] = round(time.time() - (value.get("started_at") or value["created_at"]), 3)
+        start = value.get("started_at") or value["created_at"]
+        if value["status"] == "stopped" and value.get("stopped_at") is not None:
+            end = value["stopped_at"]
+        elif value["status"] in {"complete", "failed"}:
+            end = value["updated_at"]
+        else:
+            end = time.time()
+        value["elapsed_seconds"] = round(max(0, end - start), 3)
         return value
 
     def update(self, run_id: str, **values: Any) -> None:

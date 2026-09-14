@@ -318,6 +318,27 @@ def test_guided_experiment_summary_fetches_on_restore_and_terminal_transition_on
     assert "formalAggregateSummary = null" in JS
 
 
+def test_guided_current_execution_is_visible_only_for_active_run_statuses() -> None:
+    status = JS[JS.index("function renderFormalStatus"):JS.index("async function refreshFormalRun")]
+    assert "const active = status.status === 'queued' || status.status === 'running' || stopping" in status
+    assert "setText('#formal-job-current', active ?" in status
+    assert "[status.current_case, status.current_condition]" in status
+    assert "|| 'Waiting for worker') : '—'" in status
+    assert "status.current_case =" not in status and "status.current_condition =" not in status
+
+
+def test_terminal_current_execution_polish_leaves_cards_summary_restore_and_custom_unchanged() -> None:
+    cards = JS[JS.index("function renderFormalExecutionCards"):JS.index("function setPaperWorkbenchMode")]
+    summary = JS[JS.index("function renderFormalComparison"):JS.index("function setFormalSummaryFeedback")]
+    registry = JS[JS.index("async function loadFormalRegistry"):JS.index("function elapsedClock")]
+    custom = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
+    assert "status.current_case" in cards and "formalResultRows" in cards
+    assert "Partial replay — not directly comparable to the complete paper result." in summary
+    assert "await refreshFormalRun({ restoring: true })" in registry
+    assert "#formal-job-current" not in custom
+    assert "renderEvidence(data)" in custom
+
+
 def test_guided_summary_ui_does_not_change_execution_detail_or_custom_workbench_contract() -> None:
     detail = JS[JS.index("function ensureFormalDetailPanel"):JS.index("function renderFormalExecutionCards")]
     custom = JS[JS.index("function renderResearchRun(data, options = {})"):JS.index("function renderCompare(data)")]
