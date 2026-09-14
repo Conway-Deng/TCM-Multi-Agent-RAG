@@ -120,6 +120,42 @@ def _warmup_module():
     return module
 
 
+def _write_warmup_batches(
+    engine: RetrievalEngine,
+    identity: dict[str, str],
+    *,
+    vectors: list[list[float]] | None = None,
+) -> list[list[float]]:
+    batch_dir = engine.cache_dir / "warmup_batches"
+    batch_dir.mkdir(parents=True)
+    document_vectors = vectors or [
+        [float(index)] + [0.0] * 1023
+        for index in range(len(engine.chunks))
+    ]
+    for batch_index, start in enumerate(range(0, len(engine.chunks), engine.embedding_batch_size)):
+        batch_chunks = engine.chunks[start : start + engine.embedding_batch_size]
+        (batch_dir / f"batch-{batch_index:05d}.json").write_text(
+            json.dumps({
+                "identity": identity,
+                "batch_index": batch_index,
+                "start": start,
+                "chunk_ids": [chunk.chunk_id for chunk in batch_chunks],
+                "vectors": document_vectors[start : start + len(batch_chunks)],
+            }, separators=(",", ":")),
+            encoding="utf-8",
+        )
+    return document_vectors
+
+
+def _write_final_cache(engine: RetrievalEngine, identity: dict[str, str], vectors: list[list[float]]) -> None:
+    engine._cache_path(identity).write_text(json.dumps({
+        "identity": identity,
+        "document_ids": [chunk.chunk_id for chunk in engine.chunks],
+        "document_vectors": vectors,
+        "query_vectors": {},
+    }, separators=(",", ":")), encoding="utf-8")
+
+
 def test_ordinary_constructor_defaults_preserve_nonformal_mode(monkeypatch: pytest.MonkeyPatch) -> None:
     chunks = _chunks()
     monkeypatch.setattr(engine_module, "load_chunks", lambda: chunks)
@@ -323,6 +359,126 @@ def test_warmup_streaming_rejects_invalid_batch_without_replacing_final_cache(tm
 
     assert final_path.read_text(encoding="utf-8") == "previous-valid-cache"
     assert not final_path.with_suffix(".tmp").exists()
+
+
+def test_strict_loader_reconstructs_batches_in_order_and_loads_query_sidecar(tmp_path: Path) -> None:
+    chunks = _chunks(5)
+    engine = _engine(tmp_path, formal_strict=True, chunks=chunks)
+    identity = engine.embedding_cache_identity()
+    expected_vectors = _write_warmup_batches(engine, identity)
+    _write_final_cache(engine, identity, expected_vectors)
+    query_vector = [1.0] + [0.0] * 1023
+    engine._query_cache_path(identity).write_text(json.dumps({
+        "identity": identity,
+        "query_vectors": {"cached-query": query_vector},
+    }, separators=(",", ":")), encoding="utf-8")
+
+    engine._load_embedding_cache(identity)
+
+    assert len(engine._document_vectors or []) == len(chunks)
+    assert engine._document_vectors == expected_vectors
+    assert [vector[0] for vector in engine._document_vectors or []] == list(map(float, range(len(chunks))))
+    assert engine._query_vectors == {"cached-query": query_vector}
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("identity", {"wrong": "identity"}, "identity mismatch"),
+        ("batch_index", 99, "index mismatch"),
+        ("chunk_ids", ["wrong-chunk"], "document ordering mismatch"),
+    ),
+)
+def test_strict_loader_rejects_wrong_batch_metadata(
+    tmp_path: Path, field: str, value: object, message: str,
+) -> None:
+    engine = _engine(tmp_path, formal_strict=True, chunks=_chunks(1))
+    identity = engine.embedding_cache_identity()
+    vectors = _write_warmup_batches(engine, identity)
+    _write_final_cache(engine, identity, vectors)
+    path = engine.cache_dir / "warmup_batches/batch-00000.json"
+    batch = json.loads(path.read_text(encoding="utf-8"))
+    batch[field] = value
+    path.write_text(json.dumps(batch, separators=(",", ":")), encoding="utf-8")
+
+    with pytest.raises(ProviderUnavailable, match=message):
+        engine._load_embedding_cache(identity)
+
+
+@pytest.mark.parametrize(
+    ("vector", "message"),
+    (
+        ([0.0] * 1023, "dimension mismatch"),
+        ([math.nan] + [0.0] * 1023, "non-finite"),
+    ),
+)
+def test_strict_loader_rejects_invalid_batch_vectors(
+    tmp_path: Path, vector: list[float], message: str,
+) -> None:
+    engine = _engine(tmp_path, formal_strict=True, chunks=_chunks(1))
+    identity = engine.embedding_cache_identity()
+    _write_warmup_batches(engine, identity, vectors=[vector])
+    _write_final_cache(engine, identity, [[0.0] * 1024])
+
+    with pytest.raises(ProviderUnavailable, match=message):
+        engine._load_embedding_cache(identity)
+
+
+def test_strict_loader_decodes_only_one_batch_at_a_time(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    chunks = _chunks(8)
+    engine = _engine(tmp_path, formal_strict=True, chunks=chunks)
+    identity = engine.embedding_cache_identity()
+    expected_vectors = [[float(index)] + [0.0] * 1023 for index in range(len(chunks))]
+    _write_warmup_batches(engine, identity, vectors=expected_vectors)
+    _write_final_cache(engine, identity, expected_vectors)
+    original_loads = engine_module.json.loads
+
+    class TrackedBatch(list):
+        live = 0
+        maximum_live = 0
+
+        def __init__(self, values: list[list[float]]) -> None:
+            super().__init__(values)
+            type(self).live += 1
+            type(self).maximum_live = max(type(self).maximum_live, type(self).live)
+
+        def __del__(self) -> None:
+            type(self).live -= 1
+
+    def tracked_loads(value: str):
+        data = original_loads(value)
+        if "vectors" in data:
+            data["vectors"] = TrackedBatch(data["vectors"])
+        return data
+
+    monkeypatch.setattr(engine_module.json, "loads", tracked_loads)
+    engine._load_embedding_cache(identity)
+
+    assert len(engine._document_vectors or []) == len(chunks)
+    assert TrackedBatch.maximum_live == 1
+    assert TrackedBatch.live == 0
+
+
+def test_legacy_final_cache_reuses_parsed_document_matrix_without_copy(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    engine = _engine(tmp_path, formal_strict=True, chunks=_chunks(2))
+    identity = engine.embedding_cache_identity()
+    document_vectors = [[1.0, 0.0], [0.0, 1.0]]
+    payload = {
+        "identity": identity,
+        "document_ids": [chunk.chunk_id for chunk in engine.chunks],
+        "document_vectors": document_vectors,
+        "query_vectors": {},
+    }
+    engine._cache_path(identity).write_text("legacy-cache", encoding="utf-8")
+    monkeypatch.setattr(engine_module.json, "loads", lambda _value: payload)
+
+    engine._load_embedding_cache(identity)
+
+    assert engine._document_vectors is document_vectors
 
 
 def test_formal_engine_loads_warmup_cache_document_and_query_vectors(

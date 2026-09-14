@@ -126,6 +126,38 @@ class RetrievalEngine:
     def _query_cache_path(self, identity: dict[str, str]) -> Path:
         return self.cache_dir / f"query-vectors-{self._identity_hash(identity)}.json"
 
+    def _load_warmup_batches(self, identity: dict[str, str]) -> tuple[list[list[float]], int] | None:
+        batch_dir = self.cache_dir / "warmup_batches"
+        if not batch_dir.is_dir():
+            return None
+        document_vectors: list[list[float]] = []
+        total_batches = (len(self.chunks) + self.embedding_batch_size - 1) // self.embedding_batch_size
+        try:
+            for batch_index in range(total_batches):
+                start = batch_index * self.embedding_batch_size
+                expected_ids = [
+                    chunk.chunk_id
+                    for chunk in self.chunks[start : start + self.embedding_batch_size]
+                ]
+                path = batch_dir / f"batch-{batch_index:05d}.json"
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if data.get("identity") != identity:
+                    raise ValueError(f"warmup batch {batch_index} identity mismatch")
+                if data.get("batch_index") != batch_index:
+                    raise ValueError(f"warmup batch {batch_index} index mismatch")
+                if data.get("chunk_ids") != expected_ids:
+                    raise ValueError(f"warmup batch {batch_index} document ordering mismatch")
+                vectors = data["vectors"]
+                self._validate_vectors(vectors, len(expected_ids), expected_dimension=1024)
+                document_vectors.extend(vectors)
+                del vectors, data
+        except ProviderUnavailable:
+            raise
+        except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ProviderUnavailable(f"Embedding batch cache validation failed: {exc}", error_type="malformed_response") from exc
+        dimension = self._validate_vectors(document_vectors, len(self.chunks), expected_dimension=1024)
+        return document_vectors, dimension
+
     @staticmethod
     def _validate_vectors(vectors: list[list[float]], expected_count: int, *, expected_dimension: int | None = None) -> int:
         if len(vectors) != expected_count:
@@ -155,23 +187,30 @@ class RetrievalEngine:
         path = self._cache_path(identity)
         if not path.exists():
             return
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            if data.get("identity") != identity:
-                raise ValueError("cache identity mismatch")
-            expected_ids = [chunk.chunk_id for chunk in self.chunks]
-            if data.get("document_ids") != expected_ids:
-                raise ValueError("cache document ordering mismatch")
-            document_vectors = [[float(value) for value in vector] for vector in data["document_vectors"]]
-            dimension = self._validate_vectors(document_vectors, len(expected_ids))
-            query_vectors = {
-                str(key): [float(value) for value in vector]
-                for key, vector in dict(data.get("query_vectors", {})).items()
-            }
-            for vector in query_vectors.values():
-                self._validate_vectors([vector], 1, expected_dimension=dimension)
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-            raise ProviderUnavailable(f"Embedding cache validation failed: {exc}", error_type="malformed_response") from exc
+        batch_cache = self._load_warmup_batches(identity) if self.formal_strict else None
+        if batch_cache is not None:
+            document_vectors, dimension = batch_cache
+            query_vectors: dict[str, list[float]] = {}
+        else:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if data.get("identity") != identity:
+                    raise ValueError("cache identity mismatch")
+                expected_ids = [chunk.chunk_id for chunk in self.chunks]
+                if data.get("document_ids") != expected_ids:
+                    raise ValueError("cache document ordering mismatch")
+                document_vectors = data["document_vectors"]
+                dimension = self._validate_vectors(document_vectors, len(expected_ids))
+                query_vectors = {
+                    str(key): [float(value) for value in vector]
+                    for key, vector in dict(data.get("query_vectors", {})).items()
+                }
+                for vector in query_vectors.values():
+                    self._validate_vectors([vector], 1, expected_dimension=dimension)
+            except ProviderUnavailable:
+                raise
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise ProviderUnavailable(f"Embedding cache validation failed: {exc}", error_type="malformed_response") from exc
         self._document_vectors = document_vectors
         query_vectors.update(self._load_query_cache(identity, expected_dimension=dimension))
         self._query_vectors = query_vectors
