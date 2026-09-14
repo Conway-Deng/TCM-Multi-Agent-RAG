@@ -1016,6 +1016,75 @@ def test_formal_cooperative_iterable_stops_only_between_atomic_items() -> None:
     assert started == [1, 2]
 
 
+def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    root = tmp_path / "root"
+    output = tmp_path / "replay"
+    events: list[object] = []
+
+    class Warmer:
+        @staticmethod
+        async def warm(cache_dir: Path) -> None:
+            events.append(("warm-start", cache_dir))
+            events.append(("warm-complete", cache_dir))
+
+    class Stage1:
+        STUDY_ROOT: Path | None = None
+
+        @staticmethod
+        def build_stage1_plan() -> list[dict]:
+            return []
+
+        @staticmethod
+        async def execute_stage1(stage1_out: Path) -> None:
+            assert events[-1] == ("stage1-loaded", output)
+            assert stage1.STUDY_ROOT == output
+            stage1.build_stage1_plan()
+            events.append(("stage1-entered", stage1_out))
+
+    class AsyncFacade:
+        as_completed = staticmethod(lambda awaitables: awaitables)
+
+    class Stage2:
+        asyncio = AsyncFacade()
+        STAGE1: Path | None = None
+        OUT: Path | None = None
+
+        @staticmethod
+        async def main() -> None:
+            events.append(("stage2-entered", stage2.STAGE1, stage2.OUT))
+
+    warmer, stage1, stage2 = Warmer(), Stage1(), Stage2()
+
+    def fake_load(path: Path, _name: str):
+        if path.name == "warm_formal_cache.py":
+            return warmer
+        if path.name == "runner.py":
+            assert events == [("warm-start", output / "cache"), ("warm-complete", output / "cache")]
+            events.append(("stage1-loaded", output))
+            return stage1
+        if path.name == "stage2_runner.py":
+            return stage2
+        raise AssertionError(path)
+
+    for name in (
+        "TCM_CORPUS_MODE", "TCM_CORPUS_PATH", "EMBEDDING_PROVIDER", "EMBEDDING_API_KEY",
+        "EMBEDDING_MODEL", "RERANK_PROVIDER", "RERANK_API_KEY", "RERANK_MODEL",
+        "RETRIEVAL_ABLATION_EXECUTION",
+    ):
+        monkeypatch.setenv(name, "offline-test-placeholder")
+    monkeypatch.setenv("LLM_API_KEY", "offline-placeholder")
+    monkeypatch.setattr(worker, "_require_frozen_qwen_provider", lambda: None)
+    monkeypatch.setattr(worker, "_load", fake_load)
+
+    assert worker._run_retrieval(root, output) is False
+    assert events[0:2] == [("warm-start", output / "cache"), ("warm-complete", output / "cache")]
+    assert events.index(("warm-complete", output / "cache")) < events.index(("stage1-entered", output / "stage1"))
+    assert stage1.STUDY_ROOT == output
+    assert stage2.STAGE1 == output / "stage1" and stage2.OUT == output / "stage2"
+
+
 def test_formal_worker_finishes_active_atomic_row_before_stopping(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     import formal_experiments.worker as worker_module
 

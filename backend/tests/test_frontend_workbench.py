@@ -1,4 +1,6 @@
+import json
 from pathlib import Path
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -286,9 +288,49 @@ def test_guided_experiment_summary_formats_only_whitelisted_scientific_values() 
     assert "FORMAL_RATE_METRICS.has" in formatting
     assert "percentage points" in formatting
     assert "toExponential(2)" in formatting
-    assert "+ ' ms'" in formatting and "+ ' s'" in formatting
+    assert "formalLatencyUnit(path)" in formatting
+    assert "return 'ms'" in formatting and "return 's'" in formatting
     assert "value * 100" in formatting
     assert "typeof value !== 'number'" in formatting
+
+
+def test_retrieval_historical_nested_statistics_do_not_inherit_rate_or_latency_units() -> None:
+    formatting = JS[JS.index("const FORMAL_RATE_METRICS"):JS.index("function pickFormalFields")]
+    probe = r"""
+const values = {
+  citation_rate: formatFormalAggregateValue(0.9583333333, ['citation', 'citation_recall', 'R0']),
+  citation_statistic: formatFormalAggregateValue(4, ['citation', 'citation_recall', 'wilcoxon', 'statistic']),
+  citation_nonzero_pairs: formatFormalAggregateValue(4, ['citation', 'citation_recall', 'wilcoxon', 'nonzero_pairs']),
+  latency_mean: formatFormalAggregateValue(22.399, ['latency', 'retrieval_latency_ms', 'R0', 'mean']),
+  latency_statistic: formatFormalAggregateValue(0, ['latency', 'retrieval_latency_ms', 'wilcoxon', 'statistic']),
+  latency_nonzero_pairs: formatFormalAggregateValue(60, ['latency', 'retrieval_latency_ms', 'wilcoxon', 'nonzero_pairs']),
+  rate_difference: formatFormalAggregateValue(0.0083333333, ['citation', 'citation_recall', 'difference']),
+  p_value: formatFormalAggregateValue(1.6713285696526555e-11, ['latency', 'retrieval_latency_ms', 'wilcoxon', 'p_value']),
+  bootstrap_ci: flattenFormalAggregateMetrics([-0.0333, 0.0583], ['citation', 'citation_recall', 'bootstrap_ci_95'])[0].value,
+  research_b_accuracy: formatFormalAggregateValue(0.8292, ['J2', 'accuracy']),
+  research_b_difference: formatFormalAggregateValue(0.4736, ['difference_j2_minus_j1', 'accuracy']),
+  research_c_rate: formatFormalAggregateValue(0.7348, ['K2', 'dual_citation_rate']),
+  a3_latency: formatFormalAggregateValue(37.25, ['latency_seconds', 'M1']),
+};
+console.log(JSON.stringify(values));
+"""
+    completed = subprocess.run(
+        ["node", "-e", formatting + probe], cwd=ROOT, text=True, encoding="utf-8", capture_output=True, check=True,
+    )
+    values = json.loads(completed.stdout)
+    assert values["citation_rate"].endswith("%")
+    assert values["citation_statistic"] == "4"
+    assert values["citation_nonzero_pairs"] == "4"
+    assert values["latency_mean"].endswith(" ms")
+    assert values["latency_statistic"] == "0"
+    assert values["latency_nonzero_pairs"] == "60"
+    assert values["rate_difference"].endswith(" percentage points")
+    assert "e-" in values["p_value"]
+    assert values["bootstrap_ci"] == "-0.0333 – 0.0583"
+    assert values["research_b_accuracy"].endswith("%")
+    assert values["research_b_difference"].endswith(" percentage points")
+    assert values["research_c_rate"].endswith("%")
+    assert values["a3_latency"].endswith(" s")
 
 
 def test_guided_experiment_summary_loading_retry_and_stale_run_protection() -> None:

@@ -397,7 +397,13 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
     })
     warmer = _load(root / "research/retrieval_ablation/warm_formal_cache.py", "frozen_retrieval_cache_warmer")
     cache_dir = output / "cache"
-    warmer.warm(cache_dir)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        pass
+    else:
+        raise RuntimeError("Retrieval replay warmup must run outside an active event loop")
+    asyncio.run(warmer.warm(cache_dir))
     stage1 = _load(root / "research/retrieval_ablation/runner.py", "frozen_retrieval_stage1")
     stage1.STUDY_ROOT = output
     os.environ["RETRIEVAL_ABLATION_EXECUTION"] = "FORMAL_STAGE1_APPROVED"

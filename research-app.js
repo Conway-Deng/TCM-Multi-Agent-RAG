@@ -258,13 +258,33 @@
   }
 
   function isFormalDifferenceRate(path) {
-    return path.some((part) => /(^difference$|difference_.*|.*_diff_.*)/i.test(part))
-      && (path.some((part) => FORMAL_RATE_METRICS.has(String(part).toLowerCase()))
-        || path.some((part) => /^(accuracy|macro_f1)_diff_|^difference_(r3_minus_r0|k2_minus_k1)$/i.test(part)));
+    const leaf = String(path[path.length - 1] || '').toLowerCase();
+    const parent = String(path[path.length - 2] || '').toLowerCase();
+    if (/^(accuracy|macro_f1)_diff_|^difference_(r3_minus_r0|k2_minus_k1)$/.test(leaf)) return true;
+    if (leaf === 'difference' && FORMAL_RATE_METRICS.has(parent)) return true;
+    return /^difference_(j2_minus_j1|k2_minus_k1)$/.test(parent) && FORMAL_RATE_METRICS.has(leaf);
   }
 
   function isFormalRate(path) {
-    return path.some((part) => FORMAL_RATE_METRICS.has(String(part).toLowerCase()) || /^(j1|j2)_(accuracy|macro_f1)$/i.test(part));
+    const leaf = String(path[path.length - 1] || '').toLowerCase();
+    const parent = String(path[path.length - 2] || '').toLowerCase();
+    if (FORMAL_RATE_METRICS.has(leaf) || /^(j1|j2)_(accuracy|macro_f1)$/.test(leaf)) return true;
+    return FORMAL_RATE_METRICS.has(parent) && /^(r0|r3|j1|j2|k1|k2|m1|m2|m1_mean|m2_mean)$/.test(leaf);
+  }
+
+  function formalLatencyUnit(path) {
+    const leaf = String(path[path.length - 1] || '').toLowerCase();
+    const parent = String(path[path.length - 2] || '').toLowerCase();
+    const grandparent = String(path[path.length - 3] || '').toLowerCase();
+    const excluded = /^(statistic|nonzero_pairs|n_nonzero|w_plus|p_value.*|method)$/;
+    if (excluded.test(leaf)) return null;
+    if (/latency.*_ms$|^(mean|median|p95)_ms$/.test(leaf)) return 'ms';
+    if (/latency_seconds$/.test(leaf)) return 's';
+    if (/latency.*_ms$/.test(parent)) return 'ms';
+    if (/latency_seconds$/.test(parent)) return 's';
+    if (/^(r0|r3|j1|j2|k1|k2|m1|m2)$/.test(parent) && /latency.*_ms$/.test(grandparent)) return 'ms';
+    if (/^(r0|r3|j1|j2|k1|k2|m1|m2)$/.test(parent) && /latency_seconds$/.test(grandparent)) return 's';
+    return null;
   }
 
   function formalAggregateRowLabel(path) {
@@ -282,8 +302,8 @@
     if (/p_value|p-value|mcnemar.*p/.test(leaf)) return Math.abs(value) < .001 && value !== 0 ? value.toExponential(2) : formalNumber(value, 6);
     if (isFormalDifferenceRate(path)) return formalNumber(value * 100, 2) + ' percentage points';
     if (isFormalRate(path)) return formalNumber(value * 100, 2) + '%';
-    if (path.some((part) => /latency.*ms|_ms$/i.test(part)) || /^(mean|median|p95)_ms$/.test(leaf)) return formalNumber(value, 2) + ' ms';
-    if (path.some((part) => /latency_seconds/i.test(part))) return formalNumber(value, 2) + ' s';
+    const latencyUnit = formalLatencyUnit(path);
+    if (latencyUnit) return formalNumber(value, 2) + ' ' + latencyUnit;
     return formalNumber(value, 4);
   }
 
