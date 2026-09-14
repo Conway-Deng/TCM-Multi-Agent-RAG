@@ -392,10 +392,6 @@ def _validate_retrieval_cache_without_full_parse(engine: Any, config: dict[str, 
         raise RuntimeError("strict embedding provider/model configuration mismatch")
 
     identity = engine.embedding_cache_identity(provider)
-    cache_path = engine._cache_path(identity)
-    if not cache_path.exists():
-        raise RuntimeError(f"completed BGE cache is missing: {cache_path}")
-
     batch_dir = engine.cache_dir / "warmup_batches"
     if not batch_dir.is_dir():
         raise RuntimeError(f"completed BGE warmup batches are missing: {batch_dir}")
@@ -407,16 +403,22 @@ def _validate_retrieval_cache_without_full_parse(engine: Any, config: dict[str, 
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"completed BGE cache warmup report is invalid: {exc}") from exc
 
+    batch_size = int(strict["embedding_batch_size"])
     expected_report = {
         "status": "PASS",
+        "storage": "sharded_batches",
         "cache_identity": identity,
         "corpus_chunks": len(engine.chunks),
+        "batch_size": batch_size,
+        "batches": (len(engine.chunks) + batch_size - 1) // batch_size,
         "dimension": 1024,
         "all_finite": True,
         "ordering_valid": True,
         "missing": 0,
         "duplicates": 0,
         "model": strict["embedding_model"],
+        "embedding_provider": strict["embedding_provider"],
+        "embedding_model": strict["embedding_model"],
     }
     for field, expected in expected_report.items():
         if report.get(field) != expected:
@@ -427,7 +429,7 @@ def _validate_retrieval_cache_without_full_parse(engine: Any, config: dict[str, 
         reported_cache_path = Path(report["cache_path"])
     except (KeyError, TypeError) as exc:
         raise RuntimeError("completed BGE cache warmup report mismatch: cache_path") from exc
-    if reported_cache_path.resolve() != cache_path.resolve():
+    if reported_cache_path.resolve() != batch_dir.resolve():
         raise RuntimeError("completed BGE cache warmup report mismatch: cache_path")
 
     engine._load_embedding_cache(identity)
@@ -440,7 +442,7 @@ def _validate_retrieval_cache_without_full_parse(engine: Any, config: dict[str, 
         expected_dimension=1024,
     )
     return {
-        "path": str(cache_path),
+        "path": str(batch_dir),
         "identity": identity,
         "chunks": len(engine.chunks),
         "dimension": dimension,
@@ -468,7 +470,7 @@ def _run_retrieval(root: Path, output: Path, should_stop: StopPredicate = None) 
         pass
     else:
         raise RuntimeError("Retrieval replay warmup must run outside an active event loop")
-    asyncio.run(warmer.warm(cache_dir))
+    asyncio.run(warmer.warm(cache_dir, build_legacy_final_cache=False))
     del warmer
     gc.collect()
     stage1 = _load(root / "research/retrieval_ablation/runner.py", "frozen_retrieval_stage1")

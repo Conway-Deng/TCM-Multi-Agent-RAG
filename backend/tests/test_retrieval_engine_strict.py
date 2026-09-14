@@ -120,6 +120,60 @@ def _warmup_module():
     return module
 
 
+def _configure_mock_warmup(
+    monkeypatch: pytest.MonkeyPatch,
+    warmer,
+    chunks: tuple[SimpleNamespace, ...],
+    *,
+    batch_size: int = 2,
+) -> dict[str, str]:
+    config = {
+        "formal_strict": {
+            "embedding_provider": "siliconflow",
+            "embedding_model": "BAAI/bge-m3",
+            "embedding_batch_size": batch_size,
+            "preprocessing_version": "chunk-text-v1",
+            "embedding_config_version": "retrieval-ablation-v1",
+        },
+    }
+    identity = {
+        "corpus_sha256": "corpus-sha",
+        "embedding_provider": "siliconflow",
+        "embedding_model": "BAAI/bge-m3",
+        "preprocessing_version": "chunk-text-v1",
+        "embedding_config_version": "retrieval-ablation-v1",
+    }
+    settings = SimpleNamespace(
+        embedding_api_key="offline-key",
+        llm_api_key="",
+        embedding_base_url="https://offline.invalid",
+        llm_base_url="",
+    )
+    provider = object()
+    next_vector = 0
+
+    async def embed_batch(actual_provider, texts: list[str], *, max_attempts: int = 3):
+        nonlocal next_vector
+        assert actual_provider is provider
+        assert max_attempts == 3
+        vectors = []
+        for _ in texts:
+            vectors.append([float(next_vector)] + [0.0] * 1023)
+            next_vector += 1
+        return vectors, 0, 0
+
+    monkeypatch.setenv("TCM_CORPUS_MODE", "offline-test-placeholder")
+    monkeypatch.setenv("ALLOW_BULK_REMOTE_EMBEDDING", "offline-test-placeholder")
+    monkeypatch.setattr(warmer, "load_config", lambda: config)
+    monkeypatch.setattr(warmer, "preflight", lambda _config: (chunks, {
+        "benchmark_sha256": "benchmark-sha", "corpus_sha256": "corpus-sha",
+    }))
+    monkeypatch.setattr(warmer, "get_settings", lambda: settings)
+    monkeypatch.setattr(warmer, "SiliconFlowEmbeddingProvider", lambda **_kwargs: provider)
+    monkeypatch.setattr(warmer, "_embed_with_retry", embed_batch)
+    return identity
+
+
 def _write_warmup_batches(
     engine: RetrievalEngine,
     identity: dict[str, str],
@@ -145,15 +199,6 @@ def _write_warmup_batches(
             encoding="utf-8",
         )
     return document_vectors
-
-
-def _write_final_cache(engine: RetrievalEngine, identity: dict[str, str], vectors: list[list[float]]) -> None:
-    engine._cache_path(identity).write_text(json.dumps({
-        "identity": identity,
-        "document_ids": [chunk.chunk_id for chunk in engine.chunks],
-        "document_vectors": vectors,
-        "query_vectors": {},
-    }, separators=(",", ":")), encoding="utf-8")
 
 
 def test_ordinary_constructor_defaults_preserve_nonformal_mode(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -290,6 +335,79 @@ def test_warmup_streams_batches_into_the_unchanged_cache_schema(tmp_path: Path) 
     assert "ordered_vectors" not in source
 
 
+def test_sharded_warmup_skips_legacy_final_cache_and_reports_authoritative_batches(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    warmer = _warmup_module()
+    chunks = _chunks(5)
+    identity = _configure_mock_warmup(monkeypatch, warmer, chunks)
+    monkeypatch.setattr(
+        warmer,
+        "_stream_final_cache",
+        lambda *_args, **_kwargs: pytest.fail("sharded warmup must not build the legacy final cache"),
+    )
+
+    report = asyncio.run(warmer.warm(tmp_path, build_legacy_final_cache=False))
+
+    batch_dir = tmp_path / "warmup_batches"
+    assert report["status"] == "PASS"
+    assert report["storage"] == "sharded_batches"
+    assert report["cache_path"] == str(batch_dir)
+    assert report["cache_identity"] == identity
+    assert report["corpus_chunks"] == len(chunks)
+    assert report["batch_size"] == 2
+    assert report["batches"] == 3
+    assert report["dimension"] == 1024
+    assert report["all_finite"] is True
+    assert report["ordering_valid"] is True
+    assert report["missing"] == report["duplicates"] == 0
+    assert report["model"] == "BAAI/bge-m3"
+    assert report["embedding_provider"] == "siliconflow"
+    assert report["embedding_model"] == "BAAI/bge-m3"
+    assert report["embedding_provider_calls"] == 3
+    assert not list(tmp_path.glob("embeddings-*.json"))
+    assert [path.name for path in sorted(batch_dir.glob("batch-*.json"))] == [
+        "batch-00000.json", "batch-00001.json", "batch-00002.json",
+    ]
+    first_values: list[float] = []
+    for batch_index, start in enumerate(range(0, len(chunks), 2)):
+        expected_ids = [chunk.chunk_id for chunk in chunks[start : start + 2]]
+        vectors = warmer._validate_batch(
+            warmer._batch_path(batch_dir, batch_index),
+            batch_index=batch_index,
+            expected_ids=expected_ids,
+            identity=identity,
+        )
+        assert vectors is not None
+        first_values.extend(vector[0] for vector in vectors)
+    assert first_values == list(map(float, range(len(chunks))))
+
+
+def test_warmup_default_still_builds_legacy_monolithic_cache(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    warmer = _warmup_module()
+    chunks = _chunks(3)
+    identity = _configure_mock_warmup(monkeypatch, warmer, chunks)
+    calls: list[dict[str, object]] = []
+
+    def stream_final_cache(final_path: Path, **kwargs) -> None:
+        calls.append({"final_path": final_path, **kwargs})
+        final_path.write_text("legacy-cache", encoding="utf-8")
+
+    monkeypatch.setattr(warmer, "_stream_final_cache", stream_final_cache)
+
+    report = asyncio.run(warmer.warm(tmp_path))
+
+    expected_path = tmp_path / f"embeddings-{warmer.canonical_hash(identity)}.json"
+    assert len(calls) == 1
+    assert calls[0]["final_path"] == expected_path
+    assert calls[0]["batch_dir"] == tmp_path / "warmup_batches"
+    assert expected_path.read_text(encoding="utf-8") == "legacy-cache"
+    assert report["cache_path"] == str(expected_path)
+    assert "storage" not in report
+
+
 def test_warmup_finalization_holds_only_one_validated_batch(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
@@ -366,7 +484,6 @@ def test_strict_loader_reconstructs_batches_in_order_and_loads_query_sidecar(tmp
     engine = _engine(tmp_path, formal_strict=True, chunks=chunks)
     identity = engine.embedding_cache_identity()
     expected_vectors = _write_warmup_batches(engine, identity)
-    _write_final_cache(engine, identity, expected_vectors)
     query_vector = [1.0] + [0.0] * 1023
     engine._query_cache_path(identity).write_text(json.dumps({
         "identity": identity,
@@ -375,6 +492,7 @@ def test_strict_loader_reconstructs_batches_in_order_and_loads_query_sidecar(tmp
 
     engine._load_embedding_cache(identity)
 
+    assert not engine._cache_path(identity).exists()
     assert len(engine._document_vectors or []) == len(chunks)
     assert engine._document_vectors == expected_vectors
     assert [vector[0] for vector in engine._document_vectors or []] == list(map(float, range(len(chunks))))
@@ -394,8 +512,7 @@ def test_strict_loader_rejects_wrong_batch_metadata(
 ) -> None:
     engine = _engine(tmp_path, formal_strict=True, chunks=_chunks(1))
     identity = engine.embedding_cache_identity()
-    vectors = _write_warmup_batches(engine, identity)
-    _write_final_cache(engine, identity, vectors)
+    _write_warmup_batches(engine, identity)
     path = engine.cache_dir / "warmup_batches/batch-00000.json"
     batch = json.loads(path.read_text(encoding="utf-8"))
     batch[field] = value
@@ -418,7 +535,6 @@ def test_strict_loader_rejects_invalid_batch_vectors(
     engine = _engine(tmp_path, formal_strict=True, chunks=_chunks(1))
     identity = engine.embedding_cache_identity()
     _write_warmup_batches(engine, identity, vectors=[vector])
-    _write_final_cache(engine, identity, [[0.0] * 1024])
 
     with pytest.raises(ProviderUnavailable, match=message):
         engine._load_embedding_cache(identity)
@@ -432,7 +548,6 @@ def test_strict_loader_decodes_only_one_batch_at_a_time(
     identity = engine.embedding_cache_identity()
     expected_vectors = [[float(index)] + [0.0] * 1023 for index in range(len(chunks))]
     _write_warmup_batches(engine, identity, vectors=expected_vectors)
-    _write_final_cache(engine, identity, expected_vectors)
     original_loads = engine_module.json.loads
 
     class TrackedBatch(list):

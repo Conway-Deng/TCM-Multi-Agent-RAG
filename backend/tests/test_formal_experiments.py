@@ -1027,17 +1027,21 @@ def _memory_safe_retrieval_cache_fixture(tmp_path: Path):
         "embedding_config_version": "retrieval-ablation-v1",
     }
     cache_path = cache_dir / "embeddings-identity.json"
-    cache_path.write_text("large final cache must not be parsed", encoding="utf-8")
     report = {
         "status": "PASS",
+        "storage": "sharded_batches",
         "model": "BAAI/bge-m3",
+        "embedding_provider": "siliconflow",
+        "embedding_model": "BAAI/bge-m3",
         "corpus_chunks": 2,
+        "batch_size": 64,
+        "batches": 1,
         "missing": 0,
         "duplicates": 0,
         "dimension": 1024,
         "all_finite": True,
         "ordering_valid": True,
-        "cache_path": str(cache_path),
+        "cache_path": str(cache_dir / "warmup_batches"),
         "cache_identity": identity,
     }
     report_path = cache_dir / "cache_warmup_report.json"
@@ -1092,6 +1096,7 @@ def _memory_safe_retrieval_cache_fixture(tmp_path: Path):
     config = {"formal_strict": {
         "embedding_provider": "siliconflow",
         "embedding_model": "BAAI/bge-m3",
+        "embedding_batch_size": 64,
     }}
     return Engine(), config, report, report_path, cache_path, identity
 
@@ -1112,7 +1117,7 @@ def test_memory_safe_retrieval_validator_never_reads_full_final_cache(
 
     assert set(cache_info) == {"path", "identity", "chunks", "dimension", "query_cache_entries"}
     assert cache_info == {
-        "path": str(cache_path),
+        "path": str(engine.cache_dir / "warmup_batches"),
         "identity": identity,
         "chunks": 2,
         "dimension": 1024,
@@ -1121,6 +1126,7 @@ def test_memory_safe_retrieval_validator_never_reads_full_final_cache(
     assert engine.load_calls == 1
     assert engine.reconstructions == 1
     assert engine.validation_calls == 1
+    assert not cache_path.exists()
 
     # This mirrors the frozen runner's later load call: the active identity makes it a no-op.
     engine._load_embedding_cache(identity)
@@ -1132,15 +1138,20 @@ def test_memory_safe_retrieval_validator_never_reads_full_final_cache(
     ("field", "invalid_value"),
     (
         ("status", "FAIL"),
+        ("storage", "legacy_monolithic"),
         ("cache_identity", {"embedding_provider": "wrong"}),
         ("cache_path", "wrong-cache.json"),
         ("corpus_chunks", 1),
+        ("batch_size", 32),
+        ("batches", 2),
         ("dimension", 768),
         ("all_finite", False),
         ("ordering_valid", False),
         ("missing", 1),
         ("duplicates", 1),
         ("model", "wrong-model"),
+        ("embedding_provider", "wrong-provider"),
+        ("embedding_model", "wrong-model"),
     ),
 )
 def test_memory_safe_retrieval_validator_rejects_invalid_warmup_report(
@@ -1176,7 +1187,8 @@ def test_retrieval_replay_awaits_cache_warmup_before_loading_stage1(
 
     class Warmer:
         @staticmethod
-        async def warm(cache_dir: Path) -> None:
+        async def warm(cache_dir: Path, *, build_legacy_final_cache: bool = True) -> None:
+            assert build_legacy_final_cache is False
             events.append(("warm-start", cache_dir))
             events.append(("warm-complete", cache_dir))
 
@@ -1254,7 +1266,8 @@ def test_retrieval_replay_restores_frozen_validator_after_stage1_exception(
 
     class Warmer:
         @staticmethod
-        async def warm(_cache_dir: Path) -> None:
+        async def warm(_cache_dir: Path, *, build_legacy_final_cache: bool = True) -> None:
+            assert build_legacy_final_cache is False
             return None
 
     class Stage1:

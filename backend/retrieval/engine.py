@@ -185,13 +185,13 @@ class RetrievalEngine:
         self._query_vectors = {}
         self._active_cache_identity = identity
         path = self._cache_path(identity)
-        if not path.exists():
-            return
         batch_cache = self._load_warmup_batches(identity) if self.formal_strict else None
         if batch_cache is not None:
             document_vectors, dimension = batch_cache
             query_vectors: dict[str, list[float]] = {}
         else:
+            if not path.exists():
+                return
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
                 if data.get("identity") != identity:

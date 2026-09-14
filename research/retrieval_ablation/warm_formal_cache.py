@@ -157,7 +157,38 @@ def _stream_final_cache(
         raise
 
 
-async def warm(cache_dir: Path) -> dict[str, Any]:
+def _validate_sharded_cache(
+    batch_dir: Path,
+    *,
+    chunks: tuple[Any, ...],
+    identity: dict[str, str],
+    batch_size: int,
+    total_batches: int,
+) -> None:
+    """Validate the authoritative shards while holding one decoded batch at a time."""
+    seen_ids: set[str] = set()
+    vectors_validated = 0
+    for batch_index in range(total_batches):
+        start = batch_index * batch_size
+        expected_ids = [chunk.chunk_id for chunk in chunks[start : start + batch_size]]
+        if any(chunk_id in seen_ids for chunk_id in expected_ids):
+            raise RuntimeError("sharded cache ordering or chunk identity invariant failed")
+        vectors = _validate_batch(
+            _batch_path(batch_dir, batch_index),
+            batch_index=batch_index,
+            expected_ids=expected_ids,
+            identity=identity,
+        )
+        if vectors is None:
+            raise RuntimeError(f"warmup batch {batch_index} failed validation")
+        seen_ids.update(expected_ids)
+        vectors_validated += len(vectors)
+        del vectors
+    if vectors_validated != len(chunks) or len(seen_ids) != len(chunks):
+        raise RuntimeError("sharded cache ordering or chunk identity invariant failed")
+
+
+async def warm(cache_dir: Path, *, build_legacy_final_cache: bool = True) -> dict[str, Any]:
     os.environ["TCM_CORPUS_MODE"] = "required"
     os.environ["ALLOW_BULK_REMOTE_EMBEDDING"] = "true"
     config = load_config()
@@ -215,14 +246,25 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
 
     cache_identity_hash = canonical_hash(identity)
     final_path = cache_dir / f"embeddings-{cache_identity_hash}.json"
-    _stream_final_cache(
-        final_path,
-        batch_dir=batch_dir,
-        chunks=chunks,
-        identity=identity,
-        batch_size=batch_size,
-        total_batches=total_batches,
-    )
+    if build_legacy_final_cache:
+        _stream_final_cache(
+            final_path,
+            batch_dir=batch_dir,
+            chunks=chunks,
+            identity=identity,
+            batch_size=batch_size,
+            total_batches=total_batches,
+        )
+        authoritative_path = final_path
+    else:
+        _validate_sharded_cache(
+            batch_dir,
+            chunks=chunks,
+            identity=identity,
+            batch_size=batch_size,
+            total_batches=total_batches,
+        )
+        authoritative_path = batch_dir
     report = {
         "status": "PASS",
         "scope": "formal_corpus_embedding_cache_warmup_only",
@@ -238,7 +280,7 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
         "dimension": 1024,
         "all_finite": True,
         "ordering_valid": True,
-        "cache_path": str(final_path),
+        "cache_path": str(authoritative_path),
         "cache_identity": identity,
         "cache_identity_sha256": cache_identity_hash,
         "embedding_provider_calls": embedding_calls,
@@ -249,6 +291,12 @@ async def warm(cache_dir: Path) -> dict[str, Any]:
         "fallback": False,
         "completed_at_utc": datetime.now(timezone.utc).isoformat(),
     }
+    if not build_legacy_final_cache:
+        report.update({
+            "storage": "sharded_batches",
+            "embedding_provider": "siliconflow",
+            "embedding_model": strict["embedding_model"],
+        })
     (cache_dir / "cache_warmup_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     return report
