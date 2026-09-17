@@ -1,0 +1,24 @@
+{
+  "chunk_count": 271,
+  "errors": [],
+  "license_counts": {
+    "CC BY 3.0": 2,
+    "CC BY 4.0": 9,
+    "CC BY-NC 4.0": 3,
+    "CC BY-NC-ND 4.0": 2
+  },
+  "report_name": "MediRAG-West v0.1 Pilot Validation Report",
+  "scientific_status": "pilot retrieval corpus; not clinically validated",
+  "source_count": 16,
+  "source_type_counts": {
+    "systematic_review": 16
+  },
+  "topic_chunk_counts": {
+    "constipation": 72,
+    "cough": 72,
+    "dyspepsia_digestive_symptoms": 57,
+    "headache": 70
+  },
+  "valid": true,
+  "warnings": []
+}

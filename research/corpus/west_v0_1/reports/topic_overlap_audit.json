@@ -1,0 +1,221 @@
+{
+  "candidates": [
+    {
+      "direct_support_count": 671,
+      "label": "cough",
+      "patterns": [
+        "\\bcough(?:ing)?\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-004107401e93b6689c0cd7b1",
+        "tcmv1-0067a262fc409b6b1afb4352",
+        "tcmv1-00f3ad5115bf733fc03005b1",
+        "tcmv1-0203996356a74cf84c60eccb",
+        "tcmv1-0280afee372cda5ead10df6d",
+        "tcmv1-02a05dcc00fb6b1ce8a72741",
+        "tcmv1-02e2db6ebae9f34116efaedc",
+        "tcmv1-0401fa4b74693418cc12569d",
+        "tcmv1-04101025427fc2b8a88faef5",
+        "tcmv1-044a0b754fdd715a3e112e86"
+      ],
+      "selected": true,
+      "topic": "cough"
+    },
+    {
+      "direct_support_count": 397,
+      "label": "dyspepsia / digestive symptoms",
+      "patterns": [
+        "\\bdyspepsia\\b",
+        "\\bindigestion\\b",
+        "\\bdigestive\\b",
+        "\\bdigestion\\b",
+        "\\bepigastric\\b",
+        "\\bstomach pain\\b",
+        "\\babdominal (?:pain|distention|distension)\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-000377132373045568267742",
+        "tcmv1-00649d5908a6aba598864b5c",
+        "tcmv1-0067a262fc409b6b1afb4352",
+        "tcmv1-00c56d1c0b9e352aeb429ef7",
+        "tcmv1-00f3ad5115bf733fc03005b1",
+        "tcmv1-02e39e2ba1eeacc6aa4f8f3d",
+        "tcmv1-030e536cd49a51df84bf0c85",
+        "tcmv1-03934c2578d187ec05f41689",
+        "tcmv1-0411347aa94e17aa227cc9e9",
+        "tcmv1-0413dfb6d1e60bf62d5de672"
+      ],
+      "selected": true,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "direct_support_count": 232,
+      "label": "headache",
+      "patterns": [
+        "\\bheadache\\b",
+        "\\bhead pain\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-004107401e93b6689c0cd7b1",
+        "tcmv1-006d430b76d3203c877b64b5",
+        "tcmv1-0203996356a74cf84c60eccb",
+        "tcmv1-0248ff8121e24ef9540902b4",
+        "tcmv1-02e2db6ebae9f34116efaedc",
+        "tcmv1-0425b49514b9259645eb619c",
+        "tcmv1-080afbf3dbbd345e51eebaa4",
+        "tcmv1-087f35ddca2b4e2e9d4c9973",
+        "tcmv1-08eaa501ac5acaeb7dd0bc94",
+        "tcmv1-0aa426b2e98b770e97c523f7"
+      ],
+      "selected": true,
+      "topic": "headache"
+    },
+    {
+      "direct_support_count": 120,
+      "label": "constipation",
+      "patterns": [
+        "\\bconstipat(?:ion|ed)\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-0248ff8121e24ef9540902b4",
+        "tcmv1-055ad692c923d2c18e4b433d",
+        "tcmv1-061c4ae72b310e85e708ef73",
+        "tcmv1-088486c16f33ac27c944fd12",
+        "tcmv1-08b7e1f36534d98121f0d06b",
+        "tcmv1-0a0c75415e85528ee562950b",
+        "tcmv1-0a6006f45eab7cfd46a1a458",
+        "tcmv1-0b6ef1e39d58c224e5bcbb56",
+        "tcmv1-0c5f1b3a9f9cfd2523ffb273",
+        "tcmv1-0f33f41d9757ea79dad00abf"
+      ],
+      "selected": true,
+      "topic": "constipation"
+    },
+    {
+      "direct_support_count": 113,
+      "label": "hypertension",
+      "patterns": [
+        "\\bhypertension\\b",
+        "high blood pressure"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-00c56d1c0b9e352aeb429ef7",
+        "tcmv1-05fbbbff9c103f55d0818bfe",
+        "tcmv1-08a62b7c5bc7e12f7fb06354",
+        "tcmv1-0aa426b2e98b770e97c523f7",
+        "tcmv1-1449e7478bde25f504ac9d3a",
+        "tcmv1-17900322196f78081b82a7db",
+        "tcmv1-1a42fd1dfd8b229f193993a9",
+        "tcmv1-1b0d2a3bebfc0420b8a0730a",
+        "tcmv1-1b1ca6520d16be9da561e320",
+        "tcmv1-1bba46578cbfb30a335481d6"
+      ],
+      "selected": false,
+      "topic": "hypertension"
+    },
+    {
+      "direct_support_count": 104,
+      "label": "insomnia / sleep",
+      "patterns": [
+        "\\binsomnia\\b",
+        "\\bsleep\\b",
+        "\\bsleepless(?:ness)?\\b",
+        "poor sleep"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-02fc6b29407c1200c4360fb8",
+        "tcmv1-037705915f20e4a4a4efe879",
+        "tcmv1-03ed105c1801871066130409",
+        "tcmv1-0413dfb6d1e60bf62d5de672",
+        "tcmv1-0d0e88127ea0ad5a24062ad3",
+        "tcmv1-0f410dedef04b1d5949bf45f",
+        "tcmv1-12d426315f1b292e54fdef02",
+        "tcmv1-142c393b9f3e77f032df75bf",
+        "tcmv1-1568a73a0f6b72a3298c609f",
+        "tcmv1-197de12f5ccbf11f8e2e554a"
+      ],
+      "selected": false,
+      "topic": "insomnia_sleep"
+    },
+    {
+      "direct_support_count": 75,
+      "label": "low back pain",
+      "patterns": [
+        "low(?:er)? back pain",
+        "\\blumbago\\b",
+        "\\blumbar (?:pain|ache)\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-065124d129b0b6e458b53ee5",
+        "tcmv1-109affa71983c35ddca147ea",
+        "tcmv1-139330a840908fbef0387c15",
+        "tcmv1-180b94eaef6da858e63b0434",
+        "tcmv1-18d053e010858ec479447a0e",
+        "tcmv1-1b3498d63d08e05253f93b9b",
+        "tcmv1-1fc23dd9b722dd3e2acc08a7",
+        "tcmv1-291f1a2468085b4749c7850c",
+        "tcmv1-2a0eb1b3708fff0e6f792473",
+        "tcmv1-2b388cc095b4dc34e6731371"
+      ],
+      "selected": false,
+      "topic": "low_back_pain"
+    },
+    {
+      "direct_support_count": 39,
+      "label": "fatigue",
+      "patterns": [
+        "\\bfatigue\\b",
+        "\\btiredness\\b",
+        "\\blassitude\\b",
+        "\\bweariness\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-02a05dcc00fb6b1ce8a72741",
+        "tcmv1-0cb87909724c99259872d0e8",
+        "tcmv1-1449e7478bde25f504ac9d3a",
+        "tcmv1-1a0025b872c2248bece93b7b",
+        "tcmv1-22b40eb645eb7c1df86a99d9",
+        "tcmv1-2764e6ba32e8083ccff4625e",
+        "tcmv1-2c0346a6af25abe7c1593089",
+        "tcmv1-4b05ecdb29f667da3f22cd15",
+        "tcmv1-505ecd29632707a87d05f738",
+        "tcmv1-556d95f0e56edd0d7671b28c"
+      ],
+      "selected": false,
+      "topic": "fatigue"
+    },
+    {
+      "direct_support_count": 6,
+      "label": "anxiety / stress",
+      "patterns": [
+        "\\banxiety\\b",
+        "\\banxious\\b",
+        "\\bstress\\b",
+        "\\bnervousness\\b",
+        "\\bworry\\b"
+      ],
+      "sample_chunk_ids": [
+        "tcmv1-02fc6b29407c1200c4360fb8",
+        "tcmv1-1d32354eb93c93eafcabd867",
+        "tcmv1-4889a92d27931e4588f30602",
+        "tcmv1-95ca4e140fc9c923530d9e9b",
+        "tcmv1-a22f3850435f78b60e616535",
+        "tcmv1-e727eebaca5761bc19d936d2"
+      ],
+      "selected": false,
+      "topic": "anxiety_stress"
+    }
+  ],
+  "corpus_chunk_count": 4461,
+  "corpus_path": "research/corpus/tcm_v1/chunks.jsonl",
+  "development_evidence_only": true,
+  "method": "Case-insensitive deterministic regular-expression matching over entity name, aliases, retrieval text, category/entity/topic metadata, and structured facts; one count per matching TCM chunk.",
+  "report_name": "TCM-Western Candidate Topic Overlap Audit",
+  "selected_topics": [
+    "cough",
+    "dyspepsia_digestive_symptoms",
+    "headache",
+    "constipation"
+  ],
+  "selection_rule": "Exactly the four candidates with the highest observed direct-support counts."
+}

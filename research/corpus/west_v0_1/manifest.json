@@ -1,0 +1,31 @@
+{
+  "build_base_git_commit": "21bf9439c471727e99ff490c6b5392432fced402",
+  "build_timestamp": "2026-09-17T15:03:36.504628+00:00",
+  "chunk_count": 271,
+  "chunking_version": "jats-structural-paragraph-groups-v1",
+  "chunks_sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+  "corpus_name": "MediRAG-West PMC Open Access Pilot Corpus",
+  "corpus_version": "medirag-west-v0.1-pilot",
+  "ingestion_method": "NCBI E-utilities ESearch plus EFetch full-text JATS XML, restricted to PMC Open Access results with explicit reusable licenses",
+  "license_counts": {
+    "CC BY 3.0": 2,
+    "CC BY 4.0": 9,
+    "CC BY-NC 4.0": 3,
+    "CC BY-NC-ND 4.0": 2
+  },
+  "ncbi_api_key_used": false,
+  "ncbi_tool": "medirag_west_research",
+  "request_rate_limit": "maximum 2 requests/second; implementation interval 0.55 seconds",
+  "scientific_status": "small retrieval-development pilot; not clinically validated",
+  "selected_topics": [
+    "cough",
+    "dyspepsia_digestive_symptoms",
+    "headache",
+    "constipation"
+  ],
+  "source_count": 16,
+  "source_registry_sha256": "722273140906b238e88cfdab4ddbb12d73c478f686ae23d0f501738ee6820703",
+  "source_type_counts": {
+    "systematic_review": 16
+  }
+}

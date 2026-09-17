@@ -30,6 +30,11 @@ research/corpus/tcm_v1/**
 !research/corpus/tcm_v1/.gitkeep
 # The frozen v1 chunk file is explicitly deployed for paper-faithful replay.
 !research/corpus/tcm_v1/chunks.jsonl
+# PMC OA source XML and normalized article intermediates are local build inputs.
+# Final pilot registry/chunks/manifests/reports stay visible for deliberate review.
+research/corpus/west_v0_1/raw/**
+research/corpus/west_v0_1/normalized/**
+research/corpus/west_v0_1/chunks.jsonl
 research/replays/
 research/benchmarks/external/**
 !research/benchmarks/external/.gitkeep

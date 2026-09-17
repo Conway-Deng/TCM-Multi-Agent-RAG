@@ -1,0 +1,215 @@
+{
+  "chunk_count": 271,
+  "discovery": {
+    "constipation": {
+      "query_without_contact_parameters": "constipation[Title/Abstract] AND (review[Publication Type] OR systematic review[Title/Abstract] OR meta-analysis[Publication Type]) AND pmc open access[filter] AND english[Language]",
+      "reusable_articles_parsed": 11,
+      "search_result_count_retrieved": 16,
+      "selected_pmcids": [
+        "PMC9960109",
+        "PMC12350361",
+        "PMC9274467",
+        "PMC11007433"
+      ]
+    },
+    "cough": {
+      "query_without_contact_parameters": "cough[Title/Abstract] AND (review[Publication Type] OR systematic review[Title/Abstract] OR meta-analysis[Publication Type]) AND pmc open access[filter] AND english[Language]",
+      "reusable_articles_parsed": 14,
+      "search_result_count_retrieved": 16,
+      "selected_pmcids": [
+        "PMC8483994",
+        "PMC9138020",
+        "PMC9038879",
+        "PMC9397766"
+      ]
+    },
+    "dyspepsia_digestive_symptoms": {
+      "query_without_contact_parameters": "(dyspepsia[Title/Abstract] OR \"functional dyspepsia\"[Title/Abstract]) AND (review[Publication Type] OR systematic review[Title/Abstract] OR meta-analysis[Publication Type]) AND pmc open access[filter] AND english[Language]",
+      "reusable_articles_parsed": 13,
+      "search_result_count_retrieved": 16,
+      "selected_pmcids": [
+        "PMC6863582",
+        "PMC13048936",
+        "PMC9276094",
+        "PMC8765587"
+      ]
+    },
+    "headache": {
+      "query_without_contact_parameters": "(headache[Title/Abstract] OR migraine[Title/Abstract]) AND (review[Publication Type] OR systematic review[Title/Abstract] OR meta-analysis[Publication Type]) AND pmc open access[filter] AND english[Language]",
+      "reusable_articles_parsed": 13,
+      "search_result_count_retrieved": 16,
+      "selected_pmcids": [
+        "PMC11794981",
+        "PMC12857048",
+        "PMC12659810",
+        "PMC12867494"
+      ]
+    }
+  },
+  "license_counts": {
+    "CC BY 3.0": 2,
+    "CC BY 4.0": 9,
+    "CC BY-NC 4.0": 3,
+    "CC BY-NC-ND 4.0": 2
+  },
+  "llm_used": false,
+  "notes": [
+    "Article text and bibliographic/license metadata are source-derived.",
+    "Topic assignments, deterministic identifiers, timestamps, hashes, and retrieval scores are implementation metadata.",
+    "Search-query relevance is a pilot selection assumption and is not a claim of clinical authority or comprehensive coverage."
+  ],
+  "report_name": "MediRAG-West v0.1 Pilot Build Report",
+  "retrieval_smoke_tests": [
+    {
+      "all_results_from_western_pilot": true,
+      "query": "cough causes diagnosis treatment",
+      "results": [
+        {
+          "article_title": "Objective and Subjective Measurement of Cough in Asthma: A Systematic Review of the Literature",
+          "chunk_id": "west-pmc-9038879-f1a8e286d1fca586bdc0",
+          "lexical_score": 0.770745,
+          "rank": 1,
+          "source_id": "west-pmc-9038879"
+        },
+        {
+          "article_title": "A systematic review on cough sound analysis for Covid-19 diagnosis and screening: is my cough sound COVID-19?",
+          "chunk_id": "west-pmc-9138020-f3916d9c63a2125f0979",
+          "lexical_score": 0.674842,
+          "rank": 2,
+          "source_id": "west-pmc-9138020"
+        },
+        {
+          "article_title": "A systematic review on cough sound analysis for Covid-19 diagnosis and screening: is my cough sound COVID-19?",
+          "chunk_id": "west-pmc-9138020-6b3e7b6fb6aa30fb90df",
+          "lexical_score": 0.64927,
+          "rank": 3,
+          "source_id": "west-pmc-9138020"
+        },
+        {
+          "article_title": "A systematic review on cough sound analysis for Covid-19 diagnosis and screening: is my cough sound COVID-19?",
+          "chunk_id": "west-pmc-9138020-14a0acbd2dae1955c1b9",
+          "lexical_score": 0.638793,
+          "rank": 4,
+          "source_id": "west-pmc-9138020"
+        }
+      ],
+      "strategy": "R0 lexical",
+      "topic": "cough"
+    },
+    {
+      "all_results_from_western_pilot": true,
+      "query": "dyspepsia digestive symptoms diagnosis treatment",
+      "results": [
+        {
+          "article_title": "The Psychotic Impact of Helicobacter pylori Gastritis and Functional Dyspepsia on Depression: A Systematic Review",
+          "chunk_id": "west-pmc-6863582-6c64780da0940ab4a94a",
+          "lexical_score": 1.0,
+          "rank": 1,
+          "source_id": "west-pmc-6863582"
+        },
+        {
+          "article_title": "Physical-based therapy for the treatment of functional dyspepsia: a systematic review",
+          "chunk_id": "west-pmc-13048936-82508a07012cdd066c0a",
+          "lexical_score": 0.965534,
+          "rank": 2,
+          "source_id": "west-pmc-13048936"
+        },
+        {
+          "article_title": "The efficacy of cognitive behavior stress management on functional dyspepsia",
+          "chunk_id": "west-pmc-9276094-9c22f6a197ea446fd994",
+          "lexical_score": 0.939319,
+          "rank": 3,
+          "source_id": "west-pmc-9276094"
+        },
+        {
+          "article_title": "The Psychotic Impact of Helicobacter pylori Gastritis and Functional Dyspepsia on Depression: A Systematic Review",
+          "chunk_id": "west-pmc-6863582-ee0714ca22200c900e48",
+          "lexical_score": 0.925562,
+          "rank": 4,
+          "source_id": "west-pmc-6863582"
+        }
+      ],
+      "strategy": "R0 lexical",
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "all_results_from_western_pilot": true,
+      "query": "headache migraine diagnosis treatment",
+      "results": [
+        {
+          "article_title": "Recent Trends in the Pharmacological Treatment of Chronic Migraine: A Systematic Review of Randomized Controlled Trials",
+          "chunk_id": "west-pmc-12659810-959a4d5c0acee2aa76d6",
+          "lexical_score": 1.0,
+          "rank": 1,
+          "source_id": "west-pmc-12659810"
+        },
+        {
+          "article_title": "Recent Trends in the Pharmacological Treatment of Chronic Migraine: A Systematic Review of Randomized Controlled Trials",
+          "chunk_id": "west-pmc-12659810-c3b9cd08b67e4c529eb2",
+          "lexical_score": 0.932124,
+          "rank": 2,
+          "source_id": "west-pmc-12659810"
+        },
+        {
+          "article_title": "Sleep macro- and microstructure in migraine and cluster headache: a systematic review of objective assessments",
+          "chunk_id": "west-pmc-12857048-59d482210f1c36f73361",
+          "lexical_score": 0.917429,
+          "rank": 3,
+          "source_id": "west-pmc-12857048"
+        },
+        {
+          "article_title": "Recent Trends in the Pharmacological Treatment of Chronic Migraine: A Systematic Review of Randomized Controlled Trials",
+          "chunk_id": "west-pmc-12659810-7784641b1f382388051b",
+          "lexical_score": 0.902155,
+          "rank": 4,
+          "source_id": "west-pmc-12659810"
+        }
+      ],
+      "strategy": "R0 lexical",
+      "topic": "headache"
+    },
+    {
+      "all_results_from_western_pilot": true,
+      "query": "constipation diagnosis treatment",
+      "results": [
+        {
+          "article_title": "A Systematic Review of the Development and Psychometric Properties of Constipation-related Patient-reported Outcome Measures: Opportunities for Digital Health",
+          "chunk_id": "west-pmc-9274467-04ab0a3615c7dcfcc6bd",
+          "lexical_score": 1.0,
+          "rank": 1,
+          "source_id": "west-pmc-9274467"
+        },
+        {
+          "article_title": "Prevalence and determinants of constipation in children in Asia: a systematic review and meta-analysis",
+          "chunk_id": "west-pmc-11007433-40eec26aa90fc6c2f644",
+          "lexical_score": 0.939579,
+          "rank": 2,
+          "source_id": "west-pmc-11007433"
+        },
+        {
+          "article_title": "Transcutaneous Neuromodulation for Constipation and Fecal Incontinence in Children: A Systematic Review and Meta-Analysis",
+          "chunk_id": "west-pmc-9960109-d69398becc4b310b6a3a",
+          "lexical_score": 0.8988,
+          "rank": 3,
+          "source_id": "west-pmc-9960109"
+        },
+        {
+          "article_title": "Prevalence and determinants of constipation in children in Asia: a systematic review and meta-analysis",
+          "chunk_id": "west-pmc-11007433-107af14f8b2f92ec741e",
+          "lexical_score": 0.858579,
+          "rank": 4,
+          "source_id": "west-pmc-11007433"
+        }
+      ],
+      "strategy": "R0 lexical",
+      "topic": "constipation"
+    }
+  ],
+  "source_count": 16,
+  "source_type_counts": {
+    "systematic_review": 16
+  },
+  "status": "built",
+  "validation_errors": [],
+  "validation_warnings": []
+}
