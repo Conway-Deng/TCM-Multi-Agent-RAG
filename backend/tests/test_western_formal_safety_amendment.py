@@ -333,6 +333,13 @@ def test_v0_1_1_order_preserves_all_original_sequence_case_condition_tuples() ->
     assert [tuple(cell[field] for field in fields) for cell in new] == [tuple(cell[field] for field in fields) for cell in old]
 
 
+def test_v0_1_2_order_preserves_all_original_sequence_case_condition_tuples() -> None:
+    old = json.loads((ROOT / "research/experiments/western_formal_v0_1/protocol/execution_order.json").read_text(encoding="utf-8"))["cells"]
+    new = json.loads((ROOT / "research/experiments/western_formal_v0_1/protocol_v0_1_2/execution_order.json").read_text(encoding="utf-8"))["cells"]
+    fields = ("sequence", "case_id", "retrieval_condition")
+    assert [tuple(cell[field] for field in fields) for cell in new] == [tuple(cell[field] for field in fields) for cell in old]
+
+
 def test_exact_freeze_head_is_accepted_before_run_directory_creation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     freeze = "f" * 40
     monkeypatch.setattr(formal_eval, "_git_head", lambda root: freeze)

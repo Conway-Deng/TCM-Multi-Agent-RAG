@@ -41,8 +41,9 @@ from .formal_judge import (
 from .schemas import WesternRetrievalEvidence, WesternTopic
 
 
-PROTOCOL_VERSION = "western_formal_v0.1.1"
-SUPERSEDED_PROTOCOL_VERSION = "western-formal-v0.1"
+PROTOCOL_VERSION = "western_formal_v0.1.2"
+SUPERSEDED_PROTOCOL_VERSION = "western_formal_v0.1.1"
+ORIGINAL_PROTOCOL_VERSION = "western-formal-v0.1"
 BENCHMARK_VERSION = "western-pilot-v0.1"
 BENCHMARK_SHA256 = "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6"
 BENCHMARK_MANIFEST_SHA256 = "bd8fc5105329d5d325fa8910b8a642bac6ddc954a25df6b9e299158aa29a22ae"
@@ -69,7 +70,9 @@ RETRYABLE_ERROR_TYPES = frozenset({"connectivity", "http_5xx", "timeout", "malfo
 CONDITIONS = ("R0", "R1", "R2", "R3")
 ORIGINAL_PROTOCOL_COMMIT = "c1a8d0658fc334d70f50d6b688de5b40bf0f99a6"
 ORIGINAL_PROTOCOL_SHA256 = "f7ff69020dac14491569b1764aef1bd0638e9dd15717af6ca16d75835cf35ec5"
-PROTOCOL_SHA256 = "a91f855f5707e07efeb7e460f11e2290f6fb5c282da942ab9b9b4f75360e77c8"
+V0_1_1_PROTOCOL_COMMIT = "46cfb8d8edf89dfeb1af7abf2701b273583cf188"
+V0_1_1_PROTOCOL_SHA256 = "a91f855f5707e07efeb7e460f11e2290f6fb5c282da942ab9b9b4f75360e77c8"
+PROTOCOL_SHA256 = "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192"
 
 
 class FatalFormalRunError(RuntimeError):
@@ -147,7 +150,7 @@ def verify_frozen_inputs(repository_root: Path) -> dict[str, str]:
 
 def verify_amended_protocol(repository_root: Path) -> dict[str, str]:
     actual = verify_frozen_inputs(repository_root)
-    protocol_path = repository_root / "research/experiments/western_formal_v0_1/protocol_v0_1_1/protocol.json"
+    protocol_path = repository_root / "research/experiments/western_formal_v0_1/protocol_v0_1_2/protocol.json"
     protocol_sha256 = _sha256(protocol_path)
     if protocol_sha256 != PROTOCOL_SHA256:
         raise FatalFormalRunError(
@@ -173,13 +176,13 @@ def _git_worktree_clean(repository_root: Path) -> bool:
 
 
 def resolve_protocol_freeze_commit(repository_root: Path) -> str:
-    relative = "research/experiments/western_formal_v0_1/protocol_v0_1_1/protocol.json"
+    relative = "research/experiments/western_formal_v0_1/protocol_v0_1_2/protocol.json"
     commit = subprocess.run(
         ["git", "log", "-1", "--format=%H", "--", relative],
         cwd=repository_root, check=True, capture_output=True, text=True,
     ).stdout.strip()
     if not commit:
-        raise FatalFormalRunError("The v0.1.1 protocol freeze commit does not exist")
+        raise FatalFormalRunError("The v0.1.2 protocol freeze commit does not exist")
     return commit
 
 
@@ -217,12 +220,12 @@ def balanced_execution_order(cases: Iterable[dict[str, Any]]) -> list[dict[str, 
 
 
 def load_frozen_execution_order(repository_root: Path, cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    path = repository_root / "research/experiments/western_formal_v0_1/protocol_v0_1_1/execution_order.json"
+    path = repository_root / "research/experiments/western_formal_v0_1/protocol_v0_1_2/execution_order.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     cells = payload.get("cells")
     expected = balanced_execution_order(cases)
     if payload.get("cell_count") != INTENDED_CELLS or cells != expected:
-        raise FatalFormalRunError("Committed v0.1.1 execution order differs from the frozen balanced order")
+        raise FatalFormalRunError("Committed v0.1.2 execution order differs from the frozen balanced order")
     return cells
 
 
@@ -396,6 +399,7 @@ class RunDirectory:
             "benchmark_checkpoint_commit": BENCHMARK_COMMIT,
             "protocol_checkpoint_commit": current_commit if repository_root is not None else "test-only",
             "original_protocol_v0_1_commit": ORIGINAL_PROTOCOL_COMMIT,
+            "superseded_protocol_v0_1_1_commit": V0_1_1_PROTOCOL_COMMIT,
             "superseded_before_formal_execution": True,
             "created_at": _utc_now(),
             "status": "in_progress",
@@ -435,6 +439,7 @@ class RunDirectory:
             "runtime_checkpoint_commit": RUNTIME_COMMIT,
             "benchmark_checkpoint_commit": BENCHMARK_COMMIT,
             "original_protocol_v0_1_commit": ORIGINAL_PROTOCOL_COMMIT,
+            "superseded_protocol_v0_1_1_commit": V0_1_1_PROTOCOL_COMMIT,
             "superseded_before_formal_execution": True,
         }
         mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
