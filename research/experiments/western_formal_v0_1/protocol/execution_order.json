@@ -1,0 +1,1543 @@
+{
+  "cell_count": 192,
+  "cells": [
+    {
+      "case_id": "westbench-v0.1-cough-01",
+      "case_index": 1,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-01:R0",
+      "retrieval_condition": "R0",
+      "sequence": 1,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-01",
+      "case_index": 1,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-01:R1",
+      "retrieval_condition": "R1",
+      "sequence": 2,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-01",
+      "case_index": 1,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-01:R2",
+      "retrieval_condition": "R2",
+      "sequence": 3,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-01",
+      "case_index": 1,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-01:R3",
+      "retrieval_condition": "R3",
+      "sequence": 4,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-02",
+      "case_index": 2,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-02:R1",
+      "retrieval_condition": "R1",
+      "sequence": 5,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-02",
+      "case_index": 2,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-02:R2",
+      "retrieval_condition": "R2",
+      "sequence": 6,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-02",
+      "case_index": 2,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-02:R3",
+      "retrieval_condition": "R3",
+      "sequence": 7,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-02",
+      "case_index": 2,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-02:R0",
+      "retrieval_condition": "R0",
+      "sequence": 8,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-03",
+      "case_index": 3,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-03:R2",
+      "retrieval_condition": "R2",
+      "sequence": 9,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-03",
+      "case_index": 3,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-03:R3",
+      "retrieval_condition": "R3",
+      "sequence": 10,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-03",
+      "case_index": 3,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-03:R0",
+      "retrieval_condition": "R0",
+      "sequence": 11,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-03",
+      "case_index": 3,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-03:R1",
+      "retrieval_condition": "R1",
+      "sequence": 12,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-04",
+      "case_index": 4,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-04:R3",
+      "retrieval_condition": "R3",
+      "sequence": 13,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-04",
+      "case_index": 4,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-04:R0",
+      "retrieval_condition": "R0",
+      "sequence": 14,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-04",
+      "case_index": 4,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-04:R1",
+      "retrieval_condition": "R1",
+      "sequence": 15,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-04",
+      "case_index": 4,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-04:R2",
+      "retrieval_condition": "R2",
+      "sequence": 16,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-05",
+      "case_index": 5,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-05:R0",
+      "retrieval_condition": "R0",
+      "sequence": 17,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-05",
+      "case_index": 5,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-05:R1",
+      "retrieval_condition": "R1",
+      "sequence": 18,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-05",
+      "case_index": 5,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-05:R2",
+      "retrieval_condition": "R2",
+      "sequence": 19,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-05",
+      "case_index": 5,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-05:R3",
+      "retrieval_condition": "R3",
+      "sequence": 20,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-06",
+      "case_index": 6,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-06:R1",
+      "retrieval_condition": "R1",
+      "sequence": 21,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-06",
+      "case_index": 6,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-06:R2",
+      "retrieval_condition": "R2",
+      "sequence": 22,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-06",
+      "case_index": 6,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-06:R3",
+      "retrieval_condition": "R3",
+      "sequence": 23,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-06",
+      "case_index": 6,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-06:R0",
+      "retrieval_condition": "R0",
+      "sequence": 24,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-07",
+      "case_index": 7,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-07:R2",
+      "retrieval_condition": "R2",
+      "sequence": 25,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-07",
+      "case_index": 7,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-07:R3",
+      "retrieval_condition": "R3",
+      "sequence": 26,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-07",
+      "case_index": 7,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-07:R0",
+      "retrieval_condition": "R0",
+      "sequence": 27,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-07",
+      "case_index": 7,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-07:R1",
+      "retrieval_condition": "R1",
+      "sequence": 28,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-08",
+      "case_index": 8,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-08:R3",
+      "retrieval_condition": "R3",
+      "sequence": 29,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-08",
+      "case_index": 8,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-08:R0",
+      "retrieval_condition": "R0",
+      "sequence": 30,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-08",
+      "case_index": 8,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-08:R1",
+      "retrieval_condition": "R1",
+      "sequence": 31,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-08",
+      "case_index": 8,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-08:R2",
+      "retrieval_condition": "R2",
+      "sequence": 32,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-09",
+      "case_index": 9,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-09:R0",
+      "retrieval_condition": "R0",
+      "sequence": 33,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-09",
+      "case_index": 9,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-09:R1",
+      "retrieval_condition": "R1",
+      "sequence": 34,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-09",
+      "case_index": 9,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-09:R2",
+      "retrieval_condition": "R2",
+      "sequence": 35,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-09",
+      "case_index": 9,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-09:R3",
+      "retrieval_condition": "R3",
+      "sequence": 36,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-10",
+      "case_index": 10,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-10:R1",
+      "retrieval_condition": "R1",
+      "sequence": 37,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-10",
+      "case_index": 10,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-10:R2",
+      "retrieval_condition": "R2",
+      "sequence": 38,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-10",
+      "case_index": 10,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-10:R3",
+      "retrieval_condition": "R3",
+      "sequence": 39,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-10",
+      "case_index": 10,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-10:R0",
+      "retrieval_condition": "R0",
+      "sequence": 40,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-11",
+      "case_index": 11,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-11:R2",
+      "retrieval_condition": "R2",
+      "sequence": 41,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-11",
+      "case_index": 11,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-11:R3",
+      "retrieval_condition": "R3",
+      "sequence": 42,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-11",
+      "case_index": 11,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-11:R0",
+      "retrieval_condition": "R0",
+      "sequence": 43,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-11",
+      "case_index": 11,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-11:R1",
+      "retrieval_condition": "R1",
+      "sequence": 44,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-cough-12",
+      "case_index": 12,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-12:R3",
+      "retrieval_condition": "R3",
+      "sequence": 45,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-cough-12",
+      "case_index": 12,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-12:R0",
+      "retrieval_condition": "R0",
+      "sequence": 46,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-cough-12",
+      "case_index": 12,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-12:R1",
+      "retrieval_condition": "R1",
+      "sequence": 47,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-cough-12",
+      "case_index": 12,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-cough-12:R2",
+      "retrieval_condition": "R2",
+      "sequence": 48,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-01",
+      "case_index": 13,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-01:R0",
+      "retrieval_condition": "R0",
+      "sequence": 49,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-01",
+      "case_index": 13,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-01:R1",
+      "retrieval_condition": "R1",
+      "sequence": 50,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-01",
+      "case_index": 13,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-01:R2",
+      "retrieval_condition": "R2",
+      "sequence": 51,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-01",
+      "case_index": 13,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-01:R3",
+      "retrieval_condition": "R3",
+      "sequence": 52,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-02",
+      "case_index": 14,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-02:R1",
+      "retrieval_condition": "R1",
+      "sequence": 53,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-02",
+      "case_index": 14,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-02:R2",
+      "retrieval_condition": "R2",
+      "sequence": 54,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-02",
+      "case_index": 14,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-02:R3",
+      "retrieval_condition": "R3",
+      "sequence": 55,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-02",
+      "case_index": 14,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-02:R0",
+      "retrieval_condition": "R0",
+      "sequence": 56,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "case_index": 15,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-03:R2",
+      "retrieval_condition": "R2",
+      "sequence": 57,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "case_index": 15,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-03:R3",
+      "retrieval_condition": "R3",
+      "sequence": 58,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "case_index": 15,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-03:R0",
+      "retrieval_condition": "R0",
+      "sequence": 59,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "case_index": 15,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-03:R1",
+      "retrieval_condition": "R1",
+      "sequence": 60,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-04",
+      "case_index": 16,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-04:R3",
+      "retrieval_condition": "R3",
+      "sequence": 61,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-04",
+      "case_index": 16,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-04:R0",
+      "retrieval_condition": "R0",
+      "sequence": 62,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-04",
+      "case_index": 16,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-04:R1",
+      "retrieval_condition": "R1",
+      "sequence": 63,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-04",
+      "case_index": 16,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-04:R2",
+      "retrieval_condition": "R2",
+      "sequence": 64,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-05",
+      "case_index": 17,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-05:R0",
+      "retrieval_condition": "R0",
+      "sequence": 65,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-05",
+      "case_index": 17,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-05:R1",
+      "retrieval_condition": "R1",
+      "sequence": 66,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-05",
+      "case_index": 17,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-05:R2",
+      "retrieval_condition": "R2",
+      "sequence": 67,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-05",
+      "case_index": 17,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-05:R3",
+      "retrieval_condition": "R3",
+      "sequence": 68,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-06",
+      "case_index": 18,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-06:R1",
+      "retrieval_condition": "R1",
+      "sequence": 69,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-06",
+      "case_index": 18,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-06:R2",
+      "retrieval_condition": "R2",
+      "sequence": 70,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-06",
+      "case_index": 18,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-06:R3",
+      "retrieval_condition": "R3",
+      "sequence": 71,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-06",
+      "case_index": 18,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-06:R0",
+      "retrieval_condition": "R0",
+      "sequence": 72,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "case_index": 19,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-07:R2",
+      "retrieval_condition": "R2",
+      "sequence": 73,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "case_index": 19,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-07:R3",
+      "retrieval_condition": "R3",
+      "sequence": 74,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "case_index": 19,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-07:R0",
+      "retrieval_condition": "R0",
+      "sequence": 75,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "case_index": 19,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-07:R1",
+      "retrieval_condition": "R1",
+      "sequence": 76,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-08",
+      "case_index": 20,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-08:R3",
+      "retrieval_condition": "R3",
+      "sequence": 77,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-08",
+      "case_index": 20,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-08:R0",
+      "retrieval_condition": "R0",
+      "sequence": 78,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-08",
+      "case_index": 20,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-08:R1",
+      "retrieval_condition": "R1",
+      "sequence": 79,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-08",
+      "case_index": 20,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-08:R2",
+      "retrieval_condition": "R2",
+      "sequence": 80,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "case_index": 21,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-09:R0",
+      "retrieval_condition": "R0",
+      "sequence": 81,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "case_index": 21,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-09:R1",
+      "retrieval_condition": "R1",
+      "sequence": 82,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "case_index": 21,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-09:R2",
+      "retrieval_condition": "R2",
+      "sequence": 83,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "case_index": 21,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-09:R3",
+      "retrieval_condition": "R3",
+      "sequence": 84,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-10",
+      "case_index": 22,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-10:R1",
+      "retrieval_condition": "R1",
+      "sequence": 85,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-10",
+      "case_index": 22,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-10:R2",
+      "retrieval_condition": "R2",
+      "sequence": 86,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-10",
+      "case_index": 22,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-10:R3",
+      "retrieval_condition": "R3",
+      "sequence": 87,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-10",
+      "case_index": 22,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-10:R0",
+      "retrieval_condition": "R0",
+      "sequence": 88,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "case_index": 23,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-11:R2",
+      "retrieval_condition": "R2",
+      "sequence": 89,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "case_index": 23,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-11:R3",
+      "retrieval_condition": "R3",
+      "sequence": 90,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "case_index": 23,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-11:R0",
+      "retrieval_condition": "R0",
+      "sequence": 91,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "case_index": 23,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-11:R1",
+      "retrieval_condition": "R1",
+      "sequence": 92,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "case_index": 24,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-12:R3",
+      "retrieval_condition": "R3",
+      "sequence": 93,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "case_index": 24,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-12:R0",
+      "retrieval_condition": "R0",
+      "sequence": 94,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "case_index": 24,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-12:R1",
+      "retrieval_condition": "R1",
+      "sequence": 95,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "case_index": 24,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-dyspepsia-12:R2",
+      "retrieval_condition": "R2",
+      "sequence": 96,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-01",
+      "case_index": 25,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-01:R0",
+      "retrieval_condition": "R0",
+      "sequence": 97,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-01",
+      "case_index": 25,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-01:R1",
+      "retrieval_condition": "R1",
+      "sequence": 98,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-01",
+      "case_index": 25,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-01:R2",
+      "retrieval_condition": "R2",
+      "sequence": 99,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-01",
+      "case_index": 25,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-01:R3",
+      "retrieval_condition": "R3",
+      "sequence": 100,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-02",
+      "case_index": 26,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-02:R1",
+      "retrieval_condition": "R1",
+      "sequence": 101,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-02",
+      "case_index": 26,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-02:R2",
+      "retrieval_condition": "R2",
+      "sequence": 102,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-02",
+      "case_index": 26,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-02:R3",
+      "retrieval_condition": "R3",
+      "sequence": 103,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-02",
+      "case_index": 26,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-02:R0",
+      "retrieval_condition": "R0",
+      "sequence": 104,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-03",
+      "case_index": 27,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-03:R2",
+      "retrieval_condition": "R2",
+      "sequence": 105,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-03",
+      "case_index": 27,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-03:R3",
+      "retrieval_condition": "R3",
+      "sequence": 106,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-03",
+      "case_index": 27,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-03:R0",
+      "retrieval_condition": "R0",
+      "sequence": 107,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-03",
+      "case_index": 27,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-03:R1",
+      "retrieval_condition": "R1",
+      "sequence": 108,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-04",
+      "case_index": 28,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-04:R3",
+      "retrieval_condition": "R3",
+      "sequence": 109,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-04",
+      "case_index": 28,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-04:R0",
+      "retrieval_condition": "R0",
+      "sequence": 110,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-04",
+      "case_index": 28,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-04:R1",
+      "retrieval_condition": "R1",
+      "sequence": 111,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-04",
+      "case_index": 28,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-04:R2",
+      "retrieval_condition": "R2",
+      "sequence": 112,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-05",
+      "case_index": 29,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-05:R0",
+      "retrieval_condition": "R0",
+      "sequence": 113,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-05",
+      "case_index": 29,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-05:R1",
+      "retrieval_condition": "R1",
+      "sequence": 114,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-05",
+      "case_index": 29,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-05:R2",
+      "retrieval_condition": "R2",
+      "sequence": 115,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-05",
+      "case_index": 29,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-05:R3",
+      "retrieval_condition": "R3",
+      "sequence": 116,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-06",
+      "case_index": 30,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-06:R1",
+      "retrieval_condition": "R1",
+      "sequence": 117,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-06",
+      "case_index": 30,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-06:R2",
+      "retrieval_condition": "R2",
+      "sequence": 118,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-06",
+      "case_index": 30,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-06:R3",
+      "retrieval_condition": "R3",
+      "sequence": 119,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-06",
+      "case_index": 30,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-06:R0",
+      "retrieval_condition": "R0",
+      "sequence": 120,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-07",
+      "case_index": 31,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-07:R2",
+      "retrieval_condition": "R2",
+      "sequence": 121,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-07",
+      "case_index": 31,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-07:R3",
+      "retrieval_condition": "R3",
+      "sequence": 122,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-07",
+      "case_index": 31,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-07:R0",
+      "retrieval_condition": "R0",
+      "sequence": 123,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-07",
+      "case_index": 31,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-07:R1",
+      "retrieval_condition": "R1",
+      "sequence": 124,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-08",
+      "case_index": 32,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-08:R3",
+      "retrieval_condition": "R3",
+      "sequence": 125,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-08",
+      "case_index": 32,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-08:R0",
+      "retrieval_condition": "R0",
+      "sequence": 126,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-08",
+      "case_index": 32,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-08:R1",
+      "retrieval_condition": "R1",
+      "sequence": 127,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-08",
+      "case_index": 32,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-08:R2",
+      "retrieval_condition": "R2",
+      "sequence": 128,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-09",
+      "case_index": 33,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-09:R0",
+      "retrieval_condition": "R0",
+      "sequence": 129,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-09",
+      "case_index": 33,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-09:R1",
+      "retrieval_condition": "R1",
+      "sequence": 130,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-09",
+      "case_index": 33,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-09:R2",
+      "retrieval_condition": "R2",
+      "sequence": 131,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-09",
+      "case_index": 33,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-09:R3",
+      "retrieval_condition": "R3",
+      "sequence": 132,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-10",
+      "case_index": 34,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-10:R1",
+      "retrieval_condition": "R1",
+      "sequence": 133,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-10",
+      "case_index": 34,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-10:R2",
+      "retrieval_condition": "R2",
+      "sequence": 134,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-10",
+      "case_index": 34,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-10:R3",
+      "retrieval_condition": "R3",
+      "sequence": 135,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-10",
+      "case_index": 34,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-10:R0",
+      "retrieval_condition": "R0",
+      "sequence": 136,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-11",
+      "case_index": 35,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-11:R2",
+      "retrieval_condition": "R2",
+      "sequence": 137,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-11",
+      "case_index": 35,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-11:R3",
+      "retrieval_condition": "R3",
+      "sequence": 138,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-11",
+      "case_index": 35,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-11:R0",
+      "retrieval_condition": "R0",
+      "sequence": 139,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-11",
+      "case_index": 35,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-11:R1",
+      "retrieval_condition": "R1",
+      "sequence": 140,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-headache-12",
+      "case_index": 36,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-12:R3",
+      "retrieval_condition": "R3",
+      "sequence": 141,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-headache-12",
+      "case_index": 36,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-12:R0",
+      "retrieval_condition": "R0",
+      "sequence": 142,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-headache-12",
+      "case_index": 36,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-12:R1",
+      "retrieval_condition": "R1",
+      "sequence": 143,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-headache-12",
+      "case_index": 36,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-headache-12:R2",
+      "retrieval_condition": "R2",
+      "sequence": 144,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-01",
+      "case_index": 37,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-01:R0",
+      "retrieval_condition": "R0",
+      "sequence": 145,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-01",
+      "case_index": 37,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-01:R1",
+      "retrieval_condition": "R1",
+      "sequence": 146,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-01",
+      "case_index": 37,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-01:R2",
+      "retrieval_condition": "R2",
+      "sequence": 147,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-01",
+      "case_index": 37,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-01:R3",
+      "retrieval_condition": "R3",
+      "sequence": 148,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-02",
+      "case_index": 38,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-02:R1",
+      "retrieval_condition": "R1",
+      "sequence": 149,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-02",
+      "case_index": 38,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-02:R2",
+      "retrieval_condition": "R2",
+      "sequence": 150,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-02",
+      "case_index": 38,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-02:R3",
+      "retrieval_condition": "R3",
+      "sequence": 151,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-02",
+      "case_index": 38,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-02:R0",
+      "retrieval_condition": "R0",
+      "sequence": 152,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-03",
+      "case_index": 39,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-03:R2",
+      "retrieval_condition": "R2",
+      "sequence": 153,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-03",
+      "case_index": 39,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-03:R3",
+      "retrieval_condition": "R3",
+      "sequence": 154,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-03",
+      "case_index": 39,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-03:R0",
+      "retrieval_condition": "R0",
+      "sequence": 155,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-03",
+      "case_index": 39,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-03:R1",
+      "retrieval_condition": "R1",
+      "sequence": 156,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-04",
+      "case_index": 40,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-04:R3",
+      "retrieval_condition": "R3",
+      "sequence": 157,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-04",
+      "case_index": 40,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-04:R0",
+      "retrieval_condition": "R0",
+      "sequence": 158,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-04",
+      "case_index": 40,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-04:R1",
+      "retrieval_condition": "R1",
+      "sequence": 159,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-04",
+      "case_index": 40,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-04:R2",
+      "retrieval_condition": "R2",
+      "sequence": 160,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-05",
+      "case_index": 41,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-05:R0",
+      "retrieval_condition": "R0",
+      "sequence": 161,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-05",
+      "case_index": 41,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-05:R1",
+      "retrieval_condition": "R1",
+      "sequence": 162,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-05",
+      "case_index": 41,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-05:R2",
+      "retrieval_condition": "R2",
+      "sequence": 163,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-05",
+      "case_index": 41,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-05:R3",
+      "retrieval_condition": "R3",
+      "sequence": 164,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-06",
+      "case_index": 42,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-06:R1",
+      "retrieval_condition": "R1",
+      "sequence": 165,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-06",
+      "case_index": 42,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-06:R2",
+      "retrieval_condition": "R2",
+      "sequence": 166,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-06",
+      "case_index": 42,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-06:R3",
+      "retrieval_condition": "R3",
+      "sequence": 167,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-06",
+      "case_index": 42,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-06:R0",
+      "retrieval_condition": "R0",
+      "sequence": 168,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-07",
+      "case_index": 43,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-07:R2",
+      "retrieval_condition": "R2",
+      "sequence": 169,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-07",
+      "case_index": 43,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-07:R3",
+      "retrieval_condition": "R3",
+      "sequence": 170,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-07",
+      "case_index": 43,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-07:R0",
+      "retrieval_condition": "R0",
+      "sequence": 171,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-07",
+      "case_index": 43,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-07:R1",
+      "retrieval_condition": "R1",
+      "sequence": 172,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-08",
+      "case_index": 44,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-08:R3",
+      "retrieval_condition": "R3",
+      "sequence": 173,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-08",
+      "case_index": 44,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-08:R0",
+      "retrieval_condition": "R0",
+      "sequence": 174,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-08",
+      "case_index": 44,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-08:R1",
+      "retrieval_condition": "R1",
+      "sequence": 175,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-08",
+      "case_index": 44,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-08:R2",
+      "retrieval_condition": "R2",
+      "sequence": 176,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-09",
+      "case_index": 45,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-09:R0",
+      "retrieval_condition": "R0",
+      "sequence": 177,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-09",
+      "case_index": 45,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-09:R1",
+      "retrieval_condition": "R1",
+      "sequence": 178,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-09",
+      "case_index": 45,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-09:R2",
+      "retrieval_condition": "R2",
+      "sequence": 179,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-09",
+      "case_index": 45,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-09:R3",
+      "retrieval_condition": "R3",
+      "sequence": 180,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-10",
+      "case_index": 46,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-10:R1",
+      "retrieval_condition": "R1",
+      "sequence": 181,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-10",
+      "case_index": 46,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-10:R2",
+      "retrieval_condition": "R2",
+      "sequence": 182,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-10",
+      "case_index": 46,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-10:R3",
+      "retrieval_condition": "R3",
+      "sequence": 183,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-10",
+      "case_index": 46,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-10:R0",
+      "retrieval_condition": "R0",
+      "sequence": 184,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-11",
+      "case_index": 47,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-11:R2",
+      "retrieval_condition": "R2",
+      "sequence": 185,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-11",
+      "case_index": 47,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-11:R3",
+      "retrieval_condition": "R3",
+      "sequence": 186,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-11",
+      "case_index": 47,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-11:R0",
+      "retrieval_condition": "R0",
+      "sequence": 187,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-11",
+      "case_index": 47,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-11:R1",
+      "retrieval_condition": "R1",
+      "sequence": 188,
+      "within_case_index": 4
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-12",
+      "case_index": 48,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-12:R3",
+      "retrieval_condition": "R3",
+      "sequence": 189,
+      "within_case_index": 1
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-12",
+      "case_index": 48,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-12:R0",
+      "retrieval_condition": "R0",
+      "sequence": 190,
+      "within_case_index": 2
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-12",
+      "case_index": 48,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-12:R1",
+      "retrieval_condition": "R1",
+      "sequence": 191,
+      "within_case_index": 3
+    },
+    {
+      "case_id": "westbench-v0.1-constipation-12",
+      "case_index": 48,
+      "experiment_id": "western-formal-v0.1:westbench-v0.1-constipation-12:R2",
+      "retrieval_condition": "R2",
+      "sequence": 192,
+      "within_case_index": 4
+    }
+  ],
+  "policy": "case n starts with condition offset (n-1) mod 4, then cycles R0,R1,R2,R3",
+  "protocol_version": "western-formal-v0.1"
+}
