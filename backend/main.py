@@ -26,6 +26,13 @@ from retrieval import RETRIEVER_REGISTRY, RetrievalEngine
 from schemas.research import CompareRequest, CompareResponse, ResearchRequest, ResearchRunResult, RetrievalItem, RetrievalStrategy
 from tcm.agent import OpenAICompatibleClient, consult
 from tcm.schemas import TCMConsultRequest, TCMConsultResponse
+from western import (
+    WesternConsultRequest,
+    WesternConsultResponse,
+    WesternCorpusError,
+    WesternEvidenceAgent,
+    western_corpus_stats,
+)
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 settings = get_settings()
@@ -249,6 +256,41 @@ async def api_corpus_stats() -> dict[str, object]:
             "active_corpus": "not_loaded_in_api", "runtime_profile": "cloud_control_plane",
         }
     return corpus_stats()
+
+
+@app.get(
+    "/api/western/corpus/stats",
+    summary="Inspect the local four-topic MediRAG-West pilot corpus",
+    description=(
+        "Research prototype metadata only. Coverage is limited to cough, dyspepsia/digestive symptoms, "
+        "headache/migraine, and constipation; it is not medical advice."
+    ),
+)
+async def api_western_corpus_stats() -> dict[str, object]:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Western pilot execution is available only in the local research runtime.")
+    try:
+        return western_corpus_stats()
+    except WesternCorpusError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post(
+    "/api/western/consult",
+    response_model=WesternConsultResponse,
+    summary="Run the single-agent Western pilot RAG baseline",
+    description=(
+        "Educational research prototype using only the local four-topic PMC OA pilot corpus. "
+        "It does not diagnose, prescribe, provide individualized dosing, or provide medical advice."
+    ),
+)
+async def western_consult(request: WesternConsultRequest) -> WesternConsultResponse:
+    if _control_plane_only():
+        raise HTTPException(status_code=503, detail="Western pilot execution is available only in the local research runtime.")
+    try:
+        return await WesternEvidenceAgent().consult(request)
+    except WesternCorpusError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 @app.get("/api/formal-experiments", summary="List paper-locked experiment protocols")
