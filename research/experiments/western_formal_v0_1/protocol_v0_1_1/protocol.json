@@ -1,0 +1,246 @@
+{
+  "amendment": {
+    "formal_cells_executed_under_v0_1": 0,
+    "reason": "pre-execution runner safety / stage-finalization defects",
+    "scientific_design_changed": false,
+    "superseded_before_formal_execution": true,
+    "supersedes": "western-formal-v0.1"
+  },
+  "answerability_counts": {
+    "insufficient": 6,
+    "partially_supported": 4,
+    "supported": 38
+  },
+  "benchmark_commit": "bc1b389bdb6c4eb0c5c4c629af549a6904a37477",
+  "benchmark_sha256": "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6",
+  "benchmark_version": "western-pilot-v0.1",
+  "corpus_chunks_sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+  "execution_order": {
+    "cell_count": 192,
+    "condition_order": [
+      "R0",
+      "R1",
+      "R2",
+      "R3"
+    ],
+    "policy": "deterministic balanced four-condition rotation by frozen case index"
+  },
+  "formal_case_count": 48,
+  "formal_results_generated": false,
+  "generation_metrics": [
+    "claim_support_rate",
+    "partially_supported_claim_rate",
+    "unsupported_claim_rate",
+    "answers_with_any_unsupported_claim",
+    "mean_unsupported_claims_per_completed_answer",
+    "evidence_point_coverage_rate",
+    "evidence_point_partial_coverage_rate"
+  ],
+  "generator": {
+    "evidence_excerpt_max_characters": 1000,
+    "generations_per_cell": 1,
+    "max_tokens": 256,
+    "model": "Qwen/Qwen3-8B",
+    "prompt_contract": "current frozen WesternEvidenceAgent SYSTEM_PROMPT and generation prompt unchanged",
+    "provider": "siliconflow",
+    "retrieval_top_k": 4,
+    "temperature": 0.0,
+    "timeout_seconds": 120.0
+  },
+  "headline_retrieval_denominator": {
+    "case_count": 42,
+    "policy": "supported or partially_supported cases with non-empty primary gold; all insufficient cases reported separately"
+  },
+  "insufficient_evidence_metrics": [
+    "system_abstained",
+    "explicitly_stated_evidence_insufficiency",
+    "substantive_answer_despite_insufficiency",
+    "overclaimed_beyond_pilot_evidence",
+    "appropriate_insufficiency_handling"
+  ],
+  "intended_generation_cells": 192,
+  "judge": {
+    "domain_expert_verified": false,
+    "human_verified": false,
+    "judge_type": "automated_secondary_model",
+    "max_tokens": 1200,
+    "model": "THUDM/GLM-Z1-9B-0414",
+    "provider": "siliconflow",
+    "temperature": 0.0,
+    "timeout_seconds": 120.0
+  },
+  "latency_and_reliability": [
+    "retrieval_latency_ms",
+    "generation_latency_ms",
+    "judge_latency_ms",
+    "first_attempt_provider_success",
+    "final_provider_completion",
+    "technical_failure_count",
+    "retry_count",
+    "total_experiment_elapsed_time"
+  ],
+  "manifest_sha256": "bd8fc5105329d5d325fa8910b8a642bac6ddc954a25df6b9e299158aa29a22ae",
+  "observable_scope_flags": [
+    "diagnosis_like_personalized_statement",
+    "individualized_dosing",
+    "prescription_like_recommendation",
+    "research_or_educational_limitation_preserved"
+  ],
+  "primary_comparisons": [
+    "R0_vs_R1",
+    "R0_vs_R2",
+    "R0_vs_R3"
+  ],
+  "protocol_freeze_commit": "populated from immutable repository HEAD at run creation; not self-embedded in this hash",
+  "protocol_name": "MediRAG-West Formal Evaluation Protocol v0.1.1",
+  "protocol_version": "western_formal_v0.1.1",
+  "provenance_metrics": {
+    "name": "provenance_integrity_rate",
+    "scope": "application-level provenance membership and resolution; not sentence-level citation correctness"
+  },
+  "question_type_counts": {
+    "difficult_or_insufficient": 8,
+    "direct_evidence": 16,
+    "multi_source_synthesis": 12,
+    "paraphrased_retrieval": 12
+  },
+  "raw_output_policy": "new run_id for every repeat; never overwrite a run or sealed stage; excerpt-bearing Stage A raw results remain local and hash-referenced",
+  "research_questions": {
+    "W-RQ1": "How do retrieval strategies affect gold-evidence retrieval within the frozen MediRAG-West pilot corpus?",
+    "W-RQ2": "With the generator held fixed, how do retrieval strategies affect evidence coverage and unsupported-claim behavior in generated Western pilot answers?",
+    "W-RQ3": "How does the system behave when the frozen pilot corpus provides incomplete or insufficient evidence?"
+  },
+  "retrieval_conditions": {
+    "R0": {
+      "candidate_depth": null,
+      "final_top_k": 4,
+      "fusion_method": null,
+      "implementation": "RetrievalEngine BM25-like lexical scoring",
+      "model": "BM25-like lexical baseline",
+      "provider": "local deterministic",
+      "rerank_depth": null
+    },
+    "R1": {
+      "candidate_depth": "all topic-filtered corpus chunks",
+      "final_top_k": 4,
+      "fusion_method": null,
+      "implementation": "RetrievalEngine dense cosine similarity",
+      "model": "BAAI/bge-m3",
+      "provider": "siliconflow",
+      "rerank_depth": null
+    },
+    "R2": {
+      "candidate_depth": "all topic-filtered corpus chunks",
+      "final_top_k": 4,
+      "fusion_method": "RRF: 1/(60+lexical_rank) + 1/(60+dense_rank)",
+      "implementation": "RetrievalEngine reciprocal-rank fusion of lexical and dense rankings",
+      "model": "BM25-like lexical + BAAI/bge-m3",
+      "provider": "local lexical + siliconflow dense",
+      "rerank_depth": null
+    },
+    "R3": {
+      "candidate_depth": 12,
+      "final_top_k": 4,
+      "fusion_method": "RRF with constant 60",
+      "implementation": "RetrievalEngine hybrid RRF candidates followed by remote reranking",
+      "model": "BAAI/bge-m3 + BAAI/bge-reranker-v2-m3",
+      "provider": "siliconflow",
+      "rerank_depth": 12
+    }
+  },
+  "retrieval_metrics": [
+    "macro_primary_gold_chunk_recall_at_4",
+    "aggregate_primary_gold_chunk_recall_at_4",
+    "macro_primary_source_recall_at_4",
+    "aggregate_primary_source_recall_at_4",
+    "mrr_first_primary_gold_chunk",
+    "hit_at_4"
+  ],
+  "runtime_commit": "e6b02f6e37534008427cb18cd06ce7f086153103",
+  "scientific_scope": "Performance only within the frozen 16-source, 271-chunk Western pilot corpus; not general medical or clinical competence.",
+  "secondary_retrieval_diagnostics": [
+    "primary_or_secondary_gold_hit_at_4",
+    "primary_or_secondary_gold_recall_at_4"
+  ],
+  "source_registry_sha256": "722273140906b238e88cfdab4ddbb12d73c478f686ae23d0f501738ee6820703",
+  "stage_a_missingness_policy": {
+    "insufficient_cases": "remain outside primary-gold Recall/MRR when primary gold is empty; technical failures are reported as missingness, never abstention or correctness",
+    "pairwise_denominator": "intersection of frozen gold-eligible cases where both compared conditions have retrieval_success=true; report exact paired n; no imputation",
+    "quality_denominator": "for each condition, frozen primary-gold eligible cases with retrieval_success=true; technical failures are excluded, not scored as zero",
+    "required_denominator_counts": [
+      "frozen eligible cases",
+      "successful eligible cases used",
+      "technical-missing eligible cases excluded"
+    ]
+  },
+  "stage_a_terminal_and_sealing_policy": {
+    "allowed_terminal_states": [
+      "success",
+      "technical_failure"
+    ],
+    "required_terminal_cells": 192,
+    "required_unique_key": "case_id + retrieval_condition",
+    "seal_requires": "192 unique terminal cells and no fatal runner defect, corrupt checkpoint, duplicate, in-progress cell, or frozen-input mismatch",
+    "technical_missingness_permits_sealing": true
+  },
+  "stage_a_upstream_missingness_policy": {
+    "generation": "retain the experiment cell but do not call Qwen; record generation_outcome=upstream_retrieval_technical_failure, empty answer/provenance, zero provider attempts and zero generation latency",
+    "judge": "retain the experiment cell but do not call GLM; record judge_outcome=upstream_retrieval_technical_failure, no semantic labels, zero provider attempts and zero judge latency",
+    "interpretation": "upstream technical missingness is neither abstention, insufficiency handling, content failure, nor generator/judge failure",
+    "semantic_denominators": "exclude upstream technical-missing cells"
+  },
+  "stages": {
+    "A": "retrieval only; independently finalized and sealed output is immutable Stage B input",
+    "B": "generation only from sealed Stage A; sealed output is immutable Stage C input",
+    "C": "judge only from sealed Stage A and B outputs"
+  },
+  "statistical_plan": {
+    "paired_binary": "McNemar where applicable",
+    "paired_bounded": "paired differences with 95% bootstrap confidence intervals where implemented",
+    "report": "exact sample sizes; do not overemphasize p-values"
+  },
+  "status": "frozen_before_formal_execution",
+  "technical_retry_policy": {
+    "attempt_count_definition": "cell-level: 1 means no retry event; 2 means one permitted retry event",
+    "fatal_runner_defects": [
+      "schema invariant violation",
+      "duplicate formal cell",
+      "corrupt checkpoint",
+      "unexpected local R0 implementation exception",
+      "benchmark/protocol/hash mismatch",
+      "invalid retrieval-condition mapping",
+      "code path violating frozen protocol"
+    ],
+    "maximum_retries": 1,
+    "nonretryable_reasons": [
+      "weak_answer_quality",
+      "unsupported_answer",
+      "insufficient_evidence",
+      "poor_citation_behavior",
+      "model_disagreement",
+      "content_level_failure",
+      "judge_schema_or_content_failure"
+    ],
+    "retry_scope": "one retry event per formal cell; R1/R2 retry dense only; R3 retries only the failed dense or reranker operation and never repeats a successful dense provider operation",
+    "retryable_error_types": [
+      "connectivity",
+      "http_5xx",
+      "malformed_response",
+      "timeout"
+    ]
+  },
+  "topic_counts": {
+    "constipation": 12,
+    "cough": 12,
+    "dyspepsia_digestive_symptoms": 12,
+    "headache": 12
+  },
+  "stage_a_artifacts": [
+    "stage_a_raw_results.jsonl",
+    "stage_a_retrieval_metrics.json",
+    "stage_a_provider_metrics.json",
+    "stage_a_run_manifest.json",
+    "stage_a_pairwise_statistics.json",
+    "STAGE_A_FROZEN.md"
+  ]
+}

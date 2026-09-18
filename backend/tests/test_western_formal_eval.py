@@ -112,7 +112,7 @@ def test_content_failure_is_not_retried() -> None:
 
 def test_resume_rejects_duplicate_cells_and_sealed_stage_is_immutable(tmp_path: Path) -> None:
     run = RunDirectory.create(tmp_path, "run-001")
-    record = {"experiment_id": "cell-1", "safe": True}
+    record = {"experiment_id": "cell-1", "case_id": "case-1", "retrieval_condition": "R0", "terminal_state": "success", "retrieval_success": True}
     run.append("A", record)
     resumed = RunDirectory.resume(run.path)
     assert resumed.completed_ids("A") == {"cell-1"}
@@ -131,7 +131,7 @@ def test_new_run_id_cannot_overwrite_existing_run(tmp_path: Path) -> None:
 
 def test_stage_hash_verification_detects_mutation(tmp_path: Path) -> None:
     run = RunDirectory.create(tmp_path, "run-002")
-    run.append("A", {"experiment_id": "cell-1"})
+    run.append("A", {"experiment_id": "cell-1", "case_id": "case-1", "retrieval_condition": "R0", "terminal_state": "success", "retrieval_success": True})
     run.seal("A", expected_cells=1)
     run.stage_path("A").write_text('{"experiment_id":"changed"}\n', encoding="utf-8")
     with pytest.raises(RuntimeError, match="hash mismatch"):
@@ -142,7 +142,7 @@ def test_stage_b_and_c_require_sealed_predecessors(tmp_path: Path) -> None:
     run = RunDirectory.create(tmp_path, "run-stages")
     with pytest.raises(RuntimeError, match="Stage A must be sealed"):
         run.append("B", {"experiment_id": "cell-1"})
-    run.append("A", {"experiment_id": "cell-1"})
+    run.append("A", {"experiment_id": "cell-1", "case_id": "case-1", "retrieval_condition": "R0", "terminal_state": "success", "retrieval_success": True})
     run.seal("A", expected_cells=1)
     run.append("B", {"experiment_id": "cell-1"})
     with pytest.raises(RuntimeError, match="Stage B must be sealed"):

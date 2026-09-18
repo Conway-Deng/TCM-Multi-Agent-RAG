@@ -14,6 +14,7 @@ if str(BACKEND) not in sys.path:
 
 from western.formal_eval import (  # noqa: E402
     RunDirectory,
+    finalize_stage_a_run,
     finalize_run,
     run_stage_a,
     run_stage_b,
@@ -24,7 +25,7 @@ from western.formal_eval import (  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a frozen stage of the Western formal v0.1 evaluation.")
-    parser.add_argument("--stage", choices=("A", "B", "C", "finalize"), required=True)
+    parser.add_argument("--stage", choices=("A", "A-finalize", "B", "C", "finalize"), required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument(
         "--execute-formal",
@@ -42,12 +43,16 @@ def main() -> None:
     runs_root = ROOT / "research/experiments/western_formal_v0_1/runs"
     run_path = runs_root / args.run_id
     if args.stage == "A":
-        run = RunDirectory.resume(run_path) if run_path.exists() else RunDirectory.create(runs_root, args.run_id)
+        run = RunDirectory.resume_stage_a(run_path, repository_root=ROOT) if run_path.exists() else RunDirectory.create(
+            runs_root, args.run_id, repository_root=ROOT,
+        )
         os.environ["ALLOW_BULK_REMOTE_EMBEDDING"] = "true"
         asyncio.run(run_stage_a(ROOT, run))
     else:
         run = RunDirectory.resume(run_path)
-        if args.stage == "B":
+        if args.stage == "A-finalize":
+            finalize_stage_a_run(ROOT, run)
+        elif args.stage == "B":
             asyncio.run(run_stage_b(ROOT, run))
         elif args.stage == "C":
             asyncio.run(run_stage_c(ROOT, run))
