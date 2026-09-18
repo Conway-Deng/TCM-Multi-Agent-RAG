@@ -1,0 +1,141 @@
+{
+  "corpus_chunk_count": 271,
+  "corpus_source_count": 16,
+  "distinct_gold_sources": 16,
+  "distinct_primary_gold_chunks": 47,
+  "distinct_primary_or_secondary_gold_chunks": 58,
+  "most_reused_chunk": {
+    "case_count": 3,
+    "chunk_id": "west-pmc-8483994-b8e7df0692cb6f53f26c"
+  },
+  "most_reused_source": {
+    "case_count": 8,
+    "source_id": "west-pmc-13048936"
+  },
+  "per_topic": {
+    "constipation": {
+      "primary_gold_chunk_count": 12,
+      "source_count": 4,
+      "source_ids": [
+        "west-pmc-11007433",
+        "west-pmc-12350361",
+        "west-pmc-9274467",
+        "west-pmc-9960109"
+      ]
+    },
+    "cough": {
+      "primary_gold_chunk_count": 11,
+      "source_count": 4,
+      "source_ids": [
+        "west-pmc-8483994",
+        "west-pmc-9038879",
+        "west-pmc-9138020",
+        "west-pmc-9397766"
+      ]
+    },
+    "dyspepsia_digestive_symptoms": {
+      "primary_gold_chunk_count": 11,
+      "source_count": 4,
+      "source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-6863582",
+        "west-pmc-8765587",
+        "west-pmc-9276094"
+      ]
+    },
+    "headache": {
+      "primary_gold_chunk_count": 13,
+      "source_count": 4,
+      "source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-12659810",
+        "west-pmc-12857048",
+        "west-pmc-12867494"
+      ]
+    }
+  },
+  "primary_chunk_case_counts": {
+    "west-pmc-11007433-107af14f8b2f92ec741e": 1,
+    "west-pmc-11007433-5d3dc00ba3de9d134e91": 1,
+    "west-pmc-11007433-953693e44358ee30c0c7": 2,
+    "west-pmc-11794981-08916fb3154950d0d2a2": 2,
+    "west-pmc-11794981-898811886f00628ef49e": 1,
+    "west-pmc-11794981-8e314d4592c444b92ec6": 1,
+    "west-pmc-11794981-ab62ede709574b85f05d": 1,
+    "west-pmc-11794981-e9f813e5f5b063b58fe4": 1,
+    "west-pmc-12350361-4430013e63c1a6994d74": 3,
+    "west-pmc-12659810-4d3c4232df85cc66571e": 1,
+    "west-pmc-12659810-959a4d5c0acee2aa76d6": 2,
+    "west-pmc-12857048-81541b38c2c2eee9d14e": 2,
+    "west-pmc-12857048-e5b1db5478f67338c9a1": 1,
+    "west-pmc-12867494-1cb508b1279f48d5958d": 1,
+    "west-pmc-12867494-784987cf4ce3d25249eb": 1,
+    "west-pmc-12867494-8088b6cb5b898e70377f": 1,
+    "west-pmc-12867494-85fa80d722354ad45cbe": 1,
+    "west-pmc-13048936-2c1f410546d3a7ce810f": 1,
+    "west-pmc-13048936-33262c18fc966e88dec6": 1,
+    "west-pmc-13048936-7c59515f97a38056ad53": 1,
+    "west-pmc-13048936-e2440fb4365aab41dab8": 2,
+    "west-pmc-6863582-a6278a444810db49b1a4": 2,
+    "west-pmc-6863582-b8b6a36f50c61234408d": 1,
+    "west-pmc-8483994-76979379ed5f9201bad5": 2,
+    "west-pmc-8483994-b8e7df0692cb6f53f26c": 3,
+    "west-pmc-8765587-0836db1b440a419b1187": 2,
+    "west-pmc-8765587-3c114c87a3f5d8f21749": 1,
+    "west-pmc-8765587-8967a5ee8d664505887b": 1,
+    "west-pmc-9038879-2301d87b8d6502f77de8": 2,
+    "west-pmc-9038879-28f85582a9b4115e8640": 2,
+    "west-pmc-9038879-8533223858b16f344f26": 2,
+    "west-pmc-9138020-102ef6bfec46fbde2625": 1,
+    "west-pmc-9138020-27df07ac99d0f7a5bf32": 1,
+    "west-pmc-9274467-b6353bcaa4ccce5bb790": 1,
+    "west-pmc-9274467-bfe8d88a2a851dcdec78": 1,
+    "west-pmc-9274467-c2111b5653c70be051a9": 1,
+    "west-pmc-9274467-cb43cb6dde16fa707aff": 1,
+    "west-pmc-9274467-d51f99e15cdd2bcfbf7e": 2,
+    "west-pmc-9274467-fa30c2a8dfb6e32c5342": 1,
+    "west-pmc-9276094-537533641e03502a852d": 1,
+    "west-pmc-9276094-e88a5b7371723236f824": 1,
+    "west-pmc-9397766-15a55796cf9b4fa147c8": 1,
+    "west-pmc-9397766-add0d821c6dd403b2add": 2,
+    "west-pmc-9397766-cd602e6d7d78a304dc87": 1,
+    "west-pmc-9397766-ed5601ae85fd53f79330": 1,
+    "west-pmc-9960109-ace43e7cc9b1742391d2": 2,
+    "west-pmc-9960109-b68f677b72c9f0f54d27": 2
+  },
+  "secondary_chunk_case_counts": {
+    "west-pmc-11794981-153ace40b735f2139ef8": 1,
+    "west-pmc-12857048-f23d7bdac2eec846ef2c": 1,
+    "west-pmc-12867494-2397d31a7d4db4bdce01": 1,
+    "west-pmc-12867494-9726230a3b4317351006": 1,
+    "west-pmc-13048936-093bc121c3548052ff42": 1,
+    "west-pmc-13048936-91e4325b47718b511b4d": 1,
+    "west-pmc-13048936-e2440fb4365aab41dab8": 1,
+    "west-pmc-8483994-add712158df8460d7a72": 1,
+    "west-pmc-8765587-8967a5ee8d664505887b": 1,
+    "west-pmc-9138020-f3916d9c63a2125f0979": 1,
+    "west-pmc-9276094-998ee5d43793f5cfd176": 1,
+    "west-pmc-9276094-e88a5b7371723236f824": 1,
+    "west-pmc-9397766-a79b94846f4fff0f1b64": 1,
+    "west-pmc-9397766-eb41c9beb2dcaa6414bc": 1
+  },
+  "source_case_counts": {
+    "west-pmc-11007433": 4,
+    "west-pmc-11794981": 6,
+    "west-pmc-12350361": 3,
+    "west-pmc-12659810": 3,
+    "west-pmc-12857048": 3,
+    "west-pmc-12867494": 3,
+    "west-pmc-13048936": 8,
+    "west-pmc-6863582": 3,
+    "west-pmc-8483994": 3,
+    "west-pmc-8765587": 3,
+    "west-pmc-9038879": 5,
+    "west-pmc-9138020": 2,
+    "west-pmc-9274467": 5,
+    "west-pmc-9276094": 4,
+    "west-pmc-9397766": 6,
+    "west-pmc-9960109": 4
+  },
+  "source_coverage_percent": 100.0
+}

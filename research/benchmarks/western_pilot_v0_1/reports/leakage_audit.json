@@ -1,0 +1,12 @@
+{
+  "case_count": 48,
+  "diagnostics": {
+    "identifier_patterns": "source/chunk IDs, PMCID, and DOI",
+    "near_verbatim_threshold": "exact contiguous 10-token overlap",
+    "section_heading_rule": "exact normalized heading of at least three tokens",
+    "title_overlap_threshold": 0.7
+  },
+  "status": "PASS",
+  "suspicious_case_count": 0,
+  "suspicious_cases": []
+}

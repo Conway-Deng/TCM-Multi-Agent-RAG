@@ -1,0 +1,12 @@
+{
+  "correction_count": 1,
+  "corrections": [
+    {
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "optional_secondary_chunk_ids",
+      "new_annotation": "west-pmc-8483994-b8e7df0692cb6f53f26c",
+      "old_annotation": "west-pmc-8483994-b8e7df0692cb6f53f26",
+      "reason": "Corrected a one-character transcription error after referential-integrity validation; question and evidence meaning were unchanged."
+    }
+  ]
+}

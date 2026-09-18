@@ -1,0 +1,465 @@
+{
+  "adjudicated_case_count": 15,
+  "changed_field_record_count": 46,
+  "changes": [
+    {
+      "after": [
+        "west-pmc-8483994-76979379ed5f9201bad5",
+        "west-pmc-8483994-b8e7df0692cb6f53f26c"
+      ],
+      "before": [
+        "west-pmc-8483994-add712158df8460d7a72"
+      ],
+      "case_id": "westbench-v0.1-cough-04",
+      "field": "gold_chunk_ids",
+      "rationale": "Represent pediatric honey effects and evidence certainty or risk of bias with separate direct chunks; retain the conclusion as context."
+    },
+    {
+      "after": [
+        "west-pmc-8483994-add712158df8460d7a72"
+      ],
+      "before": [
+        "west-pmc-8483994-76979379ed5f9201bad5"
+      ],
+      "case_id": "westbench-v0.1-cough-04",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Represent pediatric honey effects and evidence certainty or risk of bias with separate direct chunks; retain the conclusion as context."
+    },
+    {
+      "after": [
+        "Selected pediatric cough outcomes improved in the reviewed studies.",
+        "The certainty of the evidence was generally low or very low, with risk-of-bias limitations reported by the review."
+      ],
+      "before": [
+        "The review reported reductions in cough duration, severity, or impact in children.",
+        "Most evidence was rated low or very low certainty."
+      ],
+      "case_id": "westbench-v0.1-cough-04",
+      "field": "expected_evidence_points",
+      "rationale": "Represent pediatric honey effects and evidence certainty or risk of bias with separate direct chunks; retain the conclusion as context."
+    },
+    {
+      "after": "Primary chunks directly represent pediatric honey effects and evidence-certainty or risk-of-bias limitations; the conclusion is contextual.",
+      "before": "Primary conclusion plus an optional detailed results context.",
+      "case_id": "westbench-v0.1-cough-04",
+      "field": "annotation_notes",
+      "rationale": "Represent pediatric honey effects and evidence certainty or risk of bias with separate direct chunks; retain the conclusion as context."
+    },
+    {
+      "after": "One source, two primary contexts plus one contextual conclusion.",
+      "before": "One source, two complementary contexts.",
+      "case_id": "westbench-v0.1-cough-04",
+      "field": "evidence_dispersion_notes",
+      "rationale": "Represent pediatric honey effects and evidence certainty or risk of bias with separate direct chunks; retain the conclusion as context."
+    },
+    {
+      "after": [
+        "west-pmc-9038879-2301d87b8d6502f77de8"
+      ],
+      "before": [
+        "west-pmc-9038879-b3d6f4e9794c5be05447",
+        "west-pmc-9038879-2301d87b8d6502f77de8"
+      ],
+      "case_id": "westbench-v0.1-cough-05",
+      "field": "gold_chunk_ids",
+      "rationale": "Keep only the chunk that directly describes cough-challenge methodology variation as primary gold."
+    },
+    {
+      "after": "What methodological or data-related challenges does the pilot review describe for COVID-19 screening from recorded cough sounds?",
+      "before": "What cautions does the pilot evidence raise about treating recorded cough audio as a stand-alone screen for coronavirus infection?",
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "question",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": [
+        "west-pmc-9138020-27df07ac99d0f7a5bf32",
+        "west-pmc-9138020-102ef6bfec46fbde2625"
+      ],
+      "before": [
+        "west-pmc-9138020-f3916d9c63a2125f0979"
+      ],
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "gold_chunk_ids",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": [
+        "Crowdsourced cough datasets can contain variable numbers of coughs per recording and class imbalance between COVID-19-positive and healthy samples.",
+        "The reviewed systems also raised methodological concerns including possible overfitting and uncertain laboratory confirmation in some datasets."
+      ],
+      "before": [
+        "The review treats cough sound as potentially useful but not as the only reliable screening signal."
+      ],
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "expected_evidence_points",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": "Limited to methodological and data challenges documented in the frozen pilot-corpus chunks; no stand-alone screening claim is made.",
+      "before": "Supported by the review discussion; this is not a diagnostic recommendation.",
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "annotation_notes",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": "Uses recorded cough sounds and methodological challenges rather than the article title.",
+      "before": "Uses recorded audio and stand-alone screening rather than the article title.",
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "lexical_notes",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": "Two primary contexts from one screening review.",
+      "before": "One primary context.",
+      "case_id": "westbench-v0.1-cough-07",
+      "field": "evidence_dispersion_notes",
+      "rationale": "Limit the information need and gold evidence to documented methodological and data challenges in cough-sound screening."
+    },
+    {
+      "after": "How do the asthma-measurement review and the chronic-cough intervention review use objective cough monitoring and patient-reported measures differently?",
+      "before": "How do objective cough counts and patient-reported impact measures complement one another in cough research?",
+      "case_id": "westbench-v0.1-cough-08",
+      "field": "question",
+      "rationale": "Directly represent objective monitoring, patient-reported quality of life, and objective intervention outcomes without an unsupported alignment claim."
+    },
+    {
+      "after": [
+        "west-pmc-9038879-8533223858b16f344f26",
+        "west-pmc-9038879-28f85582a9b4115e8640",
+        "west-pmc-9397766-cd602e6d7d78a304dc87"
+      ],
+      "before": [
+        "west-pmc-9038879-8533223858b16f344f26",
+        "west-pmc-9397766-cd602e6d7d78a304dc87"
+      ],
+      "case_id": "westbench-v0.1-cough-08",
+      "field": "gold_chunk_ids",
+      "rationale": "Directly represent objective monitoring, patient-reported quality of life, and objective intervention outcomes without an unsupported alignment claim."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-9038879-28f85582a9b4115e8640"
+      ],
+      "case_id": "westbench-v0.1-cough-08",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Directly represent objective monitoring, patient-reported quality of life, and objective intervention outcomes without an unsupported alignment claim."
+    },
+    {
+      "after": [
+        "The asthma review documents objective cough monitoring and validated patient-reported cough-related quality-of-life measures.",
+        "The chronic-cough intervention review uses objective cough counts as an intervention outcome."
+      ],
+      "before": [
+        "Objective monitoring quantifies cough frequency while questionnaires characterize perceived burden and quality of life.",
+        "The two kinds of outcomes need not align closely."
+      ],
+      "case_id": "westbench-v0.1-cough-08",
+      "field": "expected_evidence_points",
+      "rationale": "Directly represent objective monitoring, patient-reported quality of life, and objective intervention outcomes without an unsupported alignment claim."
+    },
+    {
+      "after": "Three primary contexts across two sources.",
+      "before": "Two primary sources plus one optional questionnaire context.",
+      "case_id": "westbench-v0.1-cough-08",
+      "field": "evidence_dispersion_notes",
+      "rationale": "Directly represent objective monitoring, patient-reported quality of life, and objective intervention outcomes without an unsupported alignment claim."
+    },
+    {
+      "after": [
+        "west-pmc-9397766-add0d821c6dd403b2add",
+        "west-pmc-8483994-76979379ed5f9201bad5",
+        "west-pmc-8483994-b8e7df0692cb6f53f26c"
+      ],
+      "before": [
+        "west-pmc-9397766-add0d821c6dd403b2add",
+        "west-pmc-8483994-add712158df8460d7a72"
+      ],
+      "case_id": "westbench-v0.1-cough-09",
+      "field": "gold_chunk_ids",
+      "rationale": "Use direct pediatric honey-effect and certainty or risk-of-bias evidence and remove the unsupported mixed-adult-findings phrase."
+    },
+    {
+      "after": [
+        "Non-drug chronic-cough studies reported selected improvements but could not support confident clinical recommendations.",
+        "The reviewed pediatric honey studies reported selected cough benefits, while the overall certainty of evidence was limited or low as reported by the review."
+      ],
+      "before": [
+        "Non-drug chronic-cough studies reported selected improvements but could not support confident clinical recommendations.",
+        "Honey studies reported selected cough benefits alongside low-certainty evidence and mixed adult findings."
+      ],
+      "case_id": "westbench-v0.1-cough-09",
+      "field": "expected_evidence_points",
+      "rationale": "Use direct pediatric honey-effect and certainty or risk-of-bias evidence and remove the unsupported mixed-adult-findings phrase."
+    },
+    {
+      "after": [
+        "west-pmc-8483994",
+        "west-pmc-9038879",
+        "west-pmc-9397766"
+      ],
+      "before": [
+        "west-pmc-9038879",
+        "west-pmc-9397766"
+      ],
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "gold_source_ids",
+      "rationale": "Represent each limitation category with direct primary evidence and remove unsupported broadening."
+    },
+    {
+      "after": [
+        "west-pmc-9038879-2301d87b8d6502f77de8",
+        "west-pmc-9397766-ed5601ae85fd53f79330",
+        "west-pmc-8483994-b8e7df0692cb6f53f26c"
+      ],
+      "before": [
+        "west-pmc-9038879-5e17be79d6dbfd5a1bce",
+        "west-pmc-9397766-add0d821c6dd403b2add"
+      ],
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "gold_chunk_ids",
+      "rationale": "Represent each limitation category with direct primary evidence and remove unsupported broadening."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-8483994-b8e7df0692cb6f53f26c"
+      ],
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Represent each limitation category with direct primary evidence and remove unsupported broadening."
+    },
+    {
+      "after": [
+        "Cough-challenge methods varied across protocols and delivery choices.",
+        "Outcome measures varied in validation and applicability to chronic respiratory diseases.",
+        "The honey review reported risk-of-bias and evidence-certainty limitations."
+      ],
+      "before": [
+        "Reviews report inconsistent measurement, heterogeneous interventions or timing, small samples, imprecision, and risk-of-bias concerns."
+      ],
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "expected_evidence_points",
+      "rationale": "Represent each limitation category with direct primary evidence and remove unsupported broadening."
+    },
+    {
+      "after": "Three primary contexts across three sources.",
+      "before": "Two primary sources and one optional third source.",
+      "case_id": "westbench-v0.1-cough-10",
+      "field": "evidence_dispersion_notes",
+      "rationale": "Represent each limitation category with direct primary evidence and remove unsupported broadening."
+    },
+    {
+      "after": "insufficient",
+      "before": "partially_supported",
+      "case_id": "westbench-v0.1-cough-11",
+      "field": "answerability",
+      "rationale": "The pilot does not establish durability at one year or longer; shorter follow-up is contextual only."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-9397766"
+      ],
+      "case_id": "westbench-v0.1-cough-11",
+      "field": "gold_source_ids",
+      "rationale": "The pilot does not establish durability at one year or longer; shorter follow-up is contextual only."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-9397766-a79b94846f4fff0f1b64"
+      ],
+      "case_id": "westbench-v0.1-cough-11",
+      "field": "gold_chunk_ids",
+      "rationale": "The pilot does not establish durability at one year or longer; shorter follow-up is contextual only."
+    },
+    {
+      "after": [
+        "west-pmc-9397766-a79b94846f4fff0f1b64",
+        "west-pmc-9397766-eb41c9beb2dcaa6414bc"
+      ],
+      "before": [
+        "west-pmc-9397766-eb41c9beb2dcaa6414bc"
+      ],
+      "case_id": "westbench-v0.1-cough-11",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "The pilot does not establish durability at one year or longer; shorter follow-up is contextual only."
+    },
+    {
+      "after": "Insufficient within the current pilot corpus for durability at one year or longer.",
+      "before": "Only shorter follow-up is available; year-long durability is not established within the current pilot corpus.",
+      "case_id": "westbench-v0.1-cough-11",
+      "field": "annotation_notes",
+      "rationale": "The pilot does not establish durability at one year or longer; shorter follow-up is contextual only."
+    },
+    {
+      "after": [
+        "west-pmc-8765587-8967a5ee8d664505887b"
+      ],
+      "before": [],
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Add explicit secondary evidence for the adverse-event component of the question."
+    },
+    {
+      "after": [
+        "west-pmc-8765587-3c114c87a3f5d8f21749",
+        "west-pmc-8765587-8967a5ee8d664505887b"
+      ],
+      "before": [
+        "west-pmc-8765587-8967a5ee8d664505887b"
+      ],
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "field": "gold_chunk_ids",
+      "rationale": "Use direct evidence calling for studies in other population groups; retain the existing chunk because its full text also supports that limitation."
+    },
+    {
+      "after": [
+        "The review calls for additional evidence in other population groups before broad generalization."
+      ],
+      "before": [
+        "Most included studies were conducted in Japanese populations, and the review calls for evidence in other populations."
+      ],
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "field": "expected_evidence_points",
+      "rationale": "Use direct evidence calling for studies in other population groups; retain the existing chunk because its full text also supports that limitation."
+    },
+    {
+      "after": "Two primary contexts from one source.",
+      "before": "One primary context.",
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "field": "evidence_dispersion_notes",
+      "rationale": "Use direct evidence calling for studies in other population groups; retain the existing chunk because its full text also supports that limitation."
+    },
+    {
+      "after": "supported",
+      "before": "partially_supported",
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "field": "answerability",
+      "rationale": "Both primary chunks directly support the two requested limitations."
+    },
+    {
+      "after": "insufficient",
+      "before": "partially_supported",
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "field": "answerability",
+      "rationale": "The pilot does not establish multi-year durability; short-term or potential-benefit evidence is contextual only."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-13048936"
+      ],
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "field": "gold_source_ids",
+      "rationale": "The pilot does not establish multi-year durability; short-term or potential-benefit evidence is contextual only."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-13048936-093bc121c3548052ff42"
+      ],
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "field": "gold_chunk_ids",
+      "rationale": "The pilot does not establish multi-year durability; short-term or potential-benefit evidence is contextual only."
+    },
+    {
+      "after": [
+        "west-pmc-13048936-093bc121c3548052ff42"
+      ],
+      "before": [],
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "The pilot does not establish multi-year durability; short-term or potential-benefit evidence is contextual only."
+    },
+    {
+      "after": "Insufficient within the current pilot corpus for multi-year durability.",
+      "before": "Long-term durability is not established within the current pilot corpus.",
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "field": "annotation_notes",
+      "rationale": "The pilot does not establish multi-year durability; short-term or potential-benefit evidence is contextual only."
+    },
+    {
+      "after": [
+        "west-pmc-11794981-8e314d4592c444b92ec6"
+      ],
+      "before": [
+        "west-pmc-11794981-153ace40b735f2139ef8"
+      ],
+      "case_id": "westbench-v0.1-headache-01",
+      "field": "gold_chunk_ids",
+      "rationale": "Promote the chunk that directly states the repeated-stimulation P100m amplitude pattern and retain the broader interpretation as context."
+    },
+    {
+      "after": [
+        "west-pmc-11794981-153ace40b735f2139ef8"
+      ],
+      "before": [],
+      "case_id": "westbench-v0.1-headache-01",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Promote the chunk that directly states the repeated-stimulation P100m amplitude pattern and retain the broader interpretation as context."
+    },
+    {
+      "after": [
+        "west-pmc-12867494-8088b6cb5b898e70377f",
+        "west-pmc-12867494-85fa80d722354ad45cbe"
+      ],
+      "before": [
+        "west-pmc-12867494-85fa80d722354ad45cbe"
+      ],
+      "case_id": "westbench-v0.1-headache-06",
+      "field": "gold_chunk_ids",
+      "rationale": "Make both the one-study prevalence evidence and limited-data interpretation primary because the question asks how much evidence exists."
+    },
+    {
+      "after": [],
+      "before": [
+        "west-pmc-12867494-8088b6cb5b898e70377f"
+      ],
+      "case_id": "westbench-v0.1-headache-06",
+      "field": "optional_secondary_chunk_ids",
+      "rationale": "Make both the one-study prevalence evidence and limited-data interpretation primary because the question asks how much evidence exists."
+    },
+    {
+      "after": [
+        "west-pmc-11007433-107af14f8b2f92ec741e",
+        "west-pmc-9274467-bfe8d88a2a851dcdec78",
+        "west-pmc-9274467-b6353bcaa4ccce5bb790"
+      ],
+      "before": [
+        "west-pmc-11007433-107af14f8b2f92ec741e",
+        "west-pmc-9274467-b6353bcaa4ccce5bb790"
+      ],
+      "case_id": "westbench-v0.1-constipation-08",
+      "field": "gold_chunk_ids",
+      "rationale": "Directly represent differing diagnostic criteria and the number and range of PROM instruments and contexts without claiming separately quantified heterogeneity."
+    },
+    {
+      "after": [
+        "The prevalence literature used differing diagnostic criteria, while the PROM review identified numerous instruments spanning different symptom or quality-of-life and administration contexts."
+      ],
+      "before": [
+        "Prevalence estimates vary with diagnostic methods and study populations.",
+        "Patient-reported measures vary in target populations, purposes, administration, and measured outcomes."
+      ],
+      "case_id": "westbench-v0.1-constipation-08",
+      "field": "expected_evidence_points",
+      "rationale": "Directly represent differing diagnostic criteria and the number and range of PROM instruments and contexts without claiming separately quantified heterogeneity."
+    },
+    {
+      "after": "supported",
+      "before": "partially_supported",
+      "case_id": "westbench-v0.1-constipation-10",
+      "field": "answerability",
+      "rationale": "Both existing primary chunks directly state the requested study-design limitations."
+    }
+  ],
+  "domain_expert_verified": false,
+  "human_verified": false,
+  "review_basis": "frozen_pilot_corpus_review_packet",
+  "secondary_reviewer_model": "GPT-5.6 Sol",
+  "secondary_reviewer_type": "ai_model",
+  "unchanged_case_count": 33
+}

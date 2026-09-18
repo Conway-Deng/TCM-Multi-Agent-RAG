@@ -1,0 +1,1689 @@
+{
+  "case_denominator": 42,
+  "cases": [
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-01",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9038879-28f85582a9b4115e8640"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9038879"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9038879-28f85582a9b4115e8640",
+        "west-pmc-9038879-b3d6f4e9794c5be05447",
+        "west-pmc-9038879-a3a257fe66d3434fbb56",
+        "west-pmc-9038879-eda58111335b49266d4a"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-02",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9038879-8533223858b16f344f26"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9038879"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9038879-8533223858b16f344f26",
+        "west-pmc-9038879-327c6bbddb2978018faa",
+        "west-pmc-9038879-f1a8e286d1fca586bdc0",
+        "west-pmc-9038879-f297e8e16708c93c784a"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-03",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9397766-add0d821c6dd403b2add"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9397766"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.5,
+      "retrieved_chunk_ids": [
+        "west-pmc-8483994-e1f1743ed3d0507e6e05",
+        "west-pmc-9397766-add0d821c6dd403b2add",
+        "west-pmc-9397766-eb41c9beb2dcaa6414bc",
+        "west-pmc-8483994-6003639f83a11acdac7f"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8483994",
+        "west-pmc-9397766",
+        "west-pmc-9397766",
+        "west-pmc-8483994"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-04",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-8483994-76979379ed5f9201bad5",
+        "west-pmc-8483994-b8e7df0692cb6f53f26c"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-8483994"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.333333,
+      "retrieved_chunk_ids": [
+        "west-pmc-8483994-add712158df8460d7a72",
+        "west-pmc-8483994-f799cdaf90f85af4d2da",
+        "west-pmc-8483994-b8e7df0692cb6f53f26c",
+        "west-pmc-8483994-76979379ed5f9201bad5"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8483994",
+        "west-pmc-8483994",
+        "west-pmc-8483994",
+        "west-pmc-8483994"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-05",
+      "hit_at_4": false,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9038879"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9038879-56173944e74744c9ea8b",
+        "west-pmc-9038879-8a77feced4f889228def",
+        "west-pmc-9038879-b3d6f4e9794c5be05447",
+        "west-pmc-9138020-124ccdf059f0a9b338f3"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9138020"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-06",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9397766-15a55796cf9b4fa147c8"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9397766"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9397766-15a55796cf9b4fa147c8",
+        "west-pmc-9397766-1b3403ae8c2e36f2635f",
+        "west-pmc-9138020-7c80efe3f3d140a88bff",
+        "west-pmc-8483994-2ca5a777a616628f0314"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9397766",
+        "west-pmc-9397766",
+        "west-pmc-9138020",
+        "west-pmc-8483994"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-07",
+      "hit_at_4": true,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9138020-102ef6bfec46fbde2625"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9138020"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9138020-102ef6bfec46fbde2625",
+        "west-pmc-9138020-14a0acbd2dae1955c1b9",
+        "west-pmc-9138020-7b3f41a384a6e4fb0c4e",
+        "west-pmc-9138020-f3916d9c63a2125f0979"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9138020",
+        "west-pmc-9138020",
+        "west-pmc-9138020",
+        "west-pmc-9138020"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-08",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 3,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-9038879"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9038879-327c6bbddb2978018faa",
+        "west-pmc-9038879-a3a257fe66d3434fbb56",
+        "west-pmc-9038879-b3d6f4e9794c5be05447",
+        "west-pmc-9038879-8d2ccebf2aa67bd7f05a"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879",
+        "west-pmc-9038879"
+      ],
+      "source_recall_at_4": 0.5,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-cough-09",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 3,
+      "primary_gold_chunk_hits": [
+        "west-pmc-8483994-76979379ed5f9201bad5"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.333333,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-8483994",
+        "west-pmc-9397766"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.5,
+      "retrieved_chunk_ids": [
+        "west-pmc-8483994-2aa96a7611a7cf2038fc",
+        "west-pmc-8483994-76979379ed5f9201bad5",
+        "west-pmc-8483994-6003639f83a11acdac7f",
+        "west-pmc-9397766-1b3403ae8c2e36f2635f"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8483994",
+        "west-pmc-8483994",
+        "west-pmc-8483994",
+        "west-pmc-9397766"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "cough"
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-cough-10",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 3,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9397766-ed5601ae85fd53f79330"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.333333,
+      "primary_gold_source_count": 3,
+      "primary_gold_source_hits": [
+        "west-pmc-9397766"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9397766-ed5601ae85fd53f79330",
+        "west-pmc-9397766-add0d821c6dd403b2add",
+        "west-pmc-9138020-a45d2e0702472e581b2a",
+        "west-pmc-9138020-14a0acbd2dae1955c1b9"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9397766",
+        "west-pmc-9397766",
+        "west-pmc-9138020",
+        "west-pmc-9138020"
+      ],
+      "source_recall_at_4": 0.333333,
+      "topic": "cough"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-cough-11",
+      "hit_at_4": null,
+      "primary_gold_chunk_count": 0,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": null,
+      "primary_gold_source_count": 0,
+      "primary_gold_source_hits": [],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": null,
+      "retrieved_chunk_ids": [
+        "west-pmc-9138020-845f00ccdddbecdbfc78",
+        "west-pmc-9138020-14a0acbd2dae1955c1b9",
+        "west-pmc-9038879-56173944e74744c9ea8b",
+        "west-pmc-9038879-f1a8e286d1fca586bdc0"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9138020",
+        "west-pmc-9138020",
+        "west-pmc-9038879",
+        "west-pmc-9038879"
+      ],
+      "source_recall_at_4": null,
+      "topic": "cough"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-cough-12",
+      "hit_at_4": null,
+      "primary_gold_chunk_count": 0,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": null,
+      "primary_gold_source_count": 0,
+      "primary_gold_source_hits": [],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": null,
+      "retrieved_chunk_ids": [
+        "west-pmc-8483994-2aa96a7611a7cf2038fc",
+        "west-pmc-9138020-b85e27378e005a253215",
+        "west-pmc-9138020-b18d0bc563af7e7ca328",
+        "west-pmc-9138020-7c80efe3f3d140a88bff"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8483994",
+        "west-pmc-9138020",
+        "west-pmc-9138020",
+        "west-pmc-9138020"
+      ],
+      "source_recall_at_4": null,
+      "topic": "cough"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-01",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9276094-537533641e03502a852d",
+        "west-pmc-8765587-d24b4adef2b2ebc082e9",
+        "west-pmc-8765587-3c114c87a3f5d8f21749",
+        "west-pmc-9276094-998ee5d43793f5cfd176"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9276094",
+        "west-pmc-8765587",
+        "west-pmc-8765587",
+        "west-pmc-9276094"
+      ],
+      "source_recall_at_4": 0.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-02",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-13048936-e2440fb4365aab41dab8"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-13048936"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-13048936-e2440fb4365aab41dab8",
+        "west-pmc-13048936-093bc121c3548052ff42",
+        "west-pmc-9276094-e88a5b7371723236f824",
+        "west-pmc-6863582-a6278a444810db49b1a4"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-9276094",
+        "west-pmc-6863582"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-03",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-8765587-0836db1b440a419b1187"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-8765587"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-8765587-0836db1b440a419b1187",
+        "west-pmc-8765587-8967a5ee8d664505887b",
+        "west-pmc-8765587-3c114c87a3f5d8f21749",
+        "west-pmc-8765587-25a44023fd50459c14c0"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8765587",
+        "west-pmc-8765587",
+        "west-pmc-8765587",
+        "west-pmc-8765587"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-04",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-6863582-b8b6a36f50c61234408d"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-6863582"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.5,
+      "retrieved_chunk_ids": [
+        "west-pmc-6863582-a6278a444810db49b1a4",
+        "west-pmc-6863582-b8b6a36f50c61234408d",
+        "west-pmc-6863582-7b9c27733fd454d4496b",
+        "west-pmc-6863582-9ace2789eca3154b5057"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-6863582",
+        "west-pmc-6863582",
+        "west-pmc-6863582",
+        "west-pmc-6863582"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-05",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-13048936-33262c18fc966e88dec6"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-13048936"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.5,
+      "retrieved_chunk_ids": [
+        "west-pmc-13048936-7c59515f97a38056ad53",
+        "west-pmc-13048936-33262c18fc966e88dec6",
+        "west-pmc-13048936-639323a1bf6bc92018b5",
+        "west-pmc-13048936-df6f6cb7d8e90c3d10c7"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-06",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-6863582-a6278a444810db49b1a4"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-6863582"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-6863582-a6278a444810db49b1a4",
+        "west-pmc-13048936-82508a07012cdd066c0a",
+        "west-pmc-6863582-420aedd76cf0fd92dca8",
+        "west-pmc-6863582-b8b6a36f50c61234408d"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-6863582",
+        "west-pmc-13048936",
+        "west-pmc-6863582",
+        "west-pmc-6863582"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-07",
+      "hit_at_4": false,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-8765587"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-8765587-d24b4adef2b2ebc082e9",
+        "west-pmc-8765587-83c5ea2967874a8a92f7",
+        "west-pmc-8765587-0836db1b440a419b1187",
+        "west-pmc-8765587-25a44023fd50459c14c0"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-8765587",
+        "west-pmc-8765587",
+        "west-pmc-8765587",
+        "west-pmc-8765587"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-08",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-13048936-7c59515f97a38056ad53"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-13048936"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-13048936-7c59515f97a38056ad53",
+        "west-pmc-13048936-ea0fe779ddd547602147",
+        "west-pmc-13048936-6413628a5b8e6c414cfa",
+        "west-pmc-13048936-639323a1bf6bc92018b5"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936"
+      ],
+      "source_recall_at_4": 0.5,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-09",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-13048936-e2440fb4365aab41dab8"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-13048936",
+        "west-pmc-8765587"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.333333,
+      "retrieved_chunk_ids": [
+        "west-pmc-13048936-ea0fe779ddd547602147",
+        "west-pmc-8765587-8967a5ee8d664505887b",
+        "west-pmc-13048936-e2440fb4365aab41dab8",
+        "west-pmc-8765587-83c5ea2967874a8a92f7"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-8765587",
+        "west-pmc-13048936",
+        "west-pmc-8765587"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-dyspepsia-10",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9276094-e88a5b7371723236f824"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-6863582",
+        "west-pmc-9276094"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.333333,
+      "retrieved_chunk_ids": [
+        "west-pmc-6863582-7b9c27733fd454d4496b",
+        "west-pmc-13048936-ea0fe779ddd547602147",
+        "west-pmc-9276094-e88a5b7371723236f824",
+        "west-pmc-9276094-c0bcaf1b62fc152dc93a"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-6863582",
+        "west-pmc-13048936",
+        "west-pmc-9276094",
+        "west-pmc-9276094"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "hit_at_4": null,
+      "primary_gold_chunk_count": 0,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": null,
+      "primary_gold_source_count": 0,
+      "primary_gold_source_hits": [],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": null,
+      "retrieved_chunk_ids": [
+        "west-pmc-13048936-e2440fb4365aab41dab8",
+        "west-pmc-13048936-ea0fe779ddd547602147",
+        "west-pmc-13048936-82508a07012cdd066c0a",
+        "west-pmc-13048936-093bc121c3548052ff42"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936",
+        "west-pmc-13048936"
+      ],
+      "source_recall_at_4": null,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "hit_at_4": null,
+      "primary_gold_chunk_count": 0,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": null,
+      "primary_gold_source_count": 0,
+      "primary_gold_source_hits": [],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": null,
+      "retrieved_chunk_ids": [
+        "west-pmc-9276094-537533641e03502a852d",
+        "west-pmc-9276094-f8651d6b05eedf1110d4",
+        "west-pmc-13048936-6413628a5b8e6c414cfa",
+        "west-pmc-9276094-e88a5b7371723236f824"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9276094",
+        "west-pmc-9276094",
+        "west-pmc-13048936",
+        "west-pmc-9276094"
+      ],
+      "source_recall_at_4": null,
+      "topic": "dyspepsia_digestive_symptoms"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-01",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-35724a28f8d4e70963c0",
+        "west-pmc-11794981-08916fb3154950d0d2a2",
+        "west-pmc-12857048-f23d7bdac2eec846ef2c",
+        "west-pmc-12857048-a7dc1af9b272c1973af9"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-11794981",
+        "west-pmc-12857048",
+        "west-pmc-12857048"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-02",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-1cc87a82d7f6a89eeca4",
+        "west-pmc-12659810-7bf74e1321c0e2631d25",
+        "west-pmc-11794981-898811886f00628ef49e",
+        "west-pmc-12857048-e5b1db5478f67338c9a1"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-12659810",
+        "west-pmc-11794981",
+        "west-pmc-12857048"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-03",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12659810"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12659810-4e8cee5ce3e0ed0b50b4",
+        "west-pmc-12659810-d451dd202495148e0cd6",
+        "west-pmc-12659810-4d3c4232df85cc66571e",
+        "west-pmc-12659810-7784641b1f382388051b"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12659810",
+        "west-pmc-12659810",
+        "west-pmc-12659810",
+        "west-pmc-12659810"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-04",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12867494"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12867494-29fc40fac9a1c5eb0169",
+        "west-pmc-12867494-cd44fa1b12e8a752b1a9",
+        "west-pmc-12867494-2d8547594860e213162a",
+        "west-pmc-12867494-95579b7222af5cb50920"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12867494",
+        "west-pmc-12867494",
+        "west-pmc-12867494",
+        "west-pmc-12867494"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-05",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-12857048-81541b38c2c2eee9d14e"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12857048"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12857048-81541b38c2c2eee9d14e",
+        "west-pmc-12857048-d0290c9340b363ca4426",
+        "west-pmc-12857048-f23d7bdac2eec846ef2c",
+        "west-pmc-12857048-e321a674956a0404f8e1"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12857048",
+        "west-pmc-12857048",
+        "west-pmc-12857048",
+        "west-pmc-12857048"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-06",
+      "hit_at_4": false,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12867494"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-35724a28f8d4e70963c0",
+        "west-pmc-11794981-e9f813e5f5b063b58fe4",
+        "west-pmc-12867494-cd44fa1b12e8a752b1a9",
+        "west-pmc-11794981-8e314d4592c444b92ec6"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-11794981",
+        "west-pmc-12867494",
+        "west-pmc-11794981"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-07",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-11794981-08916fb3154950d0d2a2"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-08916fb3154950d0d2a2",
+        "west-pmc-11794981-ab62ede709574b85f05d",
+        "west-pmc-12857048-4ba0c2ab97f96d566594",
+        "west-pmc-12659810-16c0b2dd8fafc556e91e"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-11794981",
+        "west-pmc-12857048",
+        "west-pmc-12659810"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-08",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981",
+        "west-pmc-12857048"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12857048-e9babfb2369afe6612a8",
+        "west-pmc-12857048-f23d7bdac2eec846ef2c",
+        "west-pmc-12857048-a7dc1af9b272c1973af9",
+        "west-pmc-11794981-08916fb3154950d0d2a2"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12857048",
+        "west-pmc-12857048",
+        "west-pmc-12857048",
+        "west-pmc-11794981"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-headache-09",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-12867494-784987cf4ce3d25249eb",
+        "west-pmc-11794981-08916fb3154950d0d2a2"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981",
+        "west-pmc-12867494"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-08916fb3154950d0d2a2",
+        "west-pmc-12867494-784987cf4ce3d25249eb",
+        "west-pmc-12857048-59d482210f1c36f73361",
+        "west-pmc-12857048-70ed65109809d829c2fb"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-12867494",
+        "west-pmc-12857048",
+        "west-pmc-12857048"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-headache-10",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-12857048-81541b38c2c2eee9d14e"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-12659810",
+        "west-pmc-12857048"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.25,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-08916fb3154950d0d2a2",
+        "west-pmc-12659810-c680398fb2241906cd97",
+        "west-pmc-12857048-a7dc1af9b272c1973af9",
+        "west-pmc-12857048-81541b38c2c2eee9d14e"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-12659810",
+        "west-pmc-12857048",
+        "west-pmc-12857048"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-headache-11",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-11794981-ab62ede709574b85f05d"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11794981"
+      ],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11794981-ab62ede709574b85f05d",
+        "west-pmc-12659810-62ebd5106c59f6e73fab",
+        "west-pmc-12659810-1617c6902733412ffe1f",
+        "west-pmc-11794981-38debee25e2542bde002"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11794981",
+        "west-pmc-12659810",
+        "west-pmc-12659810",
+        "west-pmc-11794981"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-headache-12",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-12659810-4d3c4232df85cc66571e"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12659810"
+      ],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12659810-4d3c4232df85cc66571e",
+        "west-pmc-12659810-4e8cee5ce3e0ed0b50b4",
+        "west-pmc-12857048-e5b1db5478f67338c9a1",
+        "west-pmc-12659810-959a4d5c0acee2aa76d6"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12659810",
+        "west-pmc-12659810",
+        "west-pmc-12857048",
+        "west-pmc-12659810"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "headache"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-01",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9274467"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9274467-bfe8d88a2a851dcdec78",
+        "west-pmc-9274467-d51f99e15cdd2bcfbf7e",
+        "west-pmc-9274467-71103c7d3f32a0543c07",
+        "west-pmc-9274467-a086b16b0bf7f021aa07"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-9274467"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-02",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9274467-cb43cb6dde16fa707aff"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9274467"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.333333,
+      "retrieved_chunk_ids": [
+        "west-pmc-9274467-25845e7fed4c5e60abcf",
+        "west-pmc-9274467-80d3c6daa61cc6b886d9",
+        "west-pmc-9274467-cb43cb6dde16fa707aff",
+        "west-pmc-11007433-740928228a712b4fab8c"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-03",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11007433"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11007433-d7d095ed5fde8e9bc979",
+        "west-pmc-11007433-2a9b8dcff883a97c8964",
+        "west-pmc-11007433-5485f04bdad453e038af",
+        "west-pmc-11007433-f27e0be946a4b6d9d0c2"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11007433",
+        "west-pmc-11007433",
+        "west-pmc-11007433",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-04",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9960109"
+      ],
+      "question_type": "direct_evidence",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9960109-c9ae2569ed8af01b9e97",
+        "west-pmc-9960109-8db72a7f636d46cfcec7",
+        "west-pmc-9960109-a831de048fed6f3fa0a3",
+        "west-pmc-11007433-740928228a712b4fab8c"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9960109",
+        "west-pmc-9960109",
+        "west-pmc-9960109",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-05",
+      "hit_at_4": true,
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9274467-d51f99e15cdd2bcfbf7e"
+      ],
+      "primary_gold_chunk_recall_at_4": 1.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9274467"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9274467-d51f99e15cdd2bcfbf7e",
+        "west-pmc-9960109-a831de048fed6f3fa0a3",
+        "west-pmc-9274467-b6353bcaa4ccce5bb790",
+        "west-pmc-9274467-3ffb45984c05d03833b8"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9274467",
+        "west-pmc-9960109",
+        "west-pmc-9274467",
+        "west-pmc-9274467"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-06",
+      "hit_at_4": false,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-11007433"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11007433-2a9b8dcff883a97c8964",
+        "west-pmc-11007433-740928228a712b4fab8c",
+        "west-pmc-11007433-fef3d9cd850c45e524b1",
+        "west-pmc-11007433-592010e739b31be86537"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11007433",
+        "west-pmc-11007433",
+        "west-pmc-11007433",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-07",
+      "hit_at_4": false,
+      "likely_miss_reason": "A_legitimate_lexical_mismatch",
+      "primary_gold_chunk_count": 1,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-12350361"
+      ],
+      "question_type": "paraphrased_retrieval",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12350361-17afd72ed426ee07c79d",
+        "west-pmc-12350361-59c62b4349bfb16260b7",
+        "west-pmc-12350361-b65a66da22462d8d932c",
+        "west-pmc-11007433-03083abc9e28020deac5"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12350361",
+        "west-pmc-12350361",
+        "west-pmc-12350361",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-08",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 3,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-11007433",
+        "west-pmc-9274467"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-11007433-2a9b8dcff883a97c8964",
+        "west-pmc-9960109-79bfde762673f27da999",
+        "west-pmc-9274467-25845e7fed4c5e60abcf",
+        "west-pmc-9274467-fa30c2a8dfb6e32c5342"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-11007433",
+        "west-pmc-9960109",
+        "west-pmc-9274467",
+        "west-pmc-9274467"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-09",
+      "hit_at_4": true,
+      "likely_miss_reason": "B_evidence_distributed_across_sources",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-11007433-953693e44358ee30c0c7"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-11007433"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.333333,
+      "retrieved_chunk_ids": [
+        "west-pmc-9274467-8c01042bbb7505da9eb2",
+        "west-pmc-11007433-740928228a712b4fab8c",
+        "west-pmc-11007433-953693e44358ee30c0c7",
+        "west-pmc-9274467-b6353bcaa4ccce5bb790"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9274467",
+        "west-pmc-11007433",
+        "west-pmc-11007433",
+        "west-pmc-9274467"
+      ],
+      "source_recall_at_4": 0.5,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "supported",
+      "case_id": "westbench-v0.1-constipation-10",
+      "hit_at_4": false,
+      "likely_miss_reason": "F_retrieval_weakness",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-12350361",
+        "west-pmc-9960109"
+      ],
+      "question_type": "multi_source_synthesis",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-12350361-549ca5d847eb86597c62",
+        "west-pmc-11007433-2a9b8dcff883a97c8964",
+        "west-pmc-9960109-3ca204803642ec11b99a",
+        "west-pmc-11007433-f27e0be946a4b6d9d0c2"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-12350361",
+        "west-pmc-11007433",
+        "west-pmc-9960109",
+        "west-pmc-11007433"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-constipation-11",
+      "hit_at_4": true,
+      "likely_miss_reason": "D_ambiguous_or_deliberately_difficult_query",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [
+        "west-pmc-9274467-fa30c2a8dfb6e32c5342"
+      ],
+      "primary_gold_chunk_recall_at_4": 0.5,
+      "primary_gold_source_count": 1,
+      "primary_gold_source_hits": [
+        "west-pmc-9274467"
+      ],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": 1.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9274467-fa30c2a8dfb6e32c5342",
+        "west-pmc-9274467-25845e7fed4c5e60abcf",
+        "west-pmc-9274467-b6353bcaa4ccce5bb790",
+        "west-pmc-9274467-c2111b5653c70be051a9"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-9274467",
+        "west-pmc-9274467"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-constipation-12",
+      "hit_at_4": false,
+      "likely_miss_reason": "D_ambiguous_or_deliberately_difficult_query",
+      "primary_gold_chunk_count": 2,
+      "primary_gold_chunk_hits": [],
+      "primary_gold_chunk_recall_at_4": 0.0,
+      "primary_gold_source_count": 2,
+      "primary_gold_source_hits": [
+        "west-pmc-12350361",
+        "west-pmc-9960109"
+      ],
+      "question_type": "difficult_or_insufficient",
+      "reciprocal_rank": 0.0,
+      "retrieved_chunk_ids": [
+        "west-pmc-9960109-a831de048fed6f3fa0a3",
+        "west-pmc-12350361-16f58c16b8cc7fa08ada",
+        "west-pmc-9960109-1241012a1b3cfb422a7c",
+        "west-pmc-9960109-8db72a7f636d46cfcec7"
+      ],
+      "retrieved_source_ids": [
+        "west-pmc-9960109",
+        "west-pmc-12350361",
+        "west-pmc-9960109",
+        "west-pmc-9960109"
+      ],
+      "source_recall_at_4": 1.0,
+      "topic": "constipation"
+    }
+  ],
+  "eligibility": "supported or partially_supported cases with at least one primary gold chunk",
+  "hit_at_4": {
+    "denominator": 42,
+    "hits": 25,
+    "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+    "value": 0.595238
+  },
+  "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+  "miss_reason_counts": {
+    "A_legitimate_lexical_mismatch": 6,
+    "B_evidence_distributed_across_sources": 7,
+    "D_ambiguous_or_deliberately_difficult_query": 2,
+    "F_retrieval_weakness": 12
+  },
+  "mrr": {
+    "denominator": 42,
+    "formula": "mean reciprocal rank of first primary gold chunk over eligible cases",
+    "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+    "value": 0.450397
+  },
+  "partial_and_insufficient_observations": [
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-cough-10",
+      "false_confidence_risk": false,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": [
+        "west-pmc-9397766-ed5601ae85fd53f79330"
+      ]
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-cough-11",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_topical_but_non_answering_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": []
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-cough-12",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_topical_but_non_answering_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": []
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-dyspepsia-11",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [
+        "west-pmc-13048936-093bc121c3548052ff42"
+      ],
+      "primary_hits": []
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-dyspepsia-12",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [
+        "west-pmc-9276094-e88a5b7371723236f824"
+      ],
+      "primary_hits": []
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-headache-10",
+      "false_confidence_risk": false,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": [
+        "west-pmc-12857048-81541b38c2c2eee9d14e"
+      ]
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-headache-11",
+      "false_confidence_risk": false,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": [
+        "west-pmc-11794981-ab62ede709574b85f05d"
+      ]
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-headache-12",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": [
+        "west-pmc-12659810-4d3c4232df85cc66571e"
+      ]
+    },
+    {
+      "answerability": "partially_supported",
+      "case_id": "westbench-v0.1-constipation-11",
+      "false_confidence_risk": false,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_genuinely_useful_partial_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": [
+        "west-pmc-9274467-fa30c2a8dfb6e32c5342"
+      ]
+    },
+    {
+      "answerability": "insufficient",
+      "case_id": "westbench-v0.1-constipation-12",
+      "false_confidence_risk": true,
+      "note": "Topical retrieval does not change the benchmark answerability label.",
+      "observation": "returned_topical_but_non_answering_evidence",
+      "optional_secondary_hits": [],
+      "primary_hits": []
+    }
+  ],
+  "per_question_type": {
+    "difficult_or_insufficient": {
+      "aggregate_primary_gold_chunk_hits": 2,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.666667,
+      "aggregate_primary_gold_chunks": 3,
+      "aggregate_primary_gold_source_hits": 2,
+      "aggregate_primary_gold_sources": 2,
+      "aggregate_source_recall_at_4": 1.0,
+      "case_denominator": 2,
+      "hit_at_4": 1.0,
+      "macro_primary_gold_chunk_recall_at_4": 0.75,
+      "macro_source_recall_at_4": 1.0,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 1.0
+    },
+    "direct_evidence": {
+      "aggregate_primary_gold_chunk_hits": 9,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.529412,
+      "aggregate_primary_gold_chunks": 17,
+      "aggregate_primary_gold_source_hits": 15,
+      "aggregate_primary_gold_sources": 16,
+      "aggregate_source_recall_at_4": 0.9375,
+      "case_denominator": 16,
+      "hit_at_4": 0.5,
+      "macro_primary_gold_chunk_recall_at_4": 0.5,
+      "macro_source_recall_at_4": 0.9375,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.354167
+    },
+    "multi_source_synthesis": {
+      "aggregate_primary_gold_chunk_hits": 9,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.321429,
+      "aggregate_primary_gold_chunks": 28,
+      "aggregate_primary_gold_source_hits": 20,
+      "aggregate_primary_gold_sources": 25,
+      "aggregate_source_recall_at_4": 0.8,
+      "case_denominator": 12,
+      "hit_at_4": 0.666667,
+      "macro_primary_gold_chunk_recall_at_4": 0.347222,
+      "macro_source_recall_at_4": 0.819444,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.395833
+    },
+    "paraphrased_retrieval": {
+      "aggregate_primary_gold_chunk_hits": 7,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.466667,
+      "aggregate_primary_gold_chunks": 15,
+      "aggregate_primary_gold_source_hits": 12,
+      "aggregate_primary_gold_sources": 12,
+      "aggregate_source_recall_at_4": 1.0,
+      "case_denominator": 12,
+      "hit_at_4": 0.583333,
+      "macro_primary_gold_chunk_recall_at_4": 0.541667,
+      "macro_source_recall_at_4": 1.0,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.541667
+    }
+  },
+  "per_topic": {
+    "constipation": {
+      "aggregate_primary_gold_chunk_hits": 4,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.25,
+      "aggregate_primary_gold_chunks": 16,
+      "aggregate_primary_gold_source_hits": 13,
+      "aggregate_primary_gold_sources": 14,
+      "aggregate_source_recall_at_4": 0.928571,
+      "case_denominator": 11,
+      "hit_at_4": 0.363636,
+      "macro_primary_gold_chunk_recall_at_4": 0.272727,
+      "macro_source_recall_at_4": 0.954545,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.242424
+    },
+    "cough": {
+      "aggregate_primary_gold_chunk_hits": 9,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.5,
+      "aggregate_primary_gold_chunks": 18,
+      "aggregate_primary_gold_source_hits": 11,
+      "aggregate_primary_gold_sources": 14,
+      "aggregate_source_recall_at_4": 0.785714,
+      "case_denominator": 10,
+      "hit_at_4": 0.8,
+      "macro_primary_gold_chunk_recall_at_4": 0.616667,
+      "macro_source_recall_at_4": 0.883333,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.633333
+    },
+    "dyspepsia_digestive_symptoms": {
+      "aggregate_primary_gold_chunk_hits": 8,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.571429,
+      "aggregate_primary_gold_chunks": 14,
+      "aggregate_primary_gold_source_hits": 11,
+      "aggregate_primary_gold_sources": 13,
+      "aggregate_source_recall_at_4": 0.846154,
+      "case_denominator": 10,
+      "hit_at_4": 0.8,
+      "macro_primary_gold_chunk_recall_at_4": 0.65,
+      "macro_source_recall_at_4": 0.85,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.566667
+    },
+    "headache": {
+      "aggregate_primary_gold_chunk_hits": 6,
+      "aggregate_primary_gold_chunk_recall_at_4": 0.4,
+      "aggregate_primary_gold_chunks": 15,
+      "aggregate_primary_gold_source_hits": 14,
+      "aggregate_primary_gold_sources": 14,
+      "aggregate_source_recall_at_4": 1.0,
+      "case_denominator": 11,
+      "hit_at_4": 0.454545,
+      "macro_primary_gold_chunk_recall_at_4": 0.409091,
+      "macro_source_recall_at_4": 1.0,
+      "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS",
+      "mrr": 0.386364
+    }
+  },
+  "primary_gold_chunk_recall_at_4": {
+    "aggregate_hits": 27,
+    "aggregate_primary_gold_chunks": 63,
+    "aggregate_recall": 0.428571,
+    "formula": "macro mean over eligible cases of (primary gold chunks retrieved in top 4 / primary gold chunks)",
+    "macro_case_recall": 0.480159,
+    "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS"
+  },
+  "retrieval_strategy": "R0 lexical",
+  "source_recall_at_4": {
+    "aggregate_hits": 49,
+    "aggregate_primary_gold_sources": 55,
+    "aggregate_recall": 0.890909,
+    "formula": "macro mean over eligible cases of (primary gold sources represented in top 4 / primary gold sources)",
+    "macro_case_recall": 0.924603,
+    "metric_label": "DRAFT DIAGNOSTIC — NOT FORMAL PAPER RESULTS"
+  },
+  "top_k": 4
+}

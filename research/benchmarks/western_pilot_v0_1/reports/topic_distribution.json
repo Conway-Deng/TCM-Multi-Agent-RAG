@@ -1,0 +1,76 @@
+{
+  "answerability_counts": {
+    "insufficient": 6,
+    "partially_supported": 4,
+    "supported": 38
+  },
+  "benchmark_name": "MediRAG-West Pilot Benchmark v0.1",
+  "case_count": 48,
+  "difficulty_metadata_counts": {
+    "distributed": 12,
+    "focused": 16,
+    "insufficient_evidence": 8,
+    "lexically_challenging": 12
+  },
+  "difficulty_quota": "none; descriptive metadata only",
+  "per_topic_answerability_counts": {
+    "constipation": {
+      "insufficient": 1,
+      "partially_supported": 1,
+      "supported": 10
+    },
+    "cough": {
+      "insufficient": 2,
+      "partially_supported": 1,
+      "supported": 9
+    },
+    "dyspepsia_digestive_symptoms": {
+      "insufficient": 2,
+      "partially_supported": 0,
+      "supported": 10
+    },
+    "headache": {
+      "insufficient": 1,
+      "partially_supported": 2,
+      "supported": 9
+    }
+  },
+  "per_topic_question_type_counts": {
+    "constipation": {
+      "difficult_or_insufficient": 2,
+      "direct_evidence": 4,
+      "multi_source_synthesis": 3,
+      "paraphrased_retrieval": 3
+    },
+    "cough": {
+      "difficult_or_insufficient": 2,
+      "direct_evidence": 4,
+      "multi_source_synthesis": 3,
+      "paraphrased_retrieval": 3
+    },
+    "dyspepsia_digestive_symptoms": {
+      "difficult_or_insufficient": 2,
+      "direct_evidence": 4,
+      "multi_source_synthesis": 3,
+      "paraphrased_retrieval": 3
+    },
+    "headache": {
+      "difficult_or_insufficient": 2,
+      "direct_evidence": 4,
+      "multi_source_synthesis": 3,
+      "paraphrased_retrieval": 3
+    }
+  },
+  "question_type_counts": {
+    "difficult_or_insufficient": 8,
+    "direct_evidence": 16,
+    "multi_source_synthesis": 12,
+    "paraphrased_retrieval": 12
+  },
+  "topic_counts": {
+    "constipation": 12,
+    "cough": 12,
+    "dyspepsia_digestive_symptoms": 12,
+    "headache": 12
+  }
+}

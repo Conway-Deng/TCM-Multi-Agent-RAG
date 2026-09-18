@@ -1,0 +1,50 @@
+{
+  "annotation_method": "AI-assisted draft annotation with secondary AI-model adjudication against the frozen pilot-corpus review packet; human and domain-expert verification remain pending.",
+  "answerability_counts": {
+    "insufficient": 6,
+    "partially_supported": 4,
+    "supported": 38
+  },
+  "benchmark_case_count": 48,
+  "benchmark_name": "MediRAG-West Pilot Benchmark v0.1",
+  "benchmark_sha256": "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6",
+  "benchmark_status": "draft_for_manual_review",
+  "benchmark_version": "western-pilot-v0.1-draft",
+  "build_git_commit": "e6b02f6e37534008427cb18cd06ce7f086153103",
+  "corpus_chunks_sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+  "corpus_name": "MediRAG-West PMC Open Access Pilot Corpus",
+  "corpus_source_registry_sha256": "722273140906b238e88cfdab4ddbb12d73c478f686ae23d0f501738ee6820703",
+  "corpus_version": "medirag-west-v0.1-pilot",
+  "created_at": "2026-09-18T00:00:00+08:00",
+  "domain_expert_verified": false,
+  "generation_policy": "ai_assisted_draft_secondary_model_reviewed",
+  "human_verified": false,
+  "limitations": [
+    "Not a benchmark of general or comprehensive Western medical knowledge.",
+    "Not a benchmark of clinical correctness, diagnosis, treatment, guideline adherence, safety, or physician performance.",
+    "Draft gold annotations require manual review before any formal experiment freeze.",
+    "Retrieval diagnostics are draft diagnostics and are not formal paper results."
+  ],
+  "question_type_counts": {
+    "difficult_or_insufficient": 8,
+    "direct_evidence": 16,
+    "multi_source_synthesis": 12,
+    "paraphrased_retrieval": 12
+  },
+  "review_basis": "frozen_pilot_corpus_review_packet",
+  "scientific_scope": [
+    "retrieval quality within the frozen 16-source, 271-chunk Western pilot corpus",
+    "future evidence-grounded answer support evaluation",
+    "abstention and insufficient-evidence behavior",
+    "provenance integrity",
+    "future runtime reliability and latency evaluation"
+  ],
+  "secondary_reviewer_model": "GPT-5.6 Sol",
+  "secondary_reviewer_type": "ai_model",
+  "topic_counts": {
+    "constipation": 12,
+    "cough": 12,
+    "dyspepsia_digestive_symptoms": 12,
+    "headache": 12
+  }
+}
