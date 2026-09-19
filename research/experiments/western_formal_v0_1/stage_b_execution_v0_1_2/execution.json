@@ -1,0 +1,26 @@
+{
+  "benchmark_manifest_sha256": "bd8fc5105329d5d325fa8910b8a642bac6ddc954a25df6b9e299158aa29a22ae",
+  "benchmark_sha256": "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6",
+  "corpus_chunks_sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+  "execution_version": "western-stage-b-execution-v0.1.2",
+  "implementation_commit": "de04c2ca1742794206de80e75155aa3d44c47eb4",
+  "implementation_sha256": {
+    "backend/western/formal_eval.py": "9a25c416569c0567bd7610ad70ff156fd3e5c578345c20d7153aeb4dcece9a4d",
+    "scripts/run-western-formal-v0.1.py": "86f5be7f43de38699136058c9abb863eab2335c0c177faf4114e3a37b156bc98"
+  },
+  "protocol_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
+  "protocol_version": "western_formal_v0.1.2",
+  "scientific_protocol_unchanged": true,
+  "source_registry_sha256": "722273140906b238e88cfdab4ddbb12d73c478f686ae23d0f501738ee6820703",
+  "stage_a_checkpoint_commit": "5eb40146f026b42547220b0f0cfd077d72a75562",
+  "stage_a_retrieval_sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+  "stage_a_run_id": "western-formal-v0.1.2-stage-a-20260918-01",
+  "stage_b_execution_freeze_commit": "resolved at runtime from git log for execution.json",
+  "stage_b_state_machine": {
+    "complete_unsealed": "Validate all 192 records and provenance, make zero provider calls, then seal.",
+    "fresh": "Atomically create the execution manifest before provider construction or invocation.",
+    "invalid": "Reject invalid JSON, invalid terminal records, duplicates, foreign IDs, non-prefix order, more than 192 rows, or a non-exact 192-ID set.",
+    "manifest_only": "Validate the existing execution manifest and resume at cell 1 without overwriting it.",
+    "partial": "Validate the execution manifest and every existing record, then resume only the remaining frozen-order suffix."
+  }
+}
