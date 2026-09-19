@@ -1,0 +1,42 @@
+{
+  "status": "stage_b_outage_incident",
+  "run_id": "western-formal-v0.1.2-stage-a-20260918-01",
+  "protocol_version": "western_formal_v0.1.2",
+  "protocol_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
+  "stage_a_checkpoint_commit": "5eb40146f026b42547220b0f0cfd077d72a75562",
+  "stage_a_retrieval_sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+  "stage_b_execution_freeze_commit": "7da777984bc6a3ffef0e0514598848142788e474",
+  "stage_b_sha256": "89b1e4166daefa738be4572f84825711336147560945a93141b6a7569d61166f",
+  "stage_b_seal_manifest_sha256": "29ffec35f6e0f80a6543935b4ab248aefb8a8387f1ed392d2657cd5445feecb0",
+  "stage_b_execution_manifest_sha256": "68d1435270c1b882f866042e644f71a2f21156dbfcafa061314a2759d5712939",
+  "cell_count": 192,
+  "completed_count": 106,
+  "technical_failure_count": 86,
+  "first_failure_position": 107,
+  "first_failed_experiment_id": "western_formal_v0.1.2:westbench-v0.1-headache-03:R0",
+  "consecutive_failure_suffix_count": 86,
+  "successes_after_first_failure": 0,
+  "retry_used_failure_count": 86,
+  "attempt_count_two_failure_count": 86,
+  "provider_reported_model": "Qwen/Qwen3-8B",
+  "provider_reported_model_count": 192,
+  "final_error_counts": {
+    "connectivity": 86
+  },
+  "first_error_counts": {
+    "connectivity": 85,
+    "timeout": 1
+  },
+  "failure_counts_by_condition": {
+    "R0": 22,
+    "R1": 22,
+    "R2": 21,
+    "R3": 21
+  },
+  "eligible_as_primary": false,
+  "eligible_for_stage_c": false,
+  "preservation_only": true,
+  "decision_basis": "operational_failure_metadata_only",
+  "standard_b_finalized": false,
+  "stage_c_executed": false
+}
