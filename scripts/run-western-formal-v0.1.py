@@ -15,6 +15,7 @@ if str(BACKEND) not in sys.path:
 from western.formal_eval import (  # noqa: E402
     RunDirectory,
     finalize_stage_a_run,
+    finalize_stage_b_run,
     finalize_run,
     run_stage_a,
     run_stage_b,
@@ -25,7 +26,7 @@ from western.formal_eval import (  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a frozen stage of the Western formal v0.1 evaluation.")
-    parser.add_argument("--stage", choices=("A", "A-finalize", "B", "C", "finalize"), required=True)
+    parser.add_argument("--stage", choices=("A", "A-finalize", "B", "B-finalize", "C", "finalize"), required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument(
         "--execute-formal",
@@ -54,6 +55,8 @@ def main() -> None:
             finalize_stage_a_run(ROOT, run)
         elif args.stage == "B":
             asyncio.run(run_stage_b(ROOT, run))
+        elif args.stage == "B-finalize":
+            finalize_stage_b_run(ROOT, run)
         elif args.stage == "C":
             asyncio.run(run_stage_c(ROOT, run))
         else:

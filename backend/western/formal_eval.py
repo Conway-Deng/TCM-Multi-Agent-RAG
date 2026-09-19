@@ -73,6 +73,11 @@ ORIGINAL_PROTOCOL_SHA256 = "f7ff69020dac14491569b1764aef1bd0638e9dd15717af6ca16d
 V0_1_1_PROTOCOL_COMMIT = "46cfb8d8edf89dfeb1af7abf2701b273583cf188"
 V0_1_1_PROTOCOL_SHA256 = "a91f855f5707e07efeb7e460f11e2290f6fb5c282da942ab9b9b4f75360e77c8"
 PROTOCOL_SHA256 = "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192"
+STAGE_A_CHECKPOINT_COMMIT = "5eb40146f026b42547220b0f0cfd077d72a75562"
+STAGE_A_RUN_ID = "western-formal-v0.1.2-stage-a-20260918-01"
+STAGE_A_RETRIEVAL_SHA256 = "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e"
+STAGE_B_EXECUTION_VERSION = "western-stage-b-execution-v0.1.2"
+STAGE_B_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_b_execution_v0_1_2/execution.json"
 
 
 class FatalFormalRunError(RuntimeError):
@@ -184,6 +189,90 @@ def resolve_protocol_freeze_commit(repository_root: Path) -> str:
     if not commit:
         raise FatalFormalRunError("The v0.1.2 protocol freeze commit does not exist")
     return commit
+
+
+def resolve_stage_b_execution_freeze_commit(repository_root: Path) -> str:
+    commit = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", STAGE_B_EXECUTION_RELATIVE_PATH],
+        cwd=repository_root, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    if not commit:
+        raise FatalFormalRunError("The Stage B execution freeze commit does not exist")
+    return commit
+
+
+def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FatalFormalRunError(f"{label} is unreadable or invalid JSON") from exc
+    if not isinstance(value, dict):
+        raise FatalFormalRunError(f"{label} must be a JSON object")
+    return value
+
+
+def _read_jsonl_strict(path: Path, *, label: str) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    rows: list[dict[str, Any]] = []
+    try:
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            if not isinstance(value, dict):
+                raise ValueError("row is not an object")
+            rows.append(value)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        raise FatalFormalRunError(f"{label} contains invalid JSONL") from exc
+    return rows
+
+
+def _stage_b_execution_config(repository_root: Path) -> dict[str, Any]:
+    path = repository_root / STAGE_B_EXECUTION_RELATIVE_PATH
+    return _load_json_object(path, label="Stage B execution freeze")
+
+
+def verify_stage_b_execution_freeze(
+    repository_root: Path,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    verify_amended_protocol(repository_root)
+    config = execution_config or _stage_b_execution_config(repository_root)
+    freeze_commit = expected_execution_commit or resolve_stage_b_execution_freeze_commit(repository_root)
+    head = _git_head(repository_root)
+    if head != freeze_commit:
+        raise FatalFormalRunError(f"Stage B requires execution freeze HEAD {freeze_commit}; current HEAD is {head}")
+    if require_clean_worktree and not _git_worktree_clean(repository_root):
+        raise FatalFormalRunError("Stage B requires a clean Git working tree")
+    expected = {
+        "execution_version": STAGE_B_EXECUTION_VERSION,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_run_id": STAGE_A_RUN_ID,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "benchmark_sha256": BENCHMARK_SHA256,
+        "benchmark_manifest_sha256": BENCHMARK_MANIFEST_SHA256,
+        "corpus_chunks_sha256": CORPUS_CHUNKS_SHA256,
+        "source_registry_sha256": SOURCE_REGISTRY_SHA256,
+    }
+    mismatches = {key: {"expected": value, "actual": config.get(key)} for key, value in expected.items() if config.get(key) != value}
+    implementation = config.get("implementation_sha256")
+    if not isinstance(implementation, dict) or not implementation:
+        mismatches["implementation_sha256"] = {"expected": "non-empty mapping", "actual": implementation}
+    else:
+        for relative, expected_hash in implementation.items():
+            path = repository_root / str(relative)
+            actual_hash = _sha256(path) if path.is_file() else None
+            if actual_hash != expected_hash:
+                mismatches[f"implementation_sha256.{relative}"] = {"expected": expected_hash, "actual": actual_hash}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B execution freeze mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return {**config, "execution_freeze_commit": freeze_commit, "execution_json_sha256": _sha256(repository_root / STAGE_B_EXECUTION_RELATIVE_PATH) if execution_config is None else hashlib.sha256(json.dumps(config, sort_keys=True, separators=(",", ":")).encode()).hexdigest()}
 
 
 def load_frozen_cases(repository_root: Path) -> list[dict[str, Any]]:
@@ -488,12 +577,17 @@ class RunDirectory:
             handle.flush()
             os.fsync(handle.fileno())
 
-    def seal(self, stage: str, *, expected_cells: int = INTENDED_CELLS) -> dict[str, Any]:
+    def seal(self, stage: str, *, expected_cells: int = INTENDED_CELLS, expected_experiment_ids: set[str] | None = None) -> dict[str, Any]:
         path = self.stage_path(stage)
         records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
         ids = [item["experiment_id"] for item in records]
         if len(records) != expected_cells or len(set(ids)) != expected_cells:
             raise RuntimeError(f"Stage {stage} requires {expected_cells} unique cells before sealing")
+        if stage == "B":
+            if expected_experiment_ids is None and expected_cells == INTENDED_CELLS:
+                raise RuntimeError("Stage B exact Stage A experiment-ID set is required for sealing")
+            if expected_experiment_ids is not None and set(ids) != expected_experiment_ids:
+                raise RuntimeError("Stage B experiment IDs differ from the exact Stage A ID set")
         if stage == "A":
             pairs = [(item.get("case_id"), item.get("retrieval_condition")) for item in records]
             terminal = {"success", "technical_failure"}
@@ -792,23 +886,244 @@ def _retrieval_evidence(items: list[dict[str, Any]], topic: str) -> list[Western
     ]
 
 
+def verify_frozen_stage_a(repository_root: Path, run: RunDirectory) -> list[dict[str, Any]]:
+    verify_amended_protocol(repository_root)
+    if run.path.name != STAGE_A_RUN_ID:
+        raise FatalFormalRunError(f"Stage B requires frozen Stage A run {STAGE_A_RUN_ID}")
+    run_manifest = _load_json_object(run.path / "run_manifest.json", label="run manifest")
+    stage_manifest = _load_json_object(run.stage_manifest_path("A"), label="Stage A manifest")
+    final_manifest = _load_json_object(run.path / "stage_a_run_manifest.json", label="Stage A final manifest")
+    expected_run = {
+        "run_id": STAGE_A_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "current_execution_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "protocol_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "benchmark_sha256": BENCHMARK_SHA256,
+        "benchmark_manifest_sha256": BENCHMARK_MANIFEST_SHA256,
+        "corpus_chunks_sha256": CORPUS_CHUNKS_SHA256,
+        "source_registry_sha256": SOURCE_REGISTRY_SHA256,
+    }
+    for manifest_name, manifest in (("run manifest", run_manifest), ("Stage A final manifest", final_manifest)):
+        mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected_run.items() if manifest.get(key) != value}
+        if mismatches:
+            raise FatalFormalRunError(f"Frozen Stage A {manifest_name} mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    if stage_manifest.get("sha256") != STAGE_A_RETRIEVAL_SHA256 or stage_manifest.get("cell_count") != INTENDED_CELLS:
+        raise FatalFormalRunError("Frozen Stage A seal manifest mismatch")
+    if stage_manifest.get("successful_cells") != INTENDED_CELLS or stage_manifest.get("technical_failure_cells") != 0:
+        raise FatalFormalRunError("Frozen Stage A success/failure counts differ from the immutable anchor")
+    if _sha256(run.stage_path("A")) != STAGE_A_RETRIEVAL_SHA256:
+        raise FatalFormalRunError("Frozen Stage A retrieval SHA256 mismatch")
+    raw_path = run.path / "stage_a_raw_results.jsonl"
+    if _sha256(raw_path) != STAGE_A_RETRIEVAL_SHA256:
+        raise FatalFormalRunError("Frozen Stage A raw-results SHA256 mismatch")
+    artifact_hashes = final_manifest.get("stage_a_artifact_sha256")
+    if not isinstance(artifact_hashes, dict):
+        raise FatalFormalRunError("Frozen Stage A artifact hash registry is missing")
+    for name, expected_hash in artifact_hashes.items():
+        path = run.path / name
+        if not path.is_file() or _sha256(path) != expected_hash:
+            raise FatalFormalRunError(f"Frozen Stage A artifact mismatch: {name}")
+    records = _read_jsonl_strict(run.stage_path("A"), label="Stage A retrieval")
+    cases = load_frozen_cases(repository_root)
+    expected_ids = [cell["experiment_id"] for cell in load_frozen_execution_order(repository_root, cases)]
+    actual_ids = [row.get("experiment_id") for row in records]
+    if actual_ids != expected_ids or len(set(actual_ids)) != INTENDED_CELLS:
+        raise FatalFormalRunError("Frozen Stage A does not match the exact 192-cell execution matrix")
+    if any(row.get("terminal_state") != "success" or row.get("retrieval_success") is not True for row in records):
+        raise FatalFormalRunError("Frozen Stage A terminal records differ from the 192-success anchor")
+    return records
+
+
+def _expected_provenance(retrieval: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {key: item[key] for key in ("chunk_id", "source_id", "article_title", "section", "source_url", "pmcid", "doi", "license")}
+        for item in retrieval["retrieved_items"]
+    ]
+
+
+def _validate_stage_b_provenance(repository_root: Path, retrieval: dict[str, Any], provenance: list[dict[str, Any]]) -> None:
+    corpus = load_runtime_corpus(repository_root / "research/corpus/west_v0_1")
+    valid, errors = provenance_integrity(retrieval["retrieved_items"], provenance, set(corpus.sources))
+    if not valid or provenance != _expected_provenance(retrieval):
+        raise FatalFormalRunError(f"Stage B provenance invariant failed: {errors or ['exact provenance mismatch']}")
+
+
+@dataclass(frozen=True)
+class StageBGenerationOutcome:
+    generation_success: bool
+    generation_outcome: str
+    answer: str
+    provider_result: Any | None
+    first_attempt_success: bool
+    attempt_count: int
+    technical_retry_used: bool
+    first_error_type: str | None
+    final_error_type: str | None
+    errors: list[dict[str, Any]]
+    elapsed_ms: float
+
+
+async def invoke_stage_b_generation(operation: Callable[[], Awaitable[Any]]) -> StageBGenerationOutcome:
+    started = perf_counter()
+    errors: list[dict[str, Any]] = []
+    first_error: str | None = None
+    for attempt in (1, 2):
+        try:
+            result, answer = await operation()
+            return StageBGenerationOutcome(True, "completed", answer, result, attempt == 1, attempt, attempt == 2, first_error, None, errors, round((perf_counter() - started) * 1000, 3))
+        except ProviderUnavailable as exc:
+            kind = _error_type(exc)
+            if kind in {"configuration", "authentication"} or (kind == "http_4xx" and getattr(exc, "http_status", None) in {401, 403}):
+                raise FatalFormalRunError(f"Fatal Stage B provider configuration/authentication failure: {kind}") from exc
+            if first_error is None:
+                first_error = kind
+            errors.append({"attempt": attempt, "error_type": kind, "message": str(exc)})
+            if kind == "output_quality_rejection":
+                return StageBGenerationOutcome(False, "output_quality_rejection", "", None, False, attempt, False, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            if kind == "rate_limit":
+                return StageBGenerationOutcome(False, "rate_limit", "", None, False, attempt, False, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            if kind not in RETRYABLE_ERROR_TYPES:
+                return StageBGenerationOutcome(False, "nonretryable_provider_failure", "", None, False, attempt, False, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            if attempt == 2:
+                return StageBGenerationOutcome(False, "technical_failure", "", None, False, 2, True, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+        except Exception as exc:
+            raise FatalFormalRunError(f"Unexpected Stage B programming/runtime defect: {type(exc).__name__}") from exc
+    raise AssertionError("unreachable")
+
+
+def _validate_formal_generator(generator: Any) -> None:
+    if getattr(generator, "name", GENERATOR_PROVIDER) != GENERATOR_PROVIDER or getattr(generator, "model", GENERATOR_MODEL) != GENERATOR_MODEL:
+        raise FatalFormalRunError("Stage B generator provider/model configuration mismatch")
+    if hasattr(generator, "api_key") and not str(getattr(generator, "api_key", "")).strip():
+        raise FatalFormalRunError("Stage B generator API credential is missing")
+
+
+def _stage_b_execution_manifest_payload(run: RunDirectory, anchor: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stage": "B",
+        "status": "in_progress",
+        "run_id": STAGE_A_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "stage_b_execution_version": STAGE_B_EXECUTION_VERSION,
+        "stage_b_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_b_execution_json_sha256": anchor["execution_json_sha256"],
+        "implementation_sha256": anchor["implementation_sha256"],
+        "created_at": _utc_now(),
+    }
+
+
+def _ensure_stage_b_execution_manifest(run: RunDirectory, anchor: dict[str, Any], *, allow_create: bool) -> dict[str, Any]:
+    path = run.path / "stage_b_execution_manifest.json"
+    if not path.exists():
+        if not allow_create:
+            raise FatalFormalRunError("Stage B rows exist without a Stage B execution manifest")
+        _atomic_new_json(path, _stage_b_execution_manifest_payload(run, anchor))
+    manifest = _load_json_object(path, label="Stage B execution manifest")
+    expected = _stage_b_execution_manifest_payload(run, anchor)
+    expected.pop("created_at")
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B execution manifest mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _validate_stage_b_record(repository_root: Path, retrieval: dict[str, Any], record: dict[str, Any]) -> None:
+    if record.get("experiment_id") != retrieval.get("experiment_id"):
+        raise FatalFormalRunError("Stage B record experiment ID does not match Stage A")
+    outcome = record.get("generation_outcome")
+    allowed = {"completed", "technical_failure", "output_quality_rejection", "rate_limit", "nonretryable_provider_failure", "upstream_retrieval_technical_failure"}
+    if outcome not in allowed:
+        raise FatalFormalRunError(f"Invalid Stage B terminal outcome: {outcome}")
+    success = record.get("generation_success") is True and record.get("final_generation_success") is True
+    if success != (outcome == "completed"):
+        raise FatalFormalRunError("Stage B success flags disagree with terminal outcome")
+    attempts = record.get("attempt_count")
+    retry_used = record.get("technical_retry_used")
+    if outcome == "upstream_retrieval_technical_failure":
+        if retrieval.get("retrieval_success") is not False or attempts != 0 or retry_used is not False:
+            raise FatalFormalRunError("Invalid upstream-retrieval missingness record")
+    elif attempts not in {1, 2}:
+        raise FatalFormalRunError("Stage B provider attempt count must be 1 or 2")
+    if outcome == "technical_failure" and (attempts != 2 or retry_used is not True):
+        raise FatalFormalRunError("Stage B technical failure must exhaust the single retry")
+    if outcome in {"output_quality_rejection", "rate_limit"} and (attempts != 1 or retry_used is not False):
+        raise FatalFormalRunError(f"Stage B {outcome} must be nonretryable")
+    answer = record.get("answer")
+    if outcome == "completed" and (not isinstance(answer, str) or not answer.strip()):
+        raise FatalFormalRunError("Completed Stage B record has no answer")
+    if outcome != "completed" and answer != "":
+        raise FatalFormalRunError("Unsuccessful Stage B record must not contain an answer")
+    provenance = record.get("provenance")
+    if not isinstance(provenance, list):
+        raise FatalFormalRunError("Stage B provenance must be a list")
+    _validate_stage_b_provenance(repository_root, retrieval, provenance)
+
+
+def _validated_existing_stage_b_records(repository_root: Path, run: RunDirectory, stage_a: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    records = _read_jsonl_strict(run.stage_path("B"), label="Stage B generation")
+    if len(records) > INTENDED_CELLS:
+        raise FatalFormalRunError("Stage B contains more than 192 rows")
+    ids = [row.get("experiment_id") for row in records]
+    if len(ids) != len(set(ids)):
+        raise FatalFormalRunError("Stage B contains duplicate experiment IDs")
+    stage_a_by_id = {row["experiment_id"]: row for row in stage_a}
+    foreign = [cell_id for cell_id in ids if cell_id not in stage_a_by_id]
+    if foreign:
+        raise FatalFormalRunError(f"Stage B contains foreign experiment IDs: {foreign[:3]}")
+    expected_prefix = [row["experiment_id"] for row in stage_a[:len(records)]]
+    if ids != expected_prefix:
+        raise FatalFormalRunError("Stage B records are not a valid frozen-order prefix of Stage A")
+    for record in records:
+        _validate_stage_b_record(repository_root, stage_a_by_id[record["experiment_id"]], record)
+    return records
+
+
 async def run_stage_b(
     repository_root: Path,
     run: RunDirectory,
     *,
     generator: Any | None = None,
     expected_cells: int = INTENDED_CELLS,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
 ) -> None:
-    verify_frozen_inputs(repository_root)
-    run.verify_sealed("A")
+    if run.stage_manifest_path("B").exists():
+        raise FatalFormalRunError("Stage B is already sealed and immutable")
+    if run.stage_path("C").exists() or run.stage_manifest_path("C").exists():
+        raise FatalFormalRunError("Stage C artifacts exist before Stage B execution")
+    if expected_cells == INTENDED_CELLS:
+        anchor = verify_stage_b_execution_freeze(
+            repository_root,
+            expected_execution_commit=expected_execution_commit,
+            require_clean_worktree=require_clean_worktree,
+            execution_config=execution_config,
+        )
+        stage_a = verify_frozen_stage_a(repository_root, run)
+    else:
+        # Offline unit-test seam only; the CLI never changes the frozen 192-cell count.
+        test_config = execution_config or {"implementation_sha256": {"test-only": "test-only"}}
+        anchor = {
+            **test_config,
+            "execution_freeze_commit": expected_execution_commit or "test-only",
+            "execution_json_sha256": hashlib.sha256(json.dumps(test_config, sort_keys=True).encode()).hexdigest(),
+        }
+        stage_a = _read_jsonl_strict(run.stage_path("A"), label="Stage A retrieval")
+    stage_a_ids = {row["experiment_id"] for row in stage_a}
+    existing = _validated_existing_stage_b_records(repository_root, run, stage_a)
+    _ensure_stage_b_execution_manifest(run, anchor, allow_create=not existing)
+    if len(existing) == INTENDED_CELLS:
+        run.seal("B", expected_cells=INTENDED_CELLS, expected_experiment_ids=stage_a_ids)
+        return
     active_generator = generator
-    stage_a = [json.loads(line) for line in run.stage_path("A").read_text(encoding="utf-8").splitlines() if line.strip()]
-    completed = run.completed_ids("B")
-    for retrieval in stage_a:
-        if retrieval["experiment_id"] in completed:
-            continue
+    for retrieval in stage_a[len(existing):]:
+        provenance = _expected_provenance(retrieval)
         if not retrieval.get("retrieval_success", True):
-            run.append("B", {
+            record = {
                 "experiment_id": retrieval["experiment_id"],
                 "first_attempt_success": False,
                 "attempt_count": 0,
@@ -819,14 +1134,18 @@ async def run_stage_b(
                 "generation_outcome": "upstream_retrieval_technical_failure",
                 "generation_latency_ms": 0.0,
                 "answer": "",
-                "provenance": [],
+                "provenance": provenance,
                 "provider_reported_model": None,
+                "final_error_type": "upstream_retrieval_technical_failure",
                 "errors": [{"error_type": "upstream_retrieval_technical_failure", "message": "Generator not called because Stage A retrieval terminated as technical_failure"}],
                 "timestamps": {"generation_completed_at": _utc_now()},
-            })
+            }
+            _validate_stage_b_record(repository_root, retrieval, record)
+            run.append("B", record)
             continue
         if active_generator is None:
             active_generator = build_llm_provider(GENERATOR_MODEL, timeout_override=GENERATOR_TIMEOUT_SECONDS)
+        _validate_formal_generator(active_generator)
         evidence = _retrieval_evidence(retrieval["retrieved_items"], retrieval["topic"])
         prompt = _generation_prompt(retrieval["question"] if "question" in retrieval else "", retrieval["topic"], evidence)
 
@@ -839,30 +1158,34 @@ async def run_stage_b(
             )
             return result, _validated_answer(result.text)
 
-        outcome = await invoke_with_technical_retry(operation)
-        generated, answer = outcome.value if outcome.final_success else (None, "")
-        provenance = [
-            {key: item[key] for key in ("chunk_id", "source_id", "article_title", "section", "source_url", "pmcid", "doi", "license")}
-            for item in retrieval["retrieved_items"]
-        ]
+        outcome = await invoke_stage_b_generation(operation)
+        generated = outcome.provider_result
         record = {
             "experiment_id": retrieval["experiment_id"],
             "first_attempt_success": outcome.first_attempt_success,
             "attempt_count": outcome.attempt_count,
             "technical_retry_used": outcome.technical_retry_used,
             "first_error_type": outcome.first_error_type,
-            "generation_success": outcome.final_success,
-            "final_generation_success": outcome.final_success,
-            "generation_outcome": "completed" if outcome.final_success else "technical_failure_or_nonretryable_failure",
+            "final_error_type": outcome.final_error_type,
+            "generation_success": outcome.generation_success,
+            "final_generation_success": outcome.generation_success,
+            "generation_outcome": outcome.generation_outcome,
             "generation_latency_ms": outcome.elapsed_ms,
-            "answer": answer,
+            "answer": outcome.answer,
             "provenance": provenance,
             "provider_reported_model": generated.model if generated else GENERATOR_MODEL,
             "errors": outcome.errors,
             "timestamps": {"generation_completed_at": _utc_now()},
         }
+        _validate_stage_b_record(repository_root, retrieval, record)
         run.append("B", record)
-    run.seal("B", expected_cells=expected_cells)
+    if expected_cells != INTENDED_CELLS:
+        run.seal("B", expected_cells=expected_cells, expected_experiment_ids={row["experiment_id"] for row in stage_a[:expected_cells]})
+    else:
+        final_records = _validated_existing_stage_b_records(repository_root, run, stage_a)
+        if len(final_records) != INTENDED_CELLS:
+            raise FatalFormalRunError("Stage B did not reach 192 terminal cells")
+        run.seal("B", expected_cells=INTENDED_CELLS, expected_experiment_ids=stage_a_ids)
 
 
 async def run_stage_c(
@@ -1182,6 +1505,94 @@ def finalize_stage_a_run(
         "",
         "## Artifact SHA256",
         "",
+    ]
+    lines.extend(f"- `{name}`: `{digest}`" for name, digest in sorted(artifact_hashes.items()))
+    _atomic_new_bytes(freeze_path, ("\n".join(lines) + "\n").encode("utf-8"))
+    artifact_hashes[freeze_path.name] = _sha256(freeze_path)
+    return artifact_hashes
+
+
+def stage_b_provider_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
+    attempted = [row for row in records if row.get("attempt_count", 0) > 0]
+    latencies = sorted(float(row.get("generation_latency_ms", 0.0)) for row in attempted)
+    p95_index = max(0, math.ceil(0.95 * len(latencies)) - 1) if latencies else 0
+    outcomes: dict[str, int] = {}
+    for row in records:
+        key = str(row.get("generation_outcome"))
+        outcomes[key] = outcomes.get(key, 0) + 1
+    return {
+        "intended_cell_count": INTENDED_CELLS,
+        "provider_attempted_cell_count": len(attempted),
+        "first_attempt_successes": sum(row.get("first_attempt_success") is True for row in attempted),
+        "retries": sum(row.get("technical_retry_used") is True for row in attempted),
+        "final_successes": sum(row.get("generation_success") is True for row in records),
+        "terminal_failures": sum(row.get("generation_success") is not True for row in records),
+        "outcome_counts": outcomes,
+        "mean_generation_latency_ms": statistics.mean(latencies) if latencies else None,
+        "median_generation_latency_ms": statistics.median(latencies) if latencies else None,
+        "p95_generation_latency_ms": latencies[p95_index] if latencies else None,
+    }
+
+
+def finalize_stage_b_run(
+    repository_root: Path,
+    run: RunDirectory,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    anchor = verify_stage_b_execution_freeze(
+        repository_root,
+        expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree,
+        execution_config=execution_config,
+    )
+    stage_a = verify_frozen_stage_a(repository_root, run)
+    if run.stage_path("C").exists() or run.stage_manifest_path("C").exists():
+        raise FatalFormalRunError("Stage C must be absent during Stage B finalization")
+    run.verify_sealed("B")
+    _ensure_stage_b_execution_manifest(run, anchor, allow_create=False)
+    records = _validated_existing_stage_b_records(repository_root, run, stage_a)
+    if len(records) != INTENDED_CELLS or {row["experiment_id"] for row in records} != {row["experiment_id"] for row in stage_a}:
+        raise FatalFormalRunError("Stage B finalization requires exact Stage A/B experiment-ID equality")
+    raw_path = run.path / "stage_b_raw_results.jsonl"
+    metrics_path = run.path / "stage_b_generation_metrics.json"
+    provider_path = run.path / "stage_b_provider_metrics.json"
+    manifest_path = run.path / "stage_b_run_manifest.json"
+    freeze_path = run.path / "STAGE_B_FROZEN.md"
+    requested = [raw_path, metrics_path, provider_path, manifest_path, freeze_path]
+    if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in requested):
+        raise FileExistsError("A Stage B finalization artifact already exists; overwrite is prohibited")
+    _atomic_new_bytes(raw_path, run.stage_path("B").read_bytes())
+    _atomic_new_json(metrics_path, generation_metrics(records))
+    _atomic_new_json(provider_path, stage_b_provider_metrics(records))
+    artifact_hashes = {
+        path.name: _sha256(path)
+        for path in (run.stage_path("B"), run.stage_manifest_path("B"), run.path / "stage_b_execution_manifest.json", raw_path, metrics_path, provider_path)
+    }
+    stage_manifest = {
+        "run_id": STAGE_A_RUN_ID,
+        "stage": "B",
+        "status": "stage_b_frozen",
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "stage_b_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_b_execution_json_sha256": anchor["execution_json_sha256"],
+        "cell_count": len(records),
+        "stage_b_artifact_sha256": artifact_hashes,
+        "frozen_at": _utc_now(),
+        "stage_b_immutable_input_for": "Stage C judging",
+    }
+    _atomic_new_json(manifest_path, stage_manifest)
+    artifact_hashes[manifest_path.name] = _sha256(manifest_path)
+    lines = [
+        "# Stage B frozen", "", f"- Run ID: `{STAGE_A_RUN_ID}`", f"- Protocol: `{PROTOCOL_VERSION}`",
+        f"- Protocol SHA256: `{PROTOCOL_SHA256}`", f"- Stage A retrieval SHA256: `{STAGE_A_RETRIEVAL_SHA256}`",
+        f"- Stage B execution freeze commit: `{anchor['execution_freeze_commit']}`", f"- Terminal cells: `{len(records)}`",
+        "", "Stage B generation results are immutable input to Stage C. Resume or overwrite is prohibited.", "", "## Artifact SHA256", "",
     ]
     lines.extend(f"- `{name}`: `{digest}`" for name, digest in sorted(artifact_hashes.items()))
     _atomic_new_bytes(freeze_path, ("\n".join(lines) + "\n").encode("utf-8"))

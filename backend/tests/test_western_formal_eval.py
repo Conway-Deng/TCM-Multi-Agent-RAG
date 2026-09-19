@@ -237,4 +237,5 @@ def test_protocol_artifacts_define_no_formal_results() -> None:
     assert protocol["formal_results_generated"] is False
     assert protocol["intended_generation_cells"] == 192
     assert order["cell_count"] == 192
-    assert not (PROTOCOL_ROOT.parent / "runs").exists()
+    assert "formal_results" not in protocol
+    assert "results" not in order
