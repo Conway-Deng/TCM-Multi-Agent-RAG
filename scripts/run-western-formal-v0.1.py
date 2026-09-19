@@ -14,11 +14,16 @@ if str(BACKEND) not in sys.path:
 
 from western.formal_eval import (  # noqa: E402
     RunDirectory,
+    StageBRepeatDirectory,
     finalize_stage_a_run,
+    finalize_stage_b_incident,
+    finalize_stage_b_repeat,
     finalize_stage_b_run,
     finalize_run,
     run_stage_a,
     run_stage_b,
+    run_stage_b_repeat,
+    run_stage_b_repeat_readiness,
     run_stage_c,
     verify_frozen_inputs,
 )
@@ -26,7 +31,14 @@ from western.formal_eval import (  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a frozen stage of the Western formal v0.1 evaluation.")
-    parser.add_argument("--stage", choices=("A", "A-finalize", "B", "B-finalize", "C", "finalize"), required=True)
+    parser.add_argument(
+        "--stage",
+        choices=(
+            "A", "A-finalize", "B", "B-finalize", "B-incident-finalize",
+            "B-repeat-readiness", "B-repeat", "B-repeat-finalize", "C", "finalize",
+        ),
+        required=True,
+    )
     parser.add_argument("--run-id", required=True)
     parser.add_argument(
         "--execute-formal",
@@ -49,6 +61,14 @@ def main() -> None:
         )
         os.environ["ALLOW_BULK_REMOTE_EMBEDDING"] = "true"
         asyncio.run(run_stage_a(ROOT, run))
+    elif args.stage in {"B-repeat-readiness", "B-repeat", "B-repeat-finalize"}:
+        repeat = StageBRepeatDirectory(run_path)
+        if args.stage == "B-repeat-readiness":
+            asyncio.run(run_stage_b_repeat_readiness(ROOT, repeat))
+        elif args.stage == "B-repeat":
+            asyncio.run(run_stage_b_repeat(ROOT, repeat))
+        else:
+            finalize_stage_b_repeat(ROOT, repeat)
     else:
         run = RunDirectory.resume(run_path)
         if args.stage == "A-finalize":
@@ -57,6 +77,8 @@ def main() -> None:
             asyncio.run(run_stage_b(ROOT, run))
         elif args.stage == "B-finalize":
             finalize_stage_b_run(ROOT, run)
+        elif args.stage == "B-incident-finalize":
+            finalize_stage_b_incident(ROOT, run)
         elif args.stage == "C":
             asyncio.run(run_stage_c(ROOT, run))
         else:

@@ -78,6 +78,21 @@ STAGE_A_RUN_ID = "western-formal-v0.1.2-stage-a-20260918-01"
 STAGE_A_RETRIEVAL_SHA256 = "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e"
 STAGE_B_EXECUTION_VERSION = "western-stage-b-execution-v0.1.2"
 STAGE_B_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_b_execution_v0_1_2/execution.json"
+ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT = "7da777984bc6a3ffef0e0514598848142788e474"
+ORIGINAL_STAGE_B_EXECUTION_JSON_SHA256 = "852db6dad8dcd2b79eb9fcc26b5858504ed5881ec605272e8cacc7ca27355092"
+ORIGINAL_STAGE_B_SHA256 = "89b1e4166daefa738be4572f84825711336147560945a93141b6a7569d61166f"
+ORIGINAL_STAGE_B_SEAL_MANIFEST_SHA256 = "29ffec35f6e0f80a6543935b4ab248aefb8a8387f1ed392d2657cd5445feecb0"
+ORIGINAL_STAGE_B_EXECUTION_MANIFEST_SHA256 = "68d1435270c1b882f866042e644f71a2f21156dbfcafa061314a2759d5712939"
+STAGE_B_REPEAT_RUN_ID = "western-formal-v0.1.2-stage-b-r1-20260919-01"
+STAGE_B_REPEAT_EXECUTION_VERSION = "western-stage-b-repeat-execution-v0.1.2-r1"
+STAGE_B_REPEAT_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_b_repeat_execution_v0_1_2_r1/execution.json"
+STAGE_B_REPEAT_INCIDENT_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_b_repeat_execution_v0_1_2_r1/incident.json"
+STAGE_B_READINESS_PROMPT = "Return exactly the word READY."
+STAGE_B_READINESS_PROBES = 3
+STAGE_B_READINESS_INTERVAL_SECONDS = 10
+STAGE_B_READINESS_MAX_TOKENS = 16
+STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX = 20
+STAGE_B_REPEAT_INFRASTRUCTURE_ERRORS = frozenset({"connectivity", "timeout", "http_5xx", "malformed_response", "rate_limit"})
 
 
 class FatalFormalRunError(RuntimeError):
@@ -201,6 +216,16 @@ def resolve_stage_b_execution_freeze_commit(repository_root: Path) -> str:
     return commit
 
 
+def resolve_stage_b_repeat_execution_freeze_commit(repository_root: Path) -> str:
+    commit = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", STAGE_B_REPEAT_EXECUTION_RELATIVE_PATH],
+        cwd=repository_root, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    if not commit:
+        raise FatalFormalRunError("The Stage B repeat execution freeze commit does not exist")
+    return commit
+
+
 def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -273,6 +298,180 @@ def verify_stage_b_execution_freeze(
     if mismatches:
         raise FatalFormalRunError(f"Stage B execution freeze mismatch: {json.dumps(mismatches, sort_keys=True)}")
     return {**config, "execution_freeze_commit": freeze_commit, "execution_json_sha256": _sha256(repository_root / STAGE_B_EXECUTION_RELATIVE_PATH) if execution_config is None else hashlib.sha256(json.dumps(config, sort_keys=True, separators=(",", ":")).encode()).hexdigest()}
+
+
+def _stage_b_repeat_execution_config(repository_root: Path) -> dict[str, Any]:
+    return _load_json_object(
+        repository_root / STAGE_B_REPEAT_EXECUTION_RELATIVE_PATH,
+        label="Stage B repeat execution freeze",
+    )
+
+
+def _stage_b_repeat_incident_config(repository_root: Path) -> dict[str, Any]:
+    return _load_json_object(
+        repository_root / STAGE_B_REPEAT_INCIDENT_RELATIVE_PATH,
+        label="Stage B outage incident freeze",
+    )
+
+
+def _canonical_json_sha256(value: dict[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _expected_readiness_policy() -> dict[str, Any]:
+    return {
+        "provider": GENERATOR_PROVIDER,
+        "model": GENERATOR_MODEL,
+        "prompt": STAGE_B_READINESS_PROMPT,
+        "probe_count": STAGE_B_READINESS_PROBES,
+        "interval_seconds": STAGE_B_READINESS_INTERVAL_SECONDS,
+        "timeout_seconds": GENERATOR_TIMEOUT_SECONDS,
+        "temperature": GENERATOR_TEMPERATURE,
+        "max_tokens": STAGE_B_READINESS_MAX_TOKENS,
+        "required_normalized_text": "READY",
+        "all_probes_must_pass": True,
+        "formal_data": False,
+        "single_use_for_repeat_start": True,
+        "must_precede_repeat_execution_manifest": True,
+    }
+
+
+def _expected_repeat_failure_policy() -> dict[str, Any]:
+    return {
+        "automatically_authorized_repeats": 1,
+        "cell_retry_policy_unchanged": True,
+        "selective_regeneration_after_seal": False,
+        "third_attempt_automatically_authorized": False,
+        "outage_minimum_consecutive_suffix": STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX,
+        "outage_final_error_types": sorted(STAGE_B_REPEAT_INFRASTRUCTURE_ERRORS),
+        "outage_requires_no_subsequent_success": True,
+    }
+
+
+def _validate_stage_b_incident_freeze(config: dict[str, Any]) -> None:
+    expected = {
+        "status": "stage_b_outage_incident",
+        "run_id": STAGE_A_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "stage_b_execution_freeze_commit": ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT,
+        "stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "stage_b_seal_manifest_sha256": ORIGINAL_STAGE_B_SEAL_MANIFEST_SHA256,
+        "stage_b_execution_manifest_sha256": ORIGINAL_STAGE_B_EXECUTION_MANIFEST_SHA256,
+        "cell_count": INTENDED_CELLS,
+        "completed_count": 106,
+        "technical_failure_count": 86,
+        "first_failure_position": 107,
+        "first_failed_experiment_id": "western_formal_v0.1.2:westbench-v0.1-headache-03:R0",
+        "consecutive_failure_suffix_count": 86,
+        "successes_after_first_failure": 0,
+        "retry_used_failure_count": 86,
+        "attempt_count_two_failure_count": 86,
+        "provider_reported_model": GENERATOR_MODEL,
+        "provider_reported_model_count": INTENDED_CELLS,
+        "eligible_as_primary": False,
+        "eligible_for_stage_c": False,
+        "preservation_only": True,
+        "decision_basis": "operational_failure_metadata_only",
+        "standard_b_finalized": False,
+        "stage_c_executed": False,
+    }
+    mismatches = {key: {"expected": value, "actual": config.get(key)} for key, value in expected.items() if config.get(key) != value}
+    if config.get("final_error_counts") != {"connectivity": 86}:
+        mismatches["final_error_counts"] = {"expected": {"connectivity": 86}, "actual": config.get("final_error_counts")}
+    if config.get("first_error_counts") != {"connectivity": 85, "timeout": 1}:
+        mismatches["first_error_counts"] = {"expected": {"connectivity": 85, "timeout": 1}, "actual": config.get("first_error_counts")}
+    if config.get("failure_counts_by_condition") != {"R0": 22, "R1": 22, "R2": 21, "R3": 21}:
+        mismatches["failure_counts_by_condition"] = {"expected": {"R0": 22, "R1": 22, "R2": 21, "R3": 21}, "actual": config.get("failure_counts_by_condition")}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B incident freeze mismatch: {json.dumps(mismatches, sort_keys=True)}")
+
+
+def verify_stage_b_repeat_execution_freeze(
+    repository_root: Path,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    incident_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    verify_amended_protocol(repository_root)
+    config = execution_config or _stage_b_repeat_execution_config(repository_root)
+    incident = incident_config or _stage_b_repeat_incident_config(repository_root)
+    _validate_stage_b_incident_freeze(incident)
+    freeze_commit = expected_execution_commit or resolve_stage_b_repeat_execution_freeze_commit(repository_root)
+    head = _git_head(repository_root)
+    if head != freeze_commit:
+        raise FatalFormalRunError(f"Stage B repeat requires execution freeze HEAD {freeze_commit}; current HEAD is {head}")
+    if require_clean_worktree and not _git_worktree_clean(repository_root):
+        raise FatalFormalRunError("Stage B repeat requires a clean Git working tree")
+    incident_sha = (
+        _sha256(repository_root / STAGE_B_REPEAT_INCIDENT_RELATIVE_PATH)
+        if incident_config is None else _canonical_json_sha256(incident)
+    )
+    expected = {
+        "execution_version": STAGE_B_REPEAT_EXECUTION_VERSION,
+        "repeat_run_id": STAGE_B_REPEAT_RUN_ID,
+        "repeat_ordinal": 1,
+        "repeat_reason": "provider_outage",
+        "repeat_scope": "all_192_cells",
+        "reuse_original_successes": False,
+        "primary_semantic_dataset": True,
+        "scientific_protocol_unchanged": True,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_run_id": STAGE_A_RUN_ID,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "supersedes_stage_b_attempt_run_id": STAGE_A_RUN_ID,
+        "superseded_stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "benchmark_sha256": BENCHMARK_SHA256,
+        "benchmark_manifest_sha256": BENCHMARK_MANIFEST_SHA256,
+        "corpus_chunks_sha256": CORPUS_CHUNKS_SHA256,
+        "source_registry_sha256": SOURCE_REGISTRY_SHA256,
+        "provider": GENERATOR_PROVIDER,
+        "model": GENERATOR_MODEL,
+        "temperature": GENERATOR_TEMPERATURE,
+        "max_tokens": GENERATOR_MAX_TOKENS,
+        "timeout_seconds": GENERATOR_TIMEOUT_SECONDS,
+        "incident_sha256": incident_sha,
+        "readiness_policy": _expected_readiness_policy(),
+        "repeat_failure_policy": _expected_repeat_failure_policy(),
+    }
+    mismatches = {key: {"expected": value, "actual": config.get(key)} for key, value in expected.items() if config.get(key) != value}
+    implementation = config.get("implementation_sha256")
+    if not isinstance(implementation, dict) or not implementation:
+        mismatches["implementation_sha256"] = {"expected": "non-empty mapping", "actual": implementation}
+    else:
+        for relative, expected_hash in implementation.items():
+            path = repository_root / str(relative)
+            actual_hash = _sha256(path) if path.is_file() else None
+            if actual_hash != expected_hash:
+                mismatches[f"implementation_sha256.{relative}"] = {"expected": expected_hash, "actual": actual_hash}
+    implementation_commit = config.get("implementation_commit")
+    if not isinstance(implementation_commit, str) or len(implementation_commit) != 40:
+        mismatches["implementation_commit"] = {"expected": "40-character Commit 1 SHA", "actual": implementation_commit}
+    elif execution_config is None:
+        parent = subprocess.run(
+            ["git", "rev-parse", f"{freeze_commit}^"], cwd=repository_root,
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        if parent != implementation_commit:
+            mismatches["implementation_commit"] = {"expected": parent, "actual": implementation_commit}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B repeat execution freeze mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    execution_sha = (
+        _sha256(repository_root / STAGE_B_REPEAT_EXECUTION_RELATIVE_PATH)
+        if execution_config is None else _canonical_json_sha256(config)
+    )
+    return {
+        **config,
+        "execution_freeze_commit": freeze_commit,
+        "execution_json_sha256": execution_sha,
+        "incident_json_sha256": incident_sha,
+    }
 
 
 def load_frozen_cases(repository_root: Path) -> list[dict[str, Any]]:
@@ -621,6 +820,68 @@ class RunDirectory:
         manifest = json.loads(self.stage_manifest_path(stage).read_text(encoding="utf-8"))
         if manifest["sha256"] != _sha256(self.stage_path(stage)):
             raise RuntimeError(f"Sealed Stage {stage} hash mismatch")
+
+
+class StageBRepeatDirectory:
+    """A Stage-B-only run that references the canonical frozen Stage A externally."""
+
+    def __init__(self, path: Path) -> None:
+        if path.name != STAGE_B_REPEAT_RUN_ID:
+            raise FatalFormalRunError(f"Stage B repeat requires exact run ID {STAGE_B_REPEAT_RUN_ID}")
+        self.path = path
+
+    def stage_path(self, stage: str = "B") -> Path:
+        if stage != "B":
+            raise ValueError("Stage B repeat directory contains only Stage B outputs")
+        return self.path / "stage_b_generation.jsonl"
+
+    def stage_manifest_path(self, stage: str = "B") -> Path:
+        if stage != "B":
+            raise ValueError("Stage B repeat directory contains only a Stage B seal")
+        return self.path / "stage_b_manifest.json"
+
+    def append(self, stage: str, record: dict[str, Any]) -> None:
+        if stage != "B":
+            raise ValueError("Stage B repeat directory accepts only Stage B records")
+        if self.stage_manifest_path().exists():
+            raise FatalFormalRunError("Stage B repeat is sealed and immutable")
+        if not (self.path / "stage_b_repeat_execution_manifest.json").is_file():
+            raise FatalFormalRunError("Stage B repeat execution manifest must exist before append")
+        _assert_no_secret_fields(record)
+        existing = _read_jsonl_strict(self.stage_path(), label="Stage B repeat generation")
+        if record.get("experiment_id") in {row.get("experiment_id") for row in existing}:
+            raise FatalFormalRunError(f"Duplicate Stage B repeat cell: {record.get('experiment_id')}")
+        self.path.mkdir(parents=True, exist_ok=True)
+        with self.stage_path().open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+    def seal(self, expected_experiment_ids: list[str]) -> dict[str, Any]:
+        records = _read_jsonl_strict(self.stage_path(), label="Stage B repeat generation")
+        ids = [row.get("experiment_id") for row in records]
+        if len(records) != INTENDED_CELLS or ids != expected_experiment_ids or len(set(ids)) != INTENDED_CELLS:
+            raise FatalFormalRunError("Stage B repeat seal requires the exact ordered 192 Stage A experiment IDs")
+        payload = {
+            "stage": "B",
+            "run_id": STAGE_B_REPEAT_RUN_ID,
+            "cell_count": INTENDED_CELLS,
+            "sha256": _sha256(self.stage_path()),
+            "sealed_at": _utc_now(),
+            "immutable_input_for": "repeat-aware B finalization",
+            "parent_stage_a_run_id": STAGE_A_RUN_ID,
+            "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+            "repeat_ordinal": 1,
+            "repeat_scope": "all_192_cells",
+            "reuse_original_successes": False,
+        }
+        _atomic_new_json(self.stage_manifest_path(), payload)
+        return payload
+
+    def verify_sealed(self) -> None:
+        manifest = _load_json_object(self.stage_manifest_path(), label="Stage B repeat seal")
+        if manifest.get("sha256") != _sha256(self.stage_path()) or manifest.get("cell_count") != INTENDED_CELLS:
+            raise FatalFormalRunError("Stage B repeat seal hash or cell count mismatch")
 
 
 def _base_record(case: dict[str, Any], condition: str) -> dict[str, Any]:
@@ -1082,6 +1343,200 @@ def _validated_existing_stage_b_records(repository_root: Path, run: RunDirectory
     return records
 
 
+def _verify_original_stage_b_execution_history(repository_root: Path, run: RunDirectory) -> dict[str, Any]:
+    if resolve_stage_b_execution_freeze_commit(repository_root) != ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT:
+        raise FatalFormalRunError("Original Stage B execution freeze commit mismatch")
+    config_path = repository_root / STAGE_B_EXECUTION_RELATIVE_PATH
+    if _sha256(config_path) != ORIGINAL_STAGE_B_EXECUTION_JSON_SHA256:
+        raise FatalFormalRunError("Original Stage B execution freeze JSON SHA256 mismatch")
+    config = _stage_b_execution_config(repository_root)
+    implementation_commit = config.get("implementation_commit")
+    implementation = config.get("implementation_sha256")
+    if not isinstance(implementation_commit, str) or not isinstance(implementation, dict):
+        raise FatalFormalRunError("Original Stage B implementation anchor is incomplete")
+    expected_implementation = {
+        "backend/western/formal_eval.py": "9a25c416569c0567bd7610ad70ff156fd3e5c578345c20d7153aeb4dcece9a4d",
+        "scripts/run-western-formal-v0.1.py": "86f5be7f43de38699136058c9abb863eab2335c0c177faf4114e3a37b156bc98",
+    }
+    if implementation_commit != "de04c2ca1742794206de80e75155aa3d44c47eb4" or implementation != expected_implementation:
+        raise FatalFormalRunError("Original Stage B implementation anchor differs from the frozen execution metadata")
+    unchanged = subprocess.run(
+        ["git", "diff", "--quiet", implementation_commit, ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT, "--", *implementation],
+        cwd=repository_root,
+    )
+    if unchanged.returncode != 0:
+        raise FatalFormalRunError("Original Stage B implementation files changed between implementation and freeze commits")
+    manifest = _load_json_object(run.path / "stage_b_execution_manifest.json", label="original Stage B execution manifest")
+    expected = {
+        "stage": "B",
+        "status": "in_progress",
+        "run_id": STAGE_A_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "stage_b_execution_version": STAGE_B_EXECUTION_VERSION,
+        "stage_b_execution_freeze_commit": ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT,
+        "stage_b_execution_json_sha256": ORIGINAL_STAGE_B_EXECUTION_JSON_SHA256,
+        "implementation_sha256": implementation,
+    }
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    if mismatches:
+        raise FatalFormalRunError(f"Original Stage B execution manifest mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _incident_counts(stage_a: list[dict[str, Any]], records: list[dict[str, Any]]) -> dict[str, Any]:
+    failures = [row for row in records if row.get("generation_success") is not True]
+    first_failure_index = next((index for index, row in enumerate(records) if row.get("generation_success") is not True), None)
+    final_counts: dict[str, int] = {}
+    first_counts: dict[str, int] = {}
+    condition_counts = {condition: 0 for condition in CONDITIONS}
+    stage_a_by_id = {row["experiment_id"]: row for row in stage_a}
+    for row in failures:
+        final = str(row.get("final_error_type"))
+        first = str(row.get("first_error_type"))
+        final_counts[final] = final_counts.get(final, 0) + 1
+        first_counts[first] = first_counts.get(first, 0) + 1
+        condition = stage_a_by_id[row["experiment_id"]]["retrieval_condition"]
+        condition_counts[condition] += 1
+    successes_after = 0 if first_failure_index is None else sum(
+        row.get("generation_success") is True for row in records[first_failure_index:]
+    )
+    suffix = 0
+    for row in reversed(records):
+        if row.get("generation_success") is True:
+            break
+        suffix += 1
+    return {
+        "cell_count": len(records),
+        "completed_count": len(records) - len(failures),
+        "technical_failure_count": len(failures),
+        "first_failure_position": None if first_failure_index is None else first_failure_index + 1,
+        "first_failed_experiment_id": None if first_failure_index is None else records[first_failure_index].get("experiment_id"),
+        "consecutive_failure_suffix_count": suffix,
+        "successes_after_first_failure": successes_after,
+        "final_error_counts": dict(sorted(final_counts.items())),
+        "first_error_counts": dict(sorted(first_counts.items())),
+        "failure_counts_by_condition": condition_counts,
+        "retry_used_failure_count": sum(row.get("technical_retry_used") is True for row in failures),
+        "attempt_count_two_failure_count": sum(row.get("attempt_count") == 2 for row in failures),
+        "provider_reported_model_count": sum(row.get("provider_reported_model") == GENERATOR_MODEL for row in records),
+    }
+
+
+def _verify_original_stage_b_incident(repository_root: Path, run: RunDirectory) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    if run.path.name != STAGE_A_RUN_ID:
+        raise FatalFormalRunError(f"Incident preservation requires exact original run ID {STAGE_A_RUN_ID}")
+    stage_a = verify_frozen_stage_a(repository_root, run)
+    if run.stage_path("C").exists() or run.stage_manifest_path("C").exists():
+        raise FatalFormalRunError("Stage C artifacts must be absent from the Stage B outage incident")
+    standard_outputs = (
+        "stage_b_raw_results.jsonl", "stage_b_generation_metrics.json", "stage_b_provider_metrics.json",
+        "stage_b_run_manifest.json", "STAGE_B_FROZEN.md",
+    )
+    if any((run.path / name).exists() for name in standard_outputs):
+        raise FatalFormalRunError("Original outage attempt has standard B-finalized artifacts")
+    run.verify_sealed("B")
+    if _sha256(run.stage_path("B")) != ORIGINAL_STAGE_B_SHA256:
+        raise FatalFormalRunError("Original sealed Stage B SHA256 mismatch")
+    if _sha256(run.stage_manifest_path("B")) != ORIGINAL_STAGE_B_SEAL_MANIFEST_SHA256:
+        raise FatalFormalRunError("Original Stage B seal-manifest SHA256 mismatch")
+    if _sha256(run.path / "stage_b_execution_manifest.json") != ORIGINAL_STAGE_B_EXECUTION_MANIFEST_SHA256:
+        raise FatalFormalRunError("Original Stage B execution-manifest SHA256 mismatch")
+    seal = _load_json_object(run.stage_manifest_path("B"), label="original Stage B seal")
+    if seal.get("sha256") != ORIGINAL_STAGE_B_SHA256 or seal.get("cell_count") != INTENDED_CELLS:
+        raise FatalFormalRunError("Original Stage B seal does not match the outage anchor")
+    _verify_original_stage_b_execution_history(repository_root, run)
+    records = _validated_existing_stage_b_records(repository_root, run, stage_a)
+    counts = _incident_counts(stage_a, records)
+    expected = {
+        "cell_count": INTENDED_CELLS,
+        "completed_count": 106,
+        "technical_failure_count": 86,
+        "first_failure_position": 107,
+        "first_failed_experiment_id": "western_formal_v0.1.2:westbench-v0.1-headache-03:R0",
+        "consecutive_failure_suffix_count": 86,
+        "successes_after_first_failure": 0,
+        "final_error_counts": {"connectivity": 86},
+        "first_error_counts": {"connectivity": 85, "timeout": 1},
+        "failure_counts_by_condition": {"R0": 22, "R1": 22, "R2": 21, "R3": 21},
+        "retry_used_failure_count": 86,
+        "attempt_count_two_failure_count": 86,
+        "provider_reported_model_count": INTENDED_CELLS,
+    }
+    mismatches = {key: {"expected": value, "actual": counts.get(key)} for key, value in expected.items() if counts.get(key) != value}
+    if any(row.get("generation_outcome") != "technical_failure" for row in records[106:]):
+        mismatches["failure_outcomes"] = {"expected": "86 technical_failure", "actual": "nontechnical outcome present"}
+    if mismatches:
+        raise FatalFormalRunError(f"Original Stage B outage pattern mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return stage_a, records, counts
+
+
+def _incident_artifact_paths(run: RunDirectory) -> tuple[Path, Path]:
+    return run.path / "stage_b_incident_manifest.json", run.path / "STAGE_B_OUTAGE_INCIDENT.md"
+
+
+def finalize_stage_b_incident(
+    repository_root: Path,
+    run: RunDirectory,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    incident_config: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    anchor = verify_stage_b_repeat_execution_freeze(
+        repository_root,
+        expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree,
+        execution_config=execution_config,
+        incident_config=incident_config,
+    )
+    _, _, counts = _verify_original_stage_b_incident(repository_root, run)
+    manifest_path, markdown_path = _incident_artifact_paths(run)
+    if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in (manifest_path, markdown_path)):
+        raise FileExistsError("Stage B incident preservation artifacts already exist; overwrite is prohibited")
+    lines = [
+        "# Stage B provider-outage incident", "", f"- Run ID: `{STAGE_A_RUN_ID}`",
+        f"- Stage B SHA256: `{ORIGINAL_STAGE_B_SHA256}`", f"- Terminal cells: `{INTENDED_CELLS}`",
+        "- Completed cells: `106`", "- Technical failures: `86`", "- First failure position: `107`",
+        "- Consecutive failed suffix: `86`", "- Eligible as primary: `false`",
+        "- Eligible for Stage C: `false`", "- Preservation only: `true`", "",
+        "The attempt is preserved as an audited run-level provider-outage incident. It must not be resumed, standard-B-finalized, or used as primary Stage C input.", "",
+    ]
+    markdown_bytes = ("\n".join(lines)).encode("utf-8")
+    markdown_sha = hashlib.sha256(markdown_bytes).hexdigest()
+    manifest = {
+        "status": "stage_b_outage_incident",
+        "run_id": STAGE_A_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "stage_b_execution_freeze_commit": ORIGINAL_STAGE_B_EXECUTION_FREEZE_COMMIT,
+        "stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "stage_b_seal_manifest_sha256": ORIGINAL_STAGE_B_SEAL_MANIFEST_SHA256,
+        "stage_b_execution_manifest_sha256": ORIGINAL_STAGE_B_EXECUTION_MANIFEST_SHA256,
+        "provider": GENERATOR_PROVIDER,
+        "provider_reported_model": GENERATOR_MODEL,
+        **counts,
+        "eligible_as_primary": False,
+        "eligible_for_stage_c": False,
+        "preservation_only": True,
+        "standard_b_finalized": False,
+        "stage_c_executed": False,
+        "repeat_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "repeat_execution_json_sha256": anchor["execution_json_sha256"],
+        "incident_json_sha256": anchor["incident_json_sha256"],
+        "incident_markdown_sha256": markdown_sha,
+        "preserved_at": _utc_now(),
+    }
+    _atomic_new_bytes(markdown_path, markdown_bytes)
+    _atomic_new_json(manifest_path, manifest)
+    return {manifest_path.name: _sha256(manifest_path), markdown_path.name: _sha256(markdown_path)}
+
+
 async def run_stage_b(
     repository_root: Path,
     run: RunDirectory,
@@ -1186,6 +1641,362 @@ async def run_stage_b(
         if len(final_records) != INTENDED_CELLS:
             raise FatalFormalRunError("Stage B did not reach 192 terminal cells")
         run.seal("B", expected_cells=INTENDED_CELLS, expected_experiment_ids=stage_a_ids)
+
+
+def _canonical_stage_a_run(repository_root: Path) -> RunDirectory:
+    return RunDirectory(
+        repository_root / "research/experiments/western_formal_v0_1/runs" / STAGE_A_RUN_ID
+    )
+
+
+def _verify_incident_preservation_artifacts(repository_root: Path, original_run: RunDirectory) -> dict[str, Any]:
+    _verify_original_stage_b_incident(repository_root, original_run)
+    manifest_path, markdown_path = _incident_artifact_paths(original_run)
+    manifest = _load_json_object(manifest_path, label="Stage B incident preservation manifest")
+    expected = {
+        "status": "stage_b_outage_incident",
+        "run_id": STAGE_A_RUN_ID,
+        "stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "eligible_as_primary": False,
+        "eligible_for_stage_c": False,
+        "preservation_only": True,
+        "standard_b_finalized": False,
+        "stage_c_executed": False,
+    }
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    if not markdown_path.is_file() or manifest.get("incident_markdown_sha256") != _sha256(markdown_path):
+        mismatches["incident_markdown_sha256"] = {"expected": manifest.get("incident_markdown_sha256"), "actual": _sha256(markdown_path) if markdown_path.is_file() else None}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B incident preservation artifact mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _validate_repeat_provider(provider: Any) -> None:
+    _validate_formal_generator(provider)
+    if hasattr(provider, "timeout") and float(provider.timeout) != GENERATOR_TIMEOUT_SECONDS:
+        raise FatalFormalRunError("Stage B repeat provider timeout configuration mismatch")
+    if hasattr(provider, "max_tokens") and int(provider.max_tokens) < GENERATOR_MAX_TOKENS:
+        raise FatalFormalRunError("Stage B repeat provider effective max_tokens is below the frozen value")
+
+
+def _readiness_path(repeat: StageBRepeatDirectory) -> Path:
+    return repeat.path / "stage_b_repeat_readiness_manifest.json"
+
+
+async def run_stage_b_repeat_readiness(
+    repository_root: Path,
+    repeat: StageBRepeatDirectory,
+    *,
+    provider: Any | None = None,
+    sleep: Callable[[float], Awaitable[Any]] = asyncio.sleep,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    incident_config: dict[str, Any] | None = None,
+    original_run: RunDirectory | None = None,
+) -> dict[str, Any]:
+    anchor = verify_stage_b_repeat_execution_freeze(
+        repository_root,
+        expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree,
+        execution_config=execution_config,
+        incident_config=incident_config,
+    )
+    incident_run = original_run or _canonical_stage_a_run(repository_root)
+    incident_manifest = _verify_incident_preservation_artifacts(repository_root, incident_run)
+    if repeat.path.exists():
+        conflicts = [path for path in repeat.path.iterdir() if path.name != _readiness_path(repeat).name]
+        if conflicts or _readiness_path(repeat).exists():
+            raise FatalFormalRunError("Stage B repeat readiness requires a new conflict-free repeat directory")
+    active_provider = provider or build_llm_provider(GENERATOR_MODEL, timeout_override=GENERATOR_TIMEOUT_SECONDS)
+    _validate_repeat_provider(active_provider)
+    probes: list[dict[str, Any]] = []
+    for probe_number in range(1, STAGE_B_READINESS_PROBES + 1):
+        started = perf_counter()
+        try:
+            result = await active_provider.generate(
+                system="Operational provider readiness probe; do not provide additional text.",
+                prompt=STAGE_B_READINESS_PROMPT,
+                temperature=GENERATOR_TEMPERATURE,
+                max_tokens=STAGE_B_READINESS_MAX_TOKENS,
+            )
+        except Exception as exc:
+            raise FatalFormalRunError(f"Stage B repeat readiness probe {probe_number} failed: {type(exc).__name__}") from exc
+        normalized = str(getattr(result, "text", "")).strip()
+        if normalized != "READY":
+            raise FatalFormalRunError(f"Stage B repeat readiness probe {probe_number} did not return READY")
+        if getattr(result, "model", GENERATOR_MODEL) != GENERATOR_MODEL:
+            raise FatalFormalRunError("Stage B repeat readiness provider-reported model mismatch")
+        probes.append({
+            "probe": probe_number,
+            "success": True,
+            "normalized_text": normalized,
+            "provider_reported_model": getattr(result, "model", GENERATOR_MODEL),
+            "latency_ms": round((perf_counter() - started) * 1000, 3),
+        })
+        if probe_number < STAGE_B_READINESS_PROBES:
+            await sleep(STAGE_B_READINESS_INTERVAL_SECONDS)
+    payload = {
+        "status": "passed",
+        "formal_data": False,
+        "run_id": STAGE_B_REPEAT_RUN_ID,
+        "execution_version": STAGE_B_REPEAT_EXECUTION_VERSION,
+        "execution_freeze_commit": anchor["execution_freeze_commit"],
+        "execution_json_sha256": anchor["execution_json_sha256"],
+        "incident_manifest_sha256": _sha256(incident_run.path / "stage_b_incident_manifest.json"),
+        "provider": GENERATOR_PROVIDER,
+        "model": GENERATOR_MODEL,
+        "prompt": STAGE_B_READINESS_PROMPT,
+        "temperature": GENERATOR_TEMPERATURE,
+        "max_tokens": STAGE_B_READINESS_MAX_TOKENS,
+        "timeout_seconds": GENERATOR_TIMEOUT_SECONDS,
+        "probe_interval_seconds": STAGE_B_READINESS_INTERVAL_SECONDS,
+        "probe_count": STAGE_B_READINESS_PROBES,
+        "probes": probes,
+        "passed_at": _utc_now(),
+        "readiness_outputs_excluded_from_formal_jsonl": True,
+        "original_incident_eligible_for_stage_c": incident_manifest["eligible_for_stage_c"],
+    }
+    _atomic_new_json(_readiness_path(repeat), payload)
+    return payload
+
+
+def _validate_repeat_readiness(repeat: StageBRepeatDirectory, anchor: dict[str, Any], incident_manifest: dict[str, Any]) -> dict[str, Any]:
+    manifest = _load_json_object(_readiness_path(repeat), label="Stage B repeat readiness manifest")
+    expected = {
+        "status": "passed",
+        "formal_data": False,
+        "run_id": STAGE_B_REPEAT_RUN_ID,
+        "execution_version": STAGE_B_REPEAT_EXECUTION_VERSION,
+        "execution_freeze_commit": anchor["execution_freeze_commit"],
+        "execution_json_sha256": anchor["execution_json_sha256"],
+        "incident_manifest_sha256": str(incident_manifest["_sha256"]),
+        "provider": GENERATOR_PROVIDER,
+        "model": GENERATOR_MODEL,
+        "prompt": STAGE_B_READINESS_PROMPT,
+        "temperature": GENERATOR_TEMPERATURE,
+        "max_tokens": STAGE_B_READINESS_MAX_TOKENS,
+        "timeout_seconds": GENERATOR_TIMEOUT_SECONDS,
+        "probe_interval_seconds": STAGE_B_READINESS_INTERVAL_SECONDS,
+        "probe_count": STAGE_B_READINESS_PROBES,
+        "readiness_outputs_excluded_from_formal_jsonl": True,
+        "original_incident_eligible_for_stage_c": False,
+    }
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    probes = manifest.get("probes")
+    if not isinstance(probes, list) or len(probes) != STAGE_B_READINESS_PROBES or any(
+        probe.get("success") is not True or probe.get("normalized_text") != "READY" for probe in probes if isinstance(probe, dict)
+    ) or any(not isinstance(probe, dict) for probe in probes or []):
+        mismatches["probes"] = {"expected": "three successful READY probes", "actual": probes}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B repeat readiness manifest mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _repeat_execution_manifest_payload(
+    repeat: StageBRepeatDirectory,
+    anchor: dict[str, Any],
+    readiness_sha256: str,
+    incident_manifest_sha256: str,
+) -> dict[str, Any]:
+    return {
+        "stage": "B-repeat",
+        "status": "in_progress",
+        "run_id": STAGE_B_REPEAT_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "supersedes_stage_b_attempt_run_id": STAGE_A_RUN_ID,
+        "superseded_stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "repeat_ordinal": 1,
+        "repeat_reason": "provider_outage",
+        "repeat_scope": "all_192_cells",
+        "reuse_original_successes": False,
+        "primary_semantic_dataset": True,
+        "stage_b_repeat_execution_version": STAGE_B_REPEAT_EXECUTION_VERSION,
+        "stage_b_repeat_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_b_repeat_execution_json_sha256": anchor["execution_json_sha256"],
+        "incident_json_sha256": anchor["incident_json_sha256"],
+        "incident_manifest_sha256": incident_manifest_sha256,
+        "readiness_manifest_sha256": readiness_sha256,
+        "implementation_sha256": anchor["implementation_sha256"],
+        "created_at": _utc_now(),
+    }
+
+
+def _ensure_repeat_execution_manifest(
+    repeat: StageBRepeatDirectory,
+    anchor: dict[str, Any],
+    readiness_sha256: str,
+    incident_manifest_sha256: str,
+    *,
+    allow_create: bool,
+) -> dict[str, Any]:
+    path = repeat.path / "stage_b_repeat_execution_manifest.json"
+    if not path.exists():
+        if not allow_create:
+            raise FatalFormalRunError("Stage B repeat rows exist without a repeat execution manifest")
+        _atomic_new_json(path, _repeat_execution_manifest_payload(repeat, anchor, readiness_sha256, incident_manifest_sha256))
+    manifest = _load_json_object(path, label="Stage B repeat execution manifest")
+    expected = _repeat_execution_manifest_payload(repeat, anchor, readiness_sha256, incident_manifest_sha256)
+    expected.pop("created_at")
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage B repeat execution manifest mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _validated_existing_repeat_records(
+    repository_root: Path,
+    repeat: StageBRepeatDirectory,
+    stage_a: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    records = _read_jsonl_strict(repeat.stage_path(), label="Stage B repeat generation")
+    if len(records) > INTENDED_CELLS:
+        raise FatalFormalRunError("Stage B repeat contains more than 192 rows")
+    ids = [row.get("experiment_id") for row in records]
+    if len(ids) != len(set(ids)):
+        raise FatalFormalRunError("Stage B repeat contains duplicate experiment IDs")
+    expected_ids = [row["experiment_id"] for row in stage_a]
+    foreign = [cell_id for cell_id in ids if cell_id not in set(expected_ids)]
+    if foreign:
+        raise FatalFormalRunError(f"Stage B repeat contains foreign experiment IDs: {foreign[:3]}")
+    if ids != expected_ids[:len(ids)]:
+        raise FatalFormalRunError("Stage B repeat rows are not a valid frozen-order prefix")
+    stage_a_by_id = {row["experiment_id"]: row for row in stage_a}
+    for record in records:
+        _validate_stage_b_record(repository_root, stage_a_by_id[record["experiment_id"]], record)
+    return records
+
+
+def _reject_unexpected_repeat_files(repeat: StageBRepeatDirectory, *, finalizing: bool = False) -> None:
+    if not repeat.path.exists():
+        return
+    allowed = {
+        "stage_b_repeat_readiness_manifest.json",
+        "stage_b_repeat_execution_manifest.json",
+        "stage_b_generation.jsonl",
+    }
+    if finalizing:
+        allowed.add("stage_b_manifest.json")
+    unexpected = sorted(path.name for path in repeat.path.iterdir() if path.name not in allowed)
+    if unexpected:
+        raise FatalFormalRunError(f"Stage B repeat directory contains conflicting outputs: {unexpected}")
+
+
+async def run_stage_b_repeat(
+    repository_root: Path,
+    repeat: StageBRepeatDirectory,
+    *,
+    generator: Any | None = None,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    incident_config: dict[str, Any] | None = None,
+    original_run: RunDirectory | None = None,
+) -> None:
+    if repeat.stage_manifest_path().exists():
+        raise FatalFormalRunError("Stage B repeat is already sealed and immutable")
+    _reject_unexpected_repeat_files(repeat)
+    if (repeat.path / "stage_c_judge.jsonl").exists() or (repeat.path / "stage_c_manifest.json").exists():
+        raise FatalFormalRunError("Stage C artifacts exist before Stage B repeat execution")
+    anchor = verify_stage_b_repeat_execution_freeze(
+        repository_root,
+        expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree,
+        execution_config=execution_config,
+        incident_config=incident_config,
+    )
+    incident_run = original_run or _canonical_stage_a_run(repository_root)
+    incident_manifest = _verify_incident_preservation_artifacts(repository_root, incident_run)
+    incident_manifest = {**incident_manifest, "_sha256": _sha256(incident_run.path / "stage_b_incident_manifest.json")}
+    stage_a = verify_frozen_stage_a(repository_root, incident_run)
+    readiness = _validate_repeat_readiness(repeat, anchor, incident_manifest)
+    readiness_sha = _sha256(_readiness_path(repeat))
+    existing = _validated_existing_repeat_records(repository_root, repeat, stage_a)
+    _ensure_repeat_execution_manifest(
+        repeat, anchor, readiness_sha, incident_manifest["_sha256"], allow_create=not existing,
+    )
+    expected_ids = [row["experiment_id"] for row in stage_a]
+    if len(existing) == INTENDED_CELLS:
+        repeat.seal(expected_ids)
+        return
+    active_generator = generator
+    for retrieval in stage_a[len(existing):]:
+        provenance = _expected_provenance(retrieval)
+        if not retrieval.get("retrieval_success", True):
+            record = {
+                "experiment_id": retrieval["experiment_id"], "first_attempt_success": False,
+                "attempt_count": 0, "technical_retry_used": False,
+                "first_error_type": "upstream_retrieval_technical_failure",
+                "final_error_type": "upstream_retrieval_technical_failure",
+                "generation_success": False, "final_generation_success": False,
+                "generation_outcome": "upstream_retrieval_technical_failure",
+                "generation_latency_ms": 0.0, "answer": "", "provenance": provenance,
+                "provider_reported_model": None,
+                "errors": [{"error_type": "upstream_retrieval_technical_failure", "message": "Generator not called because frozen Stage A retrieval failed"}],
+                "timestamps": {"generation_completed_at": _utc_now()},
+            }
+        else:
+            if active_generator is None:
+                active_generator = build_llm_provider(GENERATOR_MODEL, timeout_override=GENERATOR_TIMEOUT_SECONDS)
+            _validate_repeat_provider(active_generator)
+            evidence = _retrieval_evidence(retrieval["retrieved_items"], retrieval["topic"])
+            prompt = _generation_prompt(retrieval.get("question", ""), retrieval["topic"], evidence)
+
+            async def operation() -> Any:
+                result = await active_generator.generate(
+                    system=SYSTEM_PROMPT, prompt=prompt,
+                    temperature=GENERATOR_TEMPERATURE, max_tokens=GENERATOR_MAX_TOKENS,
+                )
+                return result, _validated_answer(result.text)
+
+            outcome = await invoke_stage_b_generation(operation)
+            generated = outcome.provider_result
+            record = {
+                "experiment_id": retrieval["experiment_id"],
+                "first_attempt_success": outcome.first_attempt_success,
+                "attempt_count": outcome.attempt_count,
+                "technical_retry_used": outcome.technical_retry_used,
+                "first_error_type": outcome.first_error_type,
+                "final_error_type": outcome.final_error_type,
+                "generation_success": outcome.generation_success,
+                "final_generation_success": outcome.generation_success,
+                "generation_outcome": outcome.generation_outcome,
+                "generation_latency_ms": outcome.elapsed_ms,
+                "answer": outcome.answer,
+                "provenance": provenance,
+                "provider_reported_model": generated.model if generated else GENERATOR_MODEL,
+                "errors": outcome.errors,
+                "timestamps": {"generation_completed_at": _utc_now()},
+            }
+        _validate_stage_b_record(repository_root, retrieval, record)
+        repeat.append("B", record)
+    final_records = _validated_existing_repeat_records(repository_root, repeat, stage_a)
+    if len(final_records) != INTENDED_CELLS:
+        raise FatalFormalRunError("Stage B repeat did not reach 192 terminal cells")
+    repeat.seal(expected_ids)
+
+
+def classify_stage_b_repeat_outage(records: list[dict[str, Any]]) -> dict[str, Any]:
+    suffix: list[dict[str, Any]] = []
+    for row in reversed(records):
+        final_error = row.get("final_error_type")
+        if row.get("generation_success") is True or final_error not in STAGE_B_REPEAT_INFRASTRUCTURE_ERRORS:
+            break
+        suffix.append(row)
+    suffix.reverse()
+    is_outage = len(suffix) >= STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX
+    return {
+        "run_level_outage": is_outage,
+        "consecutive_infrastructure_failure_suffix_count": len(suffix),
+        "first_outage_experiment_id": suffix[0].get("experiment_id") if suffix else None,
+        "final_error_types": sorted({str(row.get("final_error_type")) for row in suffix}),
+        "minimum_suffix_threshold": STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX,
+        "no_subsequent_success": bool(suffix),
+        "third_attempt_automatically_authorized": False,
+    }
 
 
 async def run_stage_c(
@@ -1542,6 +2353,10 @@ def finalize_stage_b_run(
     require_clean_worktree: bool = True,
     execution_config: dict[str, Any] | None = None,
 ) -> dict[str, str]:
+    if run.path.name == STAGE_A_RUN_ID and run.stage_path("B").is_file() and _sha256(run.stage_path("B")) == ORIGINAL_STAGE_B_SHA256:
+        raise FatalFormalRunError(
+            "Original Stage B outage attempt is incident-preservation-only and cannot use standard B-finalize"
+        )
     anchor = verify_stage_b_execution_freeze(
         repository_root,
         expected_execution_commit=expected_execution_commit,
@@ -1598,6 +2413,140 @@ def finalize_stage_b_run(
     _atomic_new_bytes(freeze_path, ("\n".join(lines) + "\n").encode("utf-8"))
     artifact_hashes[freeze_path.name] = _sha256(freeze_path)
     return artifact_hashes
+
+
+def finalize_stage_b_repeat(
+    repository_root: Path,
+    repeat: StageBRepeatDirectory,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    incident_config: dict[str, Any] | None = None,
+    original_run: RunDirectory | None = None,
+) -> dict[str, Any]:
+    _reject_unexpected_repeat_files(repeat, finalizing=True)
+    anchor = verify_stage_b_repeat_execution_freeze(
+        repository_root,
+        expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree,
+        execution_config=execution_config,
+        incident_config=incident_config,
+    )
+    incident_run = original_run or _canonical_stage_a_run(repository_root)
+    incident_manifest = _verify_incident_preservation_artifacts(repository_root, incident_run)
+    incident_manifest_sha = _sha256(incident_run.path / "stage_b_incident_manifest.json")
+    stage_a = verify_frozen_stage_a(repository_root, incident_run)
+    repeat.verify_sealed()
+    readiness = _validate_repeat_readiness(
+        repeat, anchor, {**incident_manifest, "_sha256": incident_manifest_sha},
+    )
+    readiness_sha = _sha256(_readiness_path(repeat))
+    _ensure_repeat_execution_manifest(
+        repeat, anchor, readiness_sha, incident_manifest_sha, allow_create=False,
+    )
+    records = _validated_existing_repeat_records(repository_root, repeat, stage_a)
+    expected_ids = [row["experiment_id"] for row in stage_a]
+    if len(records) != INTENDED_CELLS or [row["experiment_id"] for row in records] != expected_ids:
+        raise FatalFormalRunError("Stage B repeat finalization requires exact ordered Stage A/repeat ID equality")
+    classification = classify_stage_b_repeat_outage(records)
+    common = {
+        "run_id": STAGE_B_REPEAT_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "supersedes_stage_b_attempt_run_id": STAGE_A_RUN_ID,
+        "superseded_stage_b_sha256": ORIGINAL_STAGE_B_SHA256,
+        "repeat_ordinal": 1,
+        "repeat_reason": "provider_outage",
+        "repeat_scope": "all_192_cells",
+        "reuse_original_successes": False,
+        "repeat_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "repeat_execution_json_sha256": anchor["execution_json_sha256"],
+        "incident_manifest_sha256": incident_manifest_sha,
+        "readiness_manifest_sha256": readiness_sha,
+        "cell_count": INTENDED_CELLS,
+        "repeat_outage_classification": classification,
+        "third_attempt_automatically_authorized": False,
+    }
+    if classification["run_level_outage"]:
+        manifest_path = repeat.path / "stage_b_repeat_outage_manifest.json"
+        freeze_path = repeat.path / "STAGE_B_REPEAT_OUTAGE_INCIDENT.md"
+        requested = [manifest_path, freeze_path]
+        if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in requested):
+            raise FileExistsError("Stage B repeat outage preservation artifacts already exist")
+        lines = [
+            "# Stage B repeat provider-outage incident", "", f"- Run ID: `{STAGE_B_REPEAT_RUN_ID}`",
+            f"- Sealed SHA256: `{_sha256(repeat.stage_path())}`",
+            f"- Consecutive infrastructure-failure suffix: `{classification['consecutive_infrastructure_failure_suffix_count']}`",
+            "- Eligible as primary: `false`", "- Eligible for Stage C: `false`",
+            "- Third attempt automatically authorized: `false`", "",
+            "The frozen r1 outage rule was met. W-RQ2 is operationally inconclusive unless a separately frozen later adjudication is approved.", "",
+        ]
+        markdown_bytes = "\n".join(lines).encode("utf-8")
+        manifest = {
+            **common,
+            "stage": "B-repeat",
+            "status": "stage_b_repeat_outage_incident",
+            "stage_b_sha256": _sha256(repeat.stage_path()),
+            "eligible_as_primary": False,
+            "eligible_for_stage_c": False,
+            "preservation_only": True,
+            "outage_markdown_sha256": hashlib.sha256(markdown_bytes).hexdigest(),
+            "preserved_at": _utc_now(),
+        }
+        _atomic_new_bytes(freeze_path, markdown_bytes)
+        _atomic_new_json(manifest_path, manifest)
+        return {
+            "classification": classification,
+            "artifacts": {manifest_path.name: _sha256(manifest_path), freeze_path.name: _sha256(freeze_path)},
+        }
+    raw_path = repeat.path / "stage_b_raw_results.jsonl"
+    metrics_path = repeat.path / "stage_b_generation_metrics.json"
+    provider_path = repeat.path / "stage_b_provider_metrics.json"
+    manifest_path = repeat.path / "stage_b_run_manifest.json"
+    freeze_path = repeat.path / "STAGE_B_FROZEN.md"
+    requested = [raw_path, metrics_path, provider_path, manifest_path, freeze_path]
+    if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in requested):
+        raise FileExistsError("A Stage B repeat finalization artifact already exists; overwrite is prohibited")
+    _atomic_new_bytes(raw_path, repeat.stage_path().read_bytes())
+    _atomic_new_json(metrics_path, generation_metrics(records))
+    _atomic_new_json(provider_path, stage_b_provider_metrics(records))
+    artifact_hashes = {
+        path.name: _sha256(path)
+        for path in (
+            repeat.stage_path(), repeat.stage_manifest_path(),
+            repeat.path / "stage_b_repeat_execution_manifest.json", _readiness_path(repeat),
+            raw_path, metrics_path, provider_path,
+        )
+    }
+    manifest = {
+        **common,
+        "stage": "B-repeat",
+        "status": "stage_b_repeat_frozen_primary",
+        "stage_b_sha256": _sha256(repeat.stage_path()),
+        "eligible_as_primary": True,
+        "eligible_for_stage_c": True,
+        "primary_semantic_dataset": True,
+        "stage_b_artifact_sha256": artifact_hashes,
+        "frozen_at": _utc_now(),
+        "stage_b_immutable_input_for": "future Stage C judging",
+    }
+    _atomic_new_json(manifest_path, manifest)
+    artifact_hashes[manifest_path.name] = _sha256(manifest_path)
+    lines = [
+        "# Stage B repeat frozen", "", f"- Run ID: `{STAGE_B_REPEAT_RUN_ID}`",
+        f"- Protocol: `{PROTOCOL_VERSION}`", f"- Stage B SHA256: `{_sha256(repeat.stage_path())}`",
+        "- Repeat scope: `all_192_cells`", "- Original successes reused: `false`",
+        "- Eligible as primary: `true`", "- Eligible for Stage C: `true`", "",
+        "This full-matrix repeat is the immutable primary Stage B input. The original outage attempt remains separate and must never be pooled with it.", "",
+        "## Artifact SHA256", "",
+    ]
+    lines.extend(f"- `{name}`: `{digest}`" for name, digest in sorted(artifact_hashes.items()))
+    _atomic_new_bytes(freeze_path, ("\n".join(lines) + "\n").encode("utf-8"))
+    artifact_hashes[freeze_path.name] = _sha256(freeze_path)
+    return {"classification": classification, "artifacts": artifact_hashes}
 
 
 def judge_metrics(completed_records: list[dict[str, Any]]) -> dict[str, Any]:

@@ -72,6 +72,10 @@ def _execution_config() -> dict[str, object]:
 def copied_run(tmp_path: Path) -> RunDirectory:
     destination = tmp_path / STAGE_A_RUN_ID
     shutil.copytree(SOURCE_RUN, destination)
+    # The canonical source run now contains the sealed provider-outage Stage B.
+    # Legacy Stage-B execution tests need an isolated Stage-A-only copy.
+    for name in ("stage_b_generation.jsonl", "stage_b_manifest.json", "stage_b_execution_manifest.json"):
+        (destination / name).unlink(missing_ok=True)
     return RunDirectory.resume(destination)
 
 
