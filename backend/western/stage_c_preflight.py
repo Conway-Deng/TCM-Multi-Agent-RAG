@@ -32,7 +32,8 @@ from .formal_judge import FormalJudgeOutput, JUDGE_SYSTEM_PROMPT, build_judge_pr
 
 
 R3_PREFLIGHT_VERSION = "western-stage-c-r3-structured-output-preflight-v2"
-R3_PREFLIGHT_PROBE_COUNT = 3
+R3_PREFLIGHT_PROBE_PLAN_VERSION = "western-stage-c-r3-preflight-matrix-v1"
+R3_PREFLIGHT_PROBE_COUNT = 6
 R3_PREFLIGHT_TIMEOUT_SECONDS = 300.0
 R3_PREFLIGHT_CAPABILITY_SOURCE = "https://docs.siliconflow.com/cn/userguide/guides/json-mode-struct"
 R3_STRUCTURED_RESPONSE_FORMAT_TYPE = "json_schema"
@@ -116,53 +117,232 @@ def stage_c_r3_response_format(
     }
 
 
+def get_synthetic_probe_plan() -> list[dict[str, Any]]:
+    return [
+        {
+            "probe_number": 1,
+            "probe_id": "synthetic-supported-probe-01",
+            "answerability": "supported",
+            "retrieval": {
+                "experiment_id": "synthetic-supported-probe-01",
+                "answerability": "supported",
+                "expected_evidence_points": [
+                    "Synthetic supported point zero is fully verified in the local fixture.",
+                    "Synthetic supported point one is verified in the local fixture.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise for supported answerability. "
+                "Verify whether all synthetic claims are supported by the provided evidence."
+            ),
+            "answer": (
+                "Synthetic claim 0 is fully present. Synthetic claim 1 is fully present."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic Supported Readiness Fixture One",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "Synthetic supported point zero is fully verified in the local fixture. "
+                    "Synthetic supported point one is verified in the local fixture."
+                ),
+            }],
+            "expected_insufficiency_label": "not_applicable",
+            "require_all_enums_exercised": False,
+        },
+        {
+            "probe_number": 2,
+            "probe_id": "synthetic-supported-probe-02",
+            "answerability": "supported",
+            "retrieval": {
+                "experiment_id": "synthetic-supported-probe-02",
+                "answerability": "supported",
+                "expected_evidence_points": [
+                    "Synthetic supported point alpha is verified in the reference text.",
+                    "Synthetic supported point beta is verified in the reference text.",
+                    "Synthetic supported point gamma is verified in the reference text.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise for supported answerability replay. "
+                "Verify whether all synthetic claims are supported."
+            ),
+            "answer": (
+                "Synthetic claim alpha is supported. Synthetic claim beta is supported. Synthetic claim gamma is supported."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic Supported Readiness Fixture Two",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "Synthetic supported point alpha is verified in the reference text. "
+                    "Synthetic supported point beta is verified in the reference text. "
+                    "Synthetic supported point gamma is verified in the reference text."
+                ),
+            }],
+            "expected_insufficiency_label": "not_applicable",
+            "require_all_enums_exercised": False,
+        },
+        {
+            "probe_number": 3,
+            "probe_id": "synthetic-partially-supported-probe-01",
+            "answerability": "partially_supported",
+            "retrieval": {
+                "experiment_id": "synthetic-partially-supported-probe-01",
+                "answerability": "partially_supported",
+                "expected_evidence_points": [
+                    "Synthetic point zero is explicitly present.",
+                    "Synthetic point one is only partly present.",
+                    "Synthetic point two is absent.",
+                    "Synthetic point three is contradicted.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise only. Return exactly four unique claim labels using each allowed "
+                "claim enum once, and exactly four evidence-point labels at indices 0,1,2,3 using each allowed evidence "
+                "enum once. This is not a benchmark case and must never be used as research data."
+            ),
+            "answer": (
+                "Synthetic claim A is directly supplied. Synthetic claim B is partly supplied. Synthetic claim C is not "
+                "supplied. The phrase 'formatting exercise' is not an externally checkable claim."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic non-formal readiness fixture",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "Synthetic point zero is explicitly present. Synthetic point one is partly present. "
+                    "Synthetic point three is explicitly contradicted."
+                ),
+            }],
+            "expected_insufficiency_label": "not_applicable",
+            "require_all_enums_exercised": True,
+        },
+        {
+            "probe_number": 4,
+            "probe_id": "synthetic-partially-supported-probe-02",
+            "answerability": "partially_supported",
+            "retrieval": {
+                "experiment_id": "synthetic-partially-supported-probe-02",
+                "answerability": "partially_supported",
+                "expected_evidence_points": [
+                    "Synthetic scope point zero is documented.",
+                    "Synthetic scope point one is partly documented.",
+                    "Synthetic scope point two is unverified.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise for partially supported scope verification. "
+                "Evaluate claims against the partial evidence."
+            ),
+            "answer": (
+                "Synthetic claim 1 is documented. Synthetic claim 2 is partly documented. Synthetic claim 3 is unverified."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic Scope Fixture Two",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "Synthetic scope point zero is documented. Synthetic scope point one is partly documented."
+                ),
+            }],
+            "expected_insufficiency_label": "not_applicable",
+            "require_all_enums_exercised": False,
+        },
+        {
+            "probe_number": 5,
+            "probe_id": "synthetic-insufficient-probe-01",
+            "answerability": "insufficient",
+            "retrieval": {
+                "experiment_id": "synthetic-insufficient-probe-01",
+                "answerability": "insufficient",
+                "expected_evidence_points": [
+                    "Synthetic clinical claim cannot be established from the retrieved evidence.",
+                    "Synthetic guidance point is missing from available evidence.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise for insufficient answerability. "
+                "The evidence is entirely insufficient to answer the query safely."
+            ),
+            "answer": (
+                "Due to lack of supporting evidence in the available records, this query cannot be answered. "
+                "Further consultation with primary clinical documentation is required."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic Unrelated Article One",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "This excerpt does not contain information relevant to the query."
+                ),
+            }],
+            "expected_insufficiency_label": "appropriate_abstention",
+            "require_all_enums_exercised": False,
+        },
+        {
+            "probe_number": 6,
+            "probe_id": "synthetic-insufficient-probe-02",
+            "answerability": "insufficient",
+            "retrieval": {
+                "experiment_id": "synthetic-insufficient-probe-02",
+                "answerability": "insufficient",
+                "expected_evidence_points": [
+                    "Synthetic evidence does not support establishing dosage or efficacy.",
+                    "Synthetic safety boundary must be explicitly stated.",
+                ],
+            },
+            "question": (
+                "Synthetic schema-readiness exercise for bounded insufficiency. "
+                "Acknowledge evidence limitations."
+            ),
+            "answer": (
+                "The available synthetic evidence does not provide data on dosage or efficacy. "
+                "The answer is strictly bounded to stating this insufficiency."
+            ),
+            "evidence": [{
+                "rank": 1,
+                "article_title": "Synthetic Unrelated Article Two",
+                "section": "Synthetic",
+                "evidence_excerpt": (
+                    "No dosage or efficacy records exist in this synthetic document."
+                ),
+            }],
+            "expected_insufficiency_label": "appropriate_abstention",
+            "require_all_enums_exercised": False,
+        },
+    ]
+
+
 def _synthetic_probe_input() -> tuple[dict[str, Any], str]:
-    retrieval = {
-        "experiment_id": "synthetic-non-formal-stage-c-r3-readiness",
-        "answerability": "partially_supported",
-        "expected_evidence_points": [
-            "Synthetic point zero is explicitly present.",
-            "Synthetic point one is only partly present.",
-            "Synthetic point two is absent.",
-            "Synthetic point three is contradicted.",
-        ],
-    }
-    question = (
-        "Synthetic schema-readiness exercise only. Return exactly four unique claim labels using each allowed "
-        "claim enum once, and exactly four evidence-point labels at indices 0,1,2,3 using each allowed evidence "
-        "enum once. This is not a benchmark case and must never be used as research data."
-    )
-    answer = (
-        "Synthetic claim A is directly supplied. Synthetic claim B is partly supplied. Synthetic claim C is not "
-        "supplied. The phrase 'formatting exercise' is not an externally checkable claim."
-    )
-    evidence = [{
-        "rank": 1,
-        "article_title": "Synthetic non-formal readiness fixture",
-        "section": "Synthetic",
-        "evidence_excerpt": (
-            "Synthetic point zero is explicitly present. Synthetic point one is partly present. "
-            "Synthetic point three is explicitly contradicted."
-        ),
-    }]
+    probe = get_synthetic_probe_plan()[2]
     prompt = build_judge_prompt(
-        question=question,
-        answer=answer,
-        retrieved_evidence=evidence,
-        expected_evidence_points=retrieval["expected_evidence_points"],
-        answerability=retrieval["answerability"],
+        question=probe["question"],
+        answer=probe["answer"],
+        retrieved_evidence=probe["evidence"],
+        expected_evidence_points=probe["retrieval"]["expected_evidence_points"],
+        answerability=probe["retrieval"]["answerability"],
     )
-    return retrieval, prompt
+    return probe["retrieval"], prompt
 
 
 def validate_stage_c_r3_probe_output(
     text: str,
     *,
-    answerability: str = "partially_supported",
+    retrieval: dict[str, Any] | None = None,
+    answerability: str | None = None,
     expected_evidence_points: list[str] | None = None,
+    expected_insufficiency_label: str | None = None,
+    require_all_enums_exercised: bool = False,
 ) -> tuple[FormalJudgeOutput, str]:
-    if answerability not in {"partially_supported", "supported", "insufficient"}:
-        raise StageCR3PreflightError(f"Unsupported answerability: {answerability}")
+    effective_answerability = (
+        (retrieval.get("answerability") if retrieval else None)
+        or answerability
+        or "partially_supported"
+    )
+    if effective_answerability not in {"partially_supported", "supported", "insufficient"}:
+        raise StageCR3PreflightError(f"Unsupported answerability: {effective_answerability}")
+
     normalized, normalization = normalize_judge_json_envelope(text)
     try:
         payload = json.loads(normalized)
@@ -177,7 +357,7 @@ def validate_stage_c_r3_probe_output(
         raise StageCR3PreflightError(f"Synthetic readiness output has invalid Boolean fields: {invalid_booleans}")
 
     # Raw type validation for SCOPE_FIELDS
-    if answerability == "partially_supported":
+    if effective_answerability == "partially_supported":
         invalid_scope_booleans = sorted(field for field in SCOPE_FIELDS if type(payload.get(field)) is not bool)
         if invalid_scope_booleans:
             raise StageCR3PreflightError(f"Synthetic readiness output has invalid scope Boolean fields: {invalid_scope_booleans}")
@@ -185,23 +365,46 @@ def validate_stage_c_r3_probe_output(
         invalid_scope_non_null = sorted(field for field in SCOPE_FIELDS if payload.get(field) is not None)
         if invalid_scope_non_null:
             raise StageCR3PreflightError(
-                f"Synthetic readiness output has non-null scope fields for answerability '{answerability}': {invalid_scope_non_null}"
+                f"Synthetic readiness output has non-null scope fields for answerability '{effective_answerability}': {invalid_scope_non_null}"
             )
+
+    # Determine effective retrieval for production semantic validation
+    if retrieval is not None:
+        active_retrieval = dict(retrieval)
+    else:
+        synthetic_retrieval, _ = _synthetic_probe_input()
+        active_retrieval = dict(synthetic_retrieval)
+        active_retrieval["answerability"] = effective_answerability
+        if expected_evidence_points is not None:
+            active_retrieval["expected_evidence_points"] = expected_evidence_points
 
     try:
         parsed = FormalJudgeOutput.model_validate(payload)
-        synthetic_retrieval, _ = _synthetic_probe_input()
-        retrieval = dict(synthetic_retrieval)
-        retrieval["answerability"] = answerability
-        if expected_evidence_points is not None:
-            retrieval["expected_evidence_points"] = expected_evidence_points
-        _validate_completed_judge_output(parsed, retrieval)
+        _validate_completed_judge_output(parsed, active_retrieval)
     except (ValueError, FatalFormalRunError) as exc:
         raise StageCR3PreflightError(f"Synthetic readiness output violates the frozen schema: {exc}") from exc
 
-    # Synthetic probe enum exercise verification (when using standard synthetic probe fixture)
-    expected_pts = list(retrieval.get("expected_evidence_points") or [])
-    if len(expected_pts) == 4 and answerability == "partially_supported":
+    # Additional fixture-aware synthetic contract checks
+    if effective_answerability in {"supported", "partially_supported"}:
+        if parsed.insufficiency_label != "not_applicable":
+            raise StageCR3PreflightError("Synthetic readiness output for non-insufficient case must use not_applicable")
+    elif effective_answerability == "insufficient":
+        if parsed.insufficiency_label == "not_applicable":
+            raise StageCR3PreflightError("Synthetic readiness output for insufficient case cannot use not_applicable")
+        if parsed.insufficiency_label not in INSUFFICIENT_LABELS:
+            raise StageCR3PreflightError(f"Synthetic readiness output has invalid insufficiency_label '{parsed.insufficiency_label}'")
+        if expected_insufficiency_label is not None and parsed.insufficiency_label != expected_insufficiency_label:
+            raise StageCR3PreflightError(
+                f"Synthetic readiness output expected insufficiency_label '{expected_insufficiency_label}', got '{parsed.insufficiency_label}'"
+            )
+
+    # Enum exercise check for probes requiring all enums
+    check_all_enums = require_all_enums_exercised or (
+        retrieval is None
+        and expected_evidence_points is None
+        and effective_answerability == "partially_supported"
+    )
+    if check_all_enums:
         claim_labels = [item.label for item in parsed.claim_labels]
         evidence_labels = [item.label for item in parsed.evidence_point_labels]
         if len(claim_labels) != 4 or set(claim_labels) != CLAIM_LABELS:
@@ -246,7 +449,9 @@ async def run_stage_c_r3_structured_output_preflight(
     timeout_seconds: float = R3_PREFLIGHT_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     if probe_count < R3_PREFLIGHT_PROBE_COUNT:
-        raise StageCR3PreflightError("At least three synthetic readiness probes are required")
+        raise StageCR3PreflightError(
+            f"At least {R3_PREFLIGHT_PROBE_COUNT} synthetic readiness probes (two per answerability class) are required"
+        )
     output_path = _validate_preflight_output_path(repository_root, output_path)
     incident = StageCDirectory(
         repository_root / "research/experiments/western_formal_v0_1/runs" / STAGE_C_RUN_ID
@@ -264,13 +469,31 @@ async def run_stage_c_r3_structured_output_preflight(
 
     active = provider or build_llm_provider(JUDGE_MODEL, timeout_override=timeout_seconds)
     _validate_preflight_provider(active, timeout_seconds)
-    retrieval, prompt = _synthetic_probe_input()
-    response_format = stage_c_r3_response_format(
-        answerability=retrieval["answerability"],
-        expected_evidence_point_count=len(retrieval["expected_evidence_points"]),
-    )
+
+    probe_plan = get_synthetic_probe_plan()
+    if probe_count != len(probe_plan):
+        raise StageCR3PreflightError(
+            f"Probe count mismatch: matrix requires exactly {len(probe_plan)} probes, got {probe_count}"
+        )
+
     probes: list[dict[str, Any]] = []
-    for probe_number in range(1, probe_count + 1):
+    for spec in probe_plan:
+        probe_number = spec["probe_number"]
+        ans = spec["answerability"]
+        retrieval = spec["retrieval"]
+        expected_count = len(retrieval["expected_evidence_points"])
+        prompt = build_judge_prompt(
+            question=spec["question"],
+            answer=spec["answer"],
+            retrieved_evidence=spec["evidence"],
+            expected_evidence_points=retrieval["expected_evidence_points"],
+            answerability=retrieval["answerability"],
+        )
+        response_format = stage_c_r3_response_format(
+            answerability=ans,
+            expected_evidence_point_count=expected_count,
+        )
+
         started = perf_counter()
         result: Any | None = None
         error_type: str | None = None
@@ -291,7 +514,12 @@ async def run_stage_c_r3_structured_output_preflight(
                 raise StageCR3PreflightError(
                     f"Synthetic readiness returned unsupported finish_reason={getattr(result, 'finish_reason', None)}"
                 )
-            _, normalization = validate_stage_c_r3_probe_output(result.text, answerability=retrieval["answerability"])
+            _, normalization = validate_stage_c_r3_probe_output(
+                result.text,
+                retrieval=retrieval,
+                expected_insufficiency_label=spec.get("expected_insufficiency_label"),
+                require_all_enums_exercised=spec.get("require_all_enums_exercised", False),
+            )
             schema_success = True
         except ProviderUnavailable as exc:
             error_type = _error_type(exc)
@@ -304,6 +532,9 @@ async def run_stage_c_r3_structured_output_preflight(
         latency_ms = round((perf_counter() - started) * 1000, 3)
         probes.append({
             "probe_number": probe_number,
+            "probe_id": spec["probe_id"],
+            "answerability": ans,
+            "expected_evidence_point_count": expected_count,
             "synthetic_non_formal": True,
             "provider_call_success": result is not None,
             "schema_validation_success": schema_success,
@@ -319,12 +550,30 @@ async def run_stage_c_r3_structured_output_preflight(
             ),
             "raw_response_stored": False,
         })
+
     latencies = [float(probe["latency_ms"]) for probe in probes]
     successful = sum(probe["schema_validation_success"] is True for probe in probes)
     timeout_count = sum(probe["error_type"] == "timeout" for probe in probes)
-    passed = successful == probe_count and timeout_count == 0
+
+    per_answerability: dict[str, dict[str, Any]] = {}
+    for ans in ("supported", "partially_supported", "insufficient"):
+        ans_probes = [p for p in probes if p["answerability"] == ans]
+        attempted = len(ans_probes)
+        successful_ans = sum(p["schema_validation_success"] is True for p in ans_probes)
+        timeouts_ans = sum(p["error_type"] == "timeout" for p in ans_probes)
+        per_answerability[ans] = {
+            "attempted": attempted,
+            "successful": successful_ans,
+            "timeouts": timeouts_ans,
+            "passed": attempted >= 2 and successful_ans == attempted and timeouts_ans == 0,
+        }
+
+    all_classes_passed = all(summary["passed"] is True for summary in per_answerability.values())
+    passed = successful == probe_count and timeout_count == 0 and all_classes_passed
+
     manifest = {
         "preflight_version": R3_PREFLIGHT_VERSION,
+        "probe_plan_version": R3_PREFLIGHT_PROBE_PLAN_VERSION,
         "status": "passed" if passed else "failed",
         "synthetic_non_formal": True,
         "formal_stage_c_run_created": False,
@@ -343,18 +592,16 @@ async def run_stage_c_r3_structured_output_preflight(
         "enable_thinking": False,
         "judge_system_prompt_sha256": hashlib.sha256(JUDGE_SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
         "judge_system_prompt_unchanged": True,
-        "response_format": response_format,
-        "response_format_sha256": hashlib.sha256(
-            json.dumps(response_format, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        ).hexdigest(),
         "provider_documented_capability_source": R3_PREFLIGHT_CAPABILITY_SOURCE,
         "probe_count": probe_count,
         "successful_probe_count": successful,
         "all_required_probes_passed": passed,
+        "all_answerability_classes_passed": all_classes_passed,
+        "per_answerability_summary": per_answerability,
         "timeout_occurrences": timeout_count,
-        "mean_latency_ms": statistics.fmean(latencies),
-        "median_latency_ms": statistics.median(latencies),
-        "max_latency_ms": max(latencies),
+        "mean_latency_ms": statistics.fmean(latencies) if latencies else 0.0,
+        "median_latency_ms": statistics.median(latencies) if latencies else 0.0,
+        "max_latency_ms": max(latencies) if latencies else 0.0,
         "no_synonym_or_post_hoc_value_repair": True,
         "eligible_to_propose_formal_r3_freeze": passed,
         "formal_r3_frozen": False,
