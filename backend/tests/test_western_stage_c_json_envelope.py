@@ -229,12 +229,15 @@ def test_provider_metrics_account_for_normalization() -> None:
     }
 
 
-def test_r2_identity_is_prospective_and_has_no_formal_run_directory() -> None:
+def test_r2_identity_preserves_the_formal_incident_without_an_ordinary_seal() -> None:
     assert f.STAGE_C_RUN_ID == "western-formal-v0.1.2-stage-c-r2-20260920-01"
     assert f.STAGE_C_EXECUTION_VERSION == "western-stage-c-execution-v0.1.2-r2"
     runs = ROOT / "research/experiments/western_formal_v0_1/runs"
     assert not (runs / "western-formal-v0.1.2-stage-c-r1-20260919-01").exists()
-    assert not (runs / f.STAGE_C_RUN_ID).exists()
+    incident = runs / f.STAGE_C_RUN_ID
+    assert (incident / "stage_c_judge.jsonl").is_file()
+    assert (incident / "stage_c_execution_manifest.json").is_file()
+    assert not (incident / "stage_c_manifest.json").exists()
 
 
 def test_superseded_r1_run_id_cannot_use_the_r2_formal_path(tmp_path: Path) -> None:

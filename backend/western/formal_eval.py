@@ -103,6 +103,17 @@ STAGE_C_OUTPUT_NORMALIZATION_VERSION = "western-judge-json-envelope-v1"
 SUPERSEDED_STAGE_C_EXECUTION_VERSION = "western-stage-c-execution-v0.1.2-r1"
 SUPERSEDED_STAGE_C_FREEZE_COMMIT = "c376635432f985bce31ce43be91a94c0243ca1a6"
 STAGE_C_AMENDMENT_REASON = "pre-execution synthetic integration test observed single outer Markdown JSON fence"
+STAGE_C_R2_EXECUTION_FREEZE_COMMIT = "8e0d4960b70af7694a0664c83fb79342f03685fa"
+STAGE_C_R2_EXECUTION_JSON_SHA256 = "39a6fae2e6b1f7fdb29c35adb657c7abf752f22e6e0371fdb891372f456d08f4"
+STAGE_C_R2_EXECUTION_MANIFEST_SHA256 = "46ba83acf2c651b51f0c6cd0f8122ebcb153f73c4a34dac8254a14f9a1280082"
+STAGE_C_R2_JUDGMENTS_SHA256 = "fd3544854e4eadfbb498cf9ab5329cee0fb45a03380b25b2c82fabef03ed5363"
+STAGE_C_R2_REPORTED_SNAPSHOT = {
+    "row_count": 33, "completed": 0, "output_schema_failure": 16, "technical_failure": 17,
+}
+STAGE_C_R2_PRESERVED_COUNTS = {
+    "row_count": 39, "completed": 0, "output_schema_failure": 19, "technical_failure": 20,
+    "timeout_final_error": 20,
+}
 PRIMARY_STAGE_B_SHA256 = "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c"
 PRIMARY_STAGE_B_SEAL_SHA256 = "45a740077fe25f08c996779c272bfdff2a9e4d06b1703f0de5ce3c3dbf3a480c"
 PRIMARY_STAGE_B_GENERATION_METRICS_SHA256 = "1bbaf4ca1befa92c552c06e1914ea370ffc992fb4163671768ba3ae9813446f9"
@@ -1093,6 +1104,12 @@ class StageCDirectory:
 
     def execution_manifest_path(self) -> Path:
         return self.path / "stage_c_execution_manifest.json"
+
+    def incident_manifest_path(self) -> Path:
+        return self.path / "stage_c_incident_manifest.json"
+
+    def incident_markdown_path(self) -> Path:
+        return self.path / "STAGE_C_EXECUTION_INCIDENT.md"
 
     def append(self, record: dict[str, Any]) -> None:
         if self.stage_manifest_path().exists():
@@ -2558,6 +2575,187 @@ def _validated_existing_stage_c_records(
     return records
 
 
+def _verify_stage_c_r2_incident_source(
+    repository_root: Path, stage_c: StageCDirectory,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if stage_c.path.name != STAGE_C_RUN_ID:
+        raise FatalFormalRunError("Stage C r2 incident preservation requires the exact r2 run ID")
+    if stage_c.stage_manifest_path().exists():
+        raise FatalFormalRunError("Stage C r2 incident must not have an ordinary Stage C seal")
+    expected_hashes = {
+        stage_c.stage_path(): STAGE_C_R2_JUDGMENTS_SHA256,
+        stage_c.execution_manifest_path(): STAGE_C_R2_EXECUTION_MANIFEST_SHA256,
+    }
+    mismatches: dict[str, Any] = {}
+    for path, expected in expected_hashes.items():
+        actual = _sha256(path) if path.is_file() else None
+        if actual != expected:
+            mismatches[path.name] = {"expected": expected, "actual": actual}
+    execution = _load_json_object(stage_c.execution_manifest_path(), label="Stage C r2 execution manifest")
+    expected_execution = {
+        "stage": "C", "status": "in_progress", "run_id": STAGE_C_RUN_ID,
+        "stage_c_execution_version": STAGE_C_EXECUTION_VERSION,
+        "stage_c_execution_freeze_commit": STAGE_C_R2_EXECUTION_FREEZE_COMMIT,
+        "stage_c_execution_json_sha256": STAGE_C_R2_EXECUTION_JSON_SHA256,
+        "analysis_json_sha256": "123322b8a416697cd814561b66b3722291d421206ff6310de6667b9d31b79ec8",
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+        "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+    }
+    mismatches.update({
+        f"execution_manifest.{key}": {"expected": value, "actual": execution.get(key)}
+        for key, value in expected_execution.items() if execution.get(key) != value
+    })
+    if mismatches:
+        raise FatalFormalRunError(f"Stage C r2 incident source mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    stage_a, stage_b, _ = _verify_primary_stage_b_inputs(repository_root)
+    records = _validated_existing_stage_c_records(stage_c, stage_a, stage_b)
+    outcomes = {name: sum(row.get("judge_outcome") == name for row in records) for name in STAGE_C_OUTCOMES}
+    technical = [row for row in records if row.get("judge_outcome") == "technical_failure"]
+    schema_failures = [row for row in records if row.get("judge_outcome") == "output_schema_failure"]
+    counts = {
+        "row_count": len(records),
+        "completed": outcomes["completed"],
+        "output_schema_failure": outcomes["output_schema_failure"],
+        "technical_failure": outcomes["technical_failure"],
+        "timeout_final_error": sum(row.get("judge_final_error_type") == "timeout" for row in technical),
+    }
+    if counts != STAGE_C_R2_PRESERVED_COUNTS:
+        raise FatalFormalRunError(f"Stage C r2 incident counts mismatch: expected {STAGE_C_R2_PRESERVED_COUNTS}, found {counts}")
+    if any(row.get("judge_success") is True or row.get("final_judge_success") is True for row in records):
+        raise FatalFormalRunError("Stage C r2 incident unexpectedly contains a completed semantic judgment")
+    if any(
+        row.get("judge_attempt_count") != 2
+        or row.get("judge_technical_retry_used") is not True
+        or row.get("judge_final_error_type") != "timeout"
+        for row in technical
+    ):
+        raise FatalFormalRunError("Stage C r2 technical failures do not all represent exhausted double-timeouts")
+    if any(row.get("judge_output_normalization") != "outer_json_markdown_fence_removed" for row in schema_failures):
+        raise FatalFormalRunError("Stage C r2 schema failures do not all retain the observed fence-normalization audit value")
+    return records, {
+        **counts,
+        "first_experiment_id": records[0]["experiment_id"],
+        "last_experiment_id": records[-1]["experiment_id"],
+        "unique_experiment_ids": len({row["experiment_id"] for row in records}),
+        "exact_primary_stage_b_prefix": True,
+    }
+
+
+def _verify_stage_c_r2_incident_artifacts(repository_root: Path, stage_c: StageCDirectory) -> dict[str, Any]:
+    _, counts = _verify_stage_c_r2_incident_source(repository_root, stage_c)
+    manifest = _load_json_object(stage_c.incident_manifest_path(), label="Stage C r2 incident manifest")
+    expected = {
+        "status": "stage_c_execution_incident",
+        "run_id": STAGE_C_RUN_ID,
+        "execution_version": STAGE_C_EXECUTION_VERSION,
+        "execution_freeze_commit": STAGE_C_R2_EXECUTION_FREEZE_COMMIT,
+        "stage_c_judge_sha256": STAGE_C_R2_JUDGMENTS_SHA256,
+        "stage_c_execution_manifest_sha256": STAGE_C_R2_EXECUTION_MANIFEST_SHA256,
+        "preserved_counts": counts,
+        "eligible_as_primary_stage_c": False,
+        "eligible_for_merged_final_analysis": False,
+        "must_never_resume": True,
+        "must_never_selectively_complete": True,
+        "must_never_pool_with_later_repeat": True,
+        "preservation_only": True,
+    }
+    mismatches = {
+        key: {"expected": value, "actual": manifest.get(key)}
+        for key, value in expected.items() if manifest.get(key) != value
+    }
+    markdown = stage_c.incident_markdown_path()
+    actual_markdown_sha = _sha256(markdown) if markdown.is_file() else None
+    if manifest.get("incident_markdown_sha256") != actual_markdown_sha:
+        mismatches["incident_markdown_sha256"] = {
+            "expected": manifest.get("incident_markdown_sha256"), "actual": actual_markdown_sha,
+        }
+    if mismatches:
+        raise FatalFormalRunError(f"Stage C r2 incident artifact mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def finalize_stage_c_r2_incident(repository_root: Path, stage_c: StageCDirectory) -> dict[str, str]:
+    if stage_c.incident_manifest_path().exists() or stage_c.incident_markdown_path().exists():
+        raise FileExistsError("Stage C r2 incident preservation artifacts already exist; overwrite is prohibited")
+    allowed = {stage_c.stage_path().name, stage_c.execution_manifest_path().name}
+    unexpected = sorted(path.name for path in stage_c.path.iterdir() if path.name not in allowed)
+    if unexpected:
+        raise FatalFormalRunError(f"Stage C r2 incident directory contains conflicting outputs: {unexpected}")
+    _, counts = _verify_stage_c_r2_incident_source(repository_root, stage_c)
+    raw_before = stage_c.stage_path().read_bytes()
+    lines = [
+        "# Stage C r2 execution incident", "",
+        f"- Run ID: `{STAGE_C_RUN_ID}`",
+        f"- Execution version: `{STAGE_C_EXECUTION_VERSION}`",
+        f"- Execution freeze commit: `{STAGE_C_R2_EXECUTION_FREEZE_COMMIT}`",
+        f"- Preserved terminal rows: `{counts['row_count']}`",
+        f"- Completed semantic judgments: `{counts['completed']}`",
+        f"- Output schema failures: `{counts['output_schema_failure']}`",
+        f"- Double-timeout technical failures: `{counts['technical_failure']}`", "",
+        "The run was manually interrupted after systematic provider-contract incompatibility was observed. It is preserved as an execution incident, not as a semantic Stage C dataset.", "",
+        "The originally reported interruption snapshot contained 33 rows (16 schema failures and 17 technical failures). Before preservation finalization, the stable on-disk immutable prefix contained 39 rows (19 schema failures and 20 technical failures). No row was deleted, truncated, reordered, edited, or regenerated to reconcile that discrepancy.", "",
+        "## Incident classes", "",
+        "1. `provider_schema_incompatibility`: the outer Markdown envelope was removed, but strict enum/schema/Boolean/evidence-index or JSON validation failed. These are provider-contract failures, not semantic quality results.",
+        "2. `provider_latency_timeout`: every terminal technical failure exhausted the one permitted retry and ended in timeout under the frozen 120-second timeout.", "",
+        "This run is ineligible as primary Stage C data and for merged final analysis. It must never be resumed, selectively completed, ordinary-finalized, pooled with a later repeat, or used as successful semantic evidence.", "",
+        "## Preserved source SHA256", "",
+        f"- `stage_c_judge.jsonl`: `{STAGE_C_R2_JUDGMENTS_SHA256}`",
+        f"- `stage_c_execution_manifest.json`: `{STAGE_C_R2_EXECUTION_MANIFEST_SHA256}`", "",
+    ]
+    _atomic_new_bytes(stage_c.incident_markdown_path(), "\n".join(lines).encode("utf-8"))
+    markdown_sha = _sha256(stage_c.incident_markdown_path())
+    manifest = {
+        "status": "stage_c_execution_incident",
+        "run_id": STAGE_C_RUN_ID,
+        "execution_version": STAGE_C_EXECUTION_VERSION,
+        "execution_freeze_commit": STAGE_C_R2_EXECUTION_FREEZE_COMMIT,
+        "execution_json_sha256": STAGE_C_R2_EXECUTION_JSON_SHA256,
+        "stage_c_judge_sha256": STAGE_C_R2_JUDGMENTS_SHA256,
+        "stage_c_execution_manifest_sha256": STAGE_C_R2_EXECUTION_MANIFEST_SHA256,
+        "incident_markdown_sha256": markdown_sha,
+        "reported_interruption_snapshot": STAGE_C_R2_REPORTED_SNAPSHOT,
+        "preserved_counts": counts,
+        "snapshot_discrepancy": {
+            "additional_rows_in_stable_preserved_file": counts["row_count"] - STAGE_C_R2_REPORTED_SNAPSHOT["row_count"],
+            "resolution": "preserve_authoritative_on_disk_prefix_without_truncation_or_editing",
+        },
+        "incident_classes": {
+            "provider_schema_incompatibility": {
+                "terminal_rows": counts["output_schema_failure"],
+                "outer_markdown_envelope_removed": True,
+                "classification": "execution_provider_contract_incompatibility_not_semantic_quality",
+            },
+            "provider_latency_timeout": {
+                "terminal_rows": counts["technical_failure"],
+                "final_error_type": "timeout", "allowed_attempts_exhausted": True,
+                "configured_timeout_seconds": JUDGE_TIMEOUT_SECONDS,
+                "classification": "execution_provider_contract_incompatibility_not_semantic_quality",
+            },
+        },
+        "interruption": "manual_after_systematic_incompatibility_observed",
+        "eligible_as_primary_stage_c": False,
+        "eligible_for_merged_final_analysis": False,
+        "must_never_resume": True,
+        "must_never_selectively_complete": True,
+        "must_never_pool_with_later_repeat": True,
+        "preservation_only": True,
+        "ordinary_stage_c_frozen": False,
+        "preserved_at": _utc_now(),
+    }
+    _atomic_new_json(stage_c.incident_manifest_path(), manifest)
+    if stage_c.stage_path().read_bytes() != raw_before or _sha256(stage_c.stage_path()) != STAGE_C_R2_JUDGMENTS_SHA256:
+        raise FatalFormalRunError("Stage C r2 rows changed during incident preservation")
+    _verify_stage_c_r2_incident_artifacts(repository_root, stage_c)
+    return {
+        stage_c.stage_path().name: STAGE_C_R2_JUDGMENTS_SHA256,
+        stage_c.execution_manifest_path().name: STAGE_C_R2_EXECUTION_MANIFEST_SHA256,
+        stage_c.incident_markdown_path().name: markdown_sha,
+        stage_c.incident_manifest_path().name: _sha256(stage_c.incident_manifest_path()),
+    }
+
+
 def _reject_unexpected_stage_c_files(stage_c: StageCDirectory, *, finalizing: bool = False) -> None:
     if not stage_c.path.exists():
         return
@@ -2567,6 +2765,16 @@ def _reject_unexpected_stage_c_files(stage_c: StageCDirectory, *, finalizing: bo
     unexpected = sorted(path.name for path in stage_c.path.iterdir() if path.name not in allowed)
     if unexpected:
         raise FatalFormalRunError(f"Stage C directory contains conflicting outputs: {unexpected}")
+
+
+def _reject_stage_c_incident_operation(repository_root: Path, stage_c: StageCDirectory, operation: str) -> None:
+    incident_files = (stage_c.incident_manifest_path(), stage_c.incident_markdown_path())
+    if not any(path.exists() for path in incident_files):
+        return
+    if not all(path.is_file() for path in incident_files):
+        raise FatalFormalRunError("Stage C r2 incident preservation artifacts are incomplete; no run operation is permitted")
+    _verify_stage_c_r2_incident_artifacts(repository_root, stage_c)
+    raise FatalFormalRunError(f"Stage C r2 is an incident-preservation-only run and cannot be {operation}")
 
 
 async def run_stage_c_primary(
@@ -2580,6 +2788,7 @@ async def run_stage_c_primary(
     analysis_config: dict[str, Any] | None = None,
     frozen_inputs: tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | None = None,
 ) -> None:
+    _reject_stage_c_incident_operation(repository_root, stage_c, "resumed")
     if stage_c.stage_manifest_path().exists():
         raise FatalFormalRunError("Stage C is already sealed and immutable")
     _reject_unexpected_stage_c_files(stage_c)
@@ -3529,6 +3738,7 @@ def finalize_stage_c_run(
     analysis_config: dict[str, Any] | None = None,
     frozen_inputs: tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | None = None,
 ) -> dict[str, str]:
+    _reject_stage_c_incident_operation(repository_root, stage_c, "ordinary-finalized")
     _reject_unexpected_stage_c_files(stage_c, finalizing=True)
     anchor = verify_stage_c_execution_freeze(
         repository_root, expected_execution_commit=expected_execution_commit,
@@ -3659,6 +3869,7 @@ def finalize_run(
 ) -> dict[str, str]:
     if not isinstance(stage_c, StageCDirectory):
         raise FatalFormalRunError("Merged finalization requires the dedicated finalized primary Stage C run")
+    _reject_stage_c_incident_operation(repository_root, stage_c, "merged-finalized")
     anchor = verify_stage_c_execution_freeze(
         repository_root, expected_execution_commit=expected_execution_commit,
         require_clean_worktree=require_clean_worktree, execution_config=execution_config,

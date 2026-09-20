@@ -20,6 +20,7 @@ from western.formal_eval import (  # noqa: E402
     finalize_stage_b_incident,
     finalize_stage_b_repeat,
     finalize_stage_b_run,
+    finalize_stage_c_r2_incident,
     finalize_stage_c_run,
     finalize_run,
     run_stage_a,
@@ -37,7 +38,8 @@ def parse_args() -> argparse.Namespace:
         "--stage",
         choices=(
             "A", "A-finalize", "B", "B-finalize", "B-incident-finalize",
-            "B-repeat-readiness", "B-repeat", "B-repeat-finalize", "C", "C-finalize", "finalize",
+            "B-repeat-readiness", "B-repeat", "B-repeat-finalize", "C", "C-incident-finalize",
+            "C-finalize", "finalize",
         ),
         required=True,
     )
@@ -71,10 +73,12 @@ def main() -> None:
             asyncio.run(run_stage_b_repeat(ROOT, repeat))
         else:
             finalize_stage_b_repeat(ROOT, repeat)
-    elif args.stage in {"C", "C-finalize", "finalize"}:
+    elif args.stage in {"C", "C-incident-finalize", "C-finalize", "finalize"}:
         stage_c = StageCDirectory(run_path)
         if args.stage == "C":
             asyncio.run(run_stage_c_primary(ROOT, stage_c))
+        elif args.stage == "C-incident-finalize":
+            finalize_stage_c_r2_incident(ROOT, stage_c)
         elif args.stage == "C-finalize":
             finalize_stage_c_run(ROOT, stage_c)
         else:
