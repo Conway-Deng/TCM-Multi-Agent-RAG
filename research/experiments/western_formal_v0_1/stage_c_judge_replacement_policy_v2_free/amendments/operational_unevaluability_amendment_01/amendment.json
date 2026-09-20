@@ -1,0 +1,118 @@
+{
+  "amendment_id": "western-stage-c-judge-replacement-policy-v2-free-amendment-01",
+  "amendment_type": "operational_execution_policy_only",
+  "effective_at": "2026-09-20T11:10:00+00:00",
+  "scientific_protocol_identity": "western_formal_v0.1.4",
+  "source_policy": {
+    "policy_version": "western-stage-c-judge-replacement-policy-v2-free",
+    "relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/policy.json",
+    "sha256": "1e77ab1a85ab54e155926c0c9c2b6a7e26728243415d6ccc484cc81c47f89648"
+  },
+  "adoption_timing": {
+    "adopted_after_candidate_01_ordinary_and_recovery_infrastructure_incidents": true,
+    "frozen_before_candidate_02_tested": true,
+    "candidate_02_tested_at_freeze": false,
+    "formal_stage_c_outcome_used": false
+  },
+  "terminal_operational_state": {
+    "internal_name": "terminal_operational_unevaluable",
+    "scientific_label": "operationally_unevaluable_under_current_provider_conditions",
+    "candidate_readiness_failure": false,
+    "semantic_failure": false,
+    "selected_primary": false,
+    "capability_conclusion_permitted": false
+  },
+  "applicability": {
+    "candidate_numbers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "replicate_numbers": [
+      1,
+      2
+    ],
+    "candidate_order_unchanged": true,
+    "applies_identically_to_all_candidates_and_required_replicates": true
+  },
+  "qualification_criteria": [
+    "canonical_ordinary_attempt_manifest_exists",
+    "ordinary_attempt_ran_all_six_frozen_probes",
+    "ordinary_attempt_does_not_independently_pass_6_of_6",
+    "every_failed_ordinary_probe_is_recognized_infrastructure",
+    "ordinary_attempt_has_no_candidate_readiness_failure",
+    "ordinary_attempt_has_no_ambiguous_or_unclassified_failure",
+    "canonical_recovery_01_manifest_exists",
+    "recovery_reran_all_six_frozen_probes_from_probe_1",
+    "recovery_uses_identical_frozen_execution_contract",
+    "recovery_does_not_independently_pass_6_of_6",
+    "every_failed_recovery_probe_is_recognized_infrastructure",
+    "recovery_has_no_candidate_readiness_failure",
+    "recovery_has_no_ambiguous_or_unclassified_failure",
+    "no_probe_or_output_is_pooled_across_attempts",
+    "single_permitted_recovery_budget_is_exhausted",
+    "both_manifests_and_hashes_are_preserved",
+    "no_formal_stage_c_outcome_was_used"
+  ],
+  "precedence": {
+    "candidate_readiness_failure_is_absolute": true,
+    "candidate_readiness_failure_prevents_operational_unevaluability": true,
+    "ambiguous_or_unclassified_failure_state": "manual_review_unresolved",
+    "ambiguous_or_unclassified_failure_authorizes_advancement": false
+  },
+  "partial_success": {
+    "zero_successful_probes_required": false,
+    "valid_partial_successes_permitted": true,
+    "successful_probes_must_independently_pass_identity_schema_and_readiness_checks": true,
+    "cross_attempt_pooling_prohibited": true,
+    "partial_qualification_prohibited": true
+  },
+  "replicate_2_rule": {
+    "applies_after_passing_replicate_1": true,
+    "passing_replicate_1_cannot_substitute_for_replicate_2": true,
+    "candidate_cannot_qualify_primary_without_two_passing_effective_replicates": true
+  },
+  "advancement": {
+    "next_frozen_candidate_becomes_eligible": true,
+    "candidate_order_override_prohibited": true,
+    "manual_force_advance_prohibited": true,
+    "environment_override_prohibited": true,
+    "additional_recovery_prohibited": true
+  },
+  "integrity": {
+    "amendment_and_adjudications_validated_fail_closed": true,
+    "atomic_new_file_creation_required": true,
+    "overwrite_prohibited": true,
+    "raw_provider_text_prohibited": true,
+    "formal_stage_c_data_use_prohibited": true
+  },
+  "frozen_scientific_invariants": {
+    "stage_a_unchanged": true,
+    "stage_b_unchanged": true,
+    "tcm_unchanged": true,
+    "generator_model": "Qwen/Qwen3-8B",
+    "benchmark_unchanged": true,
+    "judge_semantic_schema_unchanged": true,
+    "judge_system_prompt_unchanged": true,
+    "six_synthetic_probes_unchanged": true,
+    "candidate_order_unchanged": true,
+    "replicate_pass_requirement": "6_of_6",
+    "replicate_count_required": 2,
+    "minimum_replicate_spacing_seconds": 3600,
+    "maximum_complete_recovery_runs_per_candidate_replicate": 1,
+    "zero_cost_requirement_unchanged": true,
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0,
+    "max_tokens": 1200,
+    "timeout_seconds": 120.0
+  },
+  "candidate_01_historical_anchors": {
+    "ordinary_manifest_path": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/manifests/candidate-01-replicate-01.json",
+    "ordinary_manifest_sha256": "1f0a64a7b698e2d49c84f8f0b113d9f492ed4c40e742e4e664d8d0557efb8bf6",
+    "recovery_manifest_path": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/manifests/candidate-01-replicate-01-recovery-01.json",
+    "recovery_manifest_sha256": "dff39085c3d9091b76a40634eadbf167cfc0ef8e360e79a863f399d0c92a33a2"
+  }
+}

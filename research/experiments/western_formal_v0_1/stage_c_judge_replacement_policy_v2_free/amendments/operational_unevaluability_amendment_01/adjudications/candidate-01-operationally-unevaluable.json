@@ -1,0 +1,35 @@
+{
+  "adjudication_id": "western-stage-c-judge-replacement-policy-v2-free-amendment-01-candidate-01",
+  "amendment_id": "western-stage-c-judge-replacement-policy-v2-free-amendment-01",
+  "amendment_sha256": "87d237841b747fef74d1ed7d39ac99e2a0c8a84bf7ec57bc10222e399192bfc9",
+  "source_policy_version": "western-stage-c-judge-replacement-policy-v2-free",
+  "source_policy_sha256": "1e77ab1a85ab54e155926c0c9c2b6a7e26728243415d6ccc484cc81c47f89648",
+  "scientific_protocol_identity": "western_formal_v0.1.4",
+  "adjudicated_at": "2026-09-20T11:15:00+00:00",
+  "candidate_number": 1,
+  "candidate_model_id": "XingChenAGI/Xing4.0-29B",
+  "affected_replicate": 1,
+  "adjudication_state": "operationally_unevaluable_under_current_provider_conditions",
+  "internal_state": "terminal_operational_unevaluable",
+  "ordinary_manifest": {
+    "path": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/manifests/candidate-01-replicate-01.json",
+    "sha256": "1f0a64a7b698e2d49c84f8f0b113d9f492ed4c40e742e4e664d8d0557efb8bf6"
+  },
+  "recovery_manifest": {
+    "path": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/manifests/candidate-01-replicate-01-recovery-01.json",
+    "sha256": "dff39085c3d9091b76a40634eadbf167cfc0ef8e360e79a863f399d0c92a33a2"
+  },
+  "candidate_readiness_failure": false,
+  "semantic_failure": false,
+  "selected_primary": false,
+  "semantic_or_capability_conclusion": false,
+  "cross_attempt_pooling": false,
+  "partial_qualification": false,
+  "additional_recovery_authorized": false,
+  "next_frozen_candidate_number": 2,
+  "advancement_authorized": true,
+  "formal_stage_c_eligibility": false,
+  "data_excluded_from_formal_analysis": true,
+  "formal_stage_c_outcome_used": false,
+  "raw_provider_text_stored": false
+}

@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 from typing import Any
 
 import pytest
@@ -25,6 +26,9 @@ ROOT = Path(__file__).resolve().parents[2]
 POLICY_DIR = ROOT / free.FREE_POLICY_RELATIVE_DIR
 OLD_POLICY = ROOT / free.OLD_POLICY_V1_RELATIVE_PATH
 PAID_INCIDENT = ROOT / free.PAID_DEEPSEEK_INCIDENT_RELATIVE_PATH
+AMENDMENT_DIR = ROOT / free.OPERATIONAL_UNEVALUABILITY_AMENDMENT_RELATIVE_DIR
+F1_ORDINARY = ROOT / free.F1_ORDINARY_MANIFEST_RELATIVE_PATH
+F1_RECOVERY = ROOT / free.F1_RECOVERY_MANIFEST_RELATIVE_PATH
 
 
 def _payload(probe: dict[str, Any]) -> dict[str, Any]:
@@ -502,3 +506,238 @@ def test_no_formal_free_run_or_freeze_exists() -> None:
     assert not (root / "stage_c_execution_v0_1_4_free_jrv1").exists()
     runs = root / "runs"
     assert [path for path in runs.iterdir() if "stage-c-free-jrv1" in path.name] == []
+
+
+def _copy_amendment(target: Path, *, include_adjudication: bool) -> Path:
+    target.mkdir(parents=True)
+    shutil.copy2(AMENDMENT_DIR / "amendment.json", target / "amendment.json")
+    shutil.copy2(AMENDMENT_DIR / "AMENDMENT.md", target / "AMENDMENT.md")
+    adjudications = target / "adjudications"
+    adjudications.mkdir()
+    if include_adjudication:
+        name = free.operational_unevaluability_adjudication_name(1)
+        shutil.copy2(AMENDMENT_DIR / "adjudications" / name, adjudications / name)
+    return target
+
+
+def _copy_f1_incidents(target: Path) -> Path:
+    target.mkdir(parents=True)
+    shutil.copy2(F1_ORDINARY, target / F1_ORDINARY.name)
+    shutil.copy2(F1_RECOVERY, target / F1_RECOVERY.name)
+    return target
+
+
+def test_operational_amendment_and_f1_history_are_immutably_pinned() -> None:
+    assert hashlib.sha256((POLICY_DIR / "policy.json").read_bytes()).hexdigest() == free.FREE_POLICY_SHA256
+    assert hashlib.sha256((AMENDMENT_DIR / "amendment.json").read_bytes()).hexdigest() == (
+        free.OPERATIONAL_UNEVALUABILITY_AMENDMENT_SHA256
+    )
+    assert hashlib.sha256(F1_ORDINARY.read_bytes()).hexdigest() == free.F1_ORDINARY_MANIFEST_SHA256
+    assert hashlib.sha256(F1_RECOVERY.read_bytes()).hexdigest() == free.F1_RECOVERY_MANIFEST_SHA256
+
+
+def test_canonical_f1_adjudication_is_terminal_operational_and_unlocks_only_f2() -> None:
+    manifests = free.get_free_manifests_dir(ROOT)
+    state = free.inspect_free_policy_manifests(manifests)
+    adjudication = state["operationally_unevaluable"][1]
+    assert free._candidate_state(state, 1) == free.OPERATIONAL_UNEVALUABILITY_STATE
+    assert adjudication["candidate_readiness_failure"] is False
+    assert adjudication["semantic_or_capability_conclusion"] is False
+    assert adjudication["cross_attempt_pooling"] is False
+    assert adjudication["formal_stage_c_eligibility"] is False
+    assert free.evaluate_free_runner_eligibility(manifests, 2, 1)[0] is True
+    allowed, reason, _ = free.evaluate_free_runner_eligibility(manifests, 3, 1)
+    assert allowed is False
+    assert "prior candidate 02" in reason
+
+
+def test_f2_requires_both_amendment_and_valid_adjudication(tmp_path: Path) -> None:
+    manifests = _copy_f1_incidents(tmp_path / "manifests")
+    assert free.evaluate_free_runner_eligibility(manifests, 2, 1)[0] is False
+    amendment = _copy_amendment(tmp_path / "amendment", include_adjudication=False)
+    assert free.evaluate_free_runner_eligibility(
+        manifests, 2, 1, amendment_dir=amendment
+    )[0] is False
+    name = free.operational_unevaluability_adjudication_name(1)
+    shutil.copy2(
+        AMENDMENT_DIR / "adjudications" / name,
+        amendment / "adjudications" / name,
+    )
+    assert free.evaluate_free_runner_eligibility(
+        manifests, 2, 1, amendment_dir=amendment
+    )[0] is True
+
+
+def test_forged_operational_adjudication_fails_closed(tmp_path: Path) -> None:
+    manifests = _copy_f1_incidents(tmp_path / "manifests")
+    amendment = _copy_amendment(tmp_path / "amendment", include_adjudication=True)
+    path = amendment / "adjudications" / free.operational_unevaluability_adjudication_name(1)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["semantic_or_capability_conclusion"] = True
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(free.StageCFreeJudgeError, match="semantic_or_capability_conclusion"):
+        free.inspect_free_policy_manifests(manifests, amendment_dir=amendment)
+
+
+def test_infrastructure_pair_creates_atomic_general_adjudication(tmp_path: Path) -> None:
+    manifests = tmp_path / "manifests"
+    amendment = _copy_amendment(tmp_path / "amendment", include_adjudication=False)
+    infra = ProviderUnavailable("connect", error_type="connectivity")
+    _run(manifests, provider=_provider(1, [infra] * 6))
+    _run(manifests, recovery_number=1, provider=_provider(1, [infra] * 6))
+    adjudication = free.create_operational_unevaluability_adjudication(
+        ROOT,
+        candidate_number=1,
+        replicate_number=1,
+        manifests_dir=manifests,
+        amendment_dir=amendment,
+        adjudicated_at=free._parse_utc("2026-09-20T11:15:00+00:00"),
+    )
+    assert adjudication["adjudication_state"] == free.OPERATIONAL_UNEVALUABILITY_LABEL
+    assert free.evaluate_free_runner_eligibility(
+        manifests, 2, 1, amendment_dir=amendment
+    )[0] is True
+    with pytest.raises(FileExistsError):
+        free.create_operational_unevaluability_adjudication(
+            ROOT,
+            candidate_number=1,
+            replicate_number=1,
+            manifests_dir=manifests,
+            amendment_dir=amendment,
+        )
+
+
+def test_partial_successes_are_valid_but_never_pooled(tmp_path: Path) -> None:
+    manifests = tmp_path / "manifests"
+    amendment = _copy_amendment(tmp_path / "amendment", include_adjudication=False)
+    infra = ProviderUnavailable("connect", error_type="connectivity")
+    ordinary_results: list[GenerationResult | Exception] = [
+        *_successes(1)[:2],
+        infra,
+        infra,
+        infra,
+        infra,
+    ]
+    recovery_results: list[GenerationResult | Exception] = [
+        *_successes(1)[:3],
+        infra,
+        infra,
+        infra,
+    ]
+    ordinary = _run(manifests, provider=_provider(1, ordinary_results))
+    recovery = _run(
+        manifests,
+        recovery_number=1,
+        provider=_provider(1, recovery_results),
+    )
+    assert ordinary["successful_probe_count"] == 2
+    assert recovery["successful_probe_count"] == 3
+    assert ordinary["execution_classification"] == "infrastructure_incident"
+    assert recovery["execution_classification"] == "infrastructure_incident"
+    adjudication = free.create_operational_unevaluability_adjudication(
+        ROOT,
+        candidate_number=1,
+        replicate_number=1,
+        manifests_dir=manifests,
+        amendment_dir=amendment,
+        adjudicated_at=free._parse_utc("2026-09-20T11:15:00+00:00"),
+    )
+    assert adjudication["cross_attempt_pooling"] is False
+    assert adjudication["partial_qualification"] is False
+
+
+def test_readiness_failure_in_either_attempt_prevents_operational_unevaluability(
+    tmp_path: Path,
+) -> None:
+    manifests = tmp_path / "manifests"
+    infra = ProviderUnavailable("connect", error_type="connectivity")
+    ordinary = _run(manifests, provider=_provider(1, [infra] * 6))
+    recovery = _run(manifests, recovery_number=1, provider=_provider(1, [infra] * 6))
+    ordinary_failure = json.loads(json.dumps(ordinary))
+    ordinary_failure["execution_classification"] = "candidate_readiness_failure"
+    with pytest.raises(free.StageCFreeJudgeError, match="ordinary attempt is not"):
+        free._require_operational_unevaluability_pair(
+            ordinary_failure, recovery, candidate_number=1, replicate_number=1
+        )
+    recovery_failure = json.loads(json.dumps(recovery))
+    recovery_failure["execution_classification"] = "candidate_readiness_failure"
+    with pytest.raises(free.StageCFreeJudgeError, match="recovery attempt is not"):
+        free._require_operational_unevaluability_pair(
+            ordinary, recovery_failure, candidate_number=1, replicate_number=1
+        )
+
+
+def test_ambiguous_failure_remains_manual_review_and_blocks_advancement(tmp_path: Path) -> None:
+    ambiguous = ProviderUnavailable(
+        "malformed provider response",
+        error_type="malformed_response",
+    )
+    manifest = _run(tmp_path, provider=_provider(1, [ambiguous] * 6))
+    assert manifest["execution_classification"] == "ambiguous_technical_failure"
+    assert manifest["manual_methodology_review_required"] is True
+    assert free.evaluate_free_runner_eligibility(tmp_path, 2, 1)[0] is False
+
+
+def test_replicate_2_infrastructure_pair_is_terminal_operational(tmp_path: Path) -> None:
+    manifests = tmp_path / "manifests"
+    amendment = _copy_amendment(tmp_path / "amendment", include_adjudication=False)
+    replicate_1 = _run(manifests)
+    rep1_completed = _completed_at(replicate_1)
+    infra = ProviderUnavailable("server", error_type="http_5xx", http_status=500)
+    _run(
+        manifests,
+        replicate_number=2,
+        provider=_provider(1, [infra] * 6),
+        current_time=rep1_completed + timedelta(seconds=3600),
+    )
+    _run(
+        manifests,
+        replicate_number=2,
+        recovery_number=1,
+        provider=_provider(1, [infra] * 6),
+        current_time=rep1_completed + timedelta(seconds=3601),
+    )
+    adjudication = free.create_operational_unevaluability_adjudication(
+        ROOT,
+        candidate_number=1,
+        replicate_number=2,
+        manifests_dir=manifests,
+        amendment_dir=amendment,
+        adjudicated_at=free._parse_utc("2026-09-20T11:15:00+00:00"),
+    )
+    state = free.inspect_free_policy_manifests(manifests, amendment_dir=amendment)
+    assert adjudication["affected_replicate"] == 2
+    assert free._effective_replicate(state, 1, 1)["status"] == "passed"
+    assert free._candidate_state(state, 1) == free.OPERATIONAL_UNEVALUABILITY_STATE
+    assert free.evaluate_free_runner_eligibility(
+        manifests, 2, 1, amendment_dir=amendment
+    )[0] is True
+
+
+def test_zero_cost_ineligibility_selected_primary_and_no_force_advance_are_distinct(
+    tmp_path: Path,
+) -> None:
+    zero_cost_dir = tmp_path / "zero-cost"
+    free.record_zero_cost_ineligibility(ROOT, candidate_number=1, test_manifests_dir=zero_cost_dir)
+    zero_state = free.inspect_free_policy_manifests(zero_cost_dir)
+    assert free._candidate_state(zero_state, 1) == "terminal_operational_ineligibility"
+
+    selected_dir = tmp_path / "selected"
+    rep1 = _run(selected_dir)
+    _run(
+        selected_dir,
+        replicate_number=2,
+        current_time=_completed_at(rep1) + timedelta(seconds=3600),
+    )
+    selected_state = free.inspect_free_policy_manifests(selected_dir)
+    assert free._candidate_state(selected_state, 1) == "selected_primary"
+    assert free.OPERATIONAL_UNEVALUABILITY_STATE not in {
+        "terminal_operational_ineligibility",
+        "selected_primary",
+    }
+
+    script_text = (
+        ROOT / "scripts/run-western-stage-c-free-judge-preflight.py"
+    ).read_text(encoding="utf-8")
+    assert "force-advance" not in script_text
+    assert "candidate-order" not in script_text
