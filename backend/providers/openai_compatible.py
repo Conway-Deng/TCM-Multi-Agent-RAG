@@ -19,6 +19,7 @@ def _supports_thinking_toggle(model: str) -> bool:
         "Qwen/Qwen3-8B",
         "THUDM/GLM-Z1-9B-0414",
         "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+        "deepseek-ai/DeepSeek-V3.2",
     }
 
 

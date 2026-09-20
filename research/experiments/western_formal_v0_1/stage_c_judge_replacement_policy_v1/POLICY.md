@@ -113,6 +113,19 @@ Timeout contract:
    - Results of candidate preflight replicates;
    - Final selected judge model.
 
+6. **Canonical Manifest Directory & Path Immutability**:
+   - All replacement preflight manifests must be written to and inspected from the canonical directory: `research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v1/manifests/`.
+   - Arbitrary output path overrides that could bypass the candidate state machine are strictly prohibited.
+7. **Timeout Contract & Override Prohibition**:
+   - Client timeout is frozen at exactly **120.0 seconds** (formal-compatible directly).
+   - Runtime timeout overrides are strictly prohibited.
+8. **Fail-Closed Prior Manifest Verification**:
+   - The state machine strictly verifies the structural and scientific validity of prior candidate manifests rather than trusting summary flags.
+   - Forged, inconsistent, or altered manifests fail closed immediately and block advancement.
+9. **Policy SHA256 Pinning**:
+   - The machine-readable `policy.json` is hashed and pinned (`d17d538bcb650965ccbef817ceeff0f554f15a082a6461d6b99fcd81961eaae1`).
+   - The runner verifies policy SHA integrity before any provider execution.
+
 ---
 
 ## 7. Reserved Formal Identities

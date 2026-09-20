@@ -78,6 +78,10 @@
     "no_raw_response_stored": true,
     "no_output_overwrite": true,
     "prohibit_output_in_formal_runs_dir": true,
+    "canonical_manifests_directory": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v1/manifests",
+    "runtime_timeout_override_prohibited": true,
+    "arbitrary_output_override_prohibited": true,
+    "prior_manifest_integrity_validation_required": true,
     "no_repair": {
       "coercion": false,
       "synonym_repair": false,

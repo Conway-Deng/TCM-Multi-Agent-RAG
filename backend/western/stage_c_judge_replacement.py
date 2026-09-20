@@ -32,6 +32,7 @@ from .stage_c_preflight import (
     R3_PREFLIGHT_PROBE_PLAN_VERSION,
     R3_PREFLIGHT_V1_READINESS_PATH,
     R3_PREFLIGHT_V1_READINESS_SHA256,
+    StageCR3PreflightError,
     get_synthetic_probe_plan,
 )
 from .stage_c_preflight_v3 import (
@@ -57,10 +58,19 @@ REPLACEMENT_REPLICATE_COUNT_REQUIRED = 2
 RESERVED_FORMAL_RUN_ID_PREFIX = "western-formal-v0.1.3-stage-c-jrv1-"
 RESERVED_FORMAL_DIR_NAME = "stage_c_execution_v0_1_3_jrv1"
 
+# Canonical manifests directory relative to repository root
+CANONICAL_MANIFESTS_RELATIVE_DIR = (
+    "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v1/manifests"
+)
+
 # Historical and scientific hash anchors
 POLICY_JSON_RELATIVE_PATH = (
     "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v1/policy.json"
 )
+REPLACEMENT_POLICY_SHA256 = (
+    "d17d538bcb650965ccbef817ceeff0f554f15a082a6461d6b99fcd81961eaae1"
+)
+
 R3_PREFLIGHT_V3_READINESS_PATH = (
     "research/experiments/western_formal_v0_1/stage_c_r3_preflight_readiness_v3.json"
 )
@@ -100,7 +110,7 @@ STAGE_C_R2_INCIDENT_MANIFEST_SHA256 = (
 
 
 class StageCJudgeReplacementError(RuntimeError):
-    """Execution readiness or policy violation for replacement judge preflight."""
+    """Execution readiness, integrity, or policy violation for replacement judge preflight."""
 
 
 @dataclass(frozen=True)
@@ -184,6 +194,18 @@ def candidate_manifest_name(candidate_number: int, replicate_number: int) -> str
     )
 
 
+def get_canonical_manifests_dir(repository_root: Path) -> Path:
+    return repository_root / CANONICAL_MANIFESTS_RELATIVE_DIR
+
+
+def canonical_candidate_manifest_path(
+    repository_root: Path, candidate_number: int, replicate_number: int
+) -> Path:
+    return get_canonical_manifests_dir(repository_root) / candidate_manifest_name(
+        candidate_number, replicate_number
+    )
+
+
 def _verify_sha256_anchor(
     repository_root: Path, relative_path: str, expected_sha256: str, label: str
 ) -> str:
@@ -214,6 +236,15 @@ def verify_scientific_and_historical_hashes(repository_root: Path) -> dict[str, 
     if r2_incident_actual != STAGE_C_R2_INCIDENT_MANIFEST_SHA256:
         raise StageCJudgeReplacementError(
             f"Stage C r2 incident manifest SHA256 mismatch: expected {STAGE_C_R2_INCIDENT_MANIFEST_SHA256}, actual {r2_incident_actual}"
+        )
+
+    policy_path = repository_root / POLICY_JSON_RELATIVE_PATH
+    if not policy_path.is_file():
+        raise StageCJudgeReplacementError(f"Replacement policy JSON is missing at {POLICY_JSON_RELATIVE_PATH}")
+    policy_actual = _sha256(policy_path)
+    if policy_actual != REPLACEMENT_POLICY_SHA256:
+        raise StageCJudgeReplacementError(
+            f"Replacement policy.json SHA256 mismatch: expected {REPLACEMENT_POLICY_SHA256}, actual {policy_actual}"
         )
 
     return {
@@ -274,25 +305,247 @@ def parse_utc_timestamp(ts: str) -> datetime:
     return datetime.fromisoformat(ts.replace("Z", "+00:00"))
 
 
+def validate_and_load_candidate_manifest(
+    path: Path,
+    *,
+    expected_policy_sha256: str = REPLACEMENT_POLICY_SHA256,
+) -> dict[str, Any]:
+    """Strictly validate and load an existing replacement candidate manifest.
+
+    Fails closed on any corruption, structural violation, forged status, or hash mismatch.
+    """
+    if not path.is_file():
+        raise StageCJudgeReplacementError(f"Candidate manifest file missing at {path}")
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise StageCJudgeReplacementError(f"Corrupt or malformed JSON manifest at {path}: {exc}") from exc
+
+    if not isinstance(data, dict):
+        raise StageCJudgeReplacementError(f"Candidate manifest at {path} must be a JSON object")
+
+    # Policy and amendment version validation
+    if data.get("policy_version") != REPLACEMENT_POLICY_VERSION:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} policy_version mismatch: expected {REPLACEMENT_POLICY_VERSION}, got {data.get('policy_version')}"
+        )
+    if data.get("protocol_amendment_version") != PROTOCOL_AMENDMENT_VERSION:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} protocol_amendment_version mismatch: expected {PROTOCOL_AMENDMENT_VERSION}, got {data.get('protocol_amendment_version')}"
+        )
+
+    cand_num = data.get("candidate_number")
+    if cand_num not in {1, 2, 3}:
+        raise StageCJudgeReplacementError(f"Manifest {path} has invalid candidate_number: {cand_num}")
+    candidate = get_candidate(cand_num)
+    if data.get("candidate_slug") != candidate.slug:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} candidate_slug mismatch: expected {candidate.slug}, got {data.get('candidate_slug')}"
+        )
+    if data.get("requested_model_id") != candidate.model_id:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} requested_model_id mismatch: expected {candidate.model_id}, got {data.get('requested_model_id')}"
+        )
+
+    rep_num = data.get("replicate_number")
+    if rep_num not in {1, 2}:
+        raise StageCJudgeReplacementError(f"Manifest {path} has invalid replicate_number: {rep_num}")
+    expected_rep_id = candidate_replicate_id(cand_num, rep_num)
+    if data.get("replicate_id") != expected_rep_id:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} replicate_id mismatch: expected {expected_rep_id}, got {data.get('replicate_id')}"
+        )
+
+    expected_filename = candidate_manifest_name(cand_num, rep_num)
+    if path.name != expected_filename:
+        raise StageCJudgeReplacementError(
+            f"Manifest filename mismatch at {path}: expected {expected_filename}, got {path.name}"
+        )
+
+    # Provider and execution configuration invariants
+    if data.get("provider") != REPLACEMENT_PROVIDER:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} provider mismatch: expected {REPLACEMENT_PROVIDER}, got {data.get('provider')}"
+        )
+    if data.get("response_format") != REPLACEMENT_TRANSPORT:
+        raise StageCJudgeReplacementError(f"Manifest {path} response_format mismatch: expected {REPLACEMENT_TRANSPORT}")
+    if data.get("temperature") != REPLACEMENT_TEMPERATURE:
+        raise StageCJudgeReplacementError(f"Manifest {path} temperature mismatch: expected {REPLACEMENT_TEMPERATURE}")
+    if data.get("max_tokens") != REPLACEMENT_MAX_TOKENS:
+        raise StageCJudgeReplacementError(f"Manifest {path} max_tokens mismatch: expected {REPLACEMENT_MAX_TOKENS}")
+    if float(data.get("timeout_seconds", -1)) != REPLACEMENT_TIMEOUT_SECONDS:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} timeout_seconds mismatch: expected {REPLACEMENT_TIMEOUT_SECONDS}, got {data.get('timeout_seconds')}"
+        )
+    if data.get("enable_thinking") is not False:
+        raise StageCJudgeReplacementError(f"Manifest {path} enable_thinking must be false")
+
+    if data.get("probe_plan_version") != R3_PREFLIGHT_PROBE_PLAN_VERSION:
+        raise StageCJudgeReplacementError(f"Manifest {path} probe_plan_version mismatch")
+    if data.get("probe_count") != R3_PREFLIGHT_PROBE_COUNT:
+        raise StageCJudgeReplacementError(f"Manifest {path} probe_count mismatch")
+    if data.get("raw_response_stored") is not False:
+        raise StageCJudgeReplacementError(f"Manifest {path} raw_response_stored must be false")
+    if data.get("outputs_eligible_as_research_data") is not False:
+        raise StageCJudgeReplacementError(f"Manifest {path} outputs_eligible_as_research_data must be false")
+    if data.get("outputs_must_never_enter_formal_analysis") is not True:
+        raise StageCJudgeReplacementError(f"Manifest {path} outputs_must_never_enter_formal_analysis must be true")
+    if data.get("formal_stage_c_run_created") is not False:
+        raise StageCJudgeReplacementError(f"Manifest {path} formal_stage_c_run_created must be false")
+
+    # Policy SHA verification
+    if data.get("source_policy_sha256") != expected_policy_sha256:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} source_policy_sha256 mismatch: expected {expected_policy_sha256}, got {data.get('source_policy_sha256')}"
+        )
+
+    # Scientific hash anchors verification
+    hashes = data.get("source_historical_and_scientific_hashes")
+    if not isinstance(hashes, dict):
+        raise StageCJudgeReplacementError(f"Manifest {path} missing source_historical_and_scientific_hashes dictionary")
+
+    expected_hashes = {
+        "protocol_v0_1_2_sha256": PROTOCOL_V0_1_2_SHA256,
+        "stage_a_retrieval_sha256": STAGE_A_EXPECTED_SHA256,
+        "primary_stage_b_sha256": PRIMARY_STAGE_B_EXPECTED_SHA256,
+        "primary_stage_b_run_manifest_sha256": PRIMARY_STAGE_B_RUN_MANIFEST_EXPECTED_SHA256,
+        "analysis_json_sha256": STAGE_C_R2_ANALYSIS_EXPECTED_SHA256,
+        "r2_judgments_sha256": STAGE_C_R2_JUDGMENTS_SHA256,
+        "r2_incident_manifest_sha256": STAGE_C_R2_INCIDENT_MANIFEST_SHA256,
+        "preflight_v1_sha256": R3_PREFLIGHT_V1_READINESS_SHA256,
+        "preflight_v2_sha256": R3_PREFLIGHT_V2_READINESS_SHA256,
+        "preflight_v3_sha256": R3_PREFLIGHT_V3_READINESS_SHA256,
+    }
+    for k, v in expected_hashes.items():
+        if hashes.get(k) != v:
+            raise StageCJudgeReplacementError(
+                f"Manifest {path} historical/scientific hash mismatch for '{k}': expected {v}, got {hashes.get(k)}"
+            )
+
+    # Probes array validation
+    probes = data.get("probes")
+    if not isinstance(probes, list) or len(probes) != R3_PREFLIGHT_PROBE_COUNT:
+        raise StageCJudgeReplacementError(
+            f"Manifest {path} probes array must contain exactly {R3_PREFLIGHT_PROBE_COUNT} probes"
+        )
+    synthetic_plan = get_synthetic_probe_plan()
+    for idx, (spec, probe) in enumerate(zip(synthetic_plan, probes)):
+        if not isinstance(probe, dict):
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] is not an object")
+        if probe.get("probe_number") != spec["probe_number"]:
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] probe_number mismatch")
+        if probe.get("probe_id") != spec["probe_id"]:
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] probe_id mismatch")
+        if probe.get("answerability") != spec["answerability"]:
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] answerability mismatch")
+        if probe.get("expected_insufficiency_label") != spec.get("expected_insufficiency_label"):
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] expected_insufficiency_label mismatch")
+        if probe.get("raw_response_stored") is not False or "text" in probe or "response_text" in probe:
+            raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] violates raw response storage policy")
+
+        if probe.get("json_contract_success") is True:
+            if probe.get("provider_reported_model") != candidate.model_id:
+                raise StageCJudgeReplacementError(
+                    f"Manifest {path} probe[{idx}] provider_reported_model mismatch: expected {candidate.model_id}, got {probe.get('provider_reported_model')}"
+                )
+            if probe.get("finish_reason") not in {None, "stop"}:
+                raise StageCJudgeReplacementError(
+                    f"Manifest {path} probe[{idx}] invalid finish_reason: {probe.get('finish_reason')}"
+                )
+            resp_sha = probe.get("response_sha256")
+            if not isinstance(resp_sha, str) or len(resp_sha) != 64:
+                raise StageCJudgeReplacementError(
+                    f"Manifest {path} probe[{idx}] response_sha256 must be a 64-char hex string"
+                )
+
+    replicate_passed = data.get("replicate_passed")
+    if replicate_passed is True:
+        if data.get("status") != "passed":
+            raise StageCJudgeReplacementError(f"Manifest {path} status must be 'passed' when replicate_passed=true")
+        if data.get("successful_probe_count") != 6:
+            raise StageCJudgeReplacementError(f"Manifest {path} successful_probe_count must be 6 on passed replicate")
+        if data.get("json_contract_passed") is not True:
+            raise StageCJudgeReplacementError(f"Manifest {path} json_contract_passed must be true on passed replicate")
+        if data.get("formal_timeout_compatible") is not True:
+            raise StageCJudgeReplacementError(f"Manifest {path} formal_timeout_compatible must be true on passed replicate")
+        if data.get("timeout_occurrences", 0) != 0:
+            raise StageCJudgeReplacementError(f"Manifest {path} timeout_occurrences must be 0 on passed replicate")
+
+        for idx, probe in enumerate(probes):
+            if probe.get("json_contract_success") is not True:
+                raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] json_contract_success is false on passed replicate")
+            if probe.get("formal_timeout_compatible") is not True:
+                raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] formal_timeout_compatible is false on passed replicate")
+            latency = float(probe.get("latency_ms", 999999.0))
+            if latency > REPLACEMENT_TIMEOUT_SECONDS * 1000:
+                raise StageCJudgeReplacementError(
+                    f"Manifest {path} probe[{idx}] latency {latency}ms exceeds frozen timeout ({REPLACEMENT_TIMEOUT_SECONDS * 1000}ms)"
+                )
+            if probe.get("error_type") is not None:
+                raise StageCJudgeReplacementError(f"Manifest {path} probe[{idx}] has error_type on passed replicate")
+
+        per_ans = data.get("per_answerability_summary", {})
+        for ans in ("supported", "partially_supported", "insufficient"):
+            summary = per_ans.get(ans, {})
+            if summary.get("json_contract_passed") is not True:
+                raise StageCJudgeReplacementError(f"Manifest {path} {ans} summary json_contract_passed is false on passed replicate")
+            if summary.get("formal_timeout_compatible") is not True:
+                raise StageCJudgeReplacementError(f"Manifest {path} {ans} summary formal_timeout_compatible is false on passed replicate")
+            if summary.get("timeouts", 0) != 0:
+                raise StageCJudgeReplacementError(f"Manifest {path} {ans} summary has timeouts > 0 on passed replicate")
+    elif replicate_passed is False:
+        if data.get("status") != "failed":
+            raise StageCJudgeReplacementError(f"Manifest {path} status must be 'failed' when replicate_passed=false")
+        # Ensure that at least one failure condition is present
+        has_failure = (
+            data.get("successful_probe_count", 0) < 6
+            or data.get("json_contract_passed") is not True
+            or data.get("formal_timeout_compatible") is not True
+            or data.get("timeout_occurrences", 0) > 0
+            or any(
+                p.get("json_contract_success") is not True
+                or p.get("formal_timeout_compatible") is not True
+                or p.get("error_type") is not None
+                for p in probes
+            )
+        )
+        if not has_failure:
+            raise StageCJudgeReplacementError(
+                f"Manifest {path} internally inconsistent: marked failed but all 6 probes passed without error"
+            )
+    else:
+        raise StageCJudgeReplacementError(f"Manifest {path} missing or invalid replicate_passed boolean")
+
+    return data
+
+
 def inspect_candidate_manifests(
     manifests_dir: Path,
+    *,
+    expected_policy_sha256: str = REPLACEMENT_POLICY_SHA256,
 ) -> dict[int, dict[int, dict[str, Any]]]:
-    """Inspect and index all replacement preflight candidate manifests found in manifests_dir."""
+    """Inspect, strictly validate, and index all replacement preflight manifests found in manifests_dir.
+
+    Fails closed if any manifest is corrupt, forged, altered, or unverifiable.
+    """
     record: dict[int, dict[int, dict[str, Any]]] = {
         cand.candidate_number: {} for cand in FROZEN_CANDIDATE_REGISTRY
     }
     if not manifests_dir.is_dir():
         return record
 
-    for path in manifests_dir.glob("stage_c_judge_replacement_preflight_v1_candidate_*_replicate_*.json"):
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        c_num = data.get("candidate_number")
-        r_num = data.get("replicate_number")
-        if isinstance(c_num, int) and isinstance(r_num, int) and c_num in record:
-            record[c_num][r_num] = data
+    for path in sorted(manifests_dir.glob("stage_c_judge_replacement_preflight_v1_candidate_*_replicate_*.json")):
+        data = validate_and_load_candidate_manifest(
+            path, expected_policy_sha256=expected_policy_sha256
+        )
+        c_num = data["candidate_number"]
+        r_num = data["replicate_number"]
+        if r_num in record[c_num]:
+            raise StageCJudgeReplacementError(
+                f"Duplicate candidate {c_num:02d} replicate {r_num:02d} manifest detected in {manifests_dir}"
+            )
+        record[c_num][r_num] = data
     return record
 
 
@@ -302,6 +555,7 @@ def evaluate_runner_eligibility(
     target_replicate: int,
     *,
     current_time: datetime | None = None,
+    expected_policy_sha256: str = REPLACEMENT_POLICY_SHA256,
 ) -> tuple[bool, str, float | None]:
     """Evaluate whether (target_candidate, target_replicate) is authorized by policy state machine.
 
@@ -317,7 +571,9 @@ def evaluate_runner_eligibility(
             None,
         )
 
-    records = inspect_candidate_manifests(manifests_dir)
+    records = inspect_candidate_manifests(
+        manifests_dir, expected_policy_sha256=expected_policy_sha256
+    )
     now = current_time or datetime.now(timezone.utc)
 
     # Rule: Check if ANY candidate has already passed both replicates
@@ -347,7 +603,6 @@ def evaluate_runner_eligibility(
 
         prev_rep1_passed = prev_rep1.get("replicate_passed") is True
         if prev_rep1_passed:
-            # Replicate 1 passed; did replicate 2 fail?
             if not prev_rep2:
                 return (
                     False,
@@ -474,7 +729,7 @@ def _validate_replacement_provider(
 
 async def run_stage_c_judge_replacement_preflight(
     repository_root: Path,
-    output_path: Path,
+    output_path: Path | None = None,
     *,
     candidate_number: int,
     replicate_number: int,
@@ -486,39 +741,80 @@ async def run_stage_c_judge_replacement_preflight(
     """Execute one offline/online candidate preflight replicate.
 
     Enforces:
+    - Rejection of any timeout != REPLACEMENT_TIMEOUT_SECONDS (120.0s)
+    - Rejection of arbitrary output paths in production
+    - Strict fail-closed verification of all prior candidate manifests
     - Candidate frozen order
-    - State machine verification against prior manifests
     - Two-replicate requirement
     - >=3600 seconds replicate spacing
-    - Immutable historical and scientific hashes
+    - Immutable policy SHA256 and scientific hashes
     - Formal-compatible 120s timeout
     - 6/6 JSON contract pass
     """
+    if float(timeout_seconds) != REPLACEMENT_TIMEOUT_SECONDS:
+        raise StageCJudgeReplacementError(
+            f"Replacement preflight timeout must be exactly {REPLACEMENT_TIMEOUT_SECONDS}s, got {timeout_seconds}s"
+        )
+
     candidate = get_candidate(candidate_number)
     rep_id = candidate_replicate_id(candidate_number, replicate_number)
-    output_path = _validate_output_path(repository_root, output_path)
 
-    # Verify state machine
-    search_dir = manifests_dir or output_path.parent
+    # Resolve canonical manifests directory and target output path
+    if manifests_dir is None:
+        canonical_dir = get_canonical_manifests_dir(repository_root)
+        canonical_dir.mkdir(parents=True, exist_ok=True)
+        search_dir = canonical_dir
+        canonical_output = canonical_candidate_manifest_path(
+            repository_root, candidate_number, replicate_number
+        )
+        if output_path is not None and output_path.resolve() != canonical_output.resolve():
+            raise StageCJudgeReplacementError(
+                f"Arbitrary output path override is prohibited in production; manifests must be stored at {canonical_output}"
+            )
+        target_output = canonical_output
+    else:
+        search_dir = manifests_dir
+        if output_path is None:
+            target_output = manifests_dir / candidate_manifest_name(
+                candidate_number, replicate_number
+            )
+        else:
+            target_output = output_path
+        expected_name = candidate_manifest_name(candidate_number, replicate_number)
+        if target_output.name != expected_name:
+            raise StageCJudgeReplacementError(
+                f"Candidate manifest output filename must be '{expected_name}', got '{target_output.name}'"
+            )
+
+    target_output = _validate_output_path(repository_root, target_output)
+
+    # Verify policy.json exists and matches pinned SHA256
+    policy_path = repository_root / POLICY_JSON_RELATIVE_PATH
+    if not policy_path.is_file():
+        raise StageCJudgeReplacementError(f"Policy JSON is missing at {POLICY_JSON_RELATIVE_PATH}")
+    actual_policy_sha = _sha256(policy_path)
+    if actual_policy_sha != REPLACEMENT_POLICY_SHA256:
+        raise StageCJudgeReplacementError(
+            f"Replacement policy.json SHA256 mismatch: expected {REPLACEMENT_POLICY_SHA256}, actual {actual_policy_sha}"
+        )
+
+    # Verify state machine against verified prior manifests
     is_eligible, reason, elapsed_spacing = evaluate_runner_eligibility(
         search_dir,
         candidate_number,
         replicate_number,
         current_time=current_time,
+        expected_policy_sha256=REPLACEMENT_POLICY_SHA256,
     )
     if not is_eligible:
         raise StageCJudgeReplacementError(f"Candidate preflight rejected by state machine: {reason}")
 
     # Verify scientific & historical integrity
     source_hashes = verify_scientific_and_historical_hashes(repository_root)
-    policy_path = repository_root / POLICY_JSON_RELATIVE_PATH
-    if not policy_path.is_file():
-        raise StageCJudgeReplacementError(f"Policy JSON is missing at {POLICY_JSON_RELATIVE_PATH}")
-    policy_sha256 = _sha256(policy_path)
 
     # Validate provider contract
-    active = provider or build_llm_provider(candidate.model_id, timeout_override=timeout_seconds)
-    _validate_replacement_provider(active, candidate, timeout_seconds)
+    active = provider or build_llm_provider(candidate.model_id, timeout_override=REPLACEMENT_TIMEOUT_SECONDS)
+    _validate_replacement_provider(active, candidate, REPLACEMENT_TIMEOUT_SECONDS)
 
     probe_plan = get_synthetic_probe_plan()
     if len(probe_plan) != R3_PREFLIGHT_PROBE_COUNT:
@@ -555,36 +851,40 @@ async def run_stage_c_judge_replacement_preflight(
             )
             reported_model = getattr(result, "model", None)
             if reported_model != candidate.model_id:
-                raise StageCJudgeReplacementError(
+                error_type = "model_identity_mismatch"
+                error_message = (
                     f"Provider-reported model mismatch: expected '{candidate.model_id}', got '{reported_model}'"
                 )
-            if getattr(result, "finish_reason", None) not in {None, "stop"}:
-                raise StageCJudgeReplacementError(
+            elif getattr(result, "finish_reason", None) not in {None, "stop"}:
+                error_type = "unsupported_finish_reason"
+                error_message = (
                     f"Unsupported finish_reason={getattr(result, 'finish_reason', None)}"
                 )
-            _, normalization = validate_stage_c_r3_json_mode_probe_output(
-                result.text,
-                retrieval=retrieval,
-                expected_insufficiency_label=spec.get("expected_insufficiency_label"),
-                require_all_enums_exercised=spec.get("require_all_enums_exercised", False),
-            )
-            json_contract_success = True
+            else:
+                _, normalization = validate_stage_c_r3_json_mode_probe_output(
+                    result.text,
+                    retrieval=retrieval,
+                    expected_insufficiency_label=spec.get("expected_insufficiency_label"),
+                    require_all_enums_exercised=spec.get("require_all_enums_exercised", False),
+                )
+                json_contract_success = True
         except ProviderUnavailable as exc:
             error_type = _error_type(exc)
             error_message = str(exc)
-        except TypeError as exc:
-            raise StageCJudgeReplacementError(
-                "Configured provider rejected the JSON-object response_format argument"
-            ) from exc
-        except Exception as exc:
+        except (StageCR3PreflightError, json.JSONDecodeError) as exc:
             error_type = "schema_or_contract_failure"
             error_message = str(exc)
+        except TypeError as exc:
+            error_type = "transport_or_type_contract_failure"
+            error_message = str(exc)
+        # Explicit design: unexpected internal exceptions are NOT caught here.
+        # They propagate upward, aborting the replicate and creating no manifest.
 
         latency_ms = round((perf_counter() - started) * 1000, 3)
         formal_timeout_compatible = (
             result is not None
             and error_type != "timeout"
-            and latency_ms <= timeout_seconds * 1000
+            and latency_ms <= REPLACEMENT_TIMEOUT_SECONDS * 1000
         )
 
         response_sha256: str | None = None
@@ -643,7 +943,7 @@ async def run_stage_c_judge_replacement_preflight(
         if replicate_number == 1:
             qualification_status = "replicate_01_passed_pending_replicate_02"
             next_candidate_eligibility = "blocked_pending_replicate_02"
-        else:  # replicate_number == 2
+        else:
             qualification_status = "qualified_and_selected"
             next_candidate_eligibility = "permanently_blocked_earlier_candidate_qualified"
     else:
@@ -679,7 +979,7 @@ async def run_stage_c_judge_replacement_preflight(
         "response_format": copy.deepcopy(REPLACEMENT_TRANSPORT),
         "temperature": REPLACEMENT_TEMPERATURE,
         "max_tokens": REPLACEMENT_MAX_TOKENS,
-        "timeout_seconds": timeout_seconds,
+        "timeout_seconds": REPLACEMENT_TIMEOUT_SECONDS,
         "enable_thinking": False,
         "probe_plan_version": R3_PREFLIGHT_PROBE_PLAN_VERSION,
         "probe_count": R3_PREFLIGHT_PROBE_COUNT,
@@ -693,7 +993,7 @@ async def run_stage_c_judge_replacement_preflight(
             "median_latency_ms": statistics.median(latencies) if latencies else 0.0,
             "max_latency_ms": max(latencies) if latencies else 0.0,
         },
-        "source_policy_sha256": policy_sha256,
+        "source_policy_sha256": actual_policy_sha,
         "source_historical_and_scientific_hashes": source_hashes,
         "judge_system_prompt_sha256": hashlib.sha256(
             JUDGE_SYSTEM_PROMPT.encode("utf-8")
@@ -716,5 +1016,5 @@ async def run_stage_c_judge_replacement_preflight(
         "probes": probes,
     }
 
-    _atomic_new_json(output_path, manifest)
+    _atomic_new_json(target_output, manifest)
     return manifest
