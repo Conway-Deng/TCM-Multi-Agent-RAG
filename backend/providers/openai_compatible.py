@@ -64,6 +64,7 @@ def _extract_finish_reason(data: dict[str, Any]) -> str | None:
 class OpenAICompatibleLLMProvider:
     _shared_http_client: httpx.AsyncClient | None = None
     supports_response_format = True
+    supports_json_object_response_format = True
     supports_json_schema_response_format = True
 
     def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
