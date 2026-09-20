@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from typing import Any
 
 from .base import GenerationResult
 
@@ -23,7 +24,9 @@ class DeterministicMockLLM:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         frequency_penalty: float = 0.0,
+        response_format: dict[str, Any] | None = None,
     ) -> GenerationResult:
+        del response_format
         digest = hashlib.sha256((system + "\n" + prompt).encode("utf-8")).hexdigest()[:10]
         text = (
             "Mock research output derived from the supplied local evidence. "

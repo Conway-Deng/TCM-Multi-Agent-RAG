@@ -30,6 +30,7 @@ def _chat_payload(
     temperature: float,
     max_tokens: int,
     frequency_penalty: float,
+    response_format: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": model,
@@ -41,6 +42,8 @@ def _chat_payload(
     }
     if _supports_thinking_toggle(model):
         payload["enable_thinking"] = False
+    if response_format is not None:
+        payload["response_format"] = response_format
     return payload
 
 
@@ -60,6 +63,8 @@ def _extract_finish_reason(data: dict[str, Any]) -> str | None:
 
 class OpenAICompatibleLLMProvider:
     _shared_http_client: httpx.AsyncClient | None = None
+    supports_response_format = True
+    supports_json_schema_response_format = True
 
     def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
         self.name = provider_name
@@ -78,6 +83,7 @@ class OpenAICompatibleLLMProvider:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         frequency_penalty: float = 0.0,
+        response_format: dict[str, Any] | None = None,
     ) -> GenerationResult:
         if not self.api_key:
             raise ProviderUnavailable("LLM API key is missing")
@@ -88,6 +94,7 @@ class OpenAICompatibleLLMProvider:
             temperature=temperature,
             max_tokens=min(max_tokens, self.max_tokens) if max_tokens is not None else self.max_tokens,
             frequency_penalty=frequency_penalty,
+            response_format=response_format,
         )
         try:
             if self.__class__._shared_http_client is None or getattr(self.__class__._shared_http_client, "is_closed", False):

@@ -28,6 +28,7 @@ class LLMProvider(Protocol):
         temperature: float = 0.0,
         max_tokens: int | None = None,
         frequency_penalty: float = 0.0,
+        response_format: dict[str, Any] | None = None,
     ) -> GenerationResult: ...
 
 
