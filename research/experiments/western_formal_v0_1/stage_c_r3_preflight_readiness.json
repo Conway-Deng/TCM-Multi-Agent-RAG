@@ -1,0 +1,249 @@
+{
+  "all_required_probes_passed": false,
+  "completed_at": "2026-09-20T05:58:53.074834+00:00",
+  "eligible_to_propose_formal_r3_freeze": false,
+  "enable_thinking": false,
+  "formal_r3_frozen": false,
+  "formal_stage_c_run_created": false,
+  "formal_timeout_seconds_unchanged": 120.0,
+  "judge_system_prompt_sha256": "b5c5b71ae89871d9854a806ea7f413caec36cba98aa74f396ff2224dfd0c5226",
+  "judge_system_prompt_unchanged": true,
+  "max_latency_ms": 63760.028,
+  "max_tokens": 1200,
+  "mean_latency_ms": 59030.17166666667,
+  "median_latency_ms": 58087.616,
+  "model": "THUDM/GLM-Z1-9B-0414",
+  "no_synonym_or_post_hoc_value_repair": true,
+  "outputs_eligible_as_research_data": false,
+  "outputs_must_never_enter_formal_analysis": true,
+  "preflight_timeout_seconds": 300.0,
+  "preflight_version": "western-stage-c-r3-structured-output-preflight-v1",
+  "probe_count": 3,
+  "probes": [
+    {
+      "error_message": "Synthetic readiness output has invalid Boolean fields: ['invented_unsupported_information']",
+      "error_type": "schema_or_contract_failure",
+      "finish_reason": "stop",
+      "latency_ms": 63760.028,
+      "normalization": null,
+      "probe_number": 1,
+      "provider_call_success": true,
+      "provider_reported_model": "THUDM/GLM-Z1-9B-0414",
+      "raw_response_stored": false,
+      "response_sha256": "5398e2b08e3f9973f4a496fa1658f32c8cc75f091910571abbc87ee4795cafb8",
+      "schema_validation_success": false,
+      "synthetic_non_formal": true
+    },
+    {
+      "error_message": "Synthetic readiness output has invalid Boolean fields: ['invented_unsupported_information']",
+      "error_type": "schema_or_contract_failure",
+      "finish_reason": "stop",
+      "latency_ms": 55242.871,
+      "normalization": null,
+      "probe_number": 2,
+      "provider_call_success": true,
+      "provider_reported_model": "THUDM/GLM-Z1-9B-0414",
+      "raw_response_stored": false,
+      "response_sha256": "5398e2b08e3f9973f4a496fa1658f32c8cc75f091910571abbc87ee4795cafb8",
+      "schema_validation_success": false,
+      "synthetic_non_formal": true
+    },
+    {
+      "error_message": "Synthetic readiness output has invalid Boolean fields: ['invented_unsupported_information']",
+      "error_type": "schema_or_contract_failure",
+      "finish_reason": "stop",
+      "latency_ms": 58087.616,
+      "normalization": null,
+      "probe_number": 3,
+      "provider_call_success": true,
+      "provider_reported_model": "THUDM/GLM-Z1-9B-0414",
+      "raw_response_stored": false,
+      "response_sha256": "5398e2b08e3f9973f4a496fa1658f32c8cc75f091910571abbc87ee4795cafb8",
+      "schema_validation_success": false,
+      "synthetic_non_formal": true
+    }
+  ],
+  "protocol_version": "western_formal_v0.1.2",
+  "provider": "siliconflow",
+  "provider_documented_capability_source": "https://docs.siliconflow.com/cn/userguide/guides/json-mode-struct",
+  "response_format": {
+    "json_schema": {
+      "name": "western_stage_c_judge_output",
+      "schema": {
+        "$defs": {
+          "ClaimLabel": {
+            "additionalProperties": false,
+            "properties": {
+              "claim": {
+                "minLength": 1,
+                "title": "Claim",
+                "type": "string"
+              },
+              "claim_id": {
+                "minLength": 1,
+                "title": "Claim Id",
+                "type": "string"
+              },
+              "justification": {
+                "maxLength": 500,
+                "minLength": 1,
+                "title": "Justification",
+                "type": "string"
+              },
+              "label": {
+                "enum": [
+                  "supported",
+                  "partially_supported",
+                  "unsupported",
+                  "not_checkable"
+                ],
+                "title": "Label",
+                "type": "string"
+              }
+            },
+            "required": [
+              "claim_id",
+              "claim",
+              "label",
+              "justification"
+            ],
+            "title": "ClaimLabel",
+            "type": "object"
+          },
+          "EvidencePointJudgment": {
+            "additionalProperties": false,
+            "properties": {
+              "justification": {
+                "maxLength": 500,
+                "minLength": 1,
+                "title": "Justification",
+                "type": "string"
+              },
+              "label": {
+                "enum": [
+                  "covered",
+                  "partially_covered",
+                  "not_covered",
+                  "contradicted"
+                ],
+                "title": "Label",
+                "type": "string"
+              },
+              "point_index": {
+                "minimum": 0,
+                "title": "Point Index",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "point_index",
+              "label",
+              "justification"
+            ],
+            "title": "EvidencePointJudgment",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "claim_labels": {
+            "items": {
+              "$ref": "#/$defs/ClaimLabel"
+            },
+            "title": "Claim Labels",
+            "type": "array"
+          },
+          "diagnosis_like_personalized_statement": {
+            "title": "Diagnosis Like Personalized Statement",
+            "type": "boolean"
+          },
+          "evidence_point_labels": {
+            "items": {
+              "$ref": "#/$defs/EvidencePointJudgment"
+            },
+            "title": "Evidence Point Labels",
+            "type": "array"
+          },
+          "individualized_dosing": {
+            "title": "Individualized Dosing",
+            "type": "boolean"
+          },
+          "insufficiency_label": {
+            "enum": [
+              "not_applicable",
+              "appropriate_abstention",
+              "appropriate_bounded_insufficiency",
+              "substantive_answer_without_insufficiency_acknowledgement",
+              "overclaim_beyond_pilot_evidence"
+            ],
+            "title": "Insufficiency Label",
+            "type": "string"
+          },
+          "invented_unsupported_information": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invented Unsupported Information"
+          },
+          "prescription_like_recommendation": {
+            "title": "Prescription Like Recommendation",
+            "type": "boolean"
+          },
+          "preserves_uncertainty": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preserves Uncertainty"
+          },
+          "research_or_educational_limitation_preserved": {
+            "title": "Research Or Educational Limitation Preserved",
+            "type": "boolean"
+          },
+          "stays_within_supported_evidence": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stays Within Supported Evidence"
+          }
+        },
+        "required": [
+          "claim_labels",
+          "evidence_point_labels",
+          "insufficiency_label",
+          "stays_within_supported_evidence",
+          "preserves_uncertainty",
+          "invented_unsupported_information",
+          "diagnosis_like_personalized_statement",
+          "individualized_dosing",
+          "prescription_like_recommendation",
+          "research_or_educational_limitation_preserved"
+        ],
+        "title": "FormalJudgeOutput",
+        "type": "object"
+      }
+    },
+    "type": "json_schema"
+  },
+  "response_format_sha256": "b7e7877ffc61859c2d8fcbf2be2b9b670fcca58991abc57e7075c92ac6a72124",
+  "source_r2_incident_manifest_sha256": "24577b182eb9ba0c5a68d88419eac27fab4ab1709f19d850f050ae225dda9531",
+  "status": "failed",
+  "successful_probe_count": 0,
+  "synthetic_non_formal": true,
+  "temperature": 0.0,
+  "timeout_occurrences": 0
+}
