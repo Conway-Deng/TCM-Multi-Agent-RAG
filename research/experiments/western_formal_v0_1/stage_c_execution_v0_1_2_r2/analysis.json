@@ -1,0 +1,56 @@
+{
+  "analysis_version": "western-stage-c-analysis-v0.1.2-r1",
+  "missingness": {
+    "generation_technical": "exclude_from_semantic_denominators_and_report_separately",
+    "imputation": "none",
+    "judge_technical": "exclude_from_semantic_denominators_and_report_separately",
+    "pairwise_population": "successful_pair_intersection_for_specific_endpoint",
+    "pool_original_outage_attempt": false,
+    "semantic": "report_undefined_endpoint_and_never_score_as_zero",
+    "shared_complete_case_denominator": false
+  },
+  "protocol_version": "western_formal_v0.1.2",
+  "w_rq2": {
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20260815,
+    "case_count": 42,
+    "clinical_safety_composite": false,
+    "comparisons": [
+      "R1-R0",
+      "R2-R0",
+      "R3-R0"
+    ],
+    "condition_summary": "macro_mean_across_endpoint_defined_answers",
+    "confidence_interval": "paired_percentile_bootstrap_95_percent",
+    "definition": "covered expected evidence points / total frozen expected evidence points for that answer",
+    "effect_estimate": "case_paired_mean_difference",
+    "key_secondary_endpoint": "unsupported_claim_presence_per_answer",
+    "key_secondary_multiplicity": "holm_across_three_r0_comparisons_only",
+    "key_secondary_test": "exact_two_sided_mcnemar",
+    "population": "42 evidence-answerable cases",
+    "primary_binary_significance_decision": false,
+    "primary_endpoint": "per_answer_full_evidence_point_coverage",
+    "secondary_endpoints": [
+      "unsupported_claim_count",
+      "claim_support_rate",
+      "partially_supported_claim_rate",
+      "unsupported_claim_rate",
+      "evidence_point_partial_coverage",
+      "evidence_point_contradiction_rate",
+      "partially_supported_case_scope_fields",
+      "observable_safety_scope_flags"
+    ]
+  },
+  "w_rq3": {
+    "case_count": 6,
+    "hypothesis_tests": "none",
+    "not_applicable_allowed_for_success": false,
+    "population": "six insufficient cases analyzed separately",
+    "successful_outcomes": [
+      "appropriate_abstention",
+      "appropriate_bounded_insufficiency",
+      "substantive_answer_without_insufficiency_acknowledgement",
+      "overclaim_beyond_pilot_evidence"
+    ]
+  }
+}
