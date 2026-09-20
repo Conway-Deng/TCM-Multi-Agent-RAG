@@ -37,6 +37,7 @@ from .formal_judge import (
     JUDGE_SYSTEM_PROMPT,
     build_judge_prompt,
     checkable_claim_counts,
+    normalize_judge_json_envelope,
     parse_judge_output,
 )
 from .schemas import WesternRetrievalEvidence, WesternTopic
@@ -94,10 +95,14 @@ STAGE_B_READINESS_INTERVAL_SECONDS = 10
 STAGE_B_READINESS_MAX_TOKENS = 16
 STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX = 20
 STAGE_B_REPEAT_INFRASTRUCTURE_ERRORS = frozenset({"connectivity", "timeout", "http_5xx", "malformed_response", "rate_limit"})
-STAGE_C_RUN_ID = "western-formal-v0.1.2-stage-c-r1-20260919-01"
-STAGE_C_EXECUTION_VERSION = "western-stage-c-execution-v0.1.2-r1"
-STAGE_C_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r1/execution.json"
-STAGE_C_ANALYSIS_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r1/analysis.json"
+STAGE_C_RUN_ID = "western-formal-v0.1.2-stage-c-r2-20260920-01"
+STAGE_C_EXECUTION_VERSION = "western-stage-c-execution-v0.1.2-r2"
+STAGE_C_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r2/execution.json"
+STAGE_C_ANALYSIS_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r2/analysis.json"
+STAGE_C_OUTPUT_NORMALIZATION_VERSION = "western-judge-json-envelope-v1"
+SUPERSEDED_STAGE_C_EXECUTION_VERSION = "western-stage-c-execution-v0.1.2-r1"
+SUPERSEDED_STAGE_C_FREEZE_COMMIT = "c376635432f985bce31ce43be91a94c0243ca1a6"
+STAGE_C_AMENDMENT_REASON = "pre-execution synthetic integration test observed single outer Markdown JSON fence"
 PRIMARY_STAGE_B_SHA256 = "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c"
 PRIMARY_STAGE_B_SEAL_SHA256 = "45a740077fe25f08c996779c272bfdff2a9e4d06b1703f0de5ce3c3dbf3a480c"
 PRIMARY_STAGE_B_GENERATION_METRICS_SHA256 = "1bbaf4ca1befa92c552c06e1914ea370ffc992fb4163671768ba3ae9813446f9"
@@ -620,6 +625,17 @@ def verify_stage_c_execution_freeze(
         "analysis_sha256": analysis_sha,
         "scientific_sha256": _stage_c_scientific_sha256(repository_root),
         "outcome_enum": sorted(STAGE_C_OUTCOMES),
+        "normalization_policy_version": STAGE_C_OUTPUT_NORMALIZATION_VERSION,
+        "normalization_contract": {
+            "accepted_envelopes": ["raw_json", "single_outer_json_markdown_fence", "single_outer_unlabelled_markdown_fence"],
+            "operation": "remove_only_one_complete_outer_markdown_fence_before_strict_json_and_schema_validation",
+            "retry_consumed": False,
+            "semantic_values_modified": False,
+        },
+        "superseded_stage_c_execution_version": SUPERSEDED_STAGE_C_EXECUTION_VERSION,
+        "superseded_stage_c_freeze_commit": SUPERSEDED_STAGE_C_FREEZE_COMMIT,
+        "amendment_reason": STAGE_C_AMENDMENT_REASON,
+        "formal_stage_c_cells_before_amendment": 0,
     }
     mismatches = {key: {"expected": value, "actual": config.get(key)} for key, value in expected.items() if config.get(key) != value}
     implementation = config.get("implementation_sha256")
@@ -2370,6 +2386,7 @@ class StageCJudgeOutcome:
     judge_outcome: str
     parsed: FormalJudgeOutput | None
     provider_result: Any | None
+    output_normalization: str | None
     first_attempt_success: bool
     attempt_count: int
     technical_retry_used: bool
@@ -2397,11 +2414,11 @@ async def invoke_stage_c_judgment(
                 first_error = kind
             errors.append({"attempt": attempt, "error_type": kind, "message": str(exc)})
             if kind == "rate_limit":
-                return StageCJudgeOutcome(False, "rate_limit", None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+                return StageCJudgeOutcome(False, "rate_limit", None, None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
             if kind not in RETRYABLE_ERROR_TYPES:
-                return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+                return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
             if attempt == 2:
-                return StageCJudgeOutcome(False, "technical_failure", None, None, False, 2, True, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+                return StageCJudgeOutcome(False, "technical_failure", None, None, None, False, 2, True, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
             continue
         except Exception as exc:
             raise FatalFormalRunError(f"Unexpected Stage C programming/runtime defect: {type(exc).__name__}") from exc
@@ -2410,17 +2427,19 @@ async def invoke_stage_c_judgment(
         finish_reason = getattr(result, "finish_reason", None)
         if finish_reason == "length":
             errors.append({"attempt": attempt, "error_type": "truncated_response", "message": "provider finish_reason=length"})
-            return StageCJudgeOutcome(False, "truncated_response", None, result, False, attempt, attempt == 2, first_error, "truncated_response", errors, round((perf_counter() - started) * 1000, 3))
+            return StageCJudgeOutcome(False, "truncated_response", None, result, None, False, attempt, attempt == 2, first_error, "truncated_response", errors, round((perf_counter() - started) * 1000, 3))
         if finish_reason not in {None, "stop"}:
             errors.append({"attempt": attempt, "error_type": "unexpected_finish_reason", "message": f"provider finish_reason={finish_reason}"})
-            return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, result, False, attempt, attempt == 2, first_error, "unexpected_finish_reason", errors, round((perf_counter() - started) * 1000, 3))
+            return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, result, None, False, attempt, attempt == 2, first_error, "unexpected_finish_reason", errors, round((perf_counter() - started) * 1000, 3))
+        normalization: str | None = None
         try:
-            parsed = parse_judge_output(result.text)
+            normalized_text, normalization = normalize_judge_json_envelope(result.text)
+            parsed = parse_judge_output(normalized_text)
             _validate_completed_judge_output(parsed, retrieval)
         except (ValueError, StageCOutputSchemaError) as exc:
             errors.append({"attempt": attempt, "error_type": "output_schema_failure", "message": str(exc)})
-            return StageCJudgeOutcome(False, "output_schema_failure", None, result, False, attempt, attempt == 2, first_error, "output_schema_failure", errors, round((perf_counter() - started) * 1000, 3))
-        return StageCJudgeOutcome(True, "completed", parsed, result, attempt == 1, attempt, attempt == 2, first_error, None, errors, round((perf_counter() - started) * 1000, 3))
+            return StageCJudgeOutcome(False, "output_schema_failure", None, result, normalization, False, attempt, attempt == 2, first_error, "output_schema_failure", errors, round((perf_counter() - started) * 1000, 3))
+        return StageCJudgeOutcome(True, "completed", parsed, result, normalization, attempt == 1, attempt, attempt == 2, first_error, None, errors, round((perf_counter() - started) * 1000, 3))
     raise AssertionError("unreachable")
 
 
@@ -2436,6 +2455,7 @@ def _stage_c_execution_manifest_payload(anchor: dict[str, Any]) -> dict[str, Any
         "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
         "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
         "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "normalization_policy_version": anchor["normalization_policy_version"],
         "implementation_sha256": anchor["implementation_sha256"],
         "created_at": _utc_now(),
     }
@@ -2469,7 +2489,8 @@ def _validate_stage_c_record(retrieval: dict[str, Any], generation: dict[str, An
         "experiment_id", "judge_success", "final_judge_success", "judge_outcome",
         "judge_first_attempt_success", "judge_attempt_count", "judge_technical_retry_used",
         "judge_first_error_type", "judge_final_error_type", "judge_provider_reported_model",
-        "judge_finish_reason", "judge_latency_ms", "claim_labels", "evidence_point_labels",
+        "judge_finish_reason", "judge_latency_ms", "judge_output_normalization",
+        "claim_labels", "evidence_point_labels",
         "insufficiency_label", "stays_within_supported_evidence", "preserves_uncertainty",
         "invented_unsupported_information", "observable_safety_flags", "upstream_failure",
         "errors", "timestamps",
@@ -2484,6 +2505,13 @@ def _validate_stage_c_record(retrieval: dict[str, Any], generation: dict[str, An
     success = record.get("judge_success") is True and record.get("final_judge_success") is True
     if success != (outcome == "completed"):
         raise FatalFormalRunError("Stage C success flags disagree with outcome")
+    normalization = record.get("judge_output_normalization")
+    if normalization not in {None, "none", "outer_json_markdown_fence_removed"}:
+        raise FatalFormalRunError("Invalid Stage C judge output normalization value")
+    if success and normalization is None:
+        raise FatalFormalRunError("Completed Stage C record requires output normalization metadata")
+    if outcome not in {"completed", "output_schema_failure"} and normalization is not None:
+        raise FatalFormalRunError("Stage C failure without model-output parsing requires null normalization")
     attempts = record.get("judge_attempt_count")
     if outcome.startswith("upstream_"):
         if attempts != 0 or record.get("judge_technical_retry_used") is not False or not isinstance(record.get("upstream_failure"), dict):
@@ -2581,7 +2609,8 @@ async def run_stage_c_primary(
                 "judge_attempt_count": 0, "judge_technical_retry_used": False,
                 "judge_first_error_type": None, "judge_final_error_type": None,
                 "judge_provider_reported_model": None, "judge_finish_reason": None,
-                "judge_latency_ms": 0.0, **_empty_stage_c_semantics(),
+                "judge_latency_ms": 0.0, "judge_output_normalization": None,
+                **_empty_stage_c_semantics(),
                 "upstream_failure": {
                     "source_stage": "A" if upstream_retrieval else "B",
                     "outcome": source.get("terminal_state") if upstream_retrieval else source.get("generation_outcome"),
@@ -2622,6 +2651,7 @@ async def run_stage_c_primary(
                 "judge_provider_reported_model": getattr(result, "model", None),
                 "judge_finish_reason": getattr(result, "finish_reason", None),
                 "judge_latency_ms": outcome.elapsed_ms,
+                "judge_output_normalization": outcome.output_normalization,
                 "claim_labels": [item.model_dump(mode="json") for item in parsed.claim_labels] if parsed else [],
                 "evidence_point_labels": [item.model_dump(mode="json") for item in parsed.evidence_point_labels] if parsed else [],
                 "insufficiency_label": parsed.insufficiency_label if parsed else "not_applicable",
@@ -3470,13 +3500,21 @@ def stage_c_provider_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
         outcome = str(row.get("judge_outcome"))
         outcomes[outcome] = outcomes.get(outcome, 0) + 1
     latencies = [float(row.get("judge_latency_ms", 0.0)) for row in attempted]
+    normalization_counts = {
+        "none": sum(row.get("judge_output_normalization") == "none" for row in records),
+        "outer_json_markdown_fence_removed": sum(
+            row.get("judge_output_normalization") == "outer_json_markdown_fence_removed" for row in records
+        ),
+        "null": sum(row.get("judge_output_normalization") is None for row in records),
+    }
     return {
         "intended_cell_count": INTENDED_CELLS, "provider_attempted_cell_count": len(attempted),
         "first_attempt_successes": sum(row.get("judge_first_attempt_success") is True for row in attempted),
         "retries": sum(row.get("judge_technical_retry_used") is True for row in attempted),
         "final_successes": sum(row.get("judge_success") is True for row in records),
         "terminal_missing_count": sum(row.get("judge_success") is not True for row in records),
-        "outcome_counts": outcomes, "mean_judge_latency_ms": _mean_or_none(latencies),
+        "outcome_counts": outcomes, "output_normalization_counts": normalization_counts,
+        "mean_judge_latency_ms": _mean_or_none(latencies),
         "median_judge_latency_ms": statistics.median(latencies) if latencies else None,
     }
 
@@ -3535,7 +3573,9 @@ def finalize_stage_c_run(
         "parent_stage_b_status": stage_b_manifest.get("status"),
         "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
         "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
-        "analysis_json_sha256": anchor["analysis_json_sha256"], "cell_count": INTENDED_CELLS,
+        "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "normalization_policy_version": anchor["normalization_policy_version"],
+        "cell_count": INTENDED_CELLS,
         "stage_c_artifact_sha256": artifact_hashes, "frozen_at": _utc_now(),
         "immutable_input_for": "merged final analysis",
     }
@@ -3569,6 +3609,7 @@ def _verify_finalized_stage_c_artifacts(
         "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
         "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
         "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "normalization_policy_version": anchor["normalization_policy_version"],
         "cell_count": INTENDED_CELLS,
     }
     mismatches: dict[str, Any] = {
@@ -3669,7 +3710,9 @@ def finalize_run(
         "protocol_version": PROTOCOL_VERSION, "cell_count": INTENDED_CELLS,
         "stage_a_sha256": STAGE_A_RETRIEVAL_SHA256, "stage_b_sha256": PRIMARY_STAGE_B_SHA256,
         "stage_c_sha256": _sha256(stage_c.stage_path()), "stage_c_run_manifest_sha256": _sha256(c_manifest_path),
-        "analysis_json_sha256": anchor["analysis_json_sha256"], "raw_results_sha256": _sha256(raw_path),
+        "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "normalization_policy_version": anchor["normalization_policy_version"],
+        "raw_results_sha256": _sha256(raw_path),
         "original_outage_answers_used": False, "completed_at": _utc_now(),
     })
     return {path.name: _sha256(path) for path in output_paths}

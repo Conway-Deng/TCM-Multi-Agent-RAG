@@ -168,11 +168,10 @@ def test_judge_claim_and_evidence_labels_are_schema_constrained() -> None:
         FormalJudgeOutput.model_validate(missing_scope_key)
 
 
-def test_judge_parser_requires_raw_json() -> None:
+def test_judge_parser_accepts_raw_or_single_outer_json_fence() -> None:
     raw = json.dumps(_judge_payload())
     assert parse_judge_output(raw).evidence_point_labels[0].label == "covered"
-    with pytest.raises(ValueError, match="without Markdown fences"):
-        parse_judge_output(f"```json\n{raw}\n```")
+    assert parse_judge_output(f"```json\n{raw}\n```").evidence_point_labels[0].label == "covered"
 
 
 def test_judge_prompt_excludes_retrieval_scores() -> None:

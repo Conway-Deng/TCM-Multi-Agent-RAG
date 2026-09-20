@@ -25,6 +25,10 @@ InsufficiencyLabel = Literal[
     "substantive_answer_without_insufficiency_acknowledgement",
     "overclaim_beyond_pilot_evidence",
 ]
+JudgeOutputNormalization = Literal[
+    "none",
+    "outer_json_markdown_fence_removed",
+]
 
 
 class ClaimLabel(BaseModel):
@@ -90,11 +94,26 @@ def build_judge_prompt(
     return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
 
+def normalize_judge_json_envelope(raw: str) -> tuple[str, JudgeOutputNormalization]:
+    """Remove only one complete outer JSON or unlabelled Markdown fence."""
+    if not isinstance(raw, str):
+        raise ValueError("Judge output must be text")
+    stripped = raw.strip()
+    lines = stripped.splitlines()
+    if (
+        len(lines) >= 3
+        and lines[0] in {"```json", "```"}
+        and lines[-1] == "```"
+        and all("```" not in line for line in lines[1:-1])
+    ):
+        return "\n".join(lines[1:-1]).strip(), "outer_json_markdown_fence_removed"
+    return stripped, "none"
+
+
 def parse_judge_output(raw: str) -> FormalJudgeOutput:
-    if raw.strip() != raw.strip().removeprefix("```json").removesuffix("```").strip():
-        raise ValueError("Judge output must be raw JSON without Markdown fences")
+    normalized, _ = normalize_judge_json_envelope(raw)
     try:
-        payload = json.loads(raw)
+        payload = json.loads(normalized)
     except json.JSONDecodeError as exc:
         raise ValueError("Judge output is not valid JSON") from exc
     return FormalJudgeOutput.model_validate(payload)

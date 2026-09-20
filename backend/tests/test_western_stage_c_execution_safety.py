@@ -49,6 +49,17 @@ def _execution_config() -> dict[str, object]:
         "analysis_sha256": f._canonical_json_sha256(analysis),
         "scientific_sha256": f._stage_c_scientific_sha256(ROOT),
         "outcome_enum": sorted(f.STAGE_C_OUTCOMES),
+        "normalization_policy_version": f.STAGE_C_OUTPUT_NORMALIZATION_VERSION,
+        "normalization_contract": {
+            "accepted_envelopes": ["raw_json", "single_outer_json_markdown_fence", "single_outer_unlabelled_markdown_fence"],
+            "operation": "remove_only_one_complete_outer_markdown_fence_before_strict_json_and_schema_validation",
+            "retry_consumed": False,
+            "semantic_values_modified": False,
+        },
+        "superseded_stage_c_execution_version": f.SUPERSEDED_STAGE_C_EXECUTION_VERSION,
+        "superseded_stage_c_freeze_commit": f.SUPERSEDED_STAGE_C_FREEZE_COMMIT,
+        "amendment_reason": f.STAGE_C_AMENDMENT_REASON,
+        "formal_stage_c_cells_before_amendment": 0,
         "implementation_commit": "1" * 40,
         "implementation_sha256": {
             "backend/western/formal_eval.py": f._sha256(ROOT / "backend/western/formal_eval.py"),
@@ -154,6 +165,7 @@ def _completed_record(retrieval: dict[str, object]) -> dict[str, object]:
         "judge_provider_reported_model": f.JUDGE_MODEL,
         "judge_finish_reason": "stop",
         "judge_latency_ms": 1.0,
+        "judge_output_normalization": "none",
         "claim_labels": payload["claim_labels"],
         "evidence_point_labels": payload["evidence_point_labels"],
         "insufficiency_label": payload["insufficiency_label"],
@@ -273,6 +285,8 @@ def test_evidence_point_claim_partial_and_insufficiency_contracts() -> None:
     f._validate_completed_judge_output(parsed, supported)
     for mutation, message in (
         (lambda p: p.update(evidence_point_labels=[]), "Evidence-point"),
+        (lambda p: p.update(evidence_point_labels=[p["evidence_point_labels"][0], p["evidence_point_labels"][0]]), "Evidence-point"),
+        (lambda p: p["evidence_point_labels"][0].update(point_index=999), "Evidence-point"),
         (lambda p: p.update(claim_labels=[]), "claim label"),
         (lambda p: p["claim_labels"].append(dict(p["claim_labels"][0])), "unique"),
     ):
@@ -363,12 +377,19 @@ def test_wrong_provider_model_settings_and_thinking_are_rejected() -> None:
 def test_fresh_execution_creates_manifest_and_exact_seal(tmp_path: Path) -> None:
     frozen = _frozen_inputs()
     script = [_result(_judge_payload(retrieval)) for retrieval in frozen[0]]
+    script[0] = GenerationResult(
+        text=f"```json\n{json.dumps(_judge_payload(frozen[0][0]))}\n```",
+        provider=f.JUDGE_PROVIDER, model=f.JUDGE_MODEL, finish_reason="stop",
+    )
     judge = ScriptedJudge(script)
     stage_c = f.StageCDirectory(tmp_path / f.STAGE_C_RUN_ID)
     asyncio.run(f.run_stage_c_primary(ROOT, stage_c, judge=judge, frozen_inputs=frozen, **_freeze_kwargs()))
     assert judge.calls == 192
     assert stage_c.execution_manifest_path().is_file()
     stage_c.verify_sealed()
+    records = f._read_jsonl_strict(stage_c.stage_path(), label="test")
+    assert records[0]["judge_output_normalization"] == "outer_json_markdown_fence_removed"
+    assert all(row["judge_output_normalization"] == "none" for row in records[1:])
 
 
 def test_partial_prefix_resume_and_manifest_only_recovery(tmp_path: Path) -> None:
