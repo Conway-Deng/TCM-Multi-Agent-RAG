@@ -1176,3 +1176,125 @@ def test_49_policy_json_mutation_blocks_before_provider_call(tmp_path: Path, mon
         )
     # Zero provider calls were made
     assert len(provider.calls) == 0
+
+
+# ---------------------------------------------------------------------------
+# Test 50: Replacement runner rejects a provider reporting differing model ID
+# ---------------------------------------------------------------------------
+def test_50_replacement_runner_rejects_differing_provider_model(tmp_path: Path) -> None:
+    cand = jr.get_candidate(1)
+
+    results = _all_results(cand, reported_model="some/other-model")
+    provider = MockReplacementProvider(cand, results)
+
+    manifest = asyncio.run(
+        jr.run_stage_c_judge_replacement_preflight(
+            ROOT,
+            candidate_number=1,
+            replicate_number=1,
+            provider=provider,
+            manifests_dir=tmp_path,
+        )
+    )
+    assert manifest["replicate_passed"] is False
+    assert manifest["status"] == "failed"
+    for probe in manifest["probes"]:
+        assert probe["error_type"] == "model_identity_mismatch"
+        assert probe["provider_reported_model"] == "some/other-model"
+        assert "expected 'deepseek-ai/DeepSeek-V3.2', got 'some/other-model'" in probe["error_message"]
+
+
+# ---------------------------------------------------------------------------
+# Test 51: Real OpenAICompatibleLLMProvider extracts provider response model
+# ---------------------------------------------------------------------------
+def test_51_openai_compatible_provider_model_extraction_in_preflight(tmp_path: Path) -> None:
+    from providers.openai_compatible import OpenAICompatibleLLMProvider
+    OpenAICompatibleLLMProvider._shared_http_client = None
+
+    class MockResponse:
+        def __init__(self, data: dict) -> None:
+            self._data = data
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return self._data
+
+    class MockClient:
+        def __init__(self, response_model: str) -> None:
+            self.response_model = response_model
+            self.call_count = 0
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return None
+
+        async def post(self, *args: Any, **kwargs: Any) -> MockResponse:
+            self.call_count += 1
+            probe_spec = get_synthetic_probe_plan()[self.call_count - 1]
+            content = json.dumps(_mock_payload(probe_spec))
+            return MockResponse({
+                "model": self.response_model,
+                "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 100, "completion_tokens": 100},
+            })
+
+    # Case A: Provider returns substituted/aliased model "some/other-model"
+    mock_client_sub = MockClient(response_model="some/other-model")
+    OpenAICompatibleLLMProvider._shared_http_client = mock_client_sub
+
+    real_provider_sub = OpenAICompatibleLLMProvider(
+        api_key="unit-test-key",
+        base_url="https://api.siliconflow.cn/v1",
+        model="deepseek-ai/DeepSeek-V3.2",
+        timeout=120.0,
+        max_tokens=1200,
+        provider_name="siliconflow",
+    )
+
+    try:
+        manifest_sub = asyncio.run(
+            jr.run_stage_c_judge_replacement_preflight(
+                ROOT,
+                candidate_number=1,
+                replicate_number=1,
+                provider=real_provider_sub,
+                manifests_dir=tmp_path / "sub",
+            )
+        )
+        assert manifest_sub["replicate_passed"] is False
+        assert manifest_sub["probes"][0]["error_type"] == "model_identity_mismatch"
+        assert manifest_sub["probes"][0]["provider_reported_model"] == "some/other-model"
+
+        # Case B: Provider returns exact requested model "deepseek-ai/DeepSeek-V3.2"
+        mock_client_exact = MockClient(response_model="deepseek-ai/DeepSeek-V3.2")
+        OpenAICompatibleLLMProvider._shared_http_client = mock_client_exact
+
+        real_provider_exact = OpenAICompatibleLLMProvider(
+            api_key="unit-test-key",
+            base_url="https://api.siliconflow.cn/v1",
+            model="deepseek-ai/DeepSeek-V3.2",
+            timeout=120.0,
+            max_tokens=1200,
+            provider_name="siliconflow",
+        )
+
+        manifest_exact = asyncio.run(
+            jr.run_stage_c_judge_replacement_preflight(
+                ROOT,
+                candidate_number=1,
+                replicate_number=1,
+                provider=real_provider_exact,
+                manifests_dir=tmp_path / "exact",
+            )
+        )
+        assert manifest_exact["replicate_passed"] is True
+        assert manifest_exact["status"] == "passed"
+        assert manifest_exact["probes"][0]["provider_reported_model"] == "deepseek-ai/DeepSeek-V3.2"
+        assert manifest_exact["probes"][0]["json_contract_success"] is True
+    finally:
+        OpenAICompatibleLLMProvider._shared_http_client = None
+

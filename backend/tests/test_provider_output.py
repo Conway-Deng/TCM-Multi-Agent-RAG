@@ -13,7 +13,14 @@ sys.path.insert(0, str(BACKEND))
 
 from agents import build_agents
 from orchestration.workbench import _agent_prompt, _claim_with_citations, _synthesis
-from providers.openai_compatible import OpenAICompatibleLLMProvider, _chat_payload, _extract_chat_content, _extract_finish_reason
+from providers.openai_compatible import (
+    OpenAICompatibleLLMProvider,
+    ProviderUnavailable,
+    _chat_payload,
+    _extract_chat_content,
+    _extract_finish_reason,
+    _extract_response_model,
+)
 from providers.output_quality import runaway_output_reason
 from schemas.research import DebateTrace, ResearchAgentOutput, StructuredClaim
 
@@ -48,13 +55,39 @@ def test_non_streaming_payload_and_response_content_are_extracted_once() -> None
     assert qwen3_payload["enable_thinking"] is False
 
 
-def test_provider_generation_captures_finish_reason(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_extract_response_model_validation() -> None:
+    assert _extract_response_model({"model": "deepseek-ai/DeepSeek-V3.2"}) == "deepseek-ai/DeepSeek-V3.2"
+    assert _extract_response_model({"model": "Qwen/Qwen3-8B"}) == "Qwen/Qwen3-8B"
+
+    with pytest.raises(KeyError, match="missing 'model'"):
+        _extract_response_model({})
+
+    with pytest.raises(TypeError, match="must be a string"):
+        _extract_response_model({"model": None})
+
+    with pytest.raises(TypeError, match="must be a string"):
+        _extract_response_model({"model": 12345})
+
+    with pytest.raises(TypeError, match="must be a string"):
+        _extract_response_model({"model": ["deepseek-ai/DeepSeek-V3.2"]})
+
+    with pytest.raises(ValueError, match="non-empty string"):
+        _extract_response_model({"model": ""})
+
+    with pytest.raises(ValueError, match="non-empty string"):
+        _extract_response_model({"model": "   "})
+
+
+def test_provider_generation_captures_finish_reason_and_model_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    OpenAICompatibleLLMProvider._shared_http_client = None
+
     class FakeResponse:
         def raise_for_status(self) -> None:
             return None
 
         def json(self) -> dict:
             return {
+                "model": "Qwen/Qwen3-8B",
                 "choices": [{"message": {"content": "A complete provider response."}, "finish_reason": "stop"}],
                 "usage": {"prompt_tokens": 4, "completion_tokens": 5},
             }
@@ -83,7 +116,118 @@ def test_provider_generation_captures_finish_reason(monkeypatch: pytest.MonkeyPa
     )
     result = asyncio.run(provider.generate(system="system", prompt="prompt"))
     assert result.finish_reason == "stop"
+    assert result.model == "Qwen/Qwen3-8B"
     assert result.metadata["finish_reason"] == "stop"
+    assert result.metadata["requested_model"] == "Qwen/Qwen3-8B"
+    assert result.metadata["provider_reported_model"] == "Qwen/Qwen3-8B"
+    OpenAICompatibleLLMProvider._shared_http_client = None
+
+
+def test_provider_reported_model_and_provenance_handling() -> None:
+    OpenAICompatibleLLMProvider._shared_http_client = None
+    captured_payload: dict | None = None
+
+    class MockResponse:
+        def __init__(self, data: dict) -> None:
+            self._data = data
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return self._data
+
+    class MockClient:
+        def __init__(self, response_data: dict) -> None:
+            self.response_data = response_data
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return None
+
+        async def post(self, url: str, headers: dict, json: dict, timeout: float) -> MockResponse:
+            nonlocal captured_payload
+            captured_payload = json
+            return MockResponse(self.response_data)
+
+    # 1. Outgoing request contains requested model; valid response model returned
+    response_data = {
+        "model": "deepseek-ai/DeepSeek-V3.2",
+        "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 20},
+    }
+    mock_client = MockClient(response_data)
+    OpenAICompatibleLLMProvider._shared_http_client = mock_client
+
+    try:
+        provider = OpenAICompatibleLLMProvider(
+            api_key="test-key",
+            base_url="https://api.siliconflow.cn/v1",
+            model="deepseek-ai/DeepSeek-V3.2",
+            timeout=120.0,
+            max_tokens=1200,
+            provider_name="siliconflow",
+        )
+        result = asyncio.run(provider.generate(system="sys", prompt="user"))
+
+        # Outgoing request contains exact requested model ID
+        assert captured_payload is not None
+        assert captured_payload["model"] == "deepseek-ai/DeepSeek-V3.2"
+
+        # GenerationResult.model is provider-reported model
+        assert result.model == "deepseek-ai/DeepSeek-V3.2"
+        # Metadata contains both requested_model and provider_reported_model
+        assert result.metadata["requested_model"] == "deepseek-ai/DeepSeek-V3.2"
+        assert result.metadata["provider_reported_model"] == "deepseek-ai/DeepSeek-V3.2"
+
+        # 2. Provider response model differing from requested model is preserved
+        mock_client.response_data = {
+            "model": "some/aliased-model-or-wrong-model",
+            "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        }
+        result_divergent = asyncio.run(provider.generate(system="sys", prompt="user"))
+        assert result_divergent.model == "some/aliased-model-or-wrong-model"
+        assert result_divergent.metadata["requested_model"] == "deepseek-ai/DeepSeek-V3.2"
+        assert result_divergent.metadata["provider_reported_model"] == "some/aliased-model-or-wrong-model"
+
+        # 3. Missing response model raises ProviderUnavailable(error_type="malformed_response")
+        mock_client.response_data = {
+            "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        }
+        with pytest.raises(ProviderUnavailable) as exc_info:
+            asyncio.run(provider.generate(system="sys", prompt="user"))
+        assert exc_info.value.error_type == "malformed_response"
+
+        # 4. Null response model raises ProviderUnavailable(error_type="malformed_response")
+        mock_client.response_data = {
+            "model": None,
+            "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        }
+        with pytest.raises(ProviderUnavailable) as exc_info:
+            asyncio.run(provider.generate(system="sys", prompt="user"))
+        assert exc_info.value.error_type == "malformed_response"
+
+        # 5. Empty string response model raises ProviderUnavailable(error_type="malformed_response")
+        mock_client.response_data = {
+            "model": "",
+            "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        }
+        with pytest.raises(ProviderUnavailable) as exc_info:
+            asyncio.run(provider.generate(system="sys", prompt="user"))
+        assert exc_info.value.error_type == "malformed_response"
+
+        # 6. Non-string response model raises ProviderUnavailable(error_type="malformed_response")
+        mock_client.response_data = {
+            "model": 99999,
+            "choices": [{"message": {"content": "response content"}, "finish_reason": "stop"}],
+        }
+        with pytest.raises(ProviderUnavailable) as exc_info:
+            asyncio.run(provider.generate(system="sys", prompt="user"))
+        assert exc_info.value.error_type == "malformed_response"
+    finally:
+        OpenAICompatibleLLMProvider._shared_http_client = None
 
 
 def test_evidence_prompt_is_clean_and_leaves_provenance_to_backend() -> None:

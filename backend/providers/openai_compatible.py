@@ -62,6 +62,17 @@ def _extract_finish_reason(data: dict[str, Any]) -> str | None:
     return finish_reason
 
 
+def _extract_response_model(data: dict[str, Any]) -> str:
+    if "model" not in data:
+        raise KeyError("provider response missing 'model' field")
+    model = data["model"]
+    if not isinstance(model, str):
+        raise TypeError("provider response model must be a string")
+    if not model.strip():
+        raise ValueError("provider response model must be a non-empty string")
+    return model
+
+
 class OpenAICompatibleLLMProvider:
     _shared_http_client: httpx.AsyncClient | None = None
     supports_response_format = True
@@ -111,15 +122,20 @@ class OpenAICompatibleLLMProvider:
             data = response.json()
             content = _extract_chat_content(data)
             finish_reason = _extract_finish_reason(data)
+            provider_reported_model = _extract_response_model(data)
             usage = data.get("usage", {})
             return GenerationResult(
                 text=content,
                 provider=self.name,
-                model=self.model,
+                model=provider_reported_model,
                 prompt_tokens=int(usage.get("prompt_tokens", 0)),
                 completion_tokens=int(usage.get("completion_tokens", 0)),
                 finish_reason=finish_reason,
-                metadata={"finish_reason": finish_reason},
+                metadata={
+                    "finish_reason": finish_reason,
+                    "requested_model": self.model,
+                    "provider_reported_model": provider_reported_model,
+                },
             )
         except httpx.TimeoutException as exc:
             raise ProviderUnavailable("LLM request timed out", error_type="timeout") from exc
