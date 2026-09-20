@@ -1,0 +1,175 @@
+{
+  "policy_version": "western-stage-c-judge-replacement-policy-v2-free",
+  "protocol_amendment_version": "western_formal_v0.1.4",
+  "documentation_snapshot_date": "2026-09-20",
+  "created_after_preserved_paid_candidate_incident": true,
+  "frozen_before_any_free_candidate_test": true,
+  "scope": "western_stage_c_primary_judge_selection_only",
+  "provider": "siliconflow",
+  "generator_model_unchanged": "Qwen/Qwen3-8B",
+  "stage_a_unchanged": true,
+  "stage_b_unchanged": true,
+  "tcm_unchanged": true,
+  "zero_cost_constraint": {
+    "required": true,
+    "snapshot_source": "operator_manual_verification_in_siliconflow_model_plaza",
+    "snapshot_date": "2026-09-20",
+    "snapshot_input_price_cny_per_k_tokens": "0.000000",
+    "snapshot_output_price_cny_per_k_tokens": "0.000000",
+    "permanent_factual_guarantee": false,
+    "manual_recheck_required_immediately_before_first_live_call_for_each_candidate": true,
+    "nonzero_before_first_call_action": "record_operational_ineligibility_without_call_and_advance",
+    "pricing_change_is_model_quality_evidence": false
+  },
+  "transport": {
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0,
+    "max_tokens": 1200,
+    "timeout_seconds": 120.0,
+    "no_runtime_override": true
+  },
+  "candidate_order": [
+    {
+      "candidate_number": 1,
+      "model_id": "XingChenAGI/Xing4.0-29B",
+      "candidate_slug": "xing4-0-29b",
+      "thinking_toggle": "omit",
+      "order_rationale": [
+        "different_model_family_from_qwen_generator",
+        "large_context_capacity",
+        "zero_cost_at_policy_snapshot"
+      ]
+    },
+    {
+      "candidate_number": 2,
+      "model_id": "THUDM/GLM-4-9B-0414",
+      "candidate_slug": "glm-4-9b-0414",
+      "thinking_toggle": "omit",
+      "order_rationale": [
+        "different_model_family_from_qwen_generator",
+        "independent_family_fallback",
+        "distinct_from_historical_glm_z1_9b_0414",
+        "zero_cost_at_policy_snapshot"
+      ]
+    },
+    {
+      "candidate_number": 3,
+      "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "candidate_slug": "deepseek-r1-0528-qwen3-8b",
+      "thinking_toggle": "send_false",
+      "order_rationale": [
+        "zero_cost_at_policy_snapshot",
+        "qwen3_8b_based_and_therefore_after_different_family_candidates"
+      ]
+    },
+    {
+      "candidate_number": 4,
+      "model_id": "Qwen/Qwen3.5-4B",
+      "candidate_slug": "qwen3-5-4b",
+      "thinking_toggle": "omit",
+      "order_rationale": [
+        "zero_cost_at_policy_snapshot",
+        "qwen_family",
+        "smaller_model_final_fallback"
+      ]
+    }
+  ],
+  "candidate_order_is_capability_ranking": false,
+  "candidate_order_frozen_before_testing": true,
+  "selection_rule": {
+    "mode": "deterministic_sequential_qualification",
+    "probe_plan_version": "western-stage-c-r3-preflight-matrix-v1",
+    "probe_count_per_attempt": 6,
+    "replicate_count_required": 2,
+    "minimum_replicate_spacing_seconds": 3600,
+    "replicate_pass_requirement": "6_of_6",
+    "per_answerability_requirement": "2_of_2",
+    "zero_timeouts_required": true,
+    "exact_provider_model_identity_required": true,
+    "stop_after_first_candidate_passing_both_replicates": true,
+    "ordinary_third_replicate_prohibited": true,
+    "formal_semantic_results_may_affect_order": false
+  },
+  "attempt_classification": {
+    "precedence": [
+      "candidate_readiness_failure",
+      "ambiguous_technical_failure",
+      "infrastructure_incident",
+      "passed"
+    ],
+    "candidate_readiness_failures": [
+      "schema_or_contract_failure",
+      "model_identity_mismatch",
+      "unsupported_finish_reason",
+      "required_parameter_rejected",
+      "completed_response_exceeds_120_seconds"
+    ],
+    "infrastructure_incidents": [
+      "http_402_payment_or_account_layer",
+      "http_401_or_403_authentication_or_account_access",
+      "rate_limit",
+      "connectivity",
+      "http_5xx",
+      "provider_timeout_without_completed_response",
+      "provider_model_unavailable"
+    ],
+    "unclassified_failures": "manual_methodology_review_required"
+  },
+  "infrastructure_recovery": {
+    "maximum_complete_recovery_runs_per_candidate_replicate": 1,
+    "probe_level_retry_prohibited": true,
+    "selective_fill_prohibited": true,
+    "partial_attempt_pooling_prohibited": true,
+    "recovery_starts_from_probe_1": true,
+    "recovery_uses_identical_candidate_prompt_schema_settings_timeout_and_identity_rule": true,
+    "successful_recovery_becomes_effective_replicate": true,
+    "replicate_2_spacing_clock_uses_effective_recovery_completion": true,
+    "second_infrastructure_incident_requires_manual_review": true,
+    "second_infrastructure_incident_unlocks_next_candidate": false,
+    "unlimited_retries_prohibited": true
+  },
+  "manifest_rules": {
+    "canonical_directory": "research/experiments/western_formal_v0_1/stage_c_judge_replacement_policy_v2_free/manifests",
+    "deterministic_filenames": true,
+    "atomic_creation": true,
+    "overwrite_prohibited": true,
+    "strict_fail_closed_loading": true,
+    "raw_response_text_prohibited": true,
+    "response_sha256_permitted": true,
+    "formal_stage_c_data_prohibited": true,
+    "arbitrary_output_path_prohibited": true,
+    "arbitrary_model_id_prohibited": true,
+    "timeout_prompt_schema_overrides_prohibited": true
+  },
+  "historical_anchors": {
+    "replacement_policy_v1_sha256": "d17d538bcb650965ccbef817ceeff0f554f15a082a6461d6b99fcd81961eaae1",
+    "paid_deepseek_candidate_01_incident_sha256": "9f445fa65b134c754c0ea5ff6235ebc0a3c5f570f37b09e1676d2492bf620563",
+    "stage_c_r2_judgments_sha256": "fd3544854e4eadfbb498cf9ab5329cee0fb45a03380b25b2c82fabef03ed5363",
+    "stage_c_r2_incident_manifest_sha256": "24577b182eb9ba0c5a68d88419eac27fab4ab1709f19d850f050ae225dda9531",
+    "stage_c_r3_preflight_v1_sha256": "4129c0fae0ddf8f8da3d81bc6e18e673bdd71b5d512ff4c97fc01973a530d9e3",
+    "stage_c_r3_preflight_v2_sha256": "1a70f189b52cb9f539807b0f8fa172be6a47ced21d384bcca7db0b81a514df94",
+    "stage_c_r3_preflight_v3_sha256": "b864d2dd45120eade9b7f4ff8688eb35ce7ba9c75262d6eddd365c90dc58b3d2"
+  },
+  "scientific_input_anchors": {
+    "protocol_v0_1_2_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
+    "stage_a_retrieval_sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+    "primary_stage_b_generation_sha256": "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c",
+    "primary_stage_b_run_manifest_sha256": "32fbc0765fc91395af187abb46b92d2fb13b9eed3acbea016f8ac18a6bc00511",
+    "analysis_json_sha256": "123322b8a416697cd814561b66b3722291d421206ff6310de6667b9d31b79ec8"
+  },
+  "future_sensitivity_analysis": {
+    "reserved_but_not_implemented": true,
+    "requires_separate_frozen_policy_and_amendment": true,
+    "must_use_different_model_family": true,
+    "must_not_affect_or_replace_primary_judge": true,
+    "must_not_be_pooled_with_primary_judge": true,
+    "main_estimand_unchanged": true
+  },
+  "reserved_formal_execution": {
+    "created_by_this_policy_implementation": false,
+    "formal_run_id_template": "western-formal-v0.1.4-stage-c-free-jrv1-YYYYMMDD-01",
+    "formal_execution_directory": "stage_c_execution_v0_1_4_free_jrv1"
+  }
+}
