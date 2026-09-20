@@ -536,7 +536,7 @@ def test_operational_amendment_and_f1_history_are_immutably_pinned() -> None:
     assert hashlib.sha256(F1_RECOVERY.read_bytes()).hexdigest() == free.F1_RECOVERY_MANIFEST_SHA256
 
 
-def test_canonical_f1_adjudication_is_terminal_operational_and_unlocks_only_f2() -> None:
+def test_canonical_wave1_terminal_states_preserve_f1_adjudication() -> None:
     manifests = free.get_free_manifests_dir(ROOT)
     state = free.inspect_free_policy_manifests(manifests)
     adjudication = state["operationally_unevaluable"][1]
@@ -545,10 +545,14 @@ def test_canonical_f1_adjudication_is_terminal_operational_and_unlocks_only_f2()
     assert adjudication["semantic_or_capability_conclusion"] is False
     assert adjudication["cross_attempt_pooling"] is False
     assert adjudication["formal_stage_c_eligibility"] is False
-    assert free.evaluate_free_runner_eligibility(manifests, 2, 1)[0] is True
-    allowed, reason, _ = free.evaluate_free_runner_eligibility(manifests, 3, 1)
-    assert allowed is False
-    assert "prior candidate 02" in reason
+    assert {
+        number: free._candidate_state(state, number) for number in range(1, 5)
+    } == {
+        1: free.OPERATIONAL_UNEVALUABILITY_STATE,
+        2: "terminal_candidate_failure",
+        3: "terminal_candidate_failure",
+        4: free.OPERATIONAL_UNEVALUABILITY_STATE,
+    }
 
 
 def test_f2_requires_both_amendment_and_valid_adjudication(tmp_path: Path) -> None:

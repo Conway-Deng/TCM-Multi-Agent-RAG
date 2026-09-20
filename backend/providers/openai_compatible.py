@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 
@@ -32,6 +32,7 @@ def _chat_payload(
     max_tokens: int,
     frequency_penalty: float,
     response_format: dict[str, Any] | None = None,
+    thinking_behavior: Literal["auto", "omit", "send_false"] = "auto",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": model,
@@ -41,7 +42,9 @@ def _chat_payload(
         "max_tokens": max_tokens,
         "stream": False,
     }
-    if _supports_thinking_toggle(model):
+    if thinking_behavior == "send_false" or (
+        thinking_behavior == "auto" and _supports_thinking_toggle(model)
+    ):
         payload["enable_thinking"] = False
     if response_format is not None:
         payload["response_format"] = response_format
@@ -79,14 +82,32 @@ class OpenAICompatibleLLMProvider:
     supports_json_object_response_format = True
     supports_json_schema_response_format = True
 
-    def __init__(self, *, api_key: str, base_url: str, model: str, timeout: float, max_tokens: int, provider_name: str = "openai_compatible") -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: str,
+        model: str,
+        timeout: float,
+        max_tokens: int,
+        provider_name: str = "openai_compatible",
+        thinking_behavior: Literal["auto", "omit", "send_false"] = "auto",
+    ) -> None:
+        if thinking_behavior not in {"auto", "omit", "send_false"}:
+            raise ValueError(f"Unsupported thinking behavior: {thinking_behavior!r}")
         self.name = provider_name
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout = timeout
         self.max_tokens = max_tokens
-        self.enable_thinking = False if _supports_thinking_toggle(model) else None
+        self.thinking_behavior = thinking_behavior
+        self.enable_thinking = (
+            False
+            if thinking_behavior == "send_false"
+            or (thinking_behavior == "auto" and _supports_thinking_toggle(model))
+            else None
+        )
 
     async def generate(
         self,
@@ -108,6 +129,7 @@ class OpenAICompatibleLLMProvider:
             max_tokens=min(max_tokens, self.max_tokens) if max_tokens is not None else self.max_tokens,
             frequency_penalty=frequency_penalty,
             response_format=response_format,
+            thinking_behavior=self.thinking_behavior,
         )
         try:
             if self.__class__._shared_http_client is None or getattr(self.__class__._shared_http_client, "is_closed", False):

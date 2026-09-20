@@ -1,0 +1,138 @@
+{
+  "policy_identity": "western-stage-c-judge-wave2-free-v0.1.5",
+  "scientific_protocol_identity": "western_formal_v0.1.5",
+  "effective_at": "2026-09-20T13:32:00+00:00",
+  "scope": "western_stage_c_primary_judge_wave2_selection_only",
+  "designed_after_wave1_exhaustion": true,
+  "frozen_before_any_wave2_semantic_qualification_output": true,
+  "provider": "siliconflow",
+  "free_only": true,
+  "maximum_wave2_candidates": 4,
+  "wave3_permitted": false,
+  "automatic_paid_fallback_permitted": false,
+  "judge_interface_redesign_permitted_within_study": false,
+  "ad_hoc_candidate_addition_permitted": false,
+  "candidate_pool_freeze_required_before_execution": true,
+  "candidate_pool_frozen_by_this_artifact": false,
+  "wave1_exhaustion": {
+    "relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/wave1-exhaustion.json",
+    "sha256": "eead5bc8cbcd8fb27f79ca7095bc8d210d8ba513f2716120c493396ab9155827"
+  },
+  "discovery_inputs": {
+    "catalog_relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/snapshots/provider-model-catalog.json",
+    "pricing_relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/snapshots/pricing-ledger.json",
+    "capability_relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/snapshots/capability-ledger.json",
+    "eligibility_relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/eligibility/eligibility-ledger.json",
+    "freeze_relative_path": "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/candidate-pool-freeze.json",
+    "single_shared_snapshot_timestamp_required": true,
+    "semantic_or_generation_output_prohibited": true,
+    "live_completion_calls_prohibited": true
+  },
+  "eligibility": {
+    "catalog_presence_required": true,
+    "model_type_required": "chat_completions",
+    "input_price_required": "0.000000",
+    "output_price_required": "0.000000",
+    "openai_chat_completions_compatibility_required": true,
+    "json_object_compatibility_required": true,
+    "availability_required": "available",
+    "account_accessible_required": true,
+    "region_accessible_required": true,
+    "thinking_toggle_allowed": [
+      "omit",
+      "send_false"
+    ],
+    "candidate_specific_interface_change_permitted": false,
+    "generator_model_excluded": "Qwen/Qwen3-8B",
+    "previously_tested_model_ids": [
+      "Qwen/Qwen3.5-4B",
+      "THUDM/GLM-4-9B-0414",
+      "XingChenAGI/Xing4.0-29B",
+      "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "deepseek-ai/DeepSeek-V3.2"
+    ],
+    "documented_aliases_of_tested_models_excluded": true,
+    "unknown_values_fail_closed": true,
+    "every_catalog_model_requires_disposition": true
+  },
+  "ordering": {
+    "complete_eligible_set_preserved": true,
+    "sort_rule": "ascending_utf8_bytes",
+    "python_equivalent": "sorted(model_ids, key=lambda s: s.encode('utf-8'))",
+    "selection_rule": "first_four_or_all_if_fewer",
+    "manual_reordering_permitted": false,
+    "reputation_or_performance_ordering_permitted": false
+  },
+  "execution_contract": {
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0,
+    "max_tokens": 1200,
+    "timeout_seconds": 120.0,
+    "probe_plan_version": "western-stage-c-r3-preflight-matrix-v1",
+    "probe_count": 6,
+    "replicate_count_required": 2,
+    "replicate_pass_requirement": "6_of_6",
+    "per_answerability_requirement": "2_of_2",
+    "minimum_replicate_spacing_seconds": 3600,
+    "exact_provider_reported_model_identity_required": true,
+    "schema_coercion_permitted": false,
+    "nullability_repair_permitted": false,
+    "semantic_normalization_permitted": false,
+    "cross_attempt_pooling_permitted": false,
+    "judge_system_prompt_sha256": "b5c5b71ae89871d9854a806ea7f413caec36cba98aa74f396ff2224dfd0c5226",
+    "formal_judge_output_schema_sha256": "2f33277a2e6292ad1c02fff423b6f0aa226b1da03bbb96da9b648bb1625e1d7a"
+  },
+  "failure_precedence": [
+    "candidate_readiness_failure",
+    "ambiguous_technical_failure",
+    "infrastructure_incident",
+    "passed"
+  ],
+  "infrastructure_recovery": {
+    "maximum_complete_recovery_runs_per_candidate_replicate": 1,
+    "recovery_starts_from_probe_1": true,
+    "probe_level_retry_permitted": false,
+    "selective_fill_permitted": false,
+    "cross_attempt_pooling_permitted": false,
+    "successful_recovery_becomes_effective_replicate": true,
+    "second_infrastructure_incident_state": "operationally_unevaluable_under_current_provider_conditions",
+    "additional_recovery_permitted": false
+  },
+  "pre_call_zero_cost_rule": {
+    "manual_recheck_required_before_first_live_call": true,
+    "nonzero_action": "record_operationally_ineligible_nonzero_cost_without_provider_inference_call",
+    "candidate_quality_interpretation": false,
+    "advance_to_next_frozen_candidate": true
+  },
+  "terminal_pool_rule": {
+    "zero_eligible_candidates_terminates_automated_semantic_stage_c": true,
+    "all_selected_candidates_terminal_without_primary_terminates_automated_semantic_stage_c": true,
+    "scientific_conclusion": "automated semantic Stage C evaluation was not completed because no candidate from the prospectively governed judge-selection procedures achieved the required qualification standard",
+    "stage_a_and_stage_b_remain_valid": true,
+    "w_rq2_semantic_estimates_available": false,
+    "w_rq3_semantic_estimates_available": false
+  },
+  "scientific_invariants": {
+    "stage_a_retrieval_sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+    "primary_stage_b_sha256": "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c",
+    "primary_stage_b_run_manifest_sha256": "32fbc0765fc91395af187abb46b92d2fb13b9eed3acbea016f8ac18a6bc00511",
+    "protocol_v0_1_2_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
+    "generator_model": "Qwen/Qwen3-8B",
+    "benchmark_unchanged": true,
+    "w_rq2": "effect of retrieval condition on generated answer quality under a fixed generator",
+    "w_rq3": "behavior under insufficient evidence",
+    "primary_semantic_endpoint": "per_answer_full_evidence_point_coverage",
+    "key_secondary_endpoint": "unsupported_claim_presence",
+    "composite_clinical_safety_score": false,
+    "tcm_unchanged": true
+  },
+  "reserved_formal_execution": {
+    "created_by_this_policy": false,
+    "run_id_template": "western-formal-v0.1.5-stage-c-wave2-jrv1-YYYYMMDD-01",
+    "directory": "stage_c_execution_v0_1_5_wave2_jrv1",
+    "qualification_outputs_are_formal_stage_c_data": false,
+    "formal_execution_requires_selected_primary": true
+  }
+}

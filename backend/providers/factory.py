@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from config import get_settings
 
@@ -32,7 +33,12 @@ M2_SPECIALIST_ROTATIONS: dict[int, tuple[str, str, str]] = {
 }
 
 
-def build_llm_provider(model_id: str, *, timeout_override: float | None = None) -> LLMProvider:
+def build_llm_provider(
+    model_id: str,
+    *,
+    timeout_override: float | None = None,
+    thinking_behavior: Literal["auto", "omit", "send_false"] = "auto",
+) -> LLMProvider:
     """Build every configured remote model through the verified Qwen path."""
     settings = get_settings()
     return OpenAICompatibleLLMProvider(
@@ -42,6 +48,7 @@ def build_llm_provider(model_id: str, *, timeout_override: float | None = None) 
         timeout=settings.llm_timeout_seconds if timeout_override is None else timeout_override,
         max_tokens=settings.llm_max_tokens,
         provider_name=settings.llm_provider,
+        thinking_behavior=thinking_behavior,
     )
 
 

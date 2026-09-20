@@ -1,0 +1,52 @@
+{
+  "artifact_type": "stage_c_wave1_candidate_pool_exhaustion",
+  "recorded_at": "2026-09-20T13:30:00+00:00",
+  "wave1_policy": {
+    "identity": "western-stage-c-judge-replacement-policy-v2-free",
+    "sha256": "1e77ab1a85ab54e155926c0c9c2b6a7e26728243415d6ccc484cc81c47f89648"
+  },
+  "operational_amendment": {
+    "identity": "western-stage-c-judge-replacement-policy-v2-free-amendment-01",
+    "sha256": "87d237841b747fef74d1ed7d39ac99e2a0c8a84bf7ec57bc10222e399192bfc9"
+  },
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "model_id": "XingChenAGI/Xing4.0-29B",
+      "final_status": "operationally_unevaluable_under_current_provider_conditions",
+      "ordinary_manifest_sha256": "1f0a64a7b698e2d49c84f8f0b113d9f492ed4c40e742e4e664d8d0557efb8bf6",
+      "recovery_manifest_sha256": "dff39085c3d9091b76a40634eadbf167cfc0ef8e360e79a863f399d0c92a33a2",
+      "semantic_or_capability_conclusion_permitted": false
+    },
+    {
+      "candidate_number": 2,
+      "model_id": "THUDM/GLM-4-9B-0414",
+      "final_status": "terminal_candidate_readiness_failure",
+      "ordinary_manifest_sha256": "31884df7556d5c24d87cce74fdcc227f348496fe57a2084fd03e98b29e29d3dd",
+      "interpretation_scope": "failure_under_frozen_judge_interface_contract_only",
+      "global_semantic_model_quality_failure": false
+    },
+    {
+      "candidate_number": 3,
+      "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "final_status": "terminal_candidate_readiness_failure",
+      "ordinary_manifest_sha256": "d2028534671253b2068844344612841e343bfc8b37a3c41b34d76b43c5f2090a",
+      "interpretation_scope": "failure_under_frozen_judge_interface_contract_only",
+      "global_semantic_model_quality_failure": false
+    },
+    {
+      "candidate_number": 4,
+      "model_id": "Qwen/Qwen3.5-4B",
+      "final_status": "operationally_unevaluable_under_current_provider_conditions",
+      "ordinary_manifest_sha256": "47af4ef80b91b620f6bc88c50ea6698281fd2d3ea8ab87962b5ffbeb8bcf20ac",
+      "recovery_manifest_sha256": "b0940bfec028d62a7e836b689705139a99ca51ca5f3d320b57cd82e066ad7002",
+      "adjudication_sha256": "09a4e0d98b1a83efbe7fc4d677dd5b1c6ee21f9c226e758dddb32158a73c3e4d",
+      "semantic_or_capability_conclusion_permitted": false
+    }
+  ],
+  "candidate_pool_exhausted": true,
+  "primary_judge_selected": false,
+  "formal_stage_c_run_created": false,
+  "qualification_outputs_are_formal_research_data": false,
+  "cross_wave_pooling_permitted": false
+}
