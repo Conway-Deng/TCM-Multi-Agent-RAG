@@ -294,21 +294,21 @@ def get_synthetic_probe_plan() -> list[dict[str, Any]]:
             },
             "question": (
                 "Synthetic schema-readiness exercise for bounded insufficiency. "
-                "Acknowledge evidence limitations."
+                "The answer acknowledges the clinical evidence limitations and bounds its scope appropriately."
             ),
             "answer": (
-                "The available synthetic evidence does not provide data on dosage or efficacy. "
-                "The answer is strictly bounded to stating this insufficiency."
+                "While preliminary background suggests general therapeutic interest, the available synthetic evidence "
+                "does not support specific dosage or efficacy conclusions. The guidance is strictly bounded by these evidence limits."
             ),
             "evidence": [{
                 "rank": 1,
-                "article_title": "Synthetic Unrelated Article Two",
+                "article_title": "Synthetic Limited Scope Fixture",
                 "section": "Synthetic",
                 "evidence_excerpt": (
-                    "No dosage or efficacy records exist in this synthetic document."
+                    "Synthetic preliminary overview mentions therapeutic interest, but specifies that clinical efficacy and dosing remain unestablished."
                 ),
             }],
-            "expected_insufficiency_label": "appropriate_abstention",
+            "expected_insufficiency_label": "appropriate_bounded_insufficiency",
             "require_all_enums_exercised": False,
         },
     ]

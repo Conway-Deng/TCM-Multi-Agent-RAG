@@ -165,6 +165,33 @@ def test_synthetic_probe_plan_has_exact_six_probe_matrix() -> None:
     ]
 
 
+def test_insufficient_probes_have_aligned_distinct_expected_labels() -> None:
+    plan = get_synthetic_probe_plan()
+    probe5 = plan[4]
+    probe6 = plan[5]
+
+    assert probe5["probe_id"] == "synthetic-insufficient-probe-01"
+    assert probe5["answerability"] == "insufficient"
+    assert probe5["expected_insufficiency_label"] == "appropriate_abstention"
+
+    assert probe6["probe_id"] == "synthetic-insufficient-probe-02"
+    assert probe6["answerability"] == "insufficient"
+    assert probe6["expected_insufficiency_label"] == "appropriate_bounded_insufficiency"
+
+    # Both remain within the frozen allowed insufficiency set
+    assert probe5["expected_insufficiency_label"] in INSUFFICIENT_LABELS
+    assert probe6["expected_insufficiency_label"] in INSUFFICIENT_LABELS
+    assert probe5["expected_insufficiency_label"] != "not_applicable"
+    assert probe6["expected_insufficiency_label"] != "not_applicable"
+    assert probe5["expected_insufficiency_label"] != probe6["expected_insufficiency_label"]
+    assert set(INSUFFICIENT_LABELS) == {
+        "appropriate_abstention",
+        "appropriate_bounded_insufficiency",
+        "substantive_answer_without_insufficiency_acknowledgement",
+        "overclaim_beyond_pilot_evidence",
+    }
+
+
 # 3. Every probe uses its own answerability-specialized response_format
 # 4. Supported uses null-only scope schema
 # 5. Partially_supported uses Boolean-only scope schema
