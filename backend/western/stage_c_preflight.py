@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -30,17 +31,38 @@ from .formal_eval import (
 from .formal_judge import FormalJudgeOutput, JUDGE_SYSTEM_PROMPT, build_judge_prompt, normalize_judge_json_envelope
 
 
-R3_PREFLIGHT_VERSION = "western-stage-c-r3-structured-output-preflight-v1"
+R3_PREFLIGHT_VERSION = "western-stage-c-r3-structured-output-preflight-v2"
 R3_PREFLIGHT_PROBE_COUNT = 3
 R3_PREFLIGHT_TIMEOUT_SECONDS = 300.0
 R3_PREFLIGHT_CAPABILITY_SOURCE = "https://docs.siliconflow.com/cn/userguide/guides/json-mode-struct"
 R3_STRUCTURED_RESPONSE_FORMAT_TYPE = "json_schema"
 CLAIM_LABELS = {"supported", "partially_supported", "unsupported", "not_checkable"}
 EVIDENCE_LABELS = {"covered", "partially_covered", "not_covered", "contradicted"}
-BOOLEAN_FIELDS = {
-    "stays_within_supported_evidence", "preserves_uncertainty", "invented_unsupported_information",
-    "diagnosis_like_personalized_statement", "individualized_dosing",
-    "prescription_like_recommendation", "research_or_educational_limitation_preserved",
+ALWAYS_BOOLEAN_FIELDS = {
+    "diagnosis_like_personalized_statement",
+    "individualized_dosing",
+    "prescription_like_recommendation",
+    "research_or_educational_limitation_preserved",
+}
+SCOPE_FIELDS = {
+    "stays_within_supported_evidence",
+    "preserves_uncertainty",
+    "invented_unsupported_information",
+}
+INSUFFICIENT_LABELS = [
+    "appropriate_abstention",
+    "appropriate_bounded_insufficiency",
+    "substantive_answer_without_insufficiency_acknowledgement",
+    "overclaim_beyond_pilot_evidence",
+]
+R3_PREFLIGHT_V1_READINESS_PATH = "research/experiments/western_formal_v0_1/stage_c_r3_preflight_readiness.json"
+R3_PREFLIGHT_V1_READINESS_SHA256 = "4129c0fae0ddf8f8da3d81bc6e18e673bdd71b5d512ff4c97fc01973a530d9e3"
+R3_PREFLIGHT_V1_OBSERVED_LATENCY = {
+    "probe_count": 3,
+    "timeouts": 0,
+    "mean_latency_ms": 59030.17166666667,
+    "median_latency_ms": 58087.616,
+    "max_latency_ms": 63760.028,
 }
 
 
@@ -48,12 +70,48 @@ class StageCR3PreflightError(RuntimeError):
     """A non-formal readiness failure that never authorizes formal r3 execution."""
 
 
-def stage_c_r3_response_format() -> dict[str, Any]:
+def stage_c_r3_response_format(
+    *,
+    answerability: str = "partially_supported",
+    expected_evidence_point_count: int = 4,
+) -> dict[str, Any]:
+    if answerability not in {"partially_supported", "supported", "insufficient"}:
+        raise StageCR3PreflightError(f"Unsupported answerability: {answerability}")
+    if expected_evidence_point_count < 0:
+        raise StageCR3PreflightError(f"expected_evidence_point_count must be non-negative, got {expected_evidence_point_count}")
+
+    schema = copy.deepcopy(FormalJudgeOutput.model_json_schema())
+
+    # Scope field specialization
+    if answerability == "partially_supported":
+        for field in SCOPE_FIELDS:
+            schema["properties"][field] = {
+                "title": schema["properties"][field].get("title", field.replace("_", " ").title()),
+                "type": "boolean",
+            }
+    else:  # supported or insufficient
+        for field in SCOPE_FIELDS:
+            schema["properties"][field] = {
+                "title": schema["properties"][field].get("title", field.replace("_", " ").title()),
+                "type": "null",
+            }
+
+    # Insufficiency label specialization
+    if answerability in {"supported", "partially_supported"}:
+        schema["properties"]["insufficiency_label"]["enum"] = ["not_applicable"]
+    else:  # insufficient
+        schema["properties"]["insufficiency_label"]["enum"] = list(INSUFFICIENT_LABELS)
+
+    # Array constraint specialization
+    schema["properties"]["claim_labels"]["minItems"] = 1
+    schema["properties"]["evidence_point_labels"]["minItems"] = expected_evidence_point_count
+    schema["properties"]["evidence_point_labels"]["maxItems"] = expected_evidence_point_count
+
     return {
         "type": R3_STRUCTURED_RESPONSE_FORMAT_TYPE,
         "json_schema": {
             "name": "western_stage_c_judge_output",
-            "schema": FormalJudgeOutput.model_json_schema(),
+            "schema": schema,
         },
     }
 
@@ -97,7 +155,14 @@ def _synthetic_probe_input() -> tuple[dict[str, Any], str]:
     return retrieval, prompt
 
 
-def validate_stage_c_r3_probe_output(text: str) -> tuple[FormalJudgeOutput, str]:
+def validate_stage_c_r3_probe_output(
+    text: str,
+    *,
+    answerability: str = "partially_supported",
+    expected_evidence_points: list[str] | None = None,
+) -> tuple[FormalJudgeOutput, str]:
+    if answerability not in {"partially_supported", "supported", "insufficient"}:
+        raise StageCR3PreflightError(f"Unsupported answerability: {answerability}")
     normalized, normalization = normalize_judge_json_envelope(text)
     try:
         payload = json.loads(normalized)
@@ -105,21 +170,45 @@ def validate_stage_c_r3_probe_output(text: str) -> tuple[FormalJudgeOutput, str]
         raise StageCR3PreflightError("Synthetic readiness output is malformed JSON") from exc
     if not isinstance(payload, dict):
         raise StageCR3PreflightError("Synthetic readiness output must be one JSON object")
-    invalid_booleans = sorted(field for field in BOOLEAN_FIELDS if type(payload.get(field)) is not bool)
+
+    # Raw type validation for ALWAYS_BOOLEAN_FIELDS
+    invalid_booleans = sorted(field for field in ALWAYS_BOOLEAN_FIELDS if type(payload.get(field)) is not bool)
     if invalid_booleans:
         raise StageCR3PreflightError(f"Synthetic readiness output has invalid Boolean fields: {invalid_booleans}")
+
+    # Raw type validation for SCOPE_FIELDS
+    if answerability == "partially_supported":
+        invalid_scope_booleans = sorted(field for field in SCOPE_FIELDS if type(payload.get(field)) is not bool)
+        if invalid_scope_booleans:
+            raise StageCR3PreflightError(f"Synthetic readiness output has invalid scope Boolean fields: {invalid_scope_booleans}")
+    else:
+        invalid_scope_non_null = sorted(field for field in SCOPE_FIELDS if payload.get(field) is not None)
+        if invalid_scope_non_null:
+            raise StageCR3PreflightError(
+                f"Synthetic readiness output has non-null scope fields for answerability '{answerability}': {invalid_scope_non_null}"
+            )
+
     try:
         parsed = FormalJudgeOutput.model_validate(payload)
-        retrieval, _ = _synthetic_probe_input()
+        synthetic_retrieval, _ = _synthetic_probe_input()
+        retrieval = dict(synthetic_retrieval)
+        retrieval["answerability"] = answerability
+        if expected_evidence_points is not None:
+            retrieval["expected_evidence_points"] = expected_evidence_points
         _validate_completed_judge_output(parsed, retrieval)
     except (ValueError, FatalFormalRunError) as exc:
         raise StageCR3PreflightError(f"Synthetic readiness output violates the frozen schema: {exc}") from exc
-    claim_labels = [item.label for item in parsed.claim_labels]
-    evidence_labels = [item.label for item in parsed.evidence_point_labels]
-    if len(claim_labels) != 4 or set(claim_labels) != CLAIM_LABELS:
-        raise StageCR3PreflightError("Synthetic readiness output must exercise each exact claim enum once")
-    if len(evidence_labels) != 4 or set(evidence_labels) != EVIDENCE_LABELS:
-        raise StageCR3PreflightError("Synthetic readiness output must exercise each exact evidence enum once")
+
+    # Synthetic probe enum exercise verification (when using standard synthetic probe fixture)
+    expected_pts = list(retrieval.get("expected_evidence_points") or [])
+    if len(expected_pts) == 4 and answerability == "partially_supported":
+        claim_labels = [item.label for item in parsed.claim_labels]
+        evidence_labels = [item.label for item in parsed.evidence_point_labels]
+        if len(claim_labels) != 4 or set(claim_labels) != CLAIM_LABELS:
+            raise StageCR3PreflightError("Synthetic readiness output must exercise each exact claim enum once")
+        if len(evidence_labels) != 4 or set(evidence_labels) != EVIDENCE_LABELS:
+            raise StageCR3PreflightError("Synthetic readiness output must exercise each exact evidence enum once")
+
     return parsed, normalization
 
 
@@ -163,10 +252,23 @@ async def run_stage_c_r3_structured_output_preflight(
         repository_root / "research/experiments/western_formal_v0_1/runs" / STAGE_C_RUN_ID
     )
     incident_manifest = _verify_stage_c_r2_incident_artifacts(repository_root, incident)
+
+    # Verify v1 readiness artifact immutability if present
+    v1_readiness_path = repository_root / R3_PREFLIGHT_V1_READINESS_PATH
+    if v1_readiness_path.exists():
+        v1_sha = _sha256(v1_readiness_path)
+        if v1_sha != R3_PREFLIGHT_V1_READINESS_SHA256:
+            raise StageCR3PreflightError(
+                f"Stage C r3 preflight v1 readiness artifact modified: expected {R3_PREFLIGHT_V1_READINESS_SHA256}, actual {v1_sha}"
+            )
+
     active = provider or build_llm_provider(JUDGE_MODEL, timeout_override=timeout_seconds)
     _validate_preflight_provider(active, timeout_seconds)
-    response_format = stage_c_r3_response_format()
     retrieval, prompt = _synthetic_probe_input()
+    response_format = stage_c_r3_response_format(
+        answerability=retrieval["answerability"],
+        expected_evidence_point_count=len(retrieval["expected_evidence_points"]),
+    )
     probes: list[dict[str, Any]] = []
     for probe_number in range(1, probe_count + 1):
         started = perf_counter()
@@ -189,7 +291,7 @@ async def run_stage_c_r3_structured_output_preflight(
                 raise StageCR3PreflightError(
                     f"Synthetic readiness returned unsupported finish_reason={getattr(result, 'finish_reason', None)}"
                 )
-            _, normalization = validate_stage_c_r3_probe_output(result.text)
+            _, normalization = validate_stage_c_r3_probe_output(result.text, answerability=retrieval["answerability"])
             schema_success = True
         except ProviderUnavailable as exc:
             error_type = _error_type(exc)
@@ -230,6 +332,8 @@ async def run_stage_c_r3_structured_output_preflight(
         "outputs_must_never_enter_formal_analysis": True,
         "protocol_version": PROTOCOL_VERSION,
         "source_r2_incident_manifest_sha256": _sha256(incident.incident_manifest_path()),
+        "source_r3_preflight_v1_readiness_sha256": R3_PREFLIGHT_V1_READINESS_SHA256 if v1_readiness_path.exists() else None,
+        "prior_preflight_v1_observed_latency": R3_PREFLIGHT_V1_OBSERVED_LATENCY,
         "provider": JUDGE_PROVIDER,
         "model": JUDGE_MODEL,
         "temperature": JUDGE_TEMPERATURE,

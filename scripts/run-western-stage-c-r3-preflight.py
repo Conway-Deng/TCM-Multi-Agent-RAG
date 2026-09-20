@@ -20,9 +20,14 @@ from western.stage_c_preflight import (  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run synthetic, non-formal Stage C r3 structured-output readiness probes.",
+        description="Run synthetic, non-formal Stage C r3 structured-output readiness probes (v2).",
     )
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Path for synthetic readiness JSON manifest (e.g. research/experiments/western_formal_v0_1/stage_c_r3_preflight_readiness_v2.json)",
+    )
     parser.add_argument("--probe-count", type=int, default=R3_PREFLIGHT_PROBE_COUNT)
     parser.add_argument("--timeout-seconds", type=float, default=R3_PREFLIGHT_TIMEOUT_SECONDS)
     parser.add_argument(
