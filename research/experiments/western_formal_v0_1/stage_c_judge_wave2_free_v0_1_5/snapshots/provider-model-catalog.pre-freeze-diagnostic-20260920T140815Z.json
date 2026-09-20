@@ -1,0 +1,295 @@
+{
+  "artifact_type": "provider_model_catalog",
+  "provider": "siliconflow",
+  "snapshot_timestamp": "2026-09-20T14:08:15.403944+00:00",
+  "source_endpoint": "/v1/models",
+  "semantic_or_generation_outputs_used": false,
+  "live_completion_calls_used": false,
+  "models": [
+    {
+      "model_id": "BAAI/bge-large-en-v1.5"
+    },
+    {
+      "model_id": "BAAI/bge-large-zh-v1.5"
+    },
+    {
+      "model_id": "BAAI/bge-m3"
+    },
+    {
+      "model_id": "BAAI/bge-reranker-v2-m3"
+    },
+    {
+      "model_id": "ByteDance-Seed/Seed-OSS-36B-Instruct"
+    },
+    {
+      "model_id": "FunAudioLLM/CosyVoice2-0.5B"
+    },
+    {
+      "model_id": "FunAudioLLM/SenseVoiceSmall"
+    },
+    {
+      "model_id": "Kwai-Kolors/Kolors"
+    },
+    {
+      "model_id": "LoRA/Qwen/Qwen2.5-14B-Instruct"
+    },
+    {
+      "model_id": "LoRA/Qwen/Qwen2.5-32B-Instruct"
+    },
+    {
+      "model_id": "LoRA/Qwen/Qwen2.5-72B-Instruct"
+    },
+    {
+      "model_id": "LoRA/Qwen/Qwen2.5-7B-Instruct"
+    },
+    {
+      "model_id": "PaddlePaddle/PaddleOCR-VL-1.5"
+    },
+    {
+      "model_id": "Pro/BAAI/bge-m3"
+    },
+    {
+      "model_id": "Pro/BAAI/bge-reranker-v2-m3"
+    },
+    {
+      "model_id": "Pro/Qwen/Qwen2.5-7B-Instruct"
+    },
+    {
+      "model_id": "Pro/deepseek-ai/DeepSeek-R1"
+    },
+    {
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3"
+    },
+    {
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3.1-Terminus"
+    },
+    {
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3.2"
+    },
+    {
+      "model_id": "Pro/moonshotai/Kimi-K2.6"
+    },
+    {
+      "model_id": "Pro/zai-org/GLM-5.1"
+    },
+    {
+      "model_id": "Qwen/Qwen-Image"
+    },
+    {
+      "model_id": "Qwen/Qwen-Image-Edit"
+    },
+    {
+      "model_id": "Qwen/Qwen-Image-Edit-2509"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-14B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-32B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-72B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-72B-Instruct-128K"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-7B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-14B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-30B-A3B-Instruct-2507"
+    },
+    {
+      "model_id": "Qwen/Qwen3-32B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-8B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-ASR-1.7B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Embedding-0.6B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Embedding-4B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Embedding-8B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Captioner"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Thinking"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Reranker-0.6B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Reranker-4B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-Reranker-8B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-30B-A3B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-30B-A3B-Thinking"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-32B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-32B-Thinking"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-8B-Instruct"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-8B-Thinking"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-Embedding-8B"
+    },
+    {
+      "model_id": "Qwen/Qwen3-VL-Reranker-8B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.5-122B-A10B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.5-27B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.5-35B-A3B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.5-4B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.5-9B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.6-27B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.6-35B-A3B"
+    },
+    {
+      "model_id": "Qwen/Qwen3.8-27B"
+    },
+    {
+      "model_id": "THUDM/GLM-4-32B-0414"
+    },
+    {
+      "model_id": "THUDM/GLM-4-9B-0414"
+    },
+    {
+      "model_id": "THUDM/GLM-Z1-9B-0414"
+    },
+    {
+      "model_id": "Tongyi-MAI/Z-Image"
+    },
+    {
+      "model_id": "Tongyi-MAI/Z-Image-Turbo"
+    },
+    {
+      "model_id": "Wan-AI/Wan2.2-I2V-A14B"
+    },
+    {
+      "model_id": "Wan-AI/Wan2.2-T2V-A14B"
+    },
+    {
+      "model_id": "XingChenAGI/Xing4.0-29B"
+    },
+    {
+      "model_id": "XingChenAGI/XingChenASR-Diarize-V3.0"
+    },
+    {
+      "model_id": "XingChenAGI/XingChenASR-V3.2"
+    },
+    {
+      "model_id": "XingChenAGI/XingChenASR-V3.2-Ultra"
+    },
+    {
+      "model_id": "XingChenAGI/XingChenGSR-V1.0"
+    },
+    {
+      "model_id": "baidu/ERNIE-Image-Turbo"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-OCR"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-R1"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V3"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V3.1-Terminus"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V3.2"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V4-Flash"
+    },
+    {
+      "model_id": "deepseek-ai/DeepSeek-V4-Pro"
+    },
+    {
+      "model_id": "fnlp/MOSS-TTSD-v0.5"
+    },
+    {
+      "model_id": "inclusionAI/Ling-flash-2.0"
+    },
+    {
+      "model_id": "inclusionAI/Ling-mini-2.0"
+    },
+    {
+      "model_id": "meituan-longcat/LongCat-2.0"
+    },
+    {
+      "model_id": "moonshotai/Kimi-K2.7-Code"
+    },
+    {
+      "model_id": "stepfun-ai/Step-3.5-Flash"
+    },
+    {
+      "model_id": "tencent/Hunyuan-A13B-Instruct"
+    },
+    {
+      "model_id": "tencent/Hunyuan-MT-7B"
+    },
+    {
+      "model_id": "tencent/Hy4-preview"
+    },
+    {
+      "model_id": "zai-org/GLM-4.5-Air"
+    },
+    {
+      "model_id": "zai-org/GLM-4.5V"
+    },
+    {
+      "model_id": "zai-org/GLM-5.2"
+    },
+    {
+      "model_id": "zai-org/GLM-5.3"
+    }
+  ]
+}

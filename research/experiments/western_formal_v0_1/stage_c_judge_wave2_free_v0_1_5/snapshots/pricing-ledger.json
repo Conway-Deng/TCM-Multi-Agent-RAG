@@ -1,0 +1,580 @@
+{
+  "artifact_type": "pricing_ledger",
+  "evidence_source": "exact Next.js Flight model-to-pricing-node reference graph from pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181",
+  "live_completion_calls_used": false,
+  "prices": [
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=6f1; pricing node=6ff; prompt node=701; completion node=700",
+      "input_price": "0.000000",
+      "model_id": "BAAI/bge-large-en-v1.5",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=6de; pricing node=6ec; prompt node=6ee; completion node=6ed",
+      "input_price": "0.000000",
+      "model_id": "BAAI/bge-large-zh-v1.5",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=66c; pricing node=67a; prompt node=67c; completion node=67b",
+      "input_price": "0.000000",
+      "model_id": "BAAI/bge-m3",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=67f; pricing node=68d; prompt node=68f; completion node=68e",
+      "input_price": "0.000000",
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4f0; pricing node=4fe; prompt node=500; completion node=4ff",
+      "input_price": "1.500000",
+      "model_id": "ByteDance-Seed/Seed-OSS-36B-Instruct",
+      "output_price": "4.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=3db; pricing node=3e9; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "FunAudioLLM/CosyVoice2-0.5B",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=33d; pricing node=34b; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "FunAudioLLM/SenseVoiceSmall",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=316; pricing node=324; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Kwai-Kolors/Kolors",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; no exact structured Flight model object",
+      "input_price": null,
+      "model_id": "LoRA/Qwen/Qwen2.5-14B-Instruct",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; no exact structured Flight model object",
+      "input_price": null,
+      "model_id": "LoRA/Qwen/Qwen2.5-32B-Instruct",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; no exact structured Flight model object",
+      "input_price": null,
+      "model_id": "LoRA/Qwen/Qwen2.5-72B-Instruct",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; no exact structured Flight model object",
+      "input_price": null,
+      "model_id": "LoRA/Qwen/Qwen2.5-7B-Instruct",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=267; pricing node=275; prompt node=276; completion node=277",
+      "input_price": "0.000000",
+      "model_id": "PaddlePaddle/PaddleOCR-VL-1.5",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=6cb; pricing node=6d9; prompt node=6da; completion node=6db",
+      "input_price": "0.070000",
+      "model_id": "Pro/BAAI/bge-m3",
+      "output_price": "0.070000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=6a5; pricing node=6b3; prompt node=6b4; completion node=6b5",
+      "input_price": "0.070000",
+      "model_id": "Pro/BAAI/bge-reranker-v2-m3",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=6b8; pricing node=6c6; prompt node=6c7; completion node=6c8",
+      "input_price": "0.350000",
+      "model_id": "Pro/Qwen/Qwen2.5-7B-Instruct",
+      "output_price": "0.350000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=363; pricing node=371; prompt node=373; completion node=372",
+      "input_price": "4.000000",
+      "model_id": "Pro/deepseek-ai/DeepSeek-R1",
+      "output_price": "16.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=34f; pricing node=35d; prompt node=35f; completion node=35e",
+      "input_price": "2.000000",
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3",
+      "output_price": "8.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=377; pricing node=385; prompt node=387; completion node=386",
+      "input_price": "4.000000",
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3.1-Terminus",
+      "output_price": "12.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=38b; pricing node=399; prompt node=39b; completion node=39a",
+      "input_price": "2.000000",
+      "model_id": "Pro/deepseek-ai/DeepSeek-V3.2",
+      "output_price": "3.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=12; pricing node=20; prompt node=22; completion node=21",
+      "input_price": "6.500000",
+      "model_id": "Pro/moonshotai/Kimi-K2.6",
+      "output_price": "27.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=102; pricing node=110; prompt node=112; completion node=111",
+      "input_price": "6.000000",
+      "model_id": "Pro/zai-org/GLM-5.1",
+      "output_price": "28.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=28f; pricing node=29d; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Qwen/Qwen-Image",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=2a2; pricing node=2b0; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Qwen/Qwen-Image-Edit",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=2c8; pricing node=2d6; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Qwen/Qwen-Image-Edit-2509",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=1b3; pricing node=1c1; prompt node=1c2; completion node=1c3",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen2.5-14B-Instruct",
+      "output_price": "0.700000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=620; pricing node=62e; prompt node=62f; completion node=630",
+      "input_price": "1.260000",
+      "model_id": "Qwen/Qwen2.5-32B-Instruct",
+      "output_price": "1.260000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=633; pricing node=641; prompt node=642; completion node=643",
+      "input_price": "4.130000",
+      "model_id": "Qwen/Qwen2.5-72B-Instruct",
+      "output_price": "4.130000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=692; pricing node=6a0; prompt node=6a1; completion node=6a2",
+      "input_price": "4.130000",
+      "model_id": "Qwen/Qwen2.5-72B-Instruct-128K",
+      "output_price": "4.130000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=60d; pricing node=61b; prompt node=61c; completion node=61d",
+      "input_price": "0.000000",
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=59b; pricing node=5a9; prompt node=5ab; completion node=5aa",
+      "input_price": "0.500000",
+      "model_id": "Qwen/Qwen3-14B",
+      "output_price": "2.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=53c; pricing node=54a; prompt node=54c; completion node=54b",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=562; pricing node=570; prompt node=572; completion node=571",
+      "input_price": "1.000000",
+      "model_id": "Qwen/Qwen3-32B",
+      "output_price": "4.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=39f; pricing node=3ad; prompt node=3af; completion node=3ae",
+      "input_price": "0.000000",
+      "model_id": "Qwen/Qwen3-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=da; pricing node=e8; prompt node=e9; completion node=ea",
+      "input_price": "0.000000",
+      "model_id": "Qwen/Qwen3-ASR-1.7B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=516; pricing node=524; prompt node=526; completion node=525",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=5ae; pricing node=5bc; prompt node=5bd; completion node=5be",
+      "input_price": "0.070000",
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4dd; pricing node=4eb; prompt node=4ec; completion node=4ed",
+      "input_price": "0.140000",
+      "model_id": "Qwen/Qwen3-Embedding-4B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=575; pricing node=583; prompt node=584; completion node=585",
+      "input_price": "0.280000",
+      "model_id": "Qwen/Qwen3-Embedding-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=48d; pricing node=49b; prompt node=49d; completion node=49c",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=465; pricing node=473; prompt node=475; completion node=474",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=479; pricing node=487; prompt node=489; completion node=488",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-Omni-30B-A3B-Thinking",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=5c1; pricing node=5cf; prompt node=5d0; completion node=5d1",
+      "input_price": "0.070000",
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=5d4; pricing node=5e2; prompt node=5e3; completion node=5e4",
+      "input_price": "0.140000",
+      "model_id": "Qwen/Qwen3-Reranker-4B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=588; pricing node=596; prompt node=597; completion node=598",
+      "input_price": "0.280000",
+      "model_id": "Qwen/Qwen3-Reranker-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=43d; pricing node=44b; prompt node=44d; completion node=44c",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=451; pricing node=45f; prompt node=461; completion node=460",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-VL-30B-A3B-Thinking",
+      "output_price": "2.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=3c7; pricing node=3d5; prompt node=3d7; completion node=3d6",
+      "input_price": "1.000000",
+      "model_id": "Qwen/Qwen3-VL-32B-Instruct",
+      "output_price": "4.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=3b3; pricing node=3c1; prompt node=3c3; completion node=3c2",
+      "input_price": "1.000000",
+      "model_id": "Qwen/Qwen3-VL-32B-Thinking",
+      "output_price": "10.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=415; pricing node=423; prompt node=425; completion node=424",
+      "input_price": "0.500000",
+      "model_id": "Qwen/Qwen3-VL-8B-Instruct",
+      "output_price": "2.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=429; pricing node=437; prompt node=439; completion node=438",
+      "input_price": "0.500000",
+      "model_id": "Qwen/Qwen3-VL-8B-Thinking",
+      "output_price": "5.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=22b; pricing node=239; prompt node=23a; completion node=23b",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-VL-Embedding-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=217; pricing node=225; prompt node=226; completion node=227",
+      "input_price": "0.700000",
+      "model_id": "Qwen/Qwen3-VL-Reranker-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=253; pricing node=261; prompt node=263; completion node=262",
+      "input_price": "2.000000",
+      "model_id": "Qwen/Qwen3.5-122B-A10B",
+      "output_price": "16.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=23f; pricing node=24d; prompt node=24f; completion node=24e",
+      "input_price": "1.800000",
+      "model_id": "Qwen/Qwen3.5-27B",
+      "output_price": "14.400000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=1db; pricing node=1e9; prompt node=1eb; completion node=1ea",
+      "input_price": "1.600000",
+      "model_id": "Qwen/Qwen3.5-35B-A3B",
+      "output_price": "12.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=1ef; pricing node=1fd; prompt node=1ff; completion node=1fe",
+      "input_price": "0.000000",
+      "model_id": "Qwen/Qwen3.5-4B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=203; pricing node=211; prompt node=213; completion node=212",
+      "input_price": "1.500000",
+      "model_id": "Qwen/Qwen3.5-9B",
+      "output_price": "12.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=151; pricing node=15f; prompt node=161; completion node=160",
+      "input_price": "1.800000",
+      "model_id": "Qwen/Qwen3.6-27B",
+      "output_price": "14.400000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=13d; pricing node=14b; prompt node=14d; completion node=14c",
+      "input_price": "1.600000",
+      "model_id": "Qwen/Qwen3.6-35B-A3B",
+      "output_price": "12.800000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=62; pricing node=70; prompt node=72; completion node=71",
+      "input_price": "1.800000",
+      "model_id": "Qwen/Qwen3.8-27B",
+      "output_price": "14.400000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=659; pricing node=667; prompt node=669; completion node=668",
+      "input_price": "1.890000",
+      "model_id": "THUDM/GLM-4-32B-0414",
+      "output_price": "1.890000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=646; pricing node=654; prompt node=656; completion node=655",
+      "input_price": "0.000000",
+      "model_id": "THUDM/GLM-4-9B-0414",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=5fa; pricing node=608; prompt node=60a; completion node=609",
+      "input_price": "0.000000",
+      "model_id": "THUDM/GLM-Z1-9B-0414",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=18d; pricing node=19b; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Tongyi-MAI/Z-Image",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=1a0; pricing node=1ae; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Tongyi-MAI/Z-Image-Turbo",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=2db; pricing node=2e9; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Wan-AI/Wan2.2-I2V-A14B",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=2b5; pricing node=2c3; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "Wan-AI/Wan2.2-T2V-A14B",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=3a; pricing node=48; prompt node=49; completion node=4a",
+      "input_price": "0.000000",
+      "model_id": "XingChenAGI/Xing4.0-29B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=9e; pricing node=ac; prompt node=ad; completion node=ae",
+      "input_price": "0.000000",
+      "model_id": "XingChenAGI/XingChenASR-Diarize-V3.0",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=b2; pricing node=c0; prompt node=c2; completion node=c1",
+      "input_price": "0.000000",
+      "model_id": "XingChenAGI/XingChenASR-V3.2",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=8a; pricing node=98; prompt node=99; completion node=9a",
+      "input_price": "0.000000",
+      "model_id": "XingChenAGI/XingChenASR-V3.2-Ultra",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=76; pricing node=84; prompt node=85; completion node=86",
+      "input_price": "0.000000",
+      "model_id": "XingChenAGI/XingChenGSR-V1.0",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=116; pricing node=124; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "baidu/ERNIE-Image-Turbo",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=329; pricing node=337; prompt node=339; completion node=338",
+      "input_price": "0.000000",
+      "model_id": "deepseek-ai/DeepSeek-OCR",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4c9; pricing node=4d7; prompt node=4d9; completion node=4d8",
+      "input_price": "4.000000",
+      "model_id": "deepseek-ai/DeepSeek-R1",
+      "output_price": "16.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=5e7; pricing node=5f5; prompt node=5f7; completion node=5f6",
+      "input_price": "0.000000",
+      "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4b5; pricing node=4c3; prompt node=4c5; completion node=4c4",
+      "input_price": "2.000000",
+      "model_id": "deepseek-ai/DeepSeek-V3",
+      "output_price": "8.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=401; pricing node=40f; prompt node=411; completion node=410",
+      "input_price": "4.000000",
+      "model_id": "deepseek-ai/DeepSeek-V3.1-Terminus",
+      "output_price": "12.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=27b; pricing node=289; prompt node=28b; completion node=28a",
+      "input_price": "2.000000",
+      "model_id": "deepseek-ai/DeepSeek-V3.2",
+      "output_price": "3.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=ee; pricing node=fc; prompt node=fe; completion node=fd",
+      "input_price": "1.000000",
+      "model_id": "deepseek-ai/DeepSeek-V4-Flash",
+      "output_price": "2.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=165; pricing node=173; prompt node=175; completion node=174",
+      "input_price": "12.000000",
+      "model_id": "deepseek-ai/DeepSeek-V4-Pro",
+      "output_price": "24.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=3ee; pricing node=3fc; prompt node=absent; completion node=absent",
+      "input_price": null,
+      "model_id": "fnlp/MOSS-TTSD-v0.5",
+      "output_price": null
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=302; pricing node=310; prompt node=312; completion node=311",
+      "input_price": "1.000000",
+      "model_id": "inclusionAI/Ling-flash-2.0",
+      "output_price": "4.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=2ee; pricing node=2fc; prompt node=2fe; completion node=2fd",
+      "input_price": "0.500000",
+      "model_id": "inclusionAI/Ling-mini-2.0",
+      "output_price": "2.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=129; pricing node=137; prompt node=139; completion node=138",
+      "input_price": "5.000000",
+      "model_id": "meituan-longcat/LongCat-2.0",
+      "output_price": "20.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=179; pricing node=187; prompt node=189; completion node=188",
+      "input_price": "6.500000",
+      "model_id": "moonshotai/Kimi-K2.7-Code",
+      "output_price": "27.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=1c7; pricing node=1d5; prompt node=1d7; completion node=1d6",
+      "input_price": "0.700000",
+      "model_id": "stepfun-ai/Step-3.5-Flash",
+      "output_price": "2.100000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=54f; pricing node=55d; prompt node=55f; completion node=55e",
+      "input_price": "1.000000",
+      "model_id": "tencent/Hunyuan-A13B-Instruct",
+      "output_price": "4.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4a1; pricing node=4af; prompt node=4b1; completion node=4b0",
+      "input_price": "0.000000",
+      "model_id": "tencent/Hunyuan-MT-7B",
+      "output_price": "0.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=4e; pricing node=5c; prompt node=5e; completion node=5d",
+      "input_price": "6.000000",
+      "model_id": "tencent/Hy4-preview",
+      "output_price": "18.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=529; pricing node=537; prompt node=539; completion node=538",
+      "input_price": "1.000000",
+      "model_id": "zai-org/GLM-4.5-Air",
+      "output_price": "6.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=503; pricing node=511; prompt node=513; completion node=512",
+      "input_price": "1.000000",
+      "model_id": "zai-org/GLM-4.5V",
+      "output_price": "6.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=26; pricing node=34; prompt node=36; completion node=35",
+      "input_price": "6.000000",
+      "model_id": "zai-org/GLM-5.2",
+      "output_price": "28.000000"
+    },
+    {
+      "evidence_reference": "pricing-page.raw.html sha256=c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181; Flight model node=c6; pricing node=d4; prompt node=d6; completion node=d5",
+      "input_price": "6.000000",
+      "model_id": "zai-org/GLM-5.3",
+      "output_price": "28.000000"
+    }
+  ],
+  "provider": "siliconflow",
+  "semantic_or_generation_outputs_used": false,
+  "snapshot_timestamp": "2026-09-20T14:26:34.756207+00:00"
+}

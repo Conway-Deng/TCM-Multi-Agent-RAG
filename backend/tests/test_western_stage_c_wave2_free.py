@@ -263,21 +263,71 @@ def test_policy_history_and_scientific_invariants_are_pinned() -> None:
     assert formal.GENERATOR_MODEL == "Qwen/Qwen3-8B"
 
 
-def test_canonical_pool_is_not_yet_frozen_and_execution_fails_before_provider() -> None:
-    assert not (ROOT / wave2.WAVE2_FREEZE_RELATIVE_PATH).exists()
-    candidate = wave2.Wave2Candidate(1, "fixture/model", "omit")
-    provider = MockProvider(candidate, [])
-    with pytest.raises(wave2.StageCWave2Error, match="freeze is missing"):
-        asyncio.run(
-            wave2.run_wave2_candidate_preflight(
-                ROOT,
-                candidate_number=1,
-                replicate_number=1,
-                zero_cost_confirmed=True,
-                provider=provider,
-            )
-        )
-    assert provider.calls == []
+def test_canonical_zero_candidate_freeze_and_exhaustion_are_final() -> None:
+    artifacts = {
+        wave2.WAVE2_CATALOG_RELATIVE_PATH: (
+            "f30ee7bbef701d60c20026d86803549a43bedf610af2201cb870d54a326c9da8"
+        ),
+        wave2.WAVE2_PRICING_RELATIVE_PATH: (
+            "1f91510871def6953e79138240a261030a90a211341fac85b5661778ce7cc211"
+        ),
+        wave2.WAVE2_CAPABILITY_RELATIVE_PATH: (
+            "dee463f0002b765b06a999005083cbffaf68884f5169b1cd704d98b7715cb68c"
+        ),
+        wave2.WAVE2_ELIGIBILITY_RELATIVE_PATH: (
+            "ca0e79020ec03abd9b7a18fb192211fc5fa829abeacbdd311f7de56082528a37"
+        ),
+        wave2.WAVE2_FREEZE_RELATIVE_PATH: (
+            "c94a4a062e3ef956b5a9454bcc778a86a225894a249449d96d547d645bd61484"
+        ),
+        wave2.WAVE2_EXHAUSTION_RELATIVE_PATH: (
+            "9da09729c9ed4986fab05b6de979d25025bce42836b7b81fdb108207e2ce8886"
+        ),
+        (
+            "research/experiments/western_formal_v0_1/"
+            "stage_c_judge_wave2_free_v0_1_5/snapshots/"
+            "chat-model-ids.discovery.json"
+        ): "8cd748add40364acd7f8ee5a1601bce4f167a9af51eb2ead10fe3a6c7a7c1742",
+        (
+            "research/experiments/western_formal_v0_1/"
+            "stage_c_judge_wave2_free_v0_1_5/snapshots/pricing-page.raw.html"
+        ): "c55765eddeb90b6755d0ded4c686ae861af01d08ca11cb976346b45b8179b181",
+    }
+    for relative_path, expected_sha256 in artifacts.items():
+        path = ROOT / relative_path
+        assert path.is_file()
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha256
+
+    registry = wave2.validate_wave2_candidate_pool_freeze(ROOT)
+    freeze = registry.freeze
+    assert len(registry.candidates) == 0
+    assert freeze["complete_eligible_model_ids"] == []
+    assert freeze["selected_candidates"] == []
+    assert freeze["pool_size"] == 0
+    assert freeze["wave3_permitted"] is False
+    assert freeze["formal_stage_c_run_created"] is False
+
+    exhaustion = json.loads(
+        (ROOT / wave2.WAVE2_EXHAUSTION_RELATIVE_PATH).read_text(encoding="utf-8")
+    )
+    assert exhaustion["artifact_type"] == "wave2_final_candidate_pool_exhaustion"
+    assert exhaustion["pool_size"] == 0
+    assert exhaustion["candidate_terminal_states"] == []
+    assert exhaustion["primary_judge_selected"] is False
+    assert exhaustion["automated_semantic_stage_c_terminated"] is True
+    assert exhaustion["wave3_permitted"] is False
+    assert exhaustion["automatic_paid_fallback_permitted"] is False
+    assert exhaustion["judge_interface_redesign_permitted_within_study"] is False
+    assert exhaustion["formal_stage_c_run_created"] is False
+    assert exhaustion["stage_a_and_stage_b_remain_valid"] is True
+    assert exhaustion["w_rq2_semantic_estimates_available"] is False
+    assert exhaustion["w_rq3_semantic_estimates_available"] is False
+    assert exhaustion["source_pool_freeze_sha256"] == artifacts[
+        wave2.WAVE2_FREEZE_RELATIVE_PATH
+    ]
+
+    with pytest.raises(wave2.StageCWave2Error, match="blocked"):
+        wave2.assert_wave2_formal_stage_c_ready(ROOT)
 
 
 def test_duplicate_catalog_ids_and_incomplete_ledgers_fail_closed(tmp_path: Path) -> None:
@@ -629,4 +679,8 @@ def test_prompt_schema_probes_tcm_and_stage_ab_are_unchanged() -> None:
         "primary_stage_b_run_manifest_sha256": "32fbc0765fc91395af187abb46b92d2fb13b9eed3acbea016f8ac18a6bc00511",
         "protocol_v0_1_2_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
     }
-    assert not (ROOT / "research/experiments/western_formal_v0_1/stage_c_judge_wave2_free_v0_1_5/candidate-pool-freeze.json").exists()
+    assert (
+        ROOT
+        / "research/experiments/western_formal_v0_1/"
+        "stage_c_judge_wave2_free_v0_1_5/candidate-pool-freeze.json"
+    ).is_file()

@@ -1,0 +1,20 @@
+{
+  "artifact_type": "wave2_final_candidate_pool_exhaustion",
+  "automated_semantic_stage_c_terminated": true,
+  "automatic_paid_fallback_permitted": false,
+  "candidate_terminal_states": [],
+  "created_at": "2026-09-20T15:11:06.615904+00:00",
+  "formal_stage_c_run_created": false,
+  "judge_interface_redesign_permitted_within_study": false,
+  "policy_identity": "western-stage-c-judge-wave2-free-v0.1.5",
+  "pool_size": 0,
+  "primary_judge_selected": false,
+  "scientific_conclusion": "automated semantic Stage C evaluation was not completed because no candidate from the prospectively governed judge-selection procedures achieved the required qualification standard",
+  "scientific_protocol_identity": "western_formal_v0.1.5",
+  "source_policy_sha256": "5ac5b5bab86b853fe719303e92defcadc609015b29648630b29ed5db1191b596",
+  "source_pool_freeze_sha256": "c94a4a062e3ef956b5a9454bcc778a86a225894a249449d96d547d645bd61484",
+  "stage_a_and_stage_b_remain_valid": true,
+  "w_rq2_semantic_estimates_available": false,
+  "w_rq3_semantic_estimates_available": false,
+  "wave3_permitted": false
+}
