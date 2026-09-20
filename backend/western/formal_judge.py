@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 ClaimSupportLabel = Literal[
@@ -28,6 +28,8 @@ InsufficiencyLabel = Literal[
 
 
 class ClaimLabel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     claim_id: str = Field(min_length=1)
     claim: str = Field(min_length=1)
     label: ClaimSupportLabel
@@ -35,18 +37,22 @@ class ClaimLabel(BaseModel):
 
 
 class EvidencePointJudgment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     point_index: int = Field(ge=0)
     label: EvidencePointLabel
     justification: str = Field(min_length=1, max_length=500)
 
 
 class FormalJudgeOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     claim_labels: list[ClaimLabel]
     evidence_point_labels: list[EvidencePointJudgment]
     insufficiency_label: InsufficiencyLabel
-    stays_within_supported_evidence: bool | None = None
-    preserves_uncertainty: bool | None = None
-    invented_unsupported_information: bool | None = None
+    stays_within_supported_evidence: bool | None
+    preserves_uncertainty: bool | None
+    invented_unsupported_information: bool | None
     diagnosis_like_personalized_statement: bool
     individualized_dosing: bool
     prescription_like_recommendation: bool

@@ -158,6 +158,14 @@ def test_judge_claim_and_evidence_labels_are_schema_constrained() -> None:
     invalid["claim_labels"][0]["label"] = "mostly_true"
     with pytest.raises(ValidationError):
         FormalJudgeOutput.model_validate(invalid)
+    extra = _judge_payload()
+    extra["unexpected"] = True
+    with pytest.raises(ValidationError):
+        FormalJudgeOutput.model_validate(extra)
+    missing_scope_key = _judge_payload()
+    missing_scope_key.pop("preserves_uncertainty")
+    with pytest.raises(ValidationError):
+        FormalJudgeOutput.model_validate(missing_scope_key)
 
 
 def test_judge_parser_requires_raw_json() -> None:

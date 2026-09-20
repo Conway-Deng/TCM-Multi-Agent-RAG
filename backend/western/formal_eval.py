@@ -33,6 +33,7 @@ from .agent import (
 from .benchmark import load_benchmark
 from .corpus import load_runtime_corpus, sha256_file
 from .formal_judge import (
+    FormalJudgeOutput,
     JUDGE_SYSTEM_PROMPT,
     build_judge_prompt,
     checkable_claim_counts,
@@ -93,6 +94,23 @@ STAGE_B_READINESS_INTERVAL_SECONDS = 10
 STAGE_B_READINESS_MAX_TOKENS = 16
 STAGE_B_REPEAT_OUTAGE_MIN_SUFFIX = 20
 STAGE_B_REPEAT_INFRASTRUCTURE_ERRORS = frozenset({"connectivity", "timeout", "http_5xx", "malformed_response", "rate_limit"})
+STAGE_C_RUN_ID = "western-formal-v0.1.2-stage-c-r1-20260919-01"
+STAGE_C_EXECUTION_VERSION = "western-stage-c-execution-v0.1.2-r1"
+STAGE_C_EXECUTION_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r1/execution.json"
+STAGE_C_ANALYSIS_RELATIVE_PATH = "research/experiments/western_formal_v0_1/stage_c_execution_v0_1_2_r1/analysis.json"
+PRIMARY_STAGE_B_SHA256 = "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c"
+PRIMARY_STAGE_B_SEAL_SHA256 = "45a740077fe25f08c996779c272bfdff2a9e4d06b1703f0de5ce3c3dbf3a480c"
+PRIMARY_STAGE_B_GENERATION_METRICS_SHA256 = "1bbaf4ca1befa92c552c06e1914ea370ffc992fb4163671768ba3ae9813446f9"
+PRIMARY_STAGE_B_PROVIDER_METRICS_SHA256 = "a3d7011ec3bab16ff4a01b733f9a01498e09660943c6e7be69bf7cfe5db224c6"
+PRIMARY_STAGE_B_EXECUTION_MANIFEST_SHA256 = "97b6ec0fdd7d9fab81e932caee317032e9040663e55841f57b36256f107d2acc"
+PRIMARY_STAGE_B_READINESS_MANIFEST_SHA256 = "cc54c6b5d06e6025f09ce240b80b8a707f5d2beb7252ec8a7c41a665e69d25fb"
+PRIMARY_STAGE_B_INCIDENT_MANIFEST_SHA256 = "5ad53525a1457d0c280947cd2e0778bf396d34a597bf845e99f4f48aa3f1fdd7"
+PRIMARY_STAGE_B_RUN_MANIFEST_SHA256 = "32fbc0765fc91395af187abb46b92d2fb13b9eed3acbea016f8ac18a6bc00511"
+STAGE_C_OUTCOMES = frozenset({
+    "completed", "technical_failure", "rate_limit", "nonretryable_provider_failure",
+    "output_schema_failure", "truncated_response",
+    "upstream_retrieval_technical_failure", "upstream_generation_failure",
+})
 
 
 class FatalFormalRunError(RuntimeError):
@@ -223,6 +241,16 @@ def resolve_stage_b_repeat_execution_freeze_commit(repository_root: Path) -> str
     ).stdout.strip()
     if not commit:
         raise FatalFormalRunError("The Stage B repeat execution freeze commit does not exist")
+    return commit
+
+
+def resolve_stage_c_execution_freeze_commit(repository_root: Path) -> str:
+    commit = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", STAGE_C_EXECUTION_RELATIVE_PATH],
+        cwd=repository_root, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    if not commit:
+        raise FatalFormalRunError("The Stage C execution freeze commit does not exist")
     return commit
 
 
@@ -471,6 +499,155 @@ def verify_stage_b_repeat_execution_freeze(
         "execution_freeze_commit": freeze_commit,
         "execution_json_sha256": execution_sha,
         "incident_json_sha256": incident_sha,
+    }
+
+
+def _expected_stage_c_analysis_plan() -> dict[str, Any]:
+    return {
+        "analysis_version": "western-stage-c-analysis-v0.1.2-r1",
+        "protocol_version": PROTOCOL_VERSION,
+        "w_rq2": {
+            "population": "42 evidence-answerable cases",
+            "case_count": 42,
+            "primary_endpoint": "per_answer_full_evidence_point_coverage",
+            "definition": "covered expected evidence points / total frozen expected evidence points for that answer",
+            "condition_summary": "macro_mean_across_endpoint_defined_answers",
+            "comparisons": ["R1-R0", "R2-R0", "R3-R0"],
+            "effect_estimate": "case_paired_mean_difference",
+            "confidence_interval": "paired_percentile_bootstrap_95_percent",
+            "bootstrap_resamples": 10000,
+            "bootstrap_seed": 20260815,
+            "primary_binary_significance_decision": False,
+            "key_secondary_endpoint": "unsupported_claim_presence_per_answer",
+            "key_secondary_test": "exact_two_sided_mcnemar",
+            "key_secondary_multiplicity": "holm_across_three_r0_comparisons_only",
+            "secondary_endpoints": [
+                "unsupported_claim_count", "claim_support_rate",
+                "partially_supported_claim_rate", "unsupported_claim_rate",
+                "evidence_point_partial_coverage", "evidence_point_contradiction_rate",
+                "partially_supported_case_scope_fields", "observable_safety_scope_flags",
+            ],
+            "clinical_safety_composite": False,
+        },
+        "missingness": {
+            "generation_technical": "exclude_from_semantic_denominators_and_report_separately",
+            "judge_technical": "exclude_from_semantic_denominators_and_report_separately",
+            "semantic": "report_undefined_endpoint_and_never_score_as_zero",
+            "pairwise_population": "successful_pair_intersection_for_specific_endpoint",
+            "imputation": "none",
+            "pool_original_outage_attempt": False,
+            "shared_complete_case_denominator": False,
+        },
+        "w_rq3": {
+            "population": "six insufficient cases analyzed separately",
+            "case_count": 6,
+            "successful_outcomes": [
+                "appropriate_abstention", "appropriate_bounded_insufficiency",
+                "substantive_answer_without_insufficiency_acknowledgement",
+                "overclaim_beyond_pilot_evidence",
+            ],
+            "not_applicable_allowed_for_success": False,
+            "hypothesis_tests": "none",
+        },
+    }
+
+
+def _stage_c_scientific_sha256(repository_root: Path) -> dict[str, str]:
+    protocol_root = repository_root / "research/experiments/western_formal_v0_1/protocol_v0_1_2"
+    benchmark_root = repository_root / "research/benchmarks/western_pilot_v0_1"
+    corpus_root = repository_root / "research/corpus/west_v0_1"
+    return {
+        "protocol_json": _sha256(protocol_root / "protocol.json"),
+        "judge_schema_json": _sha256(protocol_root / "judge_schema.json"),
+        "metric_definitions_md": _sha256(protocol_root / "metric_definitions.md"),
+        "failure_policy_md": _sha256(protocol_root / "failure_policy.md"),
+        "benchmark_jsonl": _sha256(benchmark_root / "benchmark.jsonl"),
+        "benchmark_manifest_json": _sha256(benchmark_root / "benchmark_manifest.json"),
+        "corpus_chunks_jsonl": _sha256(corpus_root / "chunks.jsonl"),
+        "source_registry_json": _sha256(corpus_root / "source_registry.json"),
+        "canonical_judge_system_prompt": hashlib.sha256(JUDGE_SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
+        "canonical_formal_judge_output_schema": _canonical_json_sha256(FormalJudgeOutput.model_json_schema()),
+    }
+
+
+def verify_stage_c_execution_freeze(
+    repository_root: Path,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    analysis_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    verify_amended_protocol(repository_root)
+    execution_path = repository_root / STAGE_C_EXECUTION_RELATIVE_PATH
+    analysis_path = repository_root / STAGE_C_ANALYSIS_RELATIVE_PATH
+    config = execution_config or _load_json_object(execution_path, label="Stage C execution freeze")
+    analysis = analysis_config or _load_json_object(analysis_path, label="Stage C analysis freeze")
+    if analysis != _expected_stage_c_analysis_plan():
+        raise FatalFormalRunError("Stage C analysis freeze does not match the preregistered plan")
+    analysis_sha = _sha256(analysis_path) if analysis_config is None else _canonical_json_sha256(analysis)
+    freeze_commit = expected_execution_commit or resolve_stage_c_execution_freeze_commit(repository_root)
+    head = _git_head(repository_root)
+    if head != freeze_commit:
+        raise FatalFormalRunError(f"Stage C requires execution freeze HEAD {freeze_commit}; current HEAD is {head}")
+    if require_clean_worktree and not _git_worktree_clean(repository_root):
+        raise FatalFormalRunError("Stage C requires a clean Git working tree")
+    expected = {
+        "execution_version": STAGE_C_EXECUTION_VERSION,
+        "stage_c_run_id": STAGE_C_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "stage_a_run_id": STAGE_A_RUN_ID,
+        "stage_a_checkpoint_commit": STAGE_A_CHECKPOINT_COMMIT,
+        "stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "primary_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+        "primary_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "primary_stage_b_seal_manifest_sha256": PRIMARY_STAGE_B_SEAL_SHA256,
+        "primary_stage_b_raw_sha256": PRIMARY_STAGE_B_SHA256,
+        "primary_stage_b_execution_manifest_sha256": PRIMARY_STAGE_B_EXECUTION_MANIFEST_SHA256,
+        "primary_stage_b_readiness_manifest_sha256": PRIMARY_STAGE_B_READINESS_MANIFEST_SHA256,
+        "primary_stage_b_incident_manifest_sha256": PRIMARY_STAGE_B_INCIDENT_MANIFEST_SHA256,
+        "primary_stage_b_run_manifest_sha256": PRIMARY_STAGE_B_RUN_MANIFEST_SHA256,
+        "repeat_execution_freeze_commit": "d68df8018798219b2bcf8dd36ee067dedbf66dfc",
+        "repeat_execution_json_sha256": "de06ad2c834c287fa0d6715c45c56c26147fdc9ee697f68d7fa2d78a314e2617",
+        "provider": JUDGE_PROVIDER,
+        "model": JUDGE_MODEL,
+        "temperature": JUDGE_TEMPERATURE,
+        "max_tokens": JUDGE_MAX_TOKENS,
+        "timeout_seconds": JUDGE_TIMEOUT_SECONDS,
+        "enable_thinking": False,
+        "intended_cell_count": INTENDED_CELLS,
+        "analysis_sha256": analysis_sha,
+        "scientific_sha256": _stage_c_scientific_sha256(repository_root),
+        "outcome_enum": sorted(STAGE_C_OUTCOMES),
+    }
+    mismatches = {key: {"expected": value, "actual": config.get(key)} for key, value in expected.items() if config.get(key) != value}
+    implementation = config.get("implementation_sha256")
+    if not isinstance(implementation, dict) or not implementation:
+        mismatches["implementation_sha256"] = {"expected": "non-empty mapping", "actual": implementation}
+    else:
+        for relative, expected_hash in implementation.items():
+            path = repository_root / str(relative)
+            actual_hash = _sha256(path) if path.is_file() else None
+            if actual_hash != expected_hash:
+                mismatches[f"implementation_sha256.{relative}"] = {"expected": expected_hash, "actual": actual_hash}
+    implementation_commit = config.get("implementation_commit")
+    if not isinstance(implementation_commit, str) or len(implementation_commit) != 40:
+        mismatches["implementation_commit"] = {"expected": "40-character Commit 1 SHA", "actual": implementation_commit}
+    elif execution_config is None:
+        parent = subprocess.run(
+            ["git", "rev-parse", f"{freeze_commit}^"], cwd=repository_root,
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        if parent != implementation_commit:
+            mismatches["implementation_commit"] = {"expected": parent, "actual": implementation_commit}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage C execution freeze mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return {
+        **config,
+        "execution_freeze_commit": freeze_commit,
+        "execution_json_sha256": _sha256(execution_path) if execution_config is None else _canonical_json_sha256(config),
+        "analysis_json_sha256": analysis_sha,
     }
 
 
@@ -882,6 +1059,72 @@ class StageBRepeatDirectory:
         manifest = _load_json_object(self.stage_manifest_path(), label="Stage B repeat seal")
         if manifest.get("sha256") != _sha256(self.stage_path()) or manifest.get("cell_count") != INTENDED_CELLS:
             raise FatalFormalRunError("Stage B repeat seal hash or cell count mismatch")
+
+
+class StageCDirectory:
+    """A Stage-C-only run that references frozen Stage A and primary Stage B externally."""
+
+    def __init__(self, path: Path) -> None:
+        if path.name != STAGE_C_RUN_ID:
+            raise FatalFormalRunError(f"Stage C requires exact run ID {STAGE_C_RUN_ID}")
+        self.path = path
+
+    def stage_path(self) -> Path:
+        return self.path / "stage_c_judge.jsonl"
+
+    def stage_manifest_path(self) -> Path:
+        return self.path / "stage_c_manifest.json"
+
+    def execution_manifest_path(self) -> Path:
+        return self.path / "stage_c_execution_manifest.json"
+
+    def append(self, record: dict[str, Any]) -> None:
+        if self.stage_manifest_path().exists():
+            raise FatalFormalRunError("Stage C is sealed and immutable")
+        if not self.execution_manifest_path().is_file():
+            raise FatalFormalRunError("Stage C execution manifest must exist before append")
+        _assert_no_secret_fields(record)
+        existing = _read_jsonl_strict(self.stage_path(), label="Stage C judgments")
+        if record.get("experiment_id") in {row.get("experiment_id") for row in existing}:
+            raise FatalFormalRunError(f"Duplicate Stage C cell: {record.get('experiment_id')}")
+        self.path.mkdir(parents=True, exist_ok=True)
+        with self.stage_path().open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+    def seal(self, expected_experiment_ids: list[str]) -> dict[str, Any]:
+        records = _read_jsonl_strict(self.stage_path(), label="Stage C judgments")
+        ids = [row.get("experiment_id") for row in records]
+        if len(records) != INTENDED_CELLS or ids != expected_experiment_ids or len(set(ids)) != INTENDED_CELLS:
+            raise FatalFormalRunError("Stage C seal requires the exact ordered 192 primary Stage B experiment IDs")
+        payload = {
+            "stage": "C",
+            "run_id": STAGE_C_RUN_ID,
+            "cell_count": INTENDED_CELLS,
+            "sha256": _sha256(self.stage_path()),
+            "sealed_at": _utc_now(),
+            "immutable_input_for": "Stage C finalization and merged final analysis",
+            "parent_stage_a_run_id": STAGE_A_RUN_ID,
+            "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+            "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+            "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        }
+        _atomic_new_json(self.stage_manifest_path(), payload)
+        return payload
+
+    def verify_sealed(self) -> None:
+        manifest = _load_json_object(self.stage_manifest_path(), label="Stage C seal")
+        expected = {
+            "stage": "C", "run_id": STAGE_C_RUN_ID, "cell_count": INTENDED_CELLS,
+            "sha256": _sha256(self.stage_path()), "parent_stage_a_run_id": STAGE_A_RUN_ID,
+            "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+            "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+            "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        }
+        mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+        if mismatches:
+            raise FatalFormalRunError(f"Stage C seal mismatch: {json.dumps(mismatches, sort_keys=True)}")
 
 
 def _base_record(case: dict[str, Any], condition: str) -> dict[str, Any]:
@@ -1999,6 +2242,409 @@ def classify_stage_b_repeat_outage(records: list[dict[str, Any]]) -> dict[str, A
     }
 
 
+def _canonical_primary_stage_b_repeat(repository_root: Path) -> StageBRepeatDirectory:
+    return StageBRepeatDirectory(
+        repository_root / "research/experiments/western_formal_v0_1/runs" / STAGE_B_REPEAT_RUN_ID
+    )
+
+
+def _verify_primary_stage_b_inputs(
+    repository_root: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    original = _canonical_stage_a_run(repository_root)
+    incident = _verify_incident_preservation_artifacts(repository_root, original)
+    if _sha256(original.path / "stage_b_incident_manifest.json") != PRIMARY_STAGE_B_INCIDENT_MANIFEST_SHA256:
+        raise FatalFormalRunError("Original Stage B incident manifest SHA256 mismatch")
+    if incident.get("eligible_as_primary") is not False or incident.get("eligible_for_stage_c") is not False or incident.get("preservation_only") is not True:
+        raise FatalFormalRunError("Original Stage B attempt is not preserved as incident-only")
+    stage_a = verify_frozen_stage_a(repository_root, original)
+    repeat = _canonical_primary_stage_b_repeat(repository_root)
+    repeat.verify_sealed()
+    expected_hashes = {
+        "stage_b_generation.jsonl": PRIMARY_STAGE_B_SHA256,
+        "stage_b_manifest.json": PRIMARY_STAGE_B_SEAL_SHA256,
+        "stage_b_raw_results.jsonl": PRIMARY_STAGE_B_SHA256,
+        "stage_b_generation_metrics.json": PRIMARY_STAGE_B_GENERATION_METRICS_SHA256,
+        "stage_b_provider_metrics.json": PRIMARY_STAGE_B_PROVIDER_METRICS_SHA256,
+        "stage_b_repeat_execution_manifest.json": PRIMARY_STAGE_B_EXECUTION_MANIFEST_SHA256,
+        "stage_b_repeat_readiness_manifest.json": PRIMARY_STAGE_B_READINESS_MANIFEST_SHA256,
+        "stage_b_run_manifest.json": PRIMARY_STAGE_B_RUN_MANIFEST_SHA256,
+    }
+    mismatches: dict[str, Any] = {}
+    for name, expected_hash in expected_hashes.items():
+        path = repeat.path / name
+        actual = _sha256(path) if path.is_file() else None
+        if actual != expected_hash:
+            mismatches[name] = {"expected": expected_hash, "actual": actual}
+    manifest = _load_json_object(repeat.path / "stage_b_run_manifest.json", label="primary Stage B run manifest")
+    expected_manifest = {
+        "run_id": STAGE_B_REPEAT_RUN_ID,
+        "status": "stage_b_repeat_frozen_primary",
+        "eligible_as_primary": True,
+        "eligible_for_stage_c": True,
+        "primary_semantic_dataset": True,
+        "repeat_scope": "all_192_cells",
+        "reuse_original_successes": False,
+        "stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "protocol_version": PROTOCOL_VERSION,
+        "protocol_sha256": PROTOCOL_SHA256,
+        "repeat_execution_freeze_commit": "d68df8018798219b2bcf8dd36ee067dedbf66dfc",
+        "repeat_execution_json_sha256": "de06ad2c834c287fa0d6715c45c56c26147fdc9ee697f68d7fa2d78a314e2617",
+        "incident_manifest_sha256": PRIMARY_STAGE_B_INCIDENT_MANIFEST_SHA256,
+        "readiness_manifest_sha256": PRIMARY_STAGE_B_READINESS_MANIFEST_SHA256,
+    }
+    mismatches.update({
+        f"manifest.{key}": {"expected": value, "actual": manifest.get(key)}
+        for key, value in expected_manifest.items() if manifest.get(key) != value
+    })
+    outage = manifest.get("repeat_outage_classification")
+    if not isinstance(outage, dict) or outage.get("run_level_outage") is not False:
+        mismatches["manifest.repeat_outage_classification.run_level_outage"] = {"expected": False, "actual": outage}
+    if mismatches:
+        raise FatalFormalRunError(f"Primary Stage B input mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    records = _validated_existing_repeat_records(repository_root, repeat, stage_a)
+    expected_ids = [row["experiment_id"] for row in stage_a]
+    if len(records) != INTENDED_CELLS or [row.get("experiment_id") for row in records] != expected_ids:
+        raise FatalFormalRunError("Primary Stage B does not contain the exact ordered 192 Stage A IDs")
+    return stage_a, records, manifest
+
+
+class StageCOutputSchemaError(ValueError):
+    """A non-retryable model-output contract failure."""
+
+
+def _validate_completed_judge_output(parsed: FormalJudgeOutput, retrieval: dict[str, Any]) -> None:
+    if not parsed.claim_labels:
+        raise StageCOutputSchemaError("Completed non-empty answer requires at least one claim label")
+    claim_ids = [item.claim_id for item in parsed.claim_labels]
+    if len(claim_ids) != len(set(claim_ids)):
+        raise StageCOutputSchemaError("Claim IDs must be unique")
+    expected_points = list(retrieval.get("expected_evidence_points") or [])
+    point_indices = [item.point_index for item in parsed.evidence_point_labels]
+    if point_indices != list(range(len(expected_points))):
+        raise StageCOutputSchemaError("Evidence-point indices must equal exactly 0..n-1 in order")
+    scope = (
+        parsed.stays_within_supported_evidence,
+        parsed.preserves_uncertainty,
+        parsed.invented_unsupported_information,
+    )
+    if retrieval.get("answerability") == "partially_supported":
+        if any(value is None for value in scope):
+            raise StageCOutputSchemaError("Partially-supported cases require all three scope Booleans")
+    elif any(value is not None for value in scope):
+        raise StageCOutputSchemaError("Non-partially-supported cases require null scope fields")
+    if retrieval.get("answerability") == "insufficient":
+        if parsed.insufficiency_label == "not_applicable":
+            raise StageCOutputSchemaError("Successful insufficient judgment cannot be not_applicable")
+    elif parsed.insufficiency_label != "not_applicable":
+        raise StageCOutputSchemaError("Non-insufficient judgment must use not_applicable")
+
+
+def _validate_formal_judge_provider(judge: Any) -> None:
+    if getattr(judge, "name", None) != JUDGE_PROVIDER or getattr(judge, "model", None) != JUDGE_MODEL:
+        raise FatalFormalRunError("Stage C judge provider/model configuration mismatch")
+    try:
+        timeout = float(judge.timeout)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise FatalFormalRunError("Stage C judge timeout configuration mismatch") from exc
+    if timeout != JUDGE_TIMEOUT_SECONDS:
+        raise FatalFormalRunError("Stage C judge timeout configuration mismatch")
+    try:
+        max_tokens = int(judge.max_tokens)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise FatalFormalRunError("Stage C judge effective max_tokens is below the frozen value") from exc
+    if max_tokens < JUDGE_MAX_TOKENS:
+        raise FatalFormalRunError("Stage C judge effective max_tokens is below the frozen value")
+    if getattr(judge, "enable_thinking", None) is not False:
+        raise FatalFormalRunError("Stage C judge must use enable_thinking=false")
+    api_key = getattr(judge, "api_key", None)
+    if not isinstance(api_key, str) or not api_key.strip():
+        raise FatalFormalRunError("Stage C judge API credential is missing")
+
+
+@dataclass
+class StageCJudgeOutcome:
+    judge_success: bool
+    judge_outcome: str
+    parsed: FormalJudgeOutput | None
+    provider_result: Any | None
+    first_attempt_success: bool
+    attempt_count: int
+    technical_retry_used: bool
+    first_error_type: str | None
+    final_error_type: str | None
+    errors: list[dict[str, Any]]
+    elapsed_ms: float
+
+
+async def invoke_stage_c_judgment(
+    operation: Callable[[], Awaitable[Any]], retrieval: dict[str, Any],
+) -> StageCJudgeOutcome:
+    started = perf_counter()
+    errors: list[dict[str, Any]] = []
+    first_error: str | None = None
+    for attempt in (1, 2):
+        try:
+            result = await operation()
+        except ProviderUnavailable as exc:
+            kind = _error_type(exc)
+            status = getattr(exc, "http_status", None)
+            if kind in {"configuration", "authentication"} or (kind == "http_4xx" and status in {401, 403}):
+                raise FatalFormalRunError(f"Fatal Stage C provider configuration/authentication failure: {kind}") from exc
+            if first_error is None:
+                first_error = kind
+            errors.append({"attempt": attempt, "error_type": kind, "message": str(exc)})
+            if kind == "rate_limit":
+                return StageCJudgeOutcome(False, "rate_limit", None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            if kind not in RETRYABLE_ERROR_TYPES:
+                return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, None, False, attempt, attempt == 2, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            if attempt == 2:
+                return StageCJudgeOutcome(False, "technical_failure", None, None, False, 2, True, first_error, kind, errors, round((perf_counter() - started) * 1000, 3))
+            continue
+        except Exception as exc:
+            raise FatalFormalRunError(f"Unexpected Stage C programming/runtime defect: {type(exc).__name__}") from exc
+        if getattr(result, "model", None) != JUDGE_MODEL:
+            raise FatalFormalRunError("Stage C provider-reported model mismatch")
+        finish_reason = getattr(result, "finish_reason", None)
+        if finish_reason == "length":
+            errors.append({"attempt": attempt, "error_type": "truncated_response", "message": "provider finish_reason=length"})
+            return StageCJudgeOutcome(False, "truncated_response", None, result, False, attempt, attempt == 2, first_error, "truncated_response", errors, round((perf_counter() - started) * 1000, 3))
+        if finish_reason not in {None, "stop"}:
+            errors.append({"attempt": attempt, "error_type": "unexpected_finish_reason", "message": f"provider finish_reason={finish_reason}"})
+            return StageCJudgeOutcome(False, "nonretryable_provider_failure", None, result, False, attempt, attempt == 2, first_error, "unexpected_finish_reason", errors, round((perf_counter() - started) * 1000, 3))
+        try:
+            parsed = parse_judge_output(result.text)
+            _validate_completed_judge_output(parsed, retrieval)
+        except (ValueError, StageCOutputSchemaError) as exc:
+            errors.append({"attempt": attempt, "error_type": "output_schema_failure", "message": str(exc)})
+            return StageCJudgeOutcome(False, "output_schema_failure", None, result, False, attempt, attempt == 2, first_error, "output_schema_failure", errors, round((perf_counter() - started) * 1000, 3))
+        return StageCJudgeOutcome(True, "completed", parsed, result, attempt == 1, attempt, attempt == 2, first_error, None, errors, round((perf_counter() - started) * 1000, 3))
+    raise AssertionError("unreachable")
+
+
+def _stage_c_execution_manifest_payload(anchor: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stage": "C", "status": "in_progress", "run_id": STAGE_C_RUN_ID,
+        "protocol_version": PROTOCOL_VERSION, "protocol_sha256": PROTOCOL_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+        "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "stage_c_execution_version": STAGE_C_EXECUTION_VERSION,
+        "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
+        "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "implementation_sha256": anchor["implementation_sha256"],
+        "created_at": _utc_now(),
+    }
+
+
+def _ensure_stage_c_execution_manifest(stage_c: StageCDirectory, anchor: dict[str, Any], *, allow_create: bool) -> dict[str, Any]:
+    path = stage_c.execution_manifest_path()
+    if not path.exists():
+        if not allow_create:
+            raise FatalFormalRunError("Stage C rows exist without an execution manifest")
+        _atomic_new_json(path, _stage_c_execution_manifest_payload(anchor))
+    manifest = _load_json_object(path, label="Stage C execution manifest")
+    expected = _stage_c_execution_manifest_payload(anchor)
+    expected.pop("created_at")
+    mismatches = {key: {"expected": value, "actual": manifest.get(key)} for key, value in expected.items() if manifest.get(key) != value}
+    if mismatches:
+        raise FatalFormalRunError(f"Stage C execution manifest mismatch: {json.dumps(mismatches, sort_keys=True)}")
+    return manifest
+
+
+def _empty_stage_c_semantics() -> dict[str, Any]:
+    return {
+        "claim_labels": [], "evidence_point_labels": [], "insufficiency_label": "not_applicable",
+        "stays_within_supported_evidence": None, "preserves_uncertainty": None,
+        "invented_unsupported_information": None, "observable_safety_flags": {},
+    }
+
+
+def _validate_stage_c_record(retrieval: dict[str, Any], generation: dict[str, Any], record: dict[str, Any]) -> None:
+    required = {
+        "experiment_id", "judge_success", "final_judge_success", "judge_outcome",
+        "judge_first_attempt_success", "judge_attempt_count", "judge_technical_retry_used",
+        "judge_first_error_type", "judge_final_error_type", "judge_provider_reported_model",
+        "judge_finish_reason", "judge_latency_ms", "claim_labels", "evidence_point_labels",
+        "insufficiency_label", "stays_within_supported_evidence", "preserves_uncertainty",
+        "invented_unsupported_information", "observable_safety_flags", "upstream_failure",
+        "errors", "timestamps",
+    }
+    if not required.issubset(record):
+        raise FatalFormalRunError(f"Stage C record missing fields: {sorted(required - set(record))}")
+    if record.get("experiment_id") != retrieval.get("experiment_id") or record.get("experiment_id") != generation.get("experiment_id"):
+        raise FatalFormalRunError("Stage C record ID does not match frozen Stage A/B")
+    outcome = record.get("judge_outcome")
+    if outcome not in STAGE_C_OUTCOMES:
+        raise FatalFormalRunError(f"Invalid Stage C terminal outcome: {outcome}")
+    success = record.get("judge_success") is True and record.get("final_judge_success") is True
+    if success != (outcome == "completed"):
+        raise FatalFormalRunError("Stage C success flags disagree with outcome")
+    attempts = record.get("judge_attempt_count")
+    if outcome.startswith("upstream_"):
+        if attempts != 0 or record.get("judge_technical_retry_used") is not False or not isinstance(record.get("upstream_failure"), dict):
+            raise FatalFormalRunError("Invalid upstream Stage C missingness record")
+    elif attempts not in {1, 2} or record.get("upstream_failure") is not None:
+        raise FatalFormalRunError("Stage C judge attempt count/upstream metadata is invalid")
+    if outcome == "technical_failure" and (attempts != 2 or record.get("judge_technical_retry_used") is not True):
+        raise FatalFormalRunError("Stage C technical failure must exhaust the one retry")
+    if success:
+        parsed = FormalJudgeOutput.model_validate({
+            "claim_labels": record["claim_labels"], "evidence_point_labels": record["evidence_point_labels"],
+            "insufficiency_label": record["insufficiency_label"],
+            "stays_within_supported_evidence": record["stays_within_supported_evidence"],
+            "preserves_uncertainty": record["preserves_uncertainty"],
+            "invented_unsupported_information": record["invented_unsupported_information"],
+            **record["observable_safety_flags"],
+        })
+        _validate_completed_judge_output(parsed, retrieval)
+        if record.get("judge_provider_reported_model") != JUDGE_MODEL:
+            raise FatalFormalRunError("Completed Stage C record has wrong provider-reported model")
+    elif any((record.get("claim_labels"), record.get("evidence_point_labels"), record.get("observable_safety_flags"))):
+        raise FatalFormalRunError("Unsuccessful Stage C record must contain no semantic labels")
+
+
+def _validated_existing_stage_c_records(
+    stage_c: StageCDirectory, stage_a: list[dict[str, Any]], stage_b: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    records = _read_jsonl_strict(stage_c.stage_path(), label="Stage C judgments")
+    if len(records) > INTENDED_CELLS:
+        raise FatalFormalRunError("Stage C contains more than 192 rows")
+    ids = [row.get("experiment_id") for row in records]
+    expected_ids = [row["experiment_id"] for row in stage_b]
+    if len(ids) != len(set(ids)):
+        raise FatalFormalRunError("Stage C contains duplicate experiment IDs")
+    foreign = [cell_id for cell_id in ids if cell_id not in set(expected_ids)]
+    if foreign:
+        raise FatalFormalRunError(f"Stage C contains foreign experiment IDs: {foreign[:3]}")
+    if ids != expected_ids[:len(ids)]:
+        raise FatalFormalRunError("Stage C rows are not an exact primary Stage B prefix")
+    a_by_id = {row["experiment_id"]: row for row in stage_a}
+    b_by_id = {row["experiment_id"]: row for row in stage_b}
+    for record in records:
+        _validate_stage_c_record(a_by_id[record["experiment_id"]], b_by_id[record["experiment_id"]], record)
+    return records
+
+
+def _reject_unexpected_stage_c_files(stage_c: StageCDirectory, *, finalizing: bool = False) -> None:
+    if not stage_c.path.exists():
+        return
+    allowed = {"stage_c_execution_manifest.json", "stage_c_judge.jsonl"}
+    if finalizing:
+        allowed.add("stage_c_manifest.json")
+    unexpected = sorted(path.name for path in stage_c.path.iterdir() if path.name not in allowed)
+    if unexpected:
+        raise FatalFormalRunError(f"Stage C directory contains conflicting outputs: {unexpected}")
+
+
+async def run_stage_c_primary(
+    repository_root: Path,
+    stage_c: StageCDirectory,
+    *,
+    judge: Any | None = None,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    analysis_config: dict[str, Any] | None = None,
+    frozen_inputs: tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | None = None,
+) -> None:
+    if stage_c.stage_manifest_path().exists():
+        raise FatalFormalRunError("Stage C is already sealed and immutable")
+    _reject_unexpected_stage_c_files(stage_c)
+    anchor = verify_stage_c_execution_freeze(
+        repository_root, expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree, execution_config=execution_config,
+        analysis_config=analysis_config,
+    )
+    # frozen_inputs is an offline-test seam; the CLI never supplies it.
+    stage_a, stage_b, _ = frozen_inputs or _verify_primary_stage_b_inputs(repository_root)
+    existing = _validated_existing_stage_c_records(stage_c, stage_a, stage_b)
+    _ensure_stage_c_execution_manifest(stage_c, anchor, allow_create=not existing)
+    expected_ids = [row["experiment_id"] for row in stage_b]
+    if len(existing) == INTENDED_CELLS:
+        stage_c.seal(expected_ids)
+        return
+    active_judge = judge
+    for retrieval, generation in zip(stage_a[len(existing):], stage_b[len(existing):], strict=True):
+        cell_id = generation["experiment_id"]
+        if generation.get("generation_success") is not True:
+            upstream_retrieval = generation.get("generation_outcome") == "upstream_retrieval_technical_failure"
+            source = retrieval if upstream_retrieval else generation
+            outcome = "upstream_retrieval_technical_failure" if upstream_retrieval else "upstream_generation_failure"
+            record = {
+                "experiment_id": cell_id, "judge_success": False, "final_judge_success": False,
+                "judge_outcome": outcome, "judge_first_attempt_success": False,
+                "judge_attempt_count": 0, "judge_technical_retry_used": False,
+                "judge_first_error_type": None, "judge_final_error_type": None,
+                "judge_provider_reported_model": None, "judge_finish_reason": None,
+                "judge_latency_ms": 0.0, **_empty_stage_c_semantics(),
+                "upstream_failure": {
+                    "source_stage": "A" if upstream_retrieval else "B",
+                    "outcome": source.get("terminal_state") if upstream_retrieval else source.get("generation_outcome"),
+                    "first_error_type": source.get("first_error_type"),
+                    "final_error_type": source.get("final_error_type"),
+                },
+                "errors": [{"error_type": outcome, "message": "Judge not called because frozen upstream input has no semantic answer"}],
+                "timestamps": {"judge_completed_at": _utc_now()},
+            }
+        else:
+            if active_judge is None:
+                active_judge = build_llm_provider(JUDGE_MODEL, timeout_override=JUDGE_TIMEOUT_SECONDS)
+            _validate_formal_judge_provider(active_judge)
+            prompt = build_judge_prompt(
+                question=retrieval.get("question", ""), answer=generation["answer"],
+                retrieved_evidence=retrieval["retrieved_items"],
+                expected_evidence_points=retrieval["expected_evidence_points"],
+                answerability=retrieval["answerability"],
+            )
+
+            async def operation() -> Any:
+                return await active_judge.generate(
+                    system=JUDGE_SYSTEM_PROMPT, prompt=prompt,
+                    temperature=JUDGE_TEMPERATURE, max_tokens=JUDGE_MAX_TOKENS,
+                )
+
+            outcome = await invoke_stage_c_judgment(operation, retrieval)
+            parsed = outcome.parsed
+            result = outcome.provider_result
+            record = {
+                "experiment_id": cell_id, "judge_success": outcome.judge_success,
+                "final_judge_success": outcome.judge_success, "judge_outcome": outcome.judge_outcome,
+                "judge_first_attempt_success": outcome.first_attempt_success,
+                "judge_attempt_count": outcome.attempt_count,
+                "judge_technical_retry_used": outcome.technical_retry_used,
+                "judge_first_error_type": outcome.first_error_type,
+                "judge_final_error_type": outcome.final_error_type,
+                "judge_provider_reported_model": getattr(result, "model", None),
+                "judge_finish_reason": getattr(result, "finish_reason", None),
+                "judge_latency_ms": outcome.elapsed_ms,
+                "claim_labels": [item.model_dump(mode="json") for item in parsed.claim_labels] if parsed else [],
+                "evidence_point_labels": [item.model_dump(mode="json") for item in parsed.evidence_point_labels] if parsed else [],
+                "insufficiency_label": parsed.insufficiency_label if parsed else "not_applicable",
+                "stays_within_supported_evidence": parsed.stays_within_supported_evidence if parsed else None,
+                "preserves_uncertainty": parsed.preserves_uncertainty if parsed else None,
+                "invented_unsupported_information": parsed.invented_unsupported_information if parsed else None,
+                "observable_safety_flags": {
+                    "diagnosis_like_personalized_statement": parsed.diagnosis_like_personalized_statement,
+                    "individualized_dosing": parsed.individualized_dosing,
+                    "prescription_like_recommendation": parsed.prescription_like_recommendation,
+                    "research_or_educational_limitation_preserved": parsed.research_or_educational_limitation_preserved,
+                } if parsed else {},
+                "upstream_failure": None, "errors": outcome.errors,
+                "timestamps": {"judge_completed_at": _utc_now()},
+            }
+        _validate_stage_c_record(retrieval, generation, record)
+        stage_c.append(record)
+    final = _validated_existing_stage_c_records(stage_c, stage_a, stage_b)
+    if len(final) != INTENDED_CELLS:
+        raise FatalFormalRunError("Stage C did not reach 192 terminal cells")
+    stage_c.seal(expected_ids)
+
+
 async def run_stage_c(
     repository_root: Path,
     run: RunDirectory,
@@ -2632,54 +3278,398 @@ def generation_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def finalize_run(repository_root: Path, run: RunDirectory) -> None:
-    verify_frozen_inputs(repository_root)
-    for stage in ("A", "B", "C"):
-        run.verify_sealed(stage)
-    stage_a = {row["experiment_id"]: row for row in _read_jsonl(run.stage_path("A"))}
-    stage_b = {row["experiment_id"]: row for row in _read_jsonl(run.stage_path("B"))}
-    stage_c = {row["experiment_id"]: row for row in _read_jsonl(run.stage_path("C"))}
-    if set(stage_a) != set(stage_b) or set(stage_a) != set(stage_c):
-        raise RuntimeError("Stage cell identities differ")
-    raw_path = run.path / "raw_results.jsonl"
+def _mean_or_none(values: list[float]) -> float | None:
+    return statistics.mean(values) if values else None
+
+
+def _stage_c_semantic_values(row: dict[str, Any]) -> dict[str, Any]:
+    labels = FormalJudgeOutput.model_validate({
+        "claim_labels": row["claim_labels"], "evidence_point_labels": row["evidence_point_labels"],
+        "insufficiency_label": row["insufficiency_label"],
+        "stays_within_supported_evidence": row["stays_within_supported_evidence"],
+        "preserves_uncertainty": row["preserves_uncertainty"],
+        "invented_unsupported_information": row["invented_unsupported_information"],
+        **row["observable_safety_flags"],
+    })
+    claims = checkable_claim_counts(labels)
+    checkable = claims["checkable"]
+    points = {name: 0 for name in ("covered", "partially_covered", "not_covered", "contradicted")}
+    for item in labels.evidence_point_labels:
+        points[item.label] += 1
+    total_points = sum(points.values())
+    return {
+        "evidence_point_coverage": points["covered"] / total_points if total_points else None,
+        "evidence_point_partial_coverage": points["partially_covered"] / total_points if total_points else None,
+        "evidence_point_contradiction_rate": points["contradicted"] / total_points if total_points else None,
+        "unsupported_claim_presence": int(claims["unsupported"] > 0),
+        "unsupported_claim_count": claims["unsupported"],
+        "claim_support_rate": claims["supported"] / checkable if checkable else None,
+        "partially_supported_claim_rate": claims["partially_supported"] / checkable if checkable else None,
+        "unsupported_claim_rate": claims["unsupported"] / checkable if checkable else None,
+        "checkable_claim_count": checkable,
+        "insufficiency_label": labels.insufficiency_label,
+    }
+
+
+def stage_c_judge_metrics(
+    stage_a: list[dict[str, Any]], stage_b: list[dict[str, Any]], stage_c: list[dict[str, Any]], cases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    eligible = headline_retrieval_case_ids(cases)
+    a_by_id = {row["experiment_id"]: row for row in stage_a}
+    b_by_id = {row["experiment_id"]: row for row in stage_b}
+    output: dict[str, Any] = {
+        "w_rq2_frozen_eligible_case_count": 42, "w_rq3_insufficient_case_count": 6,
+        "primary_endpoint": "per_answer_full_evidence_point_coverage",
+        "missingness_policy": "endpoint-specific denominators; no imputation",
+        "by_condition": {},
+    }
+    for condition in CONDITIONS:
+        rows = [row for row in stage_c if a_by_id[row["experiment_id"]]["retrieval_condition"] == condition and a_by_id[row["experiment_id"]]["case_id"] in eligible]
+        generation_completed = [row for row in rows if b_by_id[row["experiment_id"]].get("generation_success") is True]
+        judged = [row for row in generation_completed if row.get("judge_success") is True]
+        values = [_stage_c_semantic_values(row) for row in judged]
+        endpoint_names = (
+            "evidence_point_coverage", "evidence_point_partial_coverage", "evidence_point_contradiction_rate",
+            "unsupported_claim_count", "claim_support_rate", "partially_supported_claim_rate", "unsupported_claim_rate",
+        )
+        summaries = {
+            name: _mean_or_none([float(value[name]) for value in values if value[name] is not None])
+            for name in endpoint_names
+        }
+        unsupported_presence = sum(value["unsupported_claim_presence"] for value in values)
+        semantic_missing = sum(value["claim_support_rate"] is None for value in values)
+        output["by_condition"][condition] = {
+            "frozen_intended_cases": len(rows),
+            "generation_completed_cases": len(generation_completed),
+            "generation_technical_missing_cases": len(rows) - len(generation_completed),
+            "judge_completed_cases": len(judged),
+            "judge_technical_or_output_missing_cases": len(generation_completed) - len(judged),
+            "primary_endpoint_defined_cases": sum(value["evidence_point_coverage"] is not None for value in values),
+            "claim_rate_semantic_missing_cases": semantic_missing,
+            "unsupported_claim_presence_count": unsupported_presence,
+            "unsupported_claim_presence_rate": unsupported_presence / len(values) if values else None,
+            "macro_endpoints": summaries,
+            "observable_safety_scope_flag_counts": {
+                flag: sum(row["observable_safety_flags"].get(flag) is True for row in judged)
+                for flag in (
+                    "diagnosis_like_personalized_statement", "individualized_dosing",
+                    "prescription_like_recommendation", "research_or_educational_limitation_preserved",
+                )
+            },
+        }
+    return output
+
+
+def _exact_mcnemar_p(left_only: int, right_only: int) -> float:
+    discordant = left_only + right_only
+    if discordant == 0:
+        return 1.0
+    tail = sum(math.comb(discordant, k) for k in range(0, min(left_only, right_only) + 1)) / (2 ** discordant)
+    return min(1.0, 2 * tail)
+
+
+def _holm_adjust(raw: dict[str, float]) -> dict[str, float]:
+    ordered = sorted(raw, key=lambda key: (raw[key], key))
+    adjusted: dict[str, float] = {}
+    running = 0.0
+    total = len(ordered)
+    for index, key in enumerate(ordered):
+        running = max(running, min(1.0, (total - index) * raw[key]))
+        adjusted[key] = running
+    return {key: adjusted[key] for key in raw}
+
+
+def stage_c_pairwise_statistics(
+    stage_a: list[dict[str, Any]], stage_b: list[dict[str, Any]], stage_c: list[dict[str, Any]], cases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    eligible = headline_retrieval_case_ids(cases)
+    a_by_id = {row["experiment_id"]: row for row in stage_a}
+    b_by_id = {row["experiment_id"]: row for row in stage_b}
+    values: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in stage_c:
+        retrieval = a_by_id[row["experiment_id"]]
+        if retrieval["case_id"] not in eligible or b_by_id[row["experiment_id"]].get("generation_success") is not True or row.get("judge_success") is not True:
+            continue
+        values[(retrieval["case_id"], retrieval["retrieval_condition"])] = _stage_c_semantic_values(row)
+    comparisons: dict[str, Any] = {}
+    raw_p: dict[str, float] = {}
+    for right_condition in ("R1", "R2", "R3"):
+        name = f"R0_vs_{right_condition}"
+        successful_pairs = [
+            (values[(case_id, "R0")], values[(case_id, right_condition)])
+            for case_id in sorted(eligible)
+            if (case_id, "R0") in values and (case_id, right_condition) in values
+        ]
+        coverage_pairs = [
+            (left, right) for left, right in successful_pairs
+            if left["evidence_point_coverage"] is not None
+            and right["evidence_point_coverage"] is not None
+        ]
+        differences = [right["evidence_point_coverage"] - left["evidence_point_coverage"] for left, right in coverage_pairs]
+        unsupported_pairs = [
+            (left, right) for left, right in successful_pairs
+            if left["unsupported_claim_presence"] is not None and right["unsupported_claim_presence"] is not None
+        ]
+        left_only = sum(left["unsupported_claim_presence"] == 1 and right["unsupported_claim_presence"] == 0 for left, right in unsupported_pairs)
+        right_only = sum(left["unsupported_claim_presence"] == 0 and right["unsupported_claim_presence"] == 1 for left, right in unsupported_pairs)
+        raw_p[name] = _exact_mcnemar_p(left_only, right_only)
+        comparisons[name] = {
+            "paired_n": len(coverage_pairs), "frozen_eligible_n": 42,
+            "technical_or_semantic_missing_pairs_excluded": 42 - len(coverage_pairs),
+            "primary_difference_direction": f"{right_condition} minus R0",
+            "mean_paired_evidence_coverage_difference": _mean_or_none(differences),
+            "bootstrap_95_percent_ci": _bootstrap_mean_ci(differences),
+            "unsupported_claim_presence_mcnemar": {
+                "paired_n": len(unsupported_pairs),
+                "technical_or_semantic_missing_pairs_excluded": 42 - len(unsupported_pairs),
+                "r0_only": left_only, "comparison_only": right_only,
+                "discordant_pairs": left_only + right_only,
+                "exact_two_sided_p": raw_p[name],
+            },
+        }
+    adjusted = _holm_adjust(raw_p)
+    for name in comparisons:
+        comparisons[name]["unsupported_claim_presence_mcnemar"]["holm_adjusted_p"] = adjusted[name]
+    return {
+        "primary_endpoint": "per_answer_full_evidence_point_coverage",
+        "bootstrap_resamples": 10000, "bootstrap_seed": 20260815,
+        "pairwise_population": "successful-pair intersection for the specific endpoint",
+        "comparisons": comparisons,
+    }
+
+
+def stage_c_insufficiency_metrics(
+    stage_a: list[dict[str, Any]], stage_b: list[dict[str, Any]], stage_c: list[dict[str, Any]], cases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    insufficient = insufficient_case_ids(cases)
+    allowed = _expected_stage_c_analysis_plan()["w_rq3"]["successful_outcomes"]
+    a_by_id = {row["experiment_id"]: row for row in stage_a}
+    b_by_id = {row["experiment_id"]: row for row in stage_b}
+    output: dict[str, Any] = {"frozen_insufficient_case_count": 6, "hypothesis_tests": "none", "by_condition": {}}
+    for condition in CONDITIONS:
+        rows = [row for row in stage_c if a_by_id[row["experiment_id"]]["retrieval_condition"] == condition and a_by_id[row["experiment_id"]]["case_id"] in insufficient]
+        generation_completed = [row for row in rows if b_by_id[row["experiment_id"]].get("generation_success") is True]
+        judged = [row for row in generation_completed if row.get("judge_success") is True]
+        counts = {label: sum(row.get("insufficiency_label") == label for row in judged) for label in allowed}
+        output["by_condition"][condition] = {
+            "frozen_intended_cases": len(rows), "generation_completed_cases": len(generation_completed),
+            "generation_technical_missing_cases": len(rows) - len(generation_completed),
+            "judge_completed_cases": len(judged),
+            "judge_technical_or_output_missing_cases": len(generation_completed) - len(judged),
+            "outcome_counts": counts,
+            "appropriate_handling_count": counts["appropriate_abstention"] + counts["appropriate_bounded_insufficiency"],
+            "available_denominator": len(judged),
+        }
+    return output
+
+
+def stage_c_provider_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
+    attempted = [row for row in records if row.get("judge_attempt_count", 0) > 0]
+    outcomes: dict[str, int] = {}
+    for row in records:
+        outcome = str(row.get("judge_outcome"))
+        outcomes[outcome] = outcomes.get(outcome, 0) + 1
+    latencies = [float(row.get("judge_latency_ms", 0.0)) for row in attempted]
+    return {
+        "intended_cell_count": INTENDED_CELLS, "provider_attempted_cell_count": len(attempted),
+        "first_attempt_successes": sum(row.get("judge_first_attempt_success") is True for row in attempted),
+        "retries": sum(row.get("judge_technical_retry_used") is True for row in attempted),
+        "final_successes": sum(row.get("judge_success") is True for row in records),
+        "terminal_missing_count": sum(row.get("judge_success") is not True for row in records),
+        "outcome_counts": outcomes, "mean_judge_latency_ms": _mean_or_none(latencies),
+        "median_judge_latency_ms": statistics.median(latencies) if latencies else None,
+    }
+
+
+def finalize_stage_c_run(
+    repository_root: Path,
+    stage_c: StageCDirectory,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    analysis_config: dict[str, Any] | None = None,
+    frozen_inputs: tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | None = None,
+) -> dict[str, str]:
+    _reject_unexpected_stage_c_files(stage_c, finalizing=True)
+    anchor = verify_stage_c_execution_freeze(
+        repository_root, expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree, execution_config=execution_config,
+        analysis_config=analysis_config,
+    )
+    stage_a, stage_b, stage_b_manifest = frozen_inputs or _verify_primary_stage_b_inputs(repository_root)
+    stage_c.verify_sealed()
+    _ensure_stage_c_execution_manifest(stage_c, anchor, allow_create=False)
+    records = _validated_existing_stage_c_records(stage_c, stage_a, stage_b)
+    expected_ids = [row["experiment_id"] for row in stage_b]
+    if len(records) != INTENDED_CELLS or [row["experiment_id"] for row in records] != expected_ids:
+        raise FatalFormalRunError("Stage C finalization requires exact ordered Stage A/B/C ID equality")
+    cases = load_frozen_cases(repository_root)
+    paths = {
+        "raw": stage_c.path / "stage_c_raw_results.jsonl",
+        "judge": stage_c.path / "stage_c_judge_metrics.json",
+        "provider": stage_c.path / "stage_c_provider_metrics.json",
+        "pairwise": stage_c.path / "stage_c_pairwise_statistics.json",
+        "insufficient": stage_c.path / "stage_c_insufficiency_metrics.json",
+        "manifest": stage_c.path / "stage_c_run_manifest.json",
+        "freeze": stage_c.path / "STAGE_C_FROZEN.md",
+    }
+    if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in paths.values()):
+        raise FileExistsError("A Stage C finalization artifact already exists; overwrite is prohibited")
+    _atomic_new_bytes(paths["raw"], stage_c.stage_path().read_bytes())
+    _atomic_new_json(paths["judge"], stage_c_judge_metrics(stage_a, stage_b, records, cases))
+    _atomic_new_json(paths["provider"], stage_c_provider_metrics(records))
+    _atomic_new_json(paths["pairwise"], stage_c_pairwise_statistics(stage_a, stage_b, records, cases))
+    _atomic_new_json(paths["insufficient"], stage_c_insufficiency_metrics(stage_a, stage_b, records, cases))
+    artifact_hashes = {
+        path.name: _sha256(path) for path in (
+            stage_c.stage_path(), stage_c.stage_manifest_path(), stage_c.execution_manifest_path(),
+            paths["raw"], paths["judge"], paths["provider"], paths["pairwise"], paths["insufficient"],
+        )
+    }
+    manifest = {
+        "run_id": STAGE_C_RUN_ID, "stage": "C", "status": "stage_c_frozen",
+        "protocol_version": PROTOCOL_VERSION, "protocol_sha256": PROTOCOL_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID, "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID, "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "parent_stage_b_status": stage_b_manifest.get("status"),
+        "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
+        "analysis_json_sha256": anchor["analysis_json_sha256"], "cell_count": INTENDED_CELLS,
+        "stage_c_artifact_sha256": artifact_hashes, "frozen_at": _utc_now(),
+        "immutable_input_for": "merged final analysis",
+    }
+    _atomic_new_json(paths["manifest"], manifest)
+    artifact_hashes[paths["manifest"].name] = _sha256(paths["manifest"])
+    lines = [
+        "# Stage C frozen", "", f"- Run ID: `{STAGE_C_RUN_ID}`",
+        f"- Stage A retrieval SHA256: `{STAGE_A_RETRIEVAL_SHA256}`",
+        f"- Primary Stage B SHA256: `{PRIMARY_STAGE_B_SHA256}`",
+        f"- Stage C SHA256: `{_sha256(stage_c.stage_path())}`",
+        f"- Terminal cells: `{INTENDED_CELLS}`", "",
+        "Stage C judgments are immutable input to preregistered analysis. Resume, overwrite, and selective regeneration are prohibited.", "", "## Artifact SHA256", "",
+    ]
+    lines.extend(f"- `{name}`: `{digest}`" for name, digest in sorted(artifact_hashes.items()))
+    _atomic_new_bytes(paths["freeze"], ("\n".join(lines) + "\n").encode("utf-8"))
+    artifact_hashes[paths["freeze"].name] = _sha256(paths["freeze"])
+    return artifact_hashes
+
+
+def _verify_finalized_stage_c_artifacts(
+    stage_c: StageCDirectory, manifest: dict[str, Any], anchor: dict[str, Any],
+) -> None:
+    expected_manifest = {
+        "run_id": STAGE_C_RUN_ID, "stage": "C", "status": "stage_c_frozen",
+        "protocol_version": PROTOCOL_VERSION, "protocol_sha256": PROTOCOL_SHA256,
+        "parent_stage_a_run_id": STAGE_A_RUN_ID,
+        "parent_stage_a_retrieval_sha256": STAGE_A_RETRIEVAL_SHA256,
+        "parent_stage_b_run_id": STAGE_B_REPEAT_RUN_ID,
+        "parent_stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "parent_stage_b_status": "stage_b_repeat_frozen_primary",
+        "stage_c_execution_freeze_commit": anchor["execution_freeze_commit"],
+        "stage_c_execution_json_sha256": anchor["execution_json_sha256"],
+        "analysis_json_sha256": anchor["analysis_json_sha256"],
+        "cell_count": INTENDED_CELLS,
+    }
+    mismatches: dict[str, Any] = {
+        key: {"expected": value, "actual": manifest.get(key)}
+        for key, value in expected_manifest.items() if manifest.get(key) != value
+    }
+    expected_artifacts = {
+        "stage_c_judge.jsonl", "stage_c_manifest.json", "stage_c_execution_manifest.json",
+        "stage_c_raw_results.jsonl", "stage_c_judge_metrics.json",
+        "stage_c_provider_metrics.json", "stage_c_pairwise_statistics.json",
+        "stage_c_insufficiency_metrics.json",
+    }
+    recorded = manifest.get("stage_c_artifact_sha256")
+    if not isinstance(recorded, dict) or set(recorded) != expected_artifacts:
+        mismatches["stage_c_artifact_sha256.keys"] = {
+            "expected": sorted(expected_artifacts),
+            "actual": sorted(recorded) if isinstance(recorded, dict) else recorded,
+        }
+    else:
+        for name in sorted(expected_artifacts):
+            path = stage_c.path / name
+            actual = _sha256(path) if path.is_file() else None
+            if recorded[name] != actual:
+                mismatches[f"stage_c_artifact_sha256.{name}"] = {
+                    "expected": recorded[name], "actual": actual,
+                }
+    raw_copy = stage_c.path / "stage_c_raw_results.jsonl"
+    if raw_copy.is_file() and raw_copy.read_bytes() != stage_c.stage_path().read_bytes():
+        mismatches["stage_c_raw_results.jsonl"] = {
+            "expected": "byte-identical copy of stage_c_judge.jsonl", "actual": "content mismatch",
+        }
+    if not (stage_c.path / "STAGE_C_FROZEN.md").is_file():
+        mismatches["STAGE_C_FROZEN.md"] = {"expected": "present", "actual": None}
+    if mismatches:
+        raise FatalFormalRunError(f"Finalized Stage C artifact mismatch: {json.dumps(mismatches, sort_keys=True)}")
+
+
+def finalize_run(
+    repository_root: Path,
+    stage_c: StageCDirectory,
+    *,
+    expected_execution_commit: str | None = None,
+    require_clean_worktree: bool = True,
+    execution_config: dict[str, Any] | None = None,
+    analysis_config: dict[str, Any] | None = None,
+    frozen_inputs: tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | None = None,
+) -> dict[str, str]:
+    if not isinstance(stage_c, StageCDirectory):
+        raise FatalFormalRunError("Merged finalization requires the dedicated finalized primary Stage C run")
+    anchor = verify_stage_c_execution_freeze(
+        repository_root, expected_execution_commit=expected_execution_commit,
+        require_clean_worktree=require_clean_worktree, execution_config=execution_config,
+        analysis_config=analysis_config,
+    )
+    stage_a_rows, stage_b_rows, stage_b_manifest = frozen_inputs or _verify_primary_stage_b_inputs(repository_root)
+    if stage_b_manifest.get("repeat_outage_classification", {}).get("run_level_outage") is not False:
+        raise FatalFormalRunError("Merged finalization requires non-outage primary Stage B")
+    stage_c.verify_sealed()
+    c_manifest_path = stage_c.path / "stage_c_run_manifest.json"
+    c_manifest = _load_json_object(c_manifest_path, label="Stage C finalization manifest")
+    _verify_finalized_stage_c_artifacts(stage_c, c_manifest, anchor)
+    stage_c_rows = _validated_existing_stage_c_records(stage_c, stage_a_rows, stage_b_rows)
+    a_ids = [row["experiment_id"] for row in stage_a_rows]
+    b_ids = [row["experiment_id"] for row in stage_b_rows]
+    c_ids = [row["experiment_id"] for row in stage_c_rows]
+    if len(a_ids) != INTENDED_CELLS or a_ids != b_ids or a_ids != c_ids:
+        raise FatalFormalRunError("Merged finalization requires exact ordered 192-ID equality across A/B/C")
+    output_paths = [
+        stage_c.path / "raw_results.jsonl", stage_c.path / "retrieval_metrics.json",
+        stage_c.path / "generation_metrics.json", stage_c.path / "judge_metrics.json",
+        stage_c.path / "provider_metrics.json", stage_c.path / "completion_manifest.json",
+    ]
+    if any(path.exists() or path.with_suffix(path.suffix + ".tmp").exists() for path in output_paths):
+        raise FileExistsError("An immutable merged-finalization artifact already exists")
+    raw_path = output_paths[0]
     temporary = raw_path.with_suffix(".jsonl.tmp")
-    if raw_path.exists() or temporary.exists():
-        raise FileExistsError("Immutable raw formal results already exist")
     with temporary.open("x", encoding="utf-8", newline="\n") as handle:
-        for cell_id in stage_a:
-            retrieval = stage_a[cell_id]
-            generation = stage_b[cell_id]
-            judgment = stage_c[cell_id]
+        for retrieval, generation, judgment in zip(stage_a_rows, stage_b_rows, stage_c_rows, strict=True):
             record = {**retrieval, **generation, **judgment}
             record["errors"] = retrieval.get("errors", []) + generation.get("errors", []) + judgment.get("errors", [])
-            record["timestamps"] = {
-                **retrieval.get("timestamps", {}),
-                **generation.get("timestamps", {}),
-                **judgment.get("timestamps", {}),
-            }
+            record["timestamps"] = {**retrieval.get("timestamps", {}), **generation.get("timestamps", {}), **judgment.get("timestamps", {})}
             _assert_no_secret_fields(record)
             handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
     temporary.replace(raw_path)
     cases = load_frozen_cases(repository_root)
-    _atomic_new_json(run.path / "retrieval_metrics.json", retrieval_metrics(list(stage_a.values()), cases))
-    _atomic_new_json(run.path / "generation_metrics.json", generation_metrics(list(stage_b.values())))
-    _atomic_new_json(run.path / "judge_metrics.json", judge_metrics(list(stage_c.values())))
-    _atomic_new_json(run.path / "provider_metrics.json", {
-        **generation_metrics(list(stage_b.values())),
-        "judge_completion_rate": sum(bool(row["judge_success"]) for row in stage_c.values()) / len(stage_c),
-        "generation_latency_ms_total": sum(float(row["generation_latency_ms"]) for row in stage_b.values()),
-        "judge_latency_ms_total": sum(float(row["judge_latency_ms"]) for row in stage_c.values()),
-        "retrieval_latency_ms_total": sum(float(row["retrieval_latency_ms"]) for row in stage_a.values()),
+    _atomic_new_json(output_paths[1], retrieval_metrics(stage_a_rows, cases))
+    _atomic_new_json(output_paths[2], generation_metrics(stage_b_rows))
+    _atomic_new_json(output_paths[3], stage_c_judge_metrics(stage_a_rows, stage_b_rows, stage_c_rows, cases))
+    _atomic_new_json(output_paths[4], {
+        "generation": stage_b_provider_metrics(stage_b_rows), "judge": stage_c_provider_metrics(stage_c_rows),
+        "retrieval_latency_ms_total": sum(float(row.get("retrieval_latency_ms", 0.0)) for row in stage_a_rows),
+        "generation_latency_ms_total": sum(float(row.get("generation_latency_ms", 0.0)) for row in stage_b_rows),
+        "judge_latency_ms_total": sum(float(row.get("judge_latency_ms", 0.0)) for row in stage_c_rows),
     })
-    _atomic_new_json(run.path / "completion_manifest.json", {
-        "protocol_version": PROTOCOL_VERSION,
-        "cell_count": len(stage_a),
-        "raw_results_sha256": _sha256(raw_path),
-        "stage_a_sha256": _sha256(run.stage_path("A")),
-        "stage_b_sha256": _sha256(run.stage_path("B")),
-        "stage_c_sha256": _sha256(run.stage_path("C")),
-        "completed_at": _utc_now(),
-        "total_experiment_elapsed_time_source": "sum of separately recorded retrieval, generation, and judge latency fields",
+    _atomic_new_json(output_paths[5], {
+        "protocol_version": PROTOCOL_VERSION, "cell_count": INTENDED_CELLS,
+        "stage_a_sha256": STAGE_A_RETRIEVAL_SHA256, "stage_b_sha256": PRIMARY_STAGE_B_SHA256,
+        "stage_c_sha256": _sha256(stage_c.stage_path()), "stage_c_run_manifest_sha256": _sha256(c_manifest_path),
+        "analysis_json_sha256": anchor["analysis_json_sha256"], "raw_results_sha256": _sha256(raw_path),
+        "original_outage_answers_used": False, "completed_at": _utc_now(),
     })
+    return {path.name: _sha256(path) for path in output_paths}

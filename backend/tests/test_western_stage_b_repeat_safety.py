@@ -142,6 +142,10 @@ def _execution_config() -> dict[str, object]:
 def copied_original(tmp_path: Path) -> RunDirectory:
     destination = tmp_path / "original" / STAGE_A_RUN_ID
     shutil.copytree(SOURCE_RUN, destination)
+    # Exercise incident finalization from the pre-incident state even after the
+    # source formal attempt has been permanently preserved and finalized.
+    (destination / "stage_b_incident_manifest.json").unlink(missing_ok=True)
+    (destination / "STAGE_B_OUTAGE_INCIDENT.md").unlink(missing_ok=True)
     return RunDirectory(destination)
 
 
