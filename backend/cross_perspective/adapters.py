@@ -202,7 +202,12 @@ class TCMEvidenceAdapter:
                 role="tcm",
                 failure_type=failure_type,  # type: ignore[arg-type]
                 error_summary=response.llm_error,
-                retry_count=0,
+                http_status=(
+                    response.provider_http_statuses[-1]
+                    if response.provider_http_statuses
+                    else None
+                ),
+                retry_count=response.provider_retry_count,
             )
             execution_status = "degraded"
             uncertainty.append(
@@ -236,7 +241,6 @@ class TCMEvidenceAdapter:
                         "reported_model": response.llm_provider_model,
                     }
                 )
-            claims = []
             interpretation = "TCM generated interpretation was rejected because provider model identity could not be verified."
         else:
             interpretation = response.summary
@@ -388,23 +392,45 @@ class WesternEvidenceAdapter:
             response.model != WESTERN_MODEL
             or any(model != WESTERN_MODEL for model in successful_models)
         )
+        actual_mismatching_model = next(
+            (
+                model
+                for model in [response.model, *successful_models]
+                if model
+                and model.casefold() not in {"none", "unknown"}
+                and model != WESTERN_MODEL
+            ),
+            "unknown",
+        )
         mismatch_detail = (
-            f"Western provider-reported model {response.model!r} did not match {WESTERN_MODEL}."
+            f"Western provider-reported model {actual_mismatching_model!r} did not match {WESTERN_MODEL}."
             if model_mismatch
             else ""
         )
         if model_mismatch and events:
-            events[-1] = events[-1].model_copy(
+            mismatch_event_index = next(
+                (
+                    index
+                    for index in range(len(events) - 1, -1, -1)
+                    if events[index].reported_model and events[index].reported_model != WESTERN_MODEL
+                ),
+                len(events) - 1,
+            )
+            events[mismatch_event_index] = events[mismatch_event_index].model_copy(
                 update={
                     "success": False,
                     "failure_class": "configuration",
                     "error_summary": mismatch_detail,
-                    "reported_model": response.model,
+                    "reported_model": actual_mismatching_model,
                 }
             )
         generation_failed = response.generation_mode == "generation_failure"
         failure = None
         if model_mismatch:
+            # Retrieved source excerpts remain deterministic evidence. Any
+            # claims emitted by the mismatched generation are never usable,
+            # even if a future response supplies evidence IDs for them.
+            claims = [claim for claim in claims if claim.claim_kind == "source_excerpt"]
             failure = PerspectiveFailure(
                 role="western",
                 failure_type="configuration",

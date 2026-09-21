@@ -56,6 +56,8 @@ Schema validation rejects a claim evidence reference that is absent from the pac
 
 `CrossPerspectiveAnswer` contains an overall summary, separate TCM and Western summaries, agreements, differences or conflicts, evidence gaps, uncertainty, and a source map. Each source-map row includes its perspective, claim IDs, and explicit `evidence_refs` pairs. Independent source-ID and chunk-ID lists are not used.
 
+`overall_supporting_claim_ids` is required whenever any selected perspective has a usable non-insufficient claim. Every represented perspective must have an exact source-map row for the overall summary. A perspective summary with usable claims must name non-empty supported claim IDs and have an exact source-map row; a perspective with no usable claims must use its deterministic no-claim status statement. An overall answer with no usable claims must use the deterministic overall no-claim status statement.
+
 The governance model receives claims, support status, provenance, uncertainty, missing information, limitations, availability/execution status, and failure metadata. Packet `interpretation` text is retained in the full packet and trace for inspection but is omitted from the governance payload because it may be unverified presentation text. Only non-insufficient claims with linked provenance may support substantive final statements.
 
 The governance prompt prohibits new substantive medical claims, equivalence between TCM and biomedical mechanisms, treating agreement as proof, hidden disagreement, certainty inflation, and fabricated identifiers. Post-generation validation rejects:
@@ -68,6 +70,8 @@ The governance prompt prohibits new substantive medical claims, equivalence betw
 - cross-perspective misuse of claim IDs; and
 - source/chunk pairs not linked exactly to the stated claims;
 - perspective summaries without matching source-map statements; and
+- overall summaries without non-empty supporting IDs or exact source-map support for every represented perspective;
+- source-map rows in which one of several mapped claims contributes no evidence reference; and
 - agreement or difference statements without matching source-map support from both perspectives.
 
 The prototype exposes evidence provenance and concise rationale fields, not hidden chain-of-thought.
@@ -111,7 +115,7 @@ Router and governance calls permit at most one retry, and only after a retryable
 
 An unavailable perspective is represented by an explicit unavailable packet with no claims or provenance. Governance receives that packet and must not reconstruct the missing perspective. A Western generation failure after successful retrieval remains an available but `degraded` packet containing deterministic source-excerpt claims and the provider failure; only an unavailable evidence pathway/retrieval is marked unavailable. A degraded TCM local fallback is labeled `degraded` with its provider/configuration failure preserved rather than being silently presented as an ordinary model result.
 
-The TCM adapter checks the additive provider-reported model field. A missing or mismatched successful provider model is explicitly degraded and its generated interpretation is rejected. Western successful responses are similarly checked against `Qwen/Qwen3-8B`; retrieved source-excerpt claims are retained if the generated interpretation is rejected.
+The TCM adapter checks the additive provider-reported model field. A missing or mismatched successful provider model is explicitly degraded and its generated interpretation is rejected, while deterministic retrieval-grounded TCM claims and provenance are retained. Failure packets preserve the provider retry count and final HTTP status when available. Western successful responses are similarly checked against `Qwen/Qwen3-8B`; retrieved source-excerpt claims are retained and all model-derived claims are removed if the generated interpretation is rejected for model mismatch.
 
 ## Nutrition status
 

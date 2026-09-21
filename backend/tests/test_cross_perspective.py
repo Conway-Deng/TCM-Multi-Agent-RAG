@@ -27,10 +27,15 @@ from cross_perspective.schemas import (
     EvidenceReference,
     ModelCallEvent,
     NUTRITION_UNAVAILABLE_MESSAGE,
+    OVERALL_NO_CLAIM_SUMMARY,
     PerspectiveClaim,
     PerspectiveEvidencePacket,
     ProvenanceRecord,
     RoutingDecision,
+    TCM_NO_CLAIM_SUMMARY,
+    TCM_UNAVAILABLE_SUMMARY,
+    WESTERN_NO_CLAIM_SUMMARY,
+    WESTERN_UNAVAILABLE_SUMMARY,
 )
 from cross_perspective.service import CrossPerspectiveService, NutritionUnavailableError
 from cross_perspective.tracing import DevelopmentTraceLogger
@@ -81,6 +86,7 @@ def packet(perspective: str) -> PerspectiveEvidencePacket:
 
 
 def answer(*, western_available: bool = True) -> CrossPerspectiveAnswer:
+    overall_summary = "The selected evidence is reported separately."
     source_map = [
         {
             "final_claim_or_statement": "TCM packet summary.",
@@ -114,13 +120,39 @@ def answer(*, western_available: bool = True) -> CrossPerspectiveAnswer:
                 },
             ]
         )
+        source_map.extend(
+            [
+                {
+                    "final_claim_or_statement": overall_summary,
+                    "perspective": "tcm",
+                    "claim_ids": ["tcm:c1"],
+                    "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
+                },
+                {
+                    "final_claim_or_statement": overall_summary,
+                    "perspective": "western",
+                    "claim_ids": ["western:c1"],
+                    "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
+                },
+            ]
+        )
+    else:
+        source_map.append(
+            {
+                "final_claim_or_statement": overall_summary,
+                "perspective": "tcm",
+                "claim_ids": ["tcm:c1"],
+                "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
+            }
+        )
     return CrossPerspectiveAnswer.model_validate(
         {
-            "overall_summary": "The two perspectives are reported separately.",
+            "overall_summary": overall_summary,
+            "overall_supporting_claim_ids": ["tcm:c1", "western:c1"] if western_available else ["tcm:c1"],
             "perspectives": {
                 "western": {
                     "available": western_available,
-                    "summary": "Western packet summary." if western_available else "Western perspective unavailable.",
+                    "summary": "Western packet summary." if western_available else WESTERN_UNAVAILABLE_SUMMARY,
                     "supported_claim_ids": ["western:c1"] if western_available else [],
                 },
                 "tcm": {
@@ -514,6 +546,89 @@ def test_agreement_requires_source_map_support_from_both_perspectives() -> None:
         validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
 
 
+def test_overall_summary_without_support_ids_is_rejected() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["overall_supporting_claim_ids"] = []
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="overall summary must cite usable claims"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_overall_summary_requires_source_map_for_each_represented_perspective() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["source_map"] = [
+        entry
+        for entry in payload["source_map"]
+        if not (
+            entry["final_claim_or_statement"] == payload["overall_summary"]
+            and entry["perspective"] == "western"
+        )
+    ]
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="overall summary requires"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_available_perspective_with_usable_claims_requires_summary_ids() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["perspectives"]["western"]["supported_claim_ids"] = []
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="available western summary must cite usable claims"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_no_usable_perspective_uses_only_deterministic_status_summary() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["perspectives"]["western"] = {
+        "available": True,
+        "summary": WESTERN_NO_CLAIM_SUMMARY,
+        "supported_claim_ids": [],
+    }
+    payload["agreements"] = []
+    payload["overall_supporting_claim_ids"] = ["tcm:c1"]
+    payload["source_map"] = [
+        entry
+        for entry in payload["source_map"]
+        if entry["perspective"] == "tcm"
+        and entry["final_claim_or_statement"] in {"TCM packet summary.", payload["overall_summary"]}
+    ]
+    valid = CrossPerspectiveAnswer.model_validate(payload)
+    validate_governance_grounding(valid, {"tcm": packet("tcm"), "western": packet("western").model_copy(update={"claims": [packet("western").claims[0].model_copy(update={"support_status": "insufficient"})]})})
+
+    payload["perspectives"]["western"]["summary"] = "Uncited Western medical assertion."
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="deterministic no-claim"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western").model_copy(update={"claims": [packet("western").claims[0].model_copy(update={"support_status": "insufficient"})]})})
+
+
+def test_multi_claim_source_map_requires_evidence_for_every_claim() -> None:
+    base_tcm = packet("tcm")
+    second_claim = PerspectiveClaim(
+        claim_id="tcm:c2",
+        claim_text="Second TCM evidence-bounded claim.",
+        evidence_refs=[EvidenceReference(source_id="t-source-2", chunk_id="t-chunk-2")],
+        support_status="supported",
+    )
+    tcm = base_tcm.model_copy(
+        update={
+            "claims": [base_tcm.claims[0], second_claim],
+            "provenance": [
+                *base_tcm.provenance,
+                ProvenanceRecord(source_id="t-source-2", chunk_id="t-chunk-2", title="TCM source 2"),
+            ],
+        }
+    )
+    payload = answer().model_dump(mode="json")
+    payload["perspectives"]["tcm"]["supported_claim_ids"] = ["tcm:c1", "tcm:c2"]
+    for entry in payload["source_map"]:
+        if entry["perspective"] == "tcm" and entry["final_claim_or_statement"] == "TCM packet summary.":
+            entry["claim_ids"] = ["tcm:c1", "tcm:c2"]
+            break
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="evidence coverage"):
+        validate_governance_grounding(malformed, {"tcm": tcm, "western": packet("western")})
+
+
 def test_governance_payload_omits_unverified_interpretation() -> None:
     payload = build_governance_payload({"tcm": packet("tcm"), "western": packet("western")})
     assert all("interpretation" not in item for item in payload.values())
@@ -584,7 +699,8 @@ def test_western_returned_model_mismatch_is_degraded_and_visible() -> None:
             )
             return WesternConsultResponse(
                 question="Question about headache.", topic=WesternTopic.HEADACHE,
-                answer="Untrusted generated text.", retrieval=[evidence], claims=[],
+                answer="Untrusted generated text.", retrieval=[evidence],
+                claims=[WesternClaim(claim_id="mismatched-generated", text="Untrusted generated claim.", evidence_ids=["w-mismatch-chunk"])],
                 generation_mode="llm", provider="fixture", model="Other/Model",
                 trace=WesternTrace(corpus_name="fixture", corpus_version="fixture-v1", corpus_chunk_count=1, corpus_source_count=1,
                     provider_attempts=[ProviderAttempt(attempt=1, provider="fixture", model="Other/Model", success=True)]),
@@ -594,6 +710,25 @@ def test_western_returned_model_mismatch_is_degraded_and_visible() -> None:
     assert result.packet.available is True
     assert result.packet.execution_status == "degraded"
     assert result.packet.failure is not None and result.packet.failure.failure_type == "configuration"
+    assert all(claim.claim_kind == "source_excerpt" for claim in result.packet.claims)
+    assert all(claim.support_status == "supported" for claim in result.packet.claims)
+    attempted_generated_use = answer().model_copy(
+        update={
+            "overall_supporting_claim_ids": ["tcm:c1", "western:mismatched-generated"],
+            "perspectives": answer().perspectives.model_copy(
+                update={
+                    "western": answer().perspectives.western.model_copy(
+                        update={"supported_claim_ids": ["western:mismatched-generated"]}
+                    )
+                }
+            ),
+        }
+    )
+    with pytest.raises(Exception, match="unknown western claim ID"):
+        validate_governance_grounding(
+            attempted_generated_use,
+            {"tcm": packet("tcm"), "western": result.packet},
+        )
     assert "Other/Model" in result.packet.interpretation
 
 
@@ -603,14 +738,19 @@ def test_tcm_returned_model_mismatch_is_degraded() -> None:
             scope_status="supported", abstained=False, generation_mode="llm", generation_source="siliconflow_llm",
             response_language="en", llm_model="Qwen/Qwen3-8B", llm_provider_model="Other/Model",
             provider_attempts=1, provider_http_statuses=[200], query_analysis=QueryAnalysis(),
-            summary="Untrusted generated summary.", tcm_perspective="Untrusted generated summary.", claims=[],
-            possible_patterns=[], related_herbs_or_formulas=[], evidence=[], citations=[], safety_notes=[],
+            summary="Untrusted generated summary.", tcm_perspective="Untrusted generated summary.",
+            claims=[Claim(claim_id="deterministic-claim", text="Deterministic retrieval claim.", evidence_ids=["tcm-mismatch-chunk"], claim_type="pattern_hypothesis")],
+            possible_patterns=[], related_herbs_or_formulas=[],
+            evidence=[EvidenceChunk(evidence_id="tcm-mismatch-chunk", source="TCM source", source_ids=["tcm-mismatch-source"], title="TCM chunk", source_type="fixture", snippet="Deterministic retrieval excerpt.", relevance_score=0.8, review_status="verified")],
+            citations=[Citation(source_id="tcm-mismatch-source", title="TCM source", organization="Fixture", source_type="fixture")], safety_notes=[],
             confidence=Confidence(level="medium", score=0.5, reason="Fixture."), disclaimer="Fixture.",
         )
 
     result = asyncio.run(TCMEvidenceAdapter(consult_fn=fake_consult).collect("Question about headache."))
     assert result.packet.execution_status == "degraded"
     assert result.packet.failure is not None and result.packet.failure.failure_type == "configuration"
+    assert result.packet.claims[0].claim_id == "tcm:deterministic-claim"
+    assert result.packet.claims[0].support_status == "supported"
     assert result.events[-1].success is False
 
 
@@ -648,6 +788,27 @@ def test_tcm_response_format_compatibility_retry_is_counted() -> None:
     assert client.provider_telemetry.compatibility_retry is True
     assert client.provider_telemetry.http_statuses == [400, 200]
     assert "response_format" not in fake_http.calls[1]
+
+
+def test_tcm_compatibility_retry_followed_by_failure_preserves_retry_count_and_status() -> None:
+    async def fake_consult(_):
+        return TCMConsultResponse(
+            scope_status="supported", abstained=False, generation_mode="mock", generation_source="mock_fallback",
+            response_language="en", llm_model="Qwen/Qwen3-8B", llm_error="LLM provider returned HTTP 500",
+            provider_attempts=2, provider_retry_count=1, provider_http_statuses=[400, 500],
+            provider_compatibility_retry=True, query_analysis=QueryAnalysis(),
+            summary="Deterministic fallback summary.", tcm_perspective="Deterministic fallback summary.",
+            claims=[], possible_patterns=[], related_herbs_or_formulas=[], evidence=[], citations=[], safety_notes=[],
+            confidence=Confidence(level="low", score=0.2, reason="Fixture."), disclaimer="Fixture.",
+        )
+
+    result = asyncio.run(TCMEvidenceAdapter(consult_fn=fake_consult).collect("Question about headache."))
+    assert result.packet.failure is not None
+    assert result.packet.failure.retry_count == 1
+    assert result.packet.failure.http_status == 500
+    assert [event.attempt for event in result.events] == [1, 2]
+    assert result.events[0].success is False
+    assert result.events[1].success is False
 
 
 def test_trace_omits_raw_question_by_default_and_hashes_it(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

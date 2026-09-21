@@ -6,7 +6,15 @@ from providers import build_llm_provider
 from providers.base import LLMProvider
 
 from .model_calls import StructuredCallResult, StructuredModelCallFailure, call_structured_model
-from .schemas import CrossPerspectiveAnswer, PerspectiveEvidencePacket
+from .schemas import (
+    CrossPerspectiveAnswer,
+    OVERALL_NO_CLAIM_SUMMARY,
+    PerspectiveEvidencePacket,
+    TCM_NO_CLAIM_SUMMARY,
+    TCM_UNAVAILABLE_SUMMARY,
+    WESTERN_NO_CLAIM_SUMMARY,
+    WESTERN_UNAVAILABLE_SUMMARY,
+)
 
 
 GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
@@ -17,6 +25,8 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Agreement between perspectives is not proof. Preserve disagreement, insufficient evidence, uncertainty, missing information, and unavailable perspectives. "
     "The packet interpretation field is presentation text, not evidence. Only non-insufficient claims with linked provenance may support substantive final statements. "
     "Insufficient claims cannot support agreements or source-mapped final claims. "
+    "Overall summaries and perspective summaries must cite the exact non-insufficient claim IDs that support them. "
+    "If no usable claim exists for a perspective or overall answer, use the deterministic unavailable status statement rather than a substantive assertion. "
     "Never invent claim IDs, source IDs, chunk IDs, or citations, and never upgrade possible or partial support into certainty. "
     "Do not expose chain-of-thought. Return only concise structured JSON matching the requested contract."
 )
@@ -64,11 +74,11 @@ def validate_governance_grounding(
         for claim_id in perspective_claims
     }
 
-    supported_by_perspective = {
+    usable_by_perspective = {
         name: {
             claim_id
             for claim_id, claim in perspective_claims.items()
-            if claim.support_status != "insufficient"
+            if packets[name].available and claim.support_status != "insufficient"
         }
         for name, perspective_claims in claims_by_perspective.items()
     }
@@ -78,18 +88,32 @@ def validate_governance_grounding(
     for name in ("tcm", "western"):
         packet = packets[name]
         summary = getattr(answer.perspectives, name)
+        usable_ids = usable_by_perspective[name]
         if summary.available != packet.available:
             raise GovernanceContractError(f"{name} availability does not match its evidence packet")
+        if not packet.available:
+            if summary.supported_claim_ids:
+                raise GovernanceContractError(f"unavailable {name} summary cannot cite supported claims")
+            expected = TCM_UNAVAILABLE_SUMMARY if name == "tcm" else WESTERN_UNAVAILABLE_SUMMARY
+            if summary.summary != expected:
+                raise GovernanceContractError(f"unavailable {name} summary must use the deterministic status statement")
+        elif usable_ids:
+            if not summary.supported_claim_ids:
+                raise GovernanceContractError(f"available {name} summary must cite usable claims")
+        else:
+            if summary.supported_claim_ids:
+                raise GovernanceContractError(
+                    f"{name} summary cannot cite claims when no usable (non-insufficient) claims exist"
+                )
+            expected = TCM_NO_CLAIM_SUMMARY if name == "tcm" else WESTERN_NO_CLAIM_SUMMARY
+            if summary.summary != expected:
+                raise GovernanceContractError(f"{name} summary must use the deterministic no-claim status statement")
         for claim_id in summary.supported_claim_ids:
             claim = claims_by_perspective[name].get(claim_id)
             if claim is None:
                 raise GovernanceContractError(f"unknown {name} claim ID: {claim_id}")
-            if claim.support_status == "insufficient":
-                raise GovernanceContractError(f"insufficient claim listed as supported: {claim_id}")
-        if not summary.available and summary.supported_claim_ids:
-            raise GovernanceContractError(f"unavailable {name} summary cannot cite supported claims")
-        if not summary.available and summary.summary.casefold().find("unavailable") == -1 and summary.summary.casefold().find("not selected") == -1:
-            raise GovernanceContractError(f"unavailable {name} summary must state that it is unavailable")
+            if claim_id not in usable_ids:
+                raise GovernanceContractError(f"insufficient or unavailable claim listed as supported: {claim_id}")
 
     for agreement in answer.agreements:
         if not agreement.supporting_claim_ids:
@@ -97,7 +121,7 @@ def validate_governance_grounding(
         if not set(agreement.supporting_claim_ids).issubset(all_claim_ids):
             raise GovernanceContractError("agreement references an unknown claim ID")
         if not set(agreement.supporting_claim_ids).issubset(
-            supported_by_perspective["tcm"] | supported_by_perspective["western"]
+            usable_by_perspective["tcm"] | usable_by_perspective["western"]
         ):
             raise GovernanceContractError("agreement cannot use an insufficient claim")
         tcm_ids = {item for item in agreement.supporting_claim_ids if item in claims_by_perspective["tcm"]}
@@ -108,6 +132,7 @@ def validate_governance_grounding(
             if not any(
                 mapping.final_claim_or_statement == agreement.statement
                 and mapping.perspective == perspective
+                and len(mapping.claim_ids) == len(expected_ids)
                 and set(mapping.claim_ids) == expected_ids
                 for mapping in answer.source_map
             ):
@@ -120,9 +145,9 @@ def validate_governance_grounding(
             raise GovernanceContractError("difference references an unknown TCM claim ID")
         if not set(difference.western_claim_ids).issubset(claims_by_perspective["western"]):
             raise GovernanceContractError("difference references an unknown Western claim ID")
-        if not set(difference.tcm_claim_ids).issubset(supported_by_perspective["tcm"]):
+        if not set(difference.tcm_claim_ids).issubset(usable_by_perspective["tcm"]):
             raise GovernanceContractError("difference cannot use an insufficient TCM claim")
-        if not set(difference.western_claim_ids).issubset(supported_by_perspective["western"]):
+        if not set(difference.western_claim_ids).issubset(usable_by_perspective["western"]):
             raise GovernanceContractError("difference cannot use an insufficient Western claim")
         for perspective, expected_ids in (
             ("tcm", set(difference.tcm_claim_ids)),
@@ -131,6 +156,7 @@ def validate_governance_grounding(
             if not any(
                 mapping.final_claim_or_statement == difference.statement
                 and mapping.perspective == perspective
+                and len(mapping.claim_ids) == len(expected_ids)
                 and set(mapping.claim_ids) == expected_ids
                 for mapping in answer.source_map
             ):
@@ -138,9 +164,11 @@ def validate_governance_grounding(
 
     for mapping in answer.source_map:
         perspective_claims = claims_by_perspective[mapping.perspective]
+        if len(mapping.claim_ids) != len(set(mapping.claim_ids)):
+            raise GovernanceContractError("source map claim IDs must be unique")
         if not set(mapping.claim_ids).issubset(perspective_claims):
             raise GovernanceContractError("source map references an unknown claim ID")
-        if not set(mapping.claim_ids).issubset(supported_by_perspective[mapping.perspective]):
+        if not set(mapping.claim_ids).issubset(usable_by_perspective[mapping.perspective]):
             raise GovernanceContractError("source map cannot reference an insufficient claim")
         linked_refs = [
             ref
@@ -151,12 +179,52 @@ def validate_governance_grounding(
         mapping_pairs = {(ref.source_id, ref.chunk_id) for ref in mapping.evidence_refs}
         if not mapping_pairs.issubset(linked_pairs):
             raise GovernanceContractError("source map contains a source/chunk pair not linked to its claims")
+        for claim_id in mapping.claim_ids:
+            claim_pairs = {
+                (ref.source_id, ref.chunk_id)
+                for ref in perspective_claims[claim_id].evidence_refs
+            }
+            if not claim_pairs.intersection(mapping_pairs):
+                raise GovernanceContractError(
+                    f"source map lacks evidence coverage for claim {claim_id}"
+                )
+
+    overall_ids = answer.overall_supporting_claim_ids
+    all_usable = {
+        claim_id: perspective
+        for perspective, claim_ids in usable_by_perspective.items()
+        for claim_id in claim_ids
+    }
+    if all_usable:
+        if not overall_ids:
+            raise GovernanceContractError("overall summary must cite usable claims")
+        if len(overall_ids) != len(set(overall_ids)):
+            raise GovernanceContractError("overall supporting claim IDs must be unique")
+        if not set(overall_ids).issubset(all_usable):
+            raise GovernanceContractError("overall summary references an unknown, insufficient, or unavailable claim")
+        for perspective in sorted({all_usable[claim_id] for claim_id in overall_ids}):
+            expected_ids = {claim_id for claim_id in overall_ids if all_usable[claim_id] == perspective}
+            if not any(
+                mapping.final_claim_or_statement == answer.overall_summary
+                and mapping.perspective == perspective
+                and len(mapping.claim_ids) == len(expected_ids)
+                and set(mapping.claim_ids) == expected_ids
+                for mapping in answer.source_map
+            ):
+                raise GovernanceContractError(
+                    "overall summary requires matching source-map support for every represented perspective"
+                )
+    elif overall_ids:
+        raise GovernanceContractError("overall supporting claim IDs must be empty when no usable claims exist")
+    elif answer.overall_summary != OVERALL_NO_CLAIM_SUMMARY:
+        raise GovernanceContractError("overall summary must use the deterministic no-claim status statement")
 
     for name in ("tcm", "western"):
         summary = getattr(answer.perspectives, name)
         if summary.supported_claim_ids and not any(
             mapping.final_claim_or_statement == summary.summary
             and mapping.perspective == name
+            and len(mapping.claim_ids) == len(summary.supported_claim_ids)
             and set(mapping.claim_ids) == set(summary.supported_claim_ids)
             for mapping in answer.source_map
         ):
@@ -179,6 +247,8 @@ class CrossPerspectiveGovernanceAgent:
             f"Evidence packets:\n{json.dumps(packet_payload, ensure_ascii=False, sort_keys=True)}\n\n"
             "The packet interpretation field is not evidence and is intentionally omitted from this payload. "
             "Only non-insufficient claims with linked provenance may support substantive final statements. "
+            "overall_supporting_claim_ids must be non-empty whenever any usable claim exists, and overall_summary must have exact source-map entries for every represented perspective. "
+            "When no usable claim exists, use the deterministic no-claim status statement. "
             "Return the CrossPerspectiveAnswer JSON contract. Every supported_claim_id and every source-map ID must exist in the supplied packets. "
             "A source-map entry must include exact evidence_refs pairs linked to its claim_ids. "
             "Both tcm and western perspective summaries are required; mark unavailable perspectives unavailable and do not reconstruct them."

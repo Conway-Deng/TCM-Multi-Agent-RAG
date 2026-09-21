@@ -16,6 +16,11 @@ NUTRITION_UNAVAILABLE_MESSAGE = (
     "Nutrition perspective unavailable until a dedicated provenance-preserving "
     "nutrition evidence corpus is constructed."
 )
+TCM_NO_CLAIM_SUMMARY = "No provenance-linked TCM claim is available for synthesis."
+WESTERN_NO_CLAIM_SUMMARY = "No provenance-linked Western claim is available for synthesis."
+TCM_UNAVAILABLE_SUMMARY = "TCM perspective unavailable for synthesis."
+WESTERN_UNAVAILABLE_SUMMARY = "Western perspective unavailable for synthesis."
+OVERALL_NO_CLAIM_SUMMARY = "No provenance-linked evidence is available for an overall cross-perspective summary."
 
 
 class StrictModel(BaseModel):
@@ -137,6 +142,7 @@ class SourceMapEntry(StrictModel):
 
 class CrossPerspectiveAnswer(StrictModel):
     overall_summary: str = Field(min_length=1)
+    overall_supporting_claim_ids: list[str] = Field(default_factory=list)
     perspectives: PerspectiveSummaries
     agreements: list[Agreement] = Field(default_factory=list)
     differences_or_conflicts: list[DifferenceOrConflict] = Field(default_factory=list)
