@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from agents import AGENT_REGISTRY
 from config import get_settings
+from cross_perspective.api import router as cross_perspective_router
 from corpus import corpus_stats
 from judges import JUDGE_REGISTRY
 from formal_experiments import formal_jobs, public_registry
@@ -108,6 +109,8 @@ app.add_middleware(
     allow_headers=["Content-Type", "Accept"],
     expose_headers=["Server-Timing"],
 )
+
+app.include_router(cross_perspective_router)
 
 
 @app.middleware("http")
