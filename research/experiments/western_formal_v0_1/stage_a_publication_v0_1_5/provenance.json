@@ -1,0 +1,62 @@
+{
+  "analysis_denominator": {
+    "benchmark_total_cases": 48,
+    "definition": "supported or partially_supported cases with non-empty primary gold evidence",
+    "excluded_insufficient_cases": 6,
+    "excluded_insufficient_handling": "not scored as retrieval failures for headline primary-gold metrics",
+    "n_cases": 42,
+    "technical_missingness": "successful-pair intersection; technical failures excluded without zero imputation"
+  },
+  "artifact_type": "western_stage_a_derived_publication_package",
+  "benchmark_manifest_sha256": "bd8fc5105329d5d325fa8910b8a642bac6ddc954a25df6b9e299158aa29a22ae",
+  "benchmark_sha256": "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6",
+  "bootstrap_configuration": {
+    "lower_index": 250,
+    "method": "paired percentile bootstrap of case-level recall differences",
+    "resamples": 10000,
+    "seed": 20260815,
+    "upper_index": 9750
+  },
+  "conditions": {
+    "R0": "lexical retrieval; top 4",
+    "R1": "dense SiliconFlow BAAI/bge-m3; top 4",
+    "R2": "lexical + dense reciprocal-rank fusion (RRF = 1/(60 + lexical_rank) + 1/(60 + dense_rank)); top 4",
+    "R3": "R2 candidate/rerank depth 12; BAAI/bge-reranker-v2-m3; top 4"
+  },
+  "corpus_chunks_sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+  "created_from_stage_a_run_id": "western-formal-v0.1.2-stage-a-20260918-01",
+  "metric_definitions": {
+    "aggregate_primary_gold_chunk_recall_at_4": "total retrieved primary-gold chunks divided by total primary-gold chunks across the headline denominator",
+    "aggregate_primary_source_recall_at_4": "total retrieved primary-gold sources divided by total primary-gold sources across the headline denominator",
+    "hit_at_4": "fraction of headline cases with at least one primary-gold chunk retrieved in the top four",
+    "mcnemar": "exact two-sided McNemar calculation over paired Hit@4 discordance",
+    "mrr": "mean reciprocal rank of the first retrieved primary-gold chunk; zero when none is retrieved",
+    "paired_mean_chunk_recall_difference": "case-level comparison recall minus R0 recall, averaged over the successful-pair intersection"
+  },
+  "metric_implementation_references": {
+    "bootstrap": "backend/western/formal_eval.py:_bootstrap_mean_ci",
+    "headline": "backend/western/formal_eval.py:retrieval_metrics",
+    "paired": "backend/western/formal_eval.py:pairwise_retrieval_statistics"
+  },
+  "network_calls_used": false,
+  "package_generation_mode": "offline_derived_analysis",
+  "package_version": "western-stage-a-publication-v0.1.5",
+  "protocol_identity": "western_formal_v0.1.2",
+  "protocol_sha256": "af22119036892abc512c175e071ccdb6e0aa562db53caaabe96bc9e8f735b192",
+  "provider_calls_used": false,
+  "semantic_or_generation_outputs_used": false,
+  "source_code_script_path": "scripts/build-western-stage-a-publication.py",
+  "source_code_script_sha256": "bde39ef215c845c7d66c98431d4ce8b43222d71e0afd9115d7f3eda57d02e42c",
+  "source_registry_sha256": "722273140906b238e88cfdab4ddbb12d73c478f686ae23d0f501738ee6820703",
+  "stage_a_analysis_input_path": "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-a-20260918-01/stage_a_retrieval.jsonl",
+  "stage_a_byte_identical_alias_path": "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-a-20260918-01/stage_a_raw_results.jsonl",
+  "stage_a_rerun": false,
+  "stage_a_source_paths": [
+    "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-a-20260918-01/stage_a_retrieval.jsonl",
+    "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-a-20260918-01/stage_a_raw_results.jsonl"
+  ],
+  "stage_a_source_record_count": 192,
+  "stage_a_source_relationship": "stage_a_retrieval.jsonl and stage_a_raw_results.jsonl are byte-identical aliases/copies; analysis reads stage_a_retrieval.jsonl only",
+  "stage_a_source_sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+  "stage_a_technical_failure_count": 0
+}

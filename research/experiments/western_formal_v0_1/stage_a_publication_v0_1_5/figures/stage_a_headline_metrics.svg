@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="7in" height="4.43in" viewBox="0 0 1200 760">
+<rect width="1200" height="760" fill="#FFFFFF"/>
+<text x="600.00" y="38.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="bold" fill="#20262E">Stage A headline retrieval metrics</text>
+<text x="600.00" y="66.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#5E6975">Frozen Western pilot; n = 42; recalls aggregate primary-gold items</text>
+<line x1="100" y1="635.00" x2="1160" y2="635.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="641.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">0.0</text>
+<line x1="100" y1="526.00" x2="1160" y2="526.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="532.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">0.2</text>
+<line x1="100" y1="417.00" x2="1160" y2="417.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="423.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">0.4</text>
+<line x1="100" y1="308.00" x2="1160" y2="308.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="314.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">0.6</text>
+<line x1="100" y1="199.00" x2="1160" y2="199.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="205.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">0.8</text>
+<line x1="100" y1="90.00" x2="1160" y2="90.00" stroke="#D9DEE5" stroke-width="1"/>
+<text x="86.00" y="96.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5E6975">1.0</text>
+<line x1="100" y1="90" x2="100" y2="635" stroke="#20262E" stroke-width="2"/>
+<line x1="100" y1="635" x2="1160" y2="635" stroke="#20262E" stroke-width="2"/>
+<rect x="140.50" y="401.43" width="40" height="233.57" fill="#3366A8"/>
+<rect x="188.50" y="149.45" width="40" height="485.55" fill="#5B8E3E"/>
+<rect x="236.50" y="310.60" width="40" height="324.40" fill="#D17B2F"/>
+<rect x="284.50" y="389.53" width="40" height="245.47" fill="#7A5AA6"/>
+<text x="232.50" y="667.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#20262E">R0</text>
+<rect x="405.50" y="288.97" width="40" height="346.03" fill="#3366A8"/>
+<rect x="453.50" y="149.45" width="40" height="485.55" fill="#5B8E3E"/>
+<rect x="501.50" y="206.79" width="40" height="428.21" fill="#D17B2F"/>
+<rect x="549.50" y="305.19" width="40" height="329.81" fill="#7A5AA6"/>
+<text x="497.50" y="667.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#20262E">R1</text>
+<rect x="670.50" y="340.87" width="40" height="294.13" fill="#3366A8"/>
+<rect x="718.50" y="149.45" width="40" height="485.55" fill="#5B8E3E"/>
+<rect x="766.50" y="232.74" width="40" height="402.26" fill="#D17B2F"/>
+<rect x="814.50" y="322.49" width="40" height="312.51" fill="#7A5AA6"/>
+<text x="762.50" y="667.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#20262E">R2</text>
+<rect x="935.50" y="349.52" width="40" height="285.48" fill="#3366A8"/>
+<rect x="983.50" y="179.18" width="40" height="455.82" fill="#5B8E3E"/>
+<rect x="1031.50" y="258.69" width="40" height="376.31" fill="#D17B2F"/>
+<rect x="1079.50" y="318.16" width="40" height="316.84" fill="#7A5AA6"/>
+<text x="1027.50" y="667.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#20262E">R3</text>
+<rect x="70.00" y="696" width="20" height="20" fill="#3366A8"/>
+<text x="100.00" y="712.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#20262E">Aggregate chunk recall@4</text>
+<rect x="335.00" y="696" width="20" height="20" fill="#5B8E3E"/>
+<text x="365.00" y="712.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#20262E">Aggregate source recall@4</text>
+<rect x="600.00" y="696" width="20" height="20" fill="#D17B2F"/>
+<text x="630.00" y="712.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#20262E">Hit@4</text>
+<rect x="865.00" y="696" width="20" height="20" fill="#7A5AA6"/>
+<text x="895.00" y="712.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#20262E">MRR</text>
+<text x="100.00" y="72.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#20262E">Metric value</text>
+</svg>

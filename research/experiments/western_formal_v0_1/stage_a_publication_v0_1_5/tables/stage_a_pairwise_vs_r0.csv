@@ -1,0 +1,4 @@
+comparison,n_paired_cases,frozen_eligible_cases,technical_missing_pairs_excluded,mean_chunk_recall_difference,bootstrap_ci_lower_95,bootstrap_ci_upper_95,r0_hit_comparison_miss,r0_miss_comparison_hit,discordant_pairs,mcnemar_p_exact_two_sided
+R1 - R0,42,42,0,0.20634920634920634,0.08333333333333333,0.3333333333333333,2,10,12,0.03857421875
+R2 - R0,42,42,0,0.09523809523809523,0.011904761904761904,0.19047619047619047,0,6,6,0.03125
+R3 - R0,42,42,0,0.10714285714285714,0.011904761904761904,0.21825396825396823,2,6,8,0.2890625
