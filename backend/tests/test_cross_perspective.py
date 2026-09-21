@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -12,7 +14,11 @@ from cross_perspective.adapters import (
     TCMEvidenceAdapter,
     WesternEvidenceAdapter,
 )
-from cross_perspective.governance import CrossPerspectiveGovernanceAgent, validate_governance_grounding
+from cross_perspective.governance import (
+    CrossPerspectiveGovernanceAgent,
+    build_governance_payload,
+    validate_governance_grounding,
+)
 from cross_perspective.model_calls import StructuredCallResult, StructuredModelCallFailure
 from cross_perspective.router import CrossPerspectiveRouter, ROUTER_MODEL
 from cross_perspective.schemas import (
@@ -27,8 +33,10 @@ from cross_perspective.schemas import (
     RoutingDecision,
 )
 from cross_perspective.service import CrossPerspectiveService, NutritionUnavailableError
+from cross_perspective.tracing import DevelopmentTraceLogger
 from providers.base import GenerationResult
 from providers.openai_compatible import ProviderUnavailable
+from tcm.agent import OpenAICompatibleClient
 from schemas.research import ProviderAttempt
 from tcm.schemas import Citation, Claim, Confidence, EvidenceChunk, QueryAnalysis, TCMConsultResponse
 from western.schemas import (
@@ -75,22 +83,36 @@ def packet(perspective: str) -> PerspectiveEvidencePacket:
 def answer(*, western_available: bool = True) -> CrossPerspectiveAnswer:
     source_map = [
         {
-            "final_claim_or_statement": "The TCM packet contains one bounded claim.",
+            "final_claim_or_statement": "TCM packet summary.",
             "perspective": "tcm",
             "claim_ids": ["tcm:c1"],
-            "source_ids": ["t-source-1"],
-            "chunk_ids": ["t-chunk-1"],
+            "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
         }
     ]
     if western_available:
         source_map.append(
             {
-                "final_claim_or_statement": "The Western packet contains one bounded claim.",
+                "final_claim_or_statement": "Western packet summary.",
                 "perspective": "western",
                 "claim_ids": ["western:c1"],
-                "source_ids": ["w-source-1"],
-                "chunk_ids": ["w-chunk-1"],
+                "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
             }
+        )
+        source_map.extend(
+            [
+                {
+                    "final_claim_or_statement": "Both packets describe the topic.",
+                    "perspective": "tcm",
+                    "claim_ids": ["tcm:c1"],
+                    "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
+                },
+                {
+                    "final_claim_or_statement": "Both packets describe the topic.",
+                    "perspective": "western",
+                    "claim_ids": ["western:c1"],
+                    "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
+                },
+            ]
         )
     return CrossPerspectiveAnswer.model_validate(
         {
@@ -127,9 +149,11 @@ class QueueProvider:
         self.model = model
         self.outcomes = list(outcomes)
         self.calls = 0
+        self.prompts: list[str] = []
 
     async def generate(self, **kwargs):
         self.calls += 1
+        self.prompts.append(kwargs.get("prompt", ""))
         outcome = self.outcomes.pop(0)
         if isinstance(outcome, Exception):
             raise outcome
@@ -279,10 +303,12 @@ def test_western_adapter_preserves_retrieval_provenance_and_support_boundary() -
 
     result = asyncio.run(WesternEvidenceAdapter(agent=FakeAgent()).collect("Question about headache."))
     assert result.packet.available is True
-    assert result.packet.claims[0].support_status == "insufficient"
-    assert result.packet.claims[0].evidence_refs == []
+    assert result.packet.claims[0].claim_kind == "source_excerpt"
+    assert result.packet.claims[0].support_status == "supported"
+    assert result.packet.claims[0].evidence_refs[0].source_id == "w-source"
     assert result.packet.provenance[0].source_id == "w-source"
     assert result.packet.provenance[0].excerpt == "A bounded Western evidence excerpt."
+    assert result.packet.claims[1].support_status == "insufficient"
 
 
 def test_packet_schema_rejects_claim_reference_absent_from_provenance() -> None:
@@ -356,7 +382,7 @@ def test_one_perspective_failure_is_visible_to_governance_and_not_fabricated() -
 
 def test_governance_rejects_fake_source_ids_without_retry() -> None:
     invalid = answer().model_dump(mode="json")
-    invalid["source_map"][0]["source_ids"] = ["fabricated-source"]
+    invalid["source_map"][0]["evidence_refs"] = [{"source_id": "fabricated-source", "chunk_id": "t-chunk-1"}]
     provider = QueueProvider("Qwen/Qwen3-8B", [invalid])
     governance = CrossPerspectiveGovernanceAgent(provider=provider)
 
@@ -406,6 +432,245 @@ def test_nutrition_is_disabled_with_frozen_message() -> None:
     with pytest.raises(NutritionUnavailableError, match="dedicated provenance-preserving") as caught:
         asyncio.run(service.consult(request))
     assert str(caught.value) == NUTRITION_UNAVAILABLE_MESSAGE
+
+
+def test_agreement_with_empty_supporting_claim_ids_is_rejected() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["agreements"] = [{"statement": "Unsupported agreement.", "supporting_claim_ids": []}]
+    with pytest.raises(ValidationError):
+        CrossPerspectiveAnswer.model_validate(payload)
+
+
+def test_agreement_using_an_insufficient_claim_is_rejected() -> None:
+    insufficient_western = packet("western").model_copy(
+        update={"claims": [packet("western").claims[0].model_copy(update={"support_status": "insufficient"})]}
+    )
+    with pytest.raises(Exception, match="insufficient"):
+        validate_governance_grounding(answer(), {"tcm": packet("tcm"), "western": insufficient_western})
+
+
+def test_difference_with_empty_claim_ids_is_rejected() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["differences_or_conflicts"] = [{"statement": "Unsupported difference.", "tcm_claim_ids": [], "western_claim_ids": []}]
+    with pytest.raises(ValidationError):
+        CrossPerspectiveAnswer.model_validate(payload)
+
+
+def test_fabricated_and_wrong_perspective_claim_ids_are_rejected() -> None:
+    fabricated = answer().model_copy(
+        update={
+            "perspectives": answer().perspectives.model_copy(
+                update={"tcm": answer().perspectives.tcm.model_copy(update={"supported_claim_ids": ["tcm:fabricated"]})}
+            )
+        }
+    )
+    with pytest.raises(Exception, match="unknown tcm claim ID"):
+        validate_governance_grounding(fabricated, {"tcm": packet("tcm"), "western": packet("western")})
+
+    wrong_perspective = answer().model_copy(
+        update={
+            "perspectives": answer().perspectives.model_copy(
+                update={"tcm": answer().perspectives.tcm.model_copy(update={"supported_claim_ids": ["western:c1"]})}
+            )
+        }
+    )
+    with pytest.raises(Exception, match="unknown tcm claim ID"):
+        validate_governance_grounding(wrong_perspective, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_source_chunk_cross_pair_mismatch_is_rejected() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["source_map"][0]["evidence_refs"] = [{"source_id": "t-source-1", "chunk_id": "w-chunk-1"}]
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="source/chunk pair"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_source_map_cannot_use_an_insufficient_claim() -> None:
+    insufficient_tcm = packet("tcm").model_copy(
+        update={"claims": [packet("tcm").claims[0].model_copy(update={"support_status": "insufficient"})]}
+    )
+    with pytest.raises(Exception, match="insufficient"):
+        validate_governance_grounding(answer(), {"tcm": insufficient_tcm, "western": packet("western")})
+
+
+def test_perspective_summary_requires_matching_source_map_support() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["source_map"] = [entry for entry in payload["source_map"] if entry["final_claim_or_statement"] != "TCM packet summary."]
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="tcm summary"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_agreement_requires_source_map_support_from_both_perspectives() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["source_map"] = [
+        entry
+        for entry in payload["source_map"]
+        if not (entry["final_claim_or_statement"] == "Both packets describe the topic." and entry["perspective"] == "western")
+    ]
+    malformed = CrossPerspectiveAnswer.model_validate(payload)
+    with pytest.raises(Exception, match="agreement requires"):
+        validate_governance_grounding(malformed, {"tcm": packet("tcm"), "western": packet("western")})
+
+
+def test_governance_payload_omits_unverified_interpretation() -> None:
+    payload = build_governance_payload({"tcm": packet("tcm"), "western": packet("western")})
+    assert all("interpretation" not in item for item in payload.values())
+    provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
+    asyncio.run(
+        CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
+            question="Compare evidence for headache.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    assert '"interpretation"' not in provider.prompts[0]
+
+
+def test_western_generation_failure_keeps_source_evidence_as_degraded() -> None:
+    class FailingWesternAgent:
+        provider = type("Provider", (), {"model": "Qwen/Qwen3-8B"})()
+
+        async def consult(self, _):
+            evidence = WesternRetrievalEvidence(
+                chunk_id="w-failure-chunk",
+                source_id="w-failure-source",
+                rank=1,
+                lexical_score=0.7,
+                article_title="Western failure fixture",
+                section="Results",
+                pmcid="PMC124",
+                source_url="https://pmc.ncbi.nlm.nih.gov/articles/PMC124/",
+                license="CC BY",
+                topic=WesternTopic.HEADACHE,
+                text="Exact source excerpt retained after generation failure.",
+            )
+            return WesternConsultResponse(
+                question="Question about headache.",
+                topic=WesternTopic.HEADACHE,
+                retrieval=[evidence],
+                claims=[],
+                generation_mode="generation_failure",
+                abstained=True,
+                abstention_reason="Provider unavailable.",
+                model="Qwen/Qwen3-8B",
+                trace=WesternTrace(
+                    corpus_name="fixture",
+                    corpus_version="fixture-v1",
+                    corpus_chunk_count=1,
+                    corpus_source_count=1,
+                    provider_attempts=[ProviderAttempt(attempt=1, provider="fixture", model="Qwen/Qwen3-8B", success=False, error_type="connectivity", error="Provider unavailable.")],
+                ),
+            )
+
+    result = asyncio.run(WesternEvidenceAdapter(agent=FailingWesternAgent()).collect("Question about headache."))
+    assert result.packet.available is True
+    assert result.packet.execution_status == "degraded"
+    assert result.packet.failure is not None
+    assert result.packet.claims[0].claim_kind == "source_excerpt"
+    assert "source-backed" in result.packet.interpretation
+
+
+def test_western_returned_model_mismatch_is_degraded_and_visible() -> None:
+    class MismatchWesternAgent:
+        provider = type("Provider", (), {"model": "Qwen/Qwen3-8B"})()
+
+        async def consult(self, _):
+            evidence = WesternRetrievalEvidence(
+                chunk_id="w-mismatch-chunk", source_id="w-mismatch-source", rank=1, lexical_score=0.7,
+                article_title="Mismatch fixture", section="Results", pmcid="PMC125",
+                source_url="https://pmc.ncbi.nlm.nih.gov/articles/PMC125/", license="CC BY",
+                topic=WesternTopic.HEADACHE, text="Source excerpt.",
+            )
+            return WesternConsultResponse(
+                question="Question about headache.", topic=WesternTopic.HEADACHE,
+                answer="Untrusted generated text.", retrieval=[evidence], claims=[],
+                generation_mode="llm", provider="fixture", model="Other/Model",
+                trace=WesternTrace(corpus_name="fixture", corpus_version="fixture-v1", corpus_chunk_count=1, corpus_source_count=1,
+                    provider_attempts=[ProviderAttempt(attempt=1, provider="fixture", model="Other/Model", success=True)]),
+            )
+
+    result = asyncio.run(WesternEvidenceAdapter(agent=MismatchWesternAgent()).collect("Question about headache."))
+    assert result.packet.available is True
+    assert result.packet.execution_status == "degraded"
+    assert result.packet.failure is not None and result.packet.failure.failure_type == "configuration"
+    assert "Other/Model" in result.packet.interpretation
+
+
+def test_tcm_returned_model_mismatch_is_degraded() -> None:
+    async def fake_consult(_):
+        return TCMConsultResponse(
+            scope_status="supported", abstained=False, generation_mode="llm", generation_source="siliconflow_llm",
+            response_language="en", llm_model="Qwen/Qwen3-8B", llm_provider_model="Other/Model",
+            provider_attempts=1, provider_http_statuses=[200], query_analysis=QueryAnalysis(),
+            summary="Untrusted generated summary.", tcm_perspective="Untrusted generated summary.", claims=[],
+            possible_patterns=[], related_herbs_or_formulas=[], evidence=[], citations=[], safety_notes=[],
+            confidence=Confidence(level="medium", score=0.5, reason="Fixture."), disclaimer="Fixture.",
+        )
+
+    result = asyncio.run(TCMEvidenceAdapter(consult_fn=fake_consult).collect("Question about headache."))
+    assert result.packet.execution_status == "degraded"
+    assert result.packet.failure is not None and result.packet.failure.failure_type == "configuration"
+    assert result.events[-1].success is False
+
+
+def test_tcm_response_format_compatibility_retry_is_counted() -> None:
+    class FakeResponse:
+        def __init__(self, status_code: int, payload: dict):
+            self.status_code = status_code
+            self._payload = payload
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise RuntimeError(f"HTTP {self.status_code}")
+
+        def json(self):
+            return self._payload
+
+    class FakeHTTP:
+        def __init__(self):
+            self.calls = []
+            self.responses = [
+                FakeResponse(400, {}),
+                FakeResponse(200, {"model": "Qwen/Qwen3-8B", "choices": [{"message": {"content": "{}"}}]}),
+            ]
+
+        async def post(self, url, *, headers, json):
+            self.calls.append(json)
+            return self.responses.pop(0)
+
+    client = OpenAICompatibleClient()
+    fake_http = FakeHTTP()
+    client._http_client = lambda: fake_http
+    result = asyncio.run(client._post_chat({"response_format": {"type": "json_object"}}, {"Authorization": "Bearer test"}))
+    assert result["model"] == "Qwen/Qwen3-8B"
+    assert client.provider_telemetry.attempts == 2
+    assert client.provider_telemetry.compatibility_retry is True
+    assert client.provider_telemetry.http_statuses == [400, 200]
+    assert "response_format" not in fake_http.calls[1]
+
+
+def test_trace_omits_raw_question_by_default_and_hashes_it(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("CROSS_PERSPECTIVE_TRACE_RAW_QUESTION", raising=False)
+    question = "Unique private development question 12345."
+    sink = DevelopmentTraceLogger(tmp_path / "trace.jsonl")
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(packet("tcm")), western_adapter=StubAdapter(packet("western")),
+        governance=StubGovernance(), trace_sink=sink,
+    )
+    result = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question=question, question_id="q-1")))
+    stored = (tmp_path / "trace.jsonl").read_text(encoding="utf-8")
+    assert question not in stored
+    assert result.trace.question_hash == hashlib.sha256(question.encode()).hexdigest()
+    assert result.trace.governance_input["question_hash"] == result.trace.question_hash
+    assert "question" not in result.trace.governance_input
+
+
+def test_no_deepseek_runtime_reference_exists_in_cross_perspective() -> None:
+    root = Path(__file__).resolve().parents[1] / "cross_perspective"
+    text = "\n".join(path.read_text(encoding="utf-8") for path in root.glob("*.py"))
+    assert "DeepSeek-V3.2" not in text
 
 
 def test_development_endpoint_is_registered() -> None:

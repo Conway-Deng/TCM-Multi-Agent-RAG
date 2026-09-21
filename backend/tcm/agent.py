@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import os
 import re
@@ -177,6 +177,14 @@ class LLMGeneration:
     raw_content: str
     parsed_json: dict[str, Any] | None
     model: str
+    provider_reported_model: str | None = None
+
+
+@dataclass
+class ProviderTelemetry:
+    attempts: int = 0
+    compatibility_retry: bool = False
+    http_statuses: list[int] = field(default_factory=list)
 
 
 class LLMProviderError(Exception):
@@ -201,6 +209,7 @@ class OpenAICompatibleClient:
         self.model = os.getenv("LLM_MODEL", "Qwen/Qwen3-8B").strip()
         self.timeout = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
         self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1400"))
+        self.provider_telemetry = ProviderTelemetry()
 
     @property
     def configured(self) -> bool:
@@ -221,11 +230,32 @@ class OpenAICompatibleClient:
 
     async def _post_chat(self, payload: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
         client = self._http_client()
-        response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
-        if response.status_code in {400, 422} and "response_format" in payload:
-            retry_payload = dict(payload)
-            retry_payload.pop("response_format", None)
-            response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=retry_payload)
+        attempts = 0
+        statuses: list[int] = []
+        compatibility_retry = False
+        try:
+            attempts += 1
+            response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
+            statuses.append(response.status_code)
+            if response.status_code in {400, 422} and "response_format" in payload:
+                compatibility_retry = True
+                retry_payload = dict(payload)
+                retry_payload.pop("response_format", None)
+                attempts += 1
+                response = await client.post(f"{self.base_url}/chat/completions", headers=headers, json=retry_payload)
+                statuses.append(response.status_code)
+        except Exception:
+            self.provider_telemetry = ProviderTelemetry(
+                attempts=attempts,
+                compatibility_retry=compatibility_retry,
+                http_statuses=statuses,
+            )
+            raise
+        self.provider_telemetry = ProviderTelemetry(
+            attempts=attempts,
+            compatibility_retry=compatibility_retry,
+            http_statuses=statuses,
+        )
         response.raise_for_status()
         try:
             data = response.json()
@@ -310,7 +340,15 @@ class OpenAICompatibleClient:
         if not isinstance(content, str) or not content.strip():
             raise LLMProviderError("LLM provider returned an empty response")
         raw_content = content.strip()
-        return LLMGeneration(raw_content=raw_content, parsed_json=_parse_json_object(raw_content), model=self.model)
+        provider_reported_model = response_data.get("model")
+        if not isinstance(provider_reported_model, str) or not provider_reported_model.strip():
+            provider_reported_model = None
+        return LLMGeneration(
+            raw_content=raw_content,
+            parsed_json=_parse_json_object(raw_content),
+            model=self.model,
+            provider_reported_model=provider_reported_model,
+        )
 
 
 def _parse_json_object(content: str) -> dict[str, Any] | None:
@@ -780,6 +818,12 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
     llm_ms = 0.0
 
     def finish(response: TCMConsultResponse, post_started: float) -> TCMConsultResponse:
+        telemetry = getattr(client, "provider_telemetry", ProviderTelemetry())
+        response.llm_provider = getattr(client, "provider", None)
+        response.provider_attempts = telemetry.attempts
+        response.provider_retry_count = int(telemetry.compatibility_retry)
+        response.provider_http_statuses = list(telemetry.http_statuses)
+        response.provider_compatibility_retry = telemetry.compatibility_retry
         response.timings = RequestTimings(
             preprocessing_ms=round(preprocessing_ms, 3),
             retrieval_ms=round(retrieval_ms, 3),
@@ -894,4 +938,5 @@ async def consult(request: TCMConsultRequest) -> TCMConsultResponse:
         llm_error=llm_error,
         abstained=False,
     )
+    response.llm_provider_model = generation.provider_reported_model if generation is not None else None
     return finish(response, post_started)

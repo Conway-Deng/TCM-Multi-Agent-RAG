@@ -33,6 +33,7 @@ class PerspectiveClaim(StrictModel):
     claim_text: str = Field(min_length=1)
     evidence_refs: list[EvidenceReference] = Field(default_factory=list)
     support_status: SupportStatus
+    claim_kind: Literal["source_excerpt", "derived_claim"] = "derived_claim"
 
 
 class ProvenanceRecord(StrictModel):
@@ -118,21 +119,20 @@ class PerspectiveSummaries(StrictModel):
 
 class Agreement(StrictModel):
     statement: str = Field(min_length=1)
-    supporting_claim_ids: list[str] = Field(default_factory=list)
+    supporting_claim_ids: list[str] = Field(min_length=1)
 
 
 class DifferenceOrConflict(StrictModel):
     statement: str = Field(min_length=1)
-    tcm_claim_ids: list[str] = Field(default_factory=list)
-    western_claim_ids: list[str] = Field(default_factory=list)
+    tcm_claim_ids: list[str] = Field(min_length=1)
+    western_claim_ids: list[str] = Field(min_length=1)
 
 
 class SourceMapEntry(StrictModel):
     final_claim_or_statement: str = Field(min_length=1)
     perspective: ActivePerspectiveName
     claim_ids: list[str] = Field(min_length=1)
-    source_ids: list[str] = Field(min_length=1)
-    chunk_ids: list[str] = Field(min_length=1)
+    evidence_refs: list[EvidenceReference] = Field(min_length=1)
 
 
 class CrossPerspectiveAnswer(StrictModel):
@@ -165,6 +165,7 @@ class CrossPerspectiveTrace(StrictModel):
     run_id: str
     timestamp: datetime
     question_id: str | None = None
+    question_hash: str
     router_output: RoutingDecision | None = None
     selected_perspectives: list[ActivePerspectiveName] = Field(default_factory=list)
     retrieval_source_ids: dict[ActivePerspectiveName, list[str]] = Field(default_factory=dict)

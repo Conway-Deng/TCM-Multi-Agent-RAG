@@ -185,6 +185,15 @@ class TCMConsultResponse(BaseModel):
     generation_source: GenerationSource
     response_language: ResponseLanguage
     llm_model: str
+    llm_provider: str | None = None
+    # Additive telemetry: llm_model remains the configured/requested model for
+    # backwards compatibility; this field is populated only from a provider
+    # response model field when one is actually returned.
+    llm_provider_model: str | None = None
+    provider_attempts: int = Field(default=0, ge=0)
+    provider_retry_count: int = Field(default=0, ge=0)
+    provider_http_statuses: list[int] = Field(default_factory=list)
+    provider_compatibility_retry: bool = False
     llm_error: str | None = None
     urgent: bool = False
     query_analysis: QueryAnalysis

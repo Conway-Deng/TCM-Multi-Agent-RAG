@@ -20,7 +20,7 @@ The common packet records perspective identity, availability and execution statu
 
 `final statement -> perspective -> claim_id -> chunk_id -> source_id`
 
-The Western Phase 1B runtime explicitly does not establish sentence-level claim support. The adapter therefore preserves its generated answer claim as `insufficient` when it has no claim-level evidence IDs; it does not attach retrieved citations to that answer merely because they were retrieved. Retrieved Western provenance remains inspectable in the packet.
+The Western Phase 1B runtime explicitly does not establish sentence-level claim support. The adapter therefore preserves its generated answer claim as `insufficient` when it has no claim-level evidence IDs; it does not attach retrieved citations to that answer merely because they were retrieved. In addition, every retrieved Western chunk becomes a deterministic `source_excerpt` claim whose exact bounded excerpt and `(source_id, chunk_id)` pair are preserved. Retrieved Western provenance remains inspectable in the packet.
 
 ## Exact development model allocation
 
@@ -41,6 +41,7 @@ These choices establish a development configuration, not a claim of model superi
 - `available` and `execution_status`
 - `interpretation`
 - claims with `claim_id`, `claim_text`, `evidence_refs`, and `support_status`
+- `claim_kind` distinguishes `source_excerpt` from `derived_claim`
 - `uncertainty`, `missing_information`, and `limitations`
 - provenance records with source ID, chunk ID, title, evidence excerpt, locator/identifier, source type, section, and license where available
 - an explicit failure record when a pathway is degraded or unavailable
@@ -53,15 +54,21 @@ Schema validation rejects a claim evidence reference that is absent from the pac
 
 ## Governance contract
 
-`CrossPerspectiveAnswer` contains an overall summary, separate TCM and Western summaries, agreements, differences or conflicts, evidence gaps, uncertainty, and a source map. Each source-map row includes its perspective, claim IDs, source IDs, and chunk IDs.
+`CrossPerspectiveAnswer` contains an overall summary, separate TCM and Western summaries, agreements, differences or conflicts, evidence gaps, uncertainty, and a source map. Each source-map row includes its perspective, claim IDs, and explicit `evidence_refs` pairs. Independent source-ID and chunk-ID lists are not used.
+
+The governance model receives claims, support status, provenance, uncertainty, missing information, limitations, availability/execution status, and failure metadata. Packet `interpretation` text is retained in the full packet and trace for inspection but is omitted from the governance payload because it may be unverified presentation text. Only non-insufficient claims with linked provenance may support substantive final statements.
 
 The governance prompt prohibits new substantive medical claims, equivalence between TCM and biomedical mechanisms, treating agreement as proof, hidden disagreement, certainty inflation, and fabricated identifiers. Post-generation validation rejects:
 
 - unknown claim, source, or chunk IDs;
 - `insufficient` claims presented as supported;
 - agreement entries without claim support from both perspectives;
+- empty agreements or agreements using insufficient claims;
+- differences without non-empty, non-insufficient TCM and Western claim support;
 - cross-perspective misuse of claim IDs; and
-- source-map IDs not linked to the stated claims.
+- source/chunk pairs not linked exactly to the stated claims;
+- perspective summaries without matching source-map statements; and
+- agreement or difference statements without matching source-map support from both perspectives.
 
 The prototype exposes evidence provenance and concise rationale fields, not hidden chain-of-thought.
 
@@ -96,13 +103,15 @@ The append-only JSONL trace defaults to `backend/cross_perspective/runtime/consu
 - prompt/completion token counts when returned by the provider; and
 - per-stage and total latency.
 
-API keys are never part of a schema, prompt trace, or log record.
+Persistent raw-question storage is controlled by `CROSS_PERSPECTIVE_TRACE_RAW_QUESTION`, which defaults to `false`. The default trace preserves `question_id` and a deterministic SHA-256 `question_hash`, but not the raw question. The live governance call still receives the actual question. Set the switch explicitly to enable raw-question storage for local development only. API keys, Authorization headers, environment secrets, and hidden chain-of-thought are never part of a schema, prompt trace, or log record. Evidence packets may contain source excerpts.
 
 ## Failure and retry policy
 
-Router and governance calls permit at most one retry, and only after a retryable technical failure (`timeout`, rate limit, HTTP 5xx, or connectivity). Structured-output or provenance-validation failures are semantic failures and are not retried. Existing perspective agents make no more than one provider attempt in their current runtime contracts. There is no silent model substitution and no paid fallback.
+Router and governance calls permit at most one retry, and only after a retryable technical failure (`timeout`, rate limit, HTTP 5xx, or connectivity). Structured-output or provenance-validation failures are semantic failures and are not retried. The legacy TCM client may make a second compatibility request when a provider rejects `response_format` with HTTP 400/422; additive telemetry records every actual HTTP attempt, the compatibility retry, statuses, and retry count. This compatibility retry is not labeled as a successful first attempt. There is no silent model substitution and no paid fallback.
 
-An unavailable perspective is represented by an explicit unavailable packet with no claims or provenance. Governance receives that packet and must not reconstruct the missing perspective. A degraded TCM local fallback is labeled `degraded` with its provider/configuration failure preserved rather than being silently presented as an ordinary model result.
+An unavailable perspective is represented by an explicit unavailable packet with no claims or provenance. Governance receives that packet and must not reconstruct the missing perspective. A Western generation failure after successful retrieval remains an available but `degraded` packet containing deterministic source-excerpt claims and the provider failure; only an unavailable evidence pathway/retrieval is marked unavailable. A degraded TCM local fallback is labeled `degraded` with its provider/configuration failure preserved rather than being silently presented as an ordinary model result.
+
+The TCM adapter checks the additive provider-reported model field. A missing or mismatched successful provider model is explicitly degraded and its generated interpretation is rejected. Western successful responses are similarly checked against `Qwen/Qwen3-8B`; retrieved source-excerpt claims are retained if the generated interpretation is rejected.
 
 ## Nutrition status
 

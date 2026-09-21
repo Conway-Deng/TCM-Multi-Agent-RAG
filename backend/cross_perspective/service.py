@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import os
 from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
@@ -12,7 +14,7 @@ from .adapters import (
     TCMEvidenceAdapter,
     WesternEvidenceAdapter,
 )
-from .governance import CrossPerspectiveGovernanceAgent, GOVERNANCE_MODEL
+from .governance import CrossPerspectiveGovernanceAgent, GOVERNANCE_MODEL, build_governance_payload
 from .model_calls import StructuredModelCallFailure
 from .router import CrossPerspectiveRouter, ROUTER_MODEL
 from .schemas import (
@@ -230,15 +232,19 @@ class CrossPerspectiveService:
             for name, packet in packets.items()
         }
         governance_input = {
-            "question": request.question,
-            "perspective_packets": {
-                name: packet.model_dump(mode="json") for name, packet in packets.items()
-            },
+            "perspective_packets": build_governance_payload(packets),
         }
+        question_hash = hashlib.sha256(request.question.encode("utf-8")).hexdigest()
+        governance_input["question_hash"] = question_hash
+        if os.getenv("CROSS_PERSPECTIVE_TRACE_RAW_QUESTION", "false").strip().casefold() in {
+            "1", "true", "yes", "on"
+        }:
+            governance_input["question"] = request.question
         return CrossPerspectiveTrace(
             run_id=run_id,
             timestamp=timestamp,
             question_id=request.question_id,
+            question_hash=question_hash,
             router_output=routing,
             selected_perspectives=list(routing.requested_perspectives) if routing else [],
             retrieval_source_ids=source_ids,

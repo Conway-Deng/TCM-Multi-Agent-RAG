@@ -67,6 +67,44 @@ def _tcm_failure_type(message: str) -> str:
     return "unexpected"
 
 
+def _tcm_events(response: TCMConsultResponse) -> list[ModelCallEvent]:
+    """Translate additive legacy telemetry into one event per HTTP attempt."""
+    attempts = response.provider_attempts
+    if attempts <= 0:
+        return []
+    statuses = response.provider_http_statuses
+    elapsed = response.timings.llm_ms / attempts if attempts else 0.0
+    events: list[ModelCallEvent] = []
+    for index in range(attempts):
+        status = statuses[index] if index < len(statuses) else None
+        compatibility_failure = response.provider_compatibility_retry and index == 0 and status in {400, 422}
+        success = index == attempts - 1 and not response.llm_error and not compatibility_failure
+        failure_class = None
+        error_summary = None
+        if compatibility_failure:
+            failure_class = "http"
+            error_summary = "Provider rejected response_format; compatibility retry was attempted."
+        elif not success:
+            failure_class = _tcm_failure_type(response.llm_error or "provider attempt failed")
+            error_summary = response.llm_error or "Provider attempt failed."
+        events.append(
+            ModelCallEvent(
+                role="tcm",
+                attempt=index + 1,
+                provider=response.llm_provider or "unknown",
+                requested_model=TCM_MODEL,
+                reported_model=response.llm_provider_model if success else None,
+                success=success,
+                latency_ms=elapsed,
+                http_status=status,
+                failure_class=failure_class,  # type: ignore[arg-type]
+                error_summary=error_summary,
+                retry_performed=index > 0,
+            )
+        )
+    return events
+
+
 class TCMEvidenceAdapter:
     perspective = "tcm"
 
@@ -154,7 +192,7 @@ class TCMEvidenceAdapter:
                 )
             )
 
-        events: list[ModelCallEvent] = []
+        events: list[ModelCallEvent] = _tcm_events(response)
         failure = None
         execution_status = "abstained" if response.abstained else "available"
         uncertainty = [response.confidence.reason]
@@ -170,18 +208,38 @@ class TCMEvidenceAdapter:
             uncertainty.append(
                 "The TCM language-generation call was unavailable; the packet preserves the existing deterministic retrieval-grounded fallback and records that degradation."
             )
-        elif response.generation_source == "siliconflow_llm":
-            events.append(
-                ModelCallEvent(
-                    role="tcm",
-                    attempt=1,
-                    provider="siliconflow",
-                    requested_model=TCM_MODEL,
-                    reported_model=response.llm_model,
-                    success=True,
-                    latency_ms=response.timings.llm_ms,
-                )
+
+        model_mismatch = (
+            response.generation_source == "siliconflow_llm"
+            and response.llm_provider_model != TCM_MODEL
+        )
+        if model_mismatch:
+            mismatch_detail = (
+                "TCM provider-reported model was missing."
+                if not response.llm_provider_model
+                else f"TCM provider-reported model {response.llm_provider_model!r} did not match {TCM_MODEL}."
             )
+            failure = PerspectiveFailure(
+                role="tcm",
+                failure_type="configuration",
+                error_summary=mismatch_detail,
+                retry_count=response.provider_retry_count,
+            )
+            execution_status = "degraded"
+            uncertainty.append(mismatch_detail)
+            if events:
+                events[-1] = events[-1].model_copy(
+                    update={
+                        "success": False,
+                        "failure_class": "configuration",
+                        "error_summary": mismatch_detail,
+                        "reported_model": response.llm_provider_model,
+                    }
+                )
+            claims = []
+            interpretation = "TCM generated interpretation was rejected because provider model identity could not be verified."
+        else:
+            interpretation = response.summary
 
         missing_information: list[str] = []
         abstention_reason = getattr(response, "abstention_reason", None)
@@ -194,7 +252,7 @@ class TCMEvidenceAdapter:
             perspective="tcm",
             available=True,
             execution_status=execution_status,  # type: ignore[arg-type]
-            interpretation=response.summary,
+            interpretation=interpretation,
             claims=claims,
             uncertainty=uncertainty,
             missing_information=missing_information,
@@ -260,7 +318,22 @@ class WesternEvidenceAdapter:
             )
             for item in response.retrieval
         ]
-        claims: list[PerspectiveClaim] = []
+        claims: list[PerspectiveClaim] = [
+            PerspectiveClaim(
+                claim_id=f"western:evidence:{item.chunk_id}",
+                claim_text=item.text[:2000],
+                evidence_refs=[
+                    EvidenceReference(
+                        source_id=item.source_id,
+                        chunk_id=item.chunk_id,
+                        title=item.article_title,
+                    )
+                ],
+                support_status="supported",
+                claim_kind="source_excerpt",
+            )
+            for item in response.retrieval
+        ]
         for claim in response.claims:
             refs = [
                 EvidenceReference(
@@ -278,6 +351,7 @@ class WesternEvidenceAdapter:
                     claim_text=claim.text,
                     evidence_refs=refs,
                     support_status="insufficient" if not refs else "partially_supported",
+                    claim_kind="derived_claim",
                 )
             )
 
@@ -305,9 +379,39 @@ class WesternEvidenceAdapter:
                     )
                 )
 
+        successful_models = [
+            attempt.model
+            for attempt in (response.trace.provider_attempts if response.trace else [])
+            if attempt.success
+        ]
+        model_mismatch = response.generation_mode == "llm" and (
+            response.model != WESTERN_MODEL
+            or any(model != WESTERN_MODEL for model in successful_models)
+        )
+        mismatch_detail = (
+            f"Western provider-reported model {response.model!r} did not match {WESTERN_MODEL}."
+            if model_mismatch
+            else ""
+        )
+        if model_mismatch and events:
+            events[-1] = events[-1].model_copy(
+                update={
+                    "success": False,
+                    "failure_class": "configuration",
+                    "error_summary": mismatch_detail,
+                    "reported_model": response.model,
+                }
+            )
         generation_failed = response.generation_mode == "generation_failure"
         failure = None
-        if generation_failed:
+        if model_mismatch:
+            failure = PerspectiveFailure(
+                role="western",
+                failure_type="configuration",
+                error_summary=mismatch_detail,
+                retry_count=sum(1 for event in events if event.attempt == 2),
+            )
+        elif generation_failed:
             last = response.trace.provider_attempts[-1] if response.trace and response.trace.provider_attempts else None
             failure = PerspectiveFailure(
                 role="western",
@@ -325,13 +429,27 @@ class WesternEvidenceAdapter:
         if not response.retrieval:
             missing_information.append("No Western evidence chunk was available for this routed question.")
 
+        evidence_available = bool(response.retrieval)
+        pathway_unavailable = generation_failed and not evidence_available
         packet = PerspectiveEvidencePacket(
             perspective="western",
-            available=not generation_failed,
+            available=not pathway_unavailable,
             execution_status=(
-                "unavailable" if generation_failed else "abstained" if response.abstained else "available"
+                "unavailable"
+                if pathway_unavailable
+                else "degraded"
+                if generation_failed or model_mismatch
+                else "abstained"
+                if response.abstained
+                else "available"
             ),
-            interpretation=response.answer or response.abstention_reason or "Western perspective produced no interpretation.",
+            interpretation=(
+                mismatch_detail
+                if model_mismatch
+                else "Western generated interpretation was unavailable; retrieved source-backed evidence is preserved."
+                if generation_failed
+                else response.answer or response.abstention_reason or "Western perspective produced no interpretation."
+            ),
             claims=claims,
             uncertainty=uncertainty,
             missing_information=missing_information,
