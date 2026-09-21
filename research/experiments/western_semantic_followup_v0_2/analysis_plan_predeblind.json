@@ -1,0 +1,229 @@
+{
+  "analysis_plan_identity": "western-semantic-followup-v0.2-predeblind-analysis-plan",
+  "follow_up_study": "Western Semantic Follow-up v0.2",
+  "created_at_utc": "2026-09-21T02:28:03.3910979Z",
+  "status": "frozen_before_blind_key_access",
+  "evaluator": "GPT-5.6 Sol",
+  "evaluator_blinding": {
+    "blinded_to_retrieval_conditions": true,
+    "blind_key_provided_to_evaluator": false,
+    "allowed_information": [
+      "frozen expected evidence points",
+      "supplied evidence passages",
+      "generated answer"
+    ],
+    "outside_medical_knowledge_allowed": false,
+    "human_or_clinician_evaluation": false
+  },
+  "inputs": {
+    "judgment_workbook": "research/experiments/western_semantic_followup_v0_2/stage_c2_gpt56sol_judgments.xlsx",
+    "judgment_workbook_sha256": "81b260b4ad424d6f52a36414e30fd8e7bd22068d8f3e02496a39d7320593fc80",
+    "blind_key": "research/experiments/western_semantic_followup_v0_2/stage_c2_blind_key.csv",
+    "export_manifest": "research/experiments/western_semantic_followup_v0_2/stage_c2_export_manifest.json",
+    "join_key": "blind_id",
+    "annotation_workbook_authoritative": true
+  },
+  "populations": {
+    "w_rq2_answerable": {
+      "answerability_values": ["supported", "partially_supported"],
+      "expected_unique_cases": 42,
+      "conditions_per_case": 4,
+      "expected_rows": 168,
+      "excluded_answerability_values": ["insufficient"],
+      "insufficient_cases_are_not_failures_or_zeros": true
+    },
+    "w_rq3_insufficient": {
+      "answerability_values": ["insufficient"],
+      "expected_unique_cases": 6,
+      "conditions_per_case": 4,
+      "expected_rows": 24,
+      "excluded_from_w_rq2_primary": true
+    }
+  },
+  "w_rq2_primary_endpoint": {
+    "field": "full_coverage_score",
+    "definition": "n_fully_covered / n_expected_points",
+    "summary": ["n", "mean", "standard_deviation", "median", "minimum", "maximum"],
+    "aggregation": "arithmetic mean of per-answer scores; case-level macro mean",
+    "conditions": ["R0", "R1", "R2", "R3"],
+    "micro_total_recomputation_prohibited": true
+  },
+  "w_rq2_primary_paired": {
+    "comparisons": ["R1 - R0", "R2 - R0", "R3 - R0"],
+    "pairing": "strict case_id pairing",
+    "expected_paired_n": 42,
+    "difference": "comparison full_coverage_score minus R0 full_coverage_score",
+    "summary": ["mean_paired_difference", "median_paired_difference"],
+    "bootstrap": {
+      "resamples": 10000,
+      "seed": 20260815,
+      "resampling_unit": "cases with replacement",
+      "interval": "percentile 95% confidence interval"
+    },
+    "binary_significance_decision": false,
+    "significance_stars": false
+  },
+  "w_rq2_secondary_partial_credit": {
+    "field": "partial_credit_coverage_score",
+    "definition": "(n_fully_covered + 0.5 * n_partially_covered) / n_expected_points",
+    "summary": ["n", "mean", "standard_deviation", "median", "minimum", "maximum"],
+    "paired_summary": ["mean_paired_difference", "bootstrap_percentile_95_percent_ci"],
+    "bootstrap_seed": 20260815,
+    "descriptive_secondary_endpoint": true
+  },
+  "unsupported_claim_presence": {
+    "population": "42 answerable cases only",
+    "summary": ["unsupported_claim_present_true_count", "unsupported_claim_present_false_count", "rate"],
+    "paired_discordance": {
+      "cells": [
+        "R0 FALSE / comparison TRUE",
+        "R0 TRUE / comparison FALSE"
+      ],
+      "comparisons": ["R1 - R0", "R2 - R0", "R3 - R0"],
+      "test": "exact two-sided McNemar test using binomial formulation on discordant pairs",
+      "report": ["both discordant counts", "total discordant pairs", "exact raw p-value"],
+      "holm_adjustment": {
+        "family": "R1 vs R0, R2 vs R0, R3 vs R0",
+        "family_size": 3,
+        "report_raw_and_holm_adjusted_p": true
+      },
+      "binary_significance_verdict": false
+    }
+  },
+  "unsupported_claim_count": {
+    "population": "42 answerable cases only",
+    "summary": ["mean", "standard_deviation", "median", "minimum", "maximum"],
+    "paired_summary": ["mean_paired_count_difference", "bootstrap_percentile_95_percent_ci"],
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20260815,
+    "new_hypothesis_test": false,
+    "descriptive_secondary_analysis": true
+  },
+  "contradictions": {
+    "population": "42 answerable cases only",
+    "summary": ["contradiction_present_true_count", "contradiction_present_false_count", "rate", "total_n_contradicted"],
+    "inferential_testing": false,
+    "descriptive_only": true
+  },
+  "expected_point_labels": {
+    "population": "42 answerable cases only",
+    "labels": ["covered", "partially_covered", "not_covered", "contradicted"],
+    "summary": "total counts by condition",
+    "nested_evidence_points_are_not_independent_observations": true,
+    "inferential_testing": false
+  },
+  "w_rq3": {
+    "population": "six insufficient-evidence cases only",
+    "field": "insufficient_handling",
+    "labels": [
+      "appropriate_abstention",
+      "appropriate_bounded_insufficiency",
+      "substantive_answer_without_insufficiency_acknowledgement",
+      "overclaim_beyond_pilot_evidence"
+    ],
+    "report": ["count", "proportion", "n=6", "case-by-condition table for all 24 rows"],
+    "hypothesis_testing": false,
+    "composite_endpoint": false,
+    "safety_score": false
+  },
+  "missingness": {
+    "missing_semantic_judgments_remain_missing": true,
+    "zero_imputation": false,
+    "condition_pooling": false,
+    "paired_rule": "successful pair intersection for the endpoint",
+    "paired_n_deviation_rule": "report any paired n other than 42 explicitly and identify missing blind/case rows"
+  },
+  "blinded_workbook_validation": {
+    "evaluation_rows": 192,
+    "unique_blind_ids": 192,
+    "duplicate_blind_id": false,
+    "required_answerable_fields": [
+      "n_expected_points",
+      "expected_point_judgments",
+      "full_coverage_score",
+      "partial_credit_coverage_score"
+    ],
+    "coverage_score_range": [0, 1],
+    "unsupported_claim_present": "boolean",
+    "unsupported_claim_count": "non-negative integer",
+    "contradiction_present": "boolean",
+    "judge_confidence_values": ["high", "medium", "low"],
+    "insufficient_handling_values": [
+      "appropriate_abstention",
+      "appropriate_bounded_insufficiency",
+      "substantive_answer_without_insufficiency_acknowledgement",
+      "overclaim_beyond_pilot_evidence"
+    ],
+    "answerable_insufficient_handling": "blank",
+    "retrieval_condition_label_present": false,
+    "structural_inconsistency_action": "stop before deblinding"
+  },
+  "deblinding": {
+    "key_access_allowed_only_after": "analysis_plan_predeblind.json written and hashed",
+    "key_rows": 192,
+    "key_unique_blind_ids": 192,
+    "condition_counts": {"R0": 48, "R1": 48, "R2": 48, "R3": 48},
+    "unique_case_ids": 48,
+    "duplicate_case_condition_pair": false,
+    "join_only_on": "blind_id",
+    "condition_inference_from_answer_content": false
+  },
+  "outputs": {
+    "deblinded_dataset": "stage_c2_deblinded_judgments.csv",
+    "tables_directory": "tables/",
+    "table_files": [
+      "w_rq2_primary_coverage_by_condition.csv",
+      "w_rq2_primary_pairwise_vs_r0.csv",
+      "w_rq2_partial_credit_by_condition.csv",
+      "w_rq2_partial_credit_pairwise_vs_r0.csv",
+      "w_rq2_unsupported_presence_by_condition.csv",
+      "w_rq2_unsupported_mcnemar_vs_r0.csv",
+      "w_rq2_unsupported_count_by_condition.csv",
+      "w_rq2_unsupported_count_pairwise_vs_r0.csv",
+      "w_rq2_contradictions_by_condition.csv",
+      "w_rq2_expected_point_labels_by_condition.csv",
+      "w_rq3_insufficient_label_distribution.csv",
+      "w_rq3_case_by_condition.csv"
+    ],
+    "results_document": "STAGE_C2_RESULTS_v0.2.md",
+    "analysis_manifest": "stage_c2_analysis_manifest.json",
+    "figures": false,
+    "manuscript_update": false
+  },
+  "determinism_and_scope": {
+    "bootstrap_seed": 20260815,
+    "bootstrap_resamples": 10000,
+    "no_network_calls": true,
+    "no_provider_calls": true,
+    "no_model_calls": true,
+    "no_stage_a_b_or_c_rerun": true,
+    "annotation_workbook_immutable": true,
+    "blind_key_immutable": true,
+    "scientific_redesign": false,
+    "composite_ranking_table": false,
+    "clinical_claims": false,
+    "deterministic_outputs_must_not_contain_timestamps": true,
+    "analysis_manifest_may_contain_timestamp": true
+  },
+  "language_constraints": {
+    "prohibited_terms": [
+      "best",
+      "winner",
+      "superior",
+      "optimal",
+      "proved",
+      "significant",
+      "non-significant",
+      "clinically accurate",
+      "clinically safe",
+      "reduced hallucination"
+    ],
+    "p_values_are_descriptive": true,
+    "conclusion_scope": [
+      "frozen pilot corpus",
+      "frozen benchmark",
+      "fixed generator",
+      "single blinded GPT-5.6 Sol evaluator"
+    ]
+  }
+}

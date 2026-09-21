@@ -1,0 +1,79 @@
+{
+  "blinding_parameters": {
+    "answerability_counts": {
+      "insufficient": 24,
+      "partially_supported": 16,
+      "supported": 152
+    },
+    "blind_id_format": "EV0001-EV0192",
+    "condition_counts": {
+      "R0": 48,
+      "R1": 48,
+      "R2": 48,
+      "R3": 48
+    },
+    "leakage_checks": {
+      "blind_key_embedded_in_workbook": false,
+      "experiment_id_exposed_in_workbook": false,
+      "retrieval_condition_exposed_in_workbook": false
+    },
+    "random_seed": 20260921,
+    "total_evaluation_rows": 192
+  },
+  "export_timestamp_utc": "2026-09-21T09:55:00Z",
+  "inputs": {
+    "benchmark": {
+      "case_count": 48,
+      "path": "research/benchmarks/western_pilot_v0_1/benchmark.jsonl",
+      "sha256": "29d4a2c08bd8529f77d7d9faff7e739a5c60775dd04d99711d0e254a7aa200c6",
+      "size_bytes": 42873
+    },
+    "corpus": {
+      "chunk_count": 271,
+      "path": "research/corpus/west_v0_1/chunks.jsonl",
+      "sha256": "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b",
+      "size_bytes": 459023
+    },
+    "stage_a": {
+      "path": "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-a-20260918-01/stage_a_retrieval.jsonl",
+      "record_count": 192,
+      "sha256": "91749431949c554e8085ef1aae11aede6570c710b1055e1330e5fe452ab2983e",
+      "size_bytes": 1510660
+    },
+    "stage_b": {
+      "path": "research/experiments/western_formal_v0_1/runs/western-formal-v0.1.2-stage-b-r1-20260919-01/stage_b_generation.jsonl",
+      "record_count": 192,
+      "sha256": "afc0665858b0493d9c4dfbc2d8990ccd89c663f2b63278221407cb876feaf17c",
+      "size_bytes": 558433
+    }
+  },
+  "manifest_version": "western_semantic_followup_v0.2",
+  "outputs": {
+    "blind_key": {
+      "columns": [
+        "blind_id",
+        "experiment_id",
+        "case_id",
+        "retrieval_condition",
+        "original_stage_b_row_index"
+      ],
+      "path": "research/experiments/western_semantic_followup_v0_2/stage_c2_blind_key.csv",
+      "row_count": 192,
+      "sha256": "6a7a287754ba14651a1b6fe61a4e0a49d2815fe96e013e564cf6b75a44f1f4e5",
+      "size_bytes": 18209
+    },
+    "workbook": {
+      "blinded": true,
+      "column_count": 24,
+      "path": "research/experiments/western_semantic_followup_v0_2/stage_c2_blinded_eval_input.xlsx",
+      "row_count": 192,
+      "sha256": "106831e93633c572a864c849e562bff4a2d3e7b19f0c407230114c6f32642923",
+      "sheets": [
+        "evaluation",
+        "rubric"
+      ],
+      "size_bytes": 362822
+    }
+  },
+  "purpose": "Blinded evaluation workbook export for follow-up semantic judging of frozen MediRAG-West Stage-B answers"
+}

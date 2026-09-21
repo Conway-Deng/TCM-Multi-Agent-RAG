@@ -1,0 +1,137 @@
+{
+  "analysis_plan": {
+    "path": "research/experiments/western_semantic_followup_v0_2/analysis_plan_predeblind.json",
+    "sha256": "c8f17b3e1e7ccad8152027fb8da46c1e9fc47da599ac3fed36966ee18a90bd08"
+  },
+  "analysis_script": {
+    "path": "D:/project/multi_agent_rag_research/medirag_next/scripts/analyze-western-semantic-followup-v0_2.py",
+    "sha256": "618f77474d064465612b4608152a4b332f520dea93e2f88624dc0013912945e9"
+  },
+  "blind_key": {
+    "path": "research/experiments/western_semantic_followup_v0_2/stage_c2_blind_key.csv",
+    "sha256": "6a7a287754ba14651a1b6fe61a4e0a49d2815fe96e013e564cf6b75a44f1f4e5"
+  },
+  "bootstrap": {
+    "ci": "percentile 95%",
+    "resamples": 10000,
+    "seed": 20260815,
+    "unit": "cases with replacement"
+  },
+  "condition_counts": {
+    "R0": 48,
+    "R1": 48,
+    "R2": 48,
+    "R3": 48
+  },
+  "evaluator": "GPT-5.6 Sol",
+  "evaluator_blinded": true,
+  "evaluator_blindness_statement": "Retrieval-condition identity was concealed from the evaluator, which was instructed to use only frozen expected points, supplied evidence, and generated answer. Answer or evidence content could still indirectly reveal retrieval characteristics.",
+  "export_manifest": {
+    "path": "research/experiments/western_semantic_followup_v0_2/stage_c2_export_manifest.json",
+    "sha256": "3eaa05cf1bd7d0eda39a0599abaa26569662020b715753295df982d01eaef343"
+  },
+  "followup_study": "Western Semantic Follow-up v0.2",
+  "generated_at_utc": "2026-09-21T02:57:44Z",
+  "judgment_workbook": {
+    "export_manifest_hash_note": "The frozen export manifest points to the repository's blank blinded template; the supplied populated judgment workbook is verified against the required follow-up SHA.",
+    "export_manifest_recorded_sha256": "106831e93633c572a864c849e562bff4a2d3e7b19f0c407230114c6f32642923",
+    "path": "D:/browsers_downloads/stage_c2_gpt56sol_judgments.xlsx",
+    "repository_expected_path": "research/experiments/western_semantic_followup_v0_2/stage_c2_gpt56sol_judgments.xlsx",
+    "repository_expected_path_present": false,
+    "sha256": "81b260b4ad424d6f52a36414e30fd8e7bd22068d8f3e02496a39d7320593fc80"
+  },
+  "mcnemar": {
+    "definition": "exact two-sided binomial test on paired discordant presence indicators",
+    "holm_family_size": 3
+  },
+  "missingness_policy": "Missing semantic judgments remain missing; no zero imputation or condition pooling; paired analyses use endpoint-specific successful case intersections.",
+  "outputs": {
+    "deblinded_dataset": {
+      "path": "research/experiments/western_semantic_followup_v0_2/stage_c2_deblinded_judgments.csv",
+      "sha256": "6387aa644f36cb4df746d18f595de212a5ea7f6881e67b601031cb2f1a43757c",
+      "size_bytes": 83736
+    },
+    "results_document": {
+      "path": "research/experiments/western_semantic_followup_v0_2/STAGE_C2_RESULTS_v0.2.md",
+      "sha256": "1158675a0c75c047847282b2fae9388f96a51f0c3bce685691502ff3fdade633",
+      "size_bytes": 7355
+    },
+    "table:w_rq2_contradictions_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_contradictions_by_condition.csv",
+      "sha256": "9453368e7e5d85b3cc33fd1c022be2dbb0a9191a273694770794c8bc2afbe65a",
+      "size_bytes": 211
+    },
+    "table:w_rq2_expected_point_labels_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_expected_point_labels_by_condition.csv",
+      "sha256": "8dbef888655efe24607efcfb3cd3a7b92d3965a0c5e7dcf1a9f88b729a758113",
+      "size_bytes": 182
+    },
+    "table:w_rq2_partial_credit_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_partial_credit_by_condition.csv",
+      "sha256": "b048efdcac0f23857443cfcba3824b8c82be7fda4a31c95cad20d0c62a154b05",
+      "size_bytes": 265
+    },
+    "table:w_rq2_partial_credit_pairwise_vs_r0.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_partial_credit_pairwise_vs_r0.csv",
+      "sha256": "0247cf9053a905c92ef48fab94c073c94409d295a2a1d369b3694b4214325032",
+      "size_bytes": 426
+    },
+    "table:w_rq2_primary_coverage_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_primary_coverage_by_condition.csv",
+      "sha256": "d28f73e271a23bbe8b76bc123dd533477048b22874fcd24ca052c8d19e517dde",
+      "size_bytes": 257
+    },
+    "table:w_rq2_primary_pairwise_vs_r0.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_primary_pairwise_vs_r0.csv",
+      "sha256": "dda72a59583e1f2183d48fee6487ea79a1933737cec764ae6ff4507554983b65",
+      "size_bytes": 409
+    },
+    "table:w_rq2_unsupported_count_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_unsupported_count_by_condition.csv",
+      "sha256": "2aedadc24e88d77ea205be47d33c6ef912cd7098cccd9fb4f2eaaf4f54658264",
+      "size_bytes": 264
+    },
+    "table:w_rq2_unsupported_count_pairwise_vs_r0.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_unsupported_count_pairwise_vs_r0.csv",
+      "sha256": "a50b531de2562aebb37b49fbc1f27843826583ea810497665b76b9ae98698abd",
+      "size_bytes": 387
+    },
+    "table:w_rq2_unsupported_mcnemar_vs_r0.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_unsupported_mcnemar_vs_r0.csv",
+      "sha256": "c3c9648aae172b610361b2f51c915dab6bcb4261dfa76a4e45307d720d539ecc",
+      "size_bytes": 278
+    },
+    "table:w_rq2_unsupported_presence_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq2_unsupported_presence_by_condition.csv",
+      "sha256": "ae48ea2817d9fb3930ec1ce196ee61d2ad7bdf6c40e841d46f23abbd64035c03",
+      "size_bytes": 179
+    },
+    "table:w_rq3_case_by_condition.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq3_case_by_condition.csv",
+      "sha256": "7aec21773a3e6f9503f974dfe6d9e865712373f16c5e6beeccfa49e566084b10",
+      "size_bytes": 1594
+    },
+    "table:w_rq3_insufficient_label_distribution.csv": {
+      "path": "research/experiments/western_semantic_followup_v0_2/tables/w_rq3_insufficient_label_distribution.csv",
+      "sha256": "5df1d0de46903c65f6b0093d79e3723d93c6d803fa10239d69cc259761fa81d3",
+      "size_bytes": 603
+    }
+  },
+  "populations": {
+    "w_rq2": {
+      "n_cases": 42,
+      "n_cells": 168
+    },
+    "w_rq3": {
+      "n_cases": 6,
+      "n_cells": 24
+    }
+  },
+  "predeblind_order": {
+    "independent_timestamp_limitation": "Filesystem timestamps establish plan creation before derived analysis outputs but do not independently record or prove the first blind-key read event.",
+    "plan_created_at_utc": "2026-09-21T02:28:03.3910979Z",
+    "plan_status": "frozen_before_blind_key_access",
+    "procedural_record": "The analysis session recorded the plan as written and hashed before blind-key parsing."
+  },
+  "primary_endpoint": "full_coverage_score case-level macro mean"
+}
