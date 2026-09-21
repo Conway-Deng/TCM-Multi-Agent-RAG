@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="960" viewBox="0 0 1400 960">
+<rect width="1400" height="960" fill="#FFFFFF"/>
+<text x="700.00" y="40.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="#1F242D">Figure 1: MediRAG Phase II Western Evidence Study Architecture</text>
+<text x="700.00" y="68.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5A6578">Formal pilot evaluation sequence (v0.1.5) and separate post-study evidence-grounded semantic follow-up (v0.2)</text>
+<rect x="450.00" y="86.00" width="500.00" height="92.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="2"/>
+<text x="700.00" y="111.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1F242D">Western Pilot Corpus</text>
+<text x="700.00" y="135.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">16 PMC Open Access Systematic Reviews (4 Topic Domains)</text>
+<text x="700.00" y="157.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">271 deterministic chunks · structured source provenance</text>
+<line x1="700.00" y1="178.00" x2="700.00" y2="201.00" stroke="#3B629B" stroke-width="2"/>
+<polygon points="695.0,195 705.0,195 700.0,202" fill="#3B629B"/>
+<rect x="440.00" y="202.00" width="520.00" height="72.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="2"/>
+<text x="700.00" y="228.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1F242D">Western Pilot Benchmark (48 Cases)</text>
+<text x="700.00" y="252.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">42 answerable cases (W-RQ1 &amp; W-RQ2) · 6 insufficient-evidence cases (W-RQ3)</text>
+<line x1="700.00" y1="274.00" x2="700.00" y2="290.00" stroke="#3B629B" stroke-width="2"/>
+<line x1="700.00" y1="290.00" x2="360.00" y2="290.00" stroke="#3B629B" stroke-width="2"/>
+<line x1="360.00" y1="290.00" x2="360.00" y2="308.00" stroke="#3B629B" stroke-width="2"/>
+<polygon points="355.0,301 365.0,301 360.0,308" fill="#3B629B"/>
+<rect x="55.00" y="308.00" width="610.00" height="630.00" rx="8" fill="#F8FAFC" stroke="#1F242D" stroke-width="2"/>
+<text x="360.00" y="336.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">WESTERN FORMAL STUDY v0.1.5</text>
+<text x="360.00" y="356.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Historically Closed Study · Defined Stopping Rule</text>
+<line x1="360.00" y1="362.00" x2="360.00" y2="383.00" stroke="#3B629B" stroke-width="2"/>
+<polygon points="355.0,376 365.0,376 360.0,383" fill="#3B629B"/>
+<rect x="95.00" y="383.00" width="530.00" height="105.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="1.5"/>
+<text x="360.00" y="409.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">Stage A: Evidence Retrieval Experiment</text>
+<text x="360.00" y="431.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">4 retrieval conditions (R0 lexical, R1 dense, R2 fusion, R3 rerank) × 48 cases</text>
+<text x="360.00" y="451.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">192/192 retrieval cells completed · 0 technical missingness</text>
+<text x="360.00" y="473.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1F242D">W-RQ1 estimable: headline recall, Hit@4, and MRR (n = 42)</text>
+<line x1="360.00" y1="488.00" x2="360.00" y2="518.00" stroke="#3B629B" stroke-width="2"/>
+<polygon points="355.0,513 365.0,513 360.0,520" fill="#3B629B"/>
+<rect x="95.00" y="520.00" width="530.00" height="105.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="1.5"/>
+<text x="360.00" y="546.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">Stage B: Controlled Answer Generation</text>
+<text x="360.00" y="568.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Fixed Qwen/Qwen3-8B generator (temp 0, max 256 tokens)</text>
+<text x="360.00" y="588.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">192 primary answers completed · frozen dataset preserved</text>
+<text x="360.00" y="610.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#5A6578">Supplies generated text; does not estimate semantic quality by itself</text>
+<line x1="360.00" y1="625.00" x2="360.00" y2="655.00" stroke="#3B629B" stroke-width="2"/>
+<polygon points="355.0,650 365.0,650 360.0,657" fill="#3B629B"/>
+<rect x="95.00" y="657.00" width="530.00" height="140.00" rx="6" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
+<text x="360.00" y="685.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#64748B">Automated Stage C: Evaluator Qualification</text>
+<text x="360.00" y="709.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Prospective qualification protocol (Wave 1 &amp; Wave 2)</text>
+<text x="360.00" y="731.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Reached stopping rule: zero Primary Judges qualified</text>
+<text x="360.00" y="755.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1F242D">TERMINATED PROSPECTIVELY (No formal Stage C run)</text>
+<text x="360.00" y="779.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#5A6578">W-RQ2 and W-RQ3 formal estimates unavailable within v0.1.5</text>
+<line x1="175.00" y1="813.00" x2="545.00" y2="813.00" stroke="#64748B" stroke-width="4"/>
+<text x="360.00" y="833.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#64748B">[ Closed Study Boundary — No Further Execution in v0.1.5 ]</text>
+<rect x="735.00" y="308.00" width="610.00" height="630.00" rx="8" fill="#F9FAFB" stroke="#1E3A8A" stroke-width="2" stroke-dasharray="8,5"/>
+<text x="1040.00" y="340.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1E3A8A">SEPARATE WESTERN SEMANTIC FOLLOW-UP v0.2</text>
+<text x="1040.00" y="362.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Independent Post-Study Evaluation · Reuses Frozen Answers</text>
+<rect x="775.00" y="383.00" width="530.00" height="120.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="1.5"/>
+<text x="1040.00" y="411.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">Blinded Evidence-Grounded Semantic Evaluator</text>
+<text x="1040.00" y="435.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Single evaluator: GPT-5.6 Sol · condition labels concealed during judging</text>
+<text x="1040.00" y="457.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#5A6578">Evaluated solely against frozen expected points &amp; top-4 retrieved passages</text>
+<text x="1040.00" y="481.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E3A8A">Does not reopen or retroactively complete historical Stage C</text>
+<line x1="625.00" y1="572.50" x2="700.00" y2="572.50" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="6,4"/>
+<line x1="700.00" y1="572.50" x2="700.00" y2="443.00" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="6,4"/>
+<line x1="700.00" y1="443.00" x2="775.00" y2="443.00" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="6,4"/>
+<polygon points="767.0,437.0 767.0,449.0 775.0,443.0" fill="#1E3A8A"/>
+<rect x="645.00" y="486.75" width="110.00" height="42.00" rx="6" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="1.5"/>
+<text x="700.00" y="503.75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E3A8A">192 Frozen</text>
+<text x="700.00" y="518.75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E3A8A">Answers Reused</text>
+<line x1="1040.00" y1="503.00" x2="1040.00" y2="533.00" stroke="#3B629B" stroke-width="2"/>
+<line x1="900.00" y1="533.00" x2="1180.00" y2="533.00" stroke="#3B629B" stroke-width="2"/>
+<line x1="900.00" y1="533.00" x2="900.00" y2="548.00" stroke="#3B629B" stroke-width="2"/>
+<line x1="1180.00" y1="533.00" x2="1180.00" y2="548.00" stroke="#3B629B" stroke-width="2"/>
+<rect x="775.00" y="548.00" width="250.00" height="250.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="1.5"/>
+<text x="900.00" y="573.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1F242D">W-RQ2: Answerable Cases</text>
+<text x="900.00" y="593.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#5A6578">42 cases × 4 = 168 cells</text>
+<line x1="790.00" y1="605.00" x2="1010.00" y2="605.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="900.00" y="627.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1F242D">Primary Endpoint:</text>
+<text x="900.00" y="647.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#1F242D">Full evidence coverage score</text>
+<text x="900.00" y="665.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">(macro mean + bootstrap CIs)</text>
+<line x1="790.00" y1="677.00" x2="1010.00" y2="677.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="900.00" y="699.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1F242D">Secondary Endpoints:</text>
+<text x="900.00" y="717.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">Partial-credit coverage</text>
+<text x="900.00" y="735.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">Unsupported-claim presence</text>
+<text x="900.00" y="753.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">Contradiction presence</text>
+<text x="900.00" y="775.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#2B4C7E">Exact McNemar tests vs R0</text>
+<rect x="1055.00" y="548.00" width="250.00" height="250.00" rx="6" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="1.5"/>
+<text x="1180.00" y="573.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1F242D">W-RQ3: Insufficient Cases</text>
+<text x="1180.00" y="593.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#5A6578">6 cases × 4 = 24 cells</text>
+<line x1="1070.00" y1="605.00" x2="1290.00" y2="605.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="1180.00" y="627.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1F242D">Descriptive Handling Only:</text>
+<text x="1180.00" y="649.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#1F242D">4-Category Rubric:</text>
+<text x="1180.00" y="671.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">1. Appropriate abstention</text>
+<text x="1180.00" y="691.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">2. Bounded insufficiency</text>
+<text x="1180.00" y="711.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">3. Substantive unack.</text>
+<text x="1180.00" y="731.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">4. Overclaim beyond pilot</text>
+<line x1="1070.00" y1="747.00" x2="1290.00" y2="747.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="1180.00" y="769.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#64748B">No hypothesis testing (n = 6)</text>
+<text x="1040.00" y="916.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="normal" fill="#5A6578">Rubric-grounded textual evaluation · Not expert clinician validation · No causal claim</text>
+</svg>

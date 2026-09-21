@@ -1,0 +1,12 @@
+Panel A: Condition-Level Rates
+Condition,n,Unsupported-Claim Present,Unsupported Rate,Contradiction Present,Contradiction Rate,Contradicted Points Total
+R0,42,9/42,0.214286,5/42,0.119048,3
+R1,42,5/42,0.119048,1/42,0.023810,1
+R2,42,3/42,0.071429,2/42,0.047619,1
+R3,42,3/42,0.071429,1/42,0.023810,0
+
+Panel B: Paired McNemar Tests for Unsupported-Claim Presence vs R0
+Comparison,R0 Presence / Comparison Absence,R0 Absence / Comparison Presence,Discordant Pairs,Exact Two-Sided McNemar p,Holm-Adjusted p,Holm Family Size
+R1 vs R0,7,3,10,0.343750,0.343750,3
+R2 vs R0,6,0,6,0.031250,0.093750,3
+R3 vs R0,7,1,8,0.070312,0.140625,3

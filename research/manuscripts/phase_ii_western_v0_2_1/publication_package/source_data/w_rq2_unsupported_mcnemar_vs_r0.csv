@@ -1,0 +1,4 @@
+comparison,comparison_condition,r0_false_comparison_true,r0_true_comparison_false,discordant_total,exact_two_sided_mcnemar_p_raw,holm_adjusted_p,holm_family_size
+R1 vs R0,R1,3,7,10,0.34375,0.34375,3
+R2 vs R0,R2,0,6,6,0.03125,0.09375,3
+R3 vs R0,R3,1,7,8,0.0703125,0.140625,3

@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "timestamp": "2026-09-21T06:01:17Z",
+    "branch": "feature/medirag-west-v0.1",
+    "parent_head": "f983be960629547f7a0b655fabb9d08840b75bf2",
+    "package_name": "Phase II Western Publication Figure/Table Package v0.2.1"
+  },
+  "plan": {
+    "path": "research/manuscripts/phase_ii_western_v0_2_1/FIGURE_TABLE_PLAN_v0.2.1.md",
+    "sha256": "558f31f5994b1fc02e085959c6d6f441f2d04f936d1307db6868b34c874ecaf9"
+  },
+  "rendering_script": {
+    "path": "scripts/render-phase-ii-western-publication-v0_2_1.py",
+    "sha256": "f2387f2c5b0fc7ea2e23fc21419fb51abd776c740b91e1049098f9cf83dbb6e6"
+  },
+  "publication_package_frozen": {
+    "path": "research/manuscripts/phase_ii_western_v0_2_1/publication_package/PUBLICATION_PACKAGE_FROZEN.md",
+    "sha256": "9a642d43f1c8b1300c1765e8e3f4d777378ccf380b951664ac80b54f86ada617"
+  },
+  "artifacts": {
+    "CAPTIONS_v0.2.1.md": "dcd1373dcc9aa5447a977defaeaea4c324ee0c40a208281cd7650d1bc8d27e18",
+    "figures/Figure_1_study_flow.png": "811ac015b2e9fccf3e3dcefb31cfd631231ca758df25ff8d3d1372e0acd48b19",
+    "figures/Figure_1_study_flow.svg": "b01e5887957384042f07b0ada07f6fba828575cee354a01fada5109350dbff3c",
+    "figures/Figure_2_stage_a_paired_recall.png": "7cc0aa707cc1949f72c3ce33022085ebc25a4eb6bb8d5b34c0a8116ef6728662",
+    "figures/Figure_2_stage_a_paired_recall.svg": "8c59cbc751fa9f73eff9cc948db2bacad113abac3ecc672698805cacef8e4157",
+    "figures/Figure_3_semantic_full_coverage.png": "97307b62da889cc8c7bda53194390faf0f032a56a1c9db28b15ed28fcdadb489",
+    "figures/Figure_3_semantic_full_coverage.svg": "f43f9af5a52a4bde7a36e8076eba390be43ece114b36dd172a4c4d3b0085cd95",
+    "PUBLICATION_PACKAGE_FROZEN.md": "9a642d43f1c8b1300c1765e8e3f4d777378ccf380b951664ac80b54f86ada617",
+    "source_data/README.md": "f3b590e3eed30f2e7911acf18305a997b395f277966626a9f4d242ea2fe45003",
+    "source_data/stage_a_headline_metrics.csv": "743cef6792fdaa2512ffa1f00ef98e42380599e1e669277cdec593ddbe963ba2",
+    "source_data/stage_a_pairwise_vs_r0.csv": "928ef70fb79233453f8bb302f3a08693e1d7b7f52abe9412b5d83a6bd03c8d25",
+    "source_data/w_rq2_contradictions_by_condition.csv": "9453368e7e5d85b3cc33fd1c022be2dbb0a9191a273694770794c8bc2afbe65a",
+    "source_data/w_rq2_expected_point_labels_by_condition.csv": "8dbef888655efe24607efcfb3cd3a7b92d3965a0c5e7dcf1a9f88b729a758113",
+    "source_data/w_rq2_partial_credit_by_condition.csv": "b048efdcac0f23857443cfcba3824b8c82be7fda4a31c95cad20d0c62a154b05",
+    "source_data/w_rq2_partial_credit_pairwise_vs_r0.csv": "0247cf9053a905c92ef48fab94c073c94409d295a2a1d369b3694b4214325032",
+    "source_data/w_rq2_primary_coverage_by_condition.csv": "d28f73e271a23bbe8b76bc123dd533477048b22874fcd24ca052c8d19e517dde",
+    "source_data/w_rq2_primary_pairwise_vs_r0.csv": "dda72a59583e1f2183d48fee6487ea79a1933737cec764ae6ff4507554983b65",
+    "source_data/w_rq2_unsupported_count_by_condition.csv": "2aedadc24e88d77ea205be47d33c6ef912cd7098cccd9fb4f2eaaf4f54658264",
+    "source_data/w_rq2_unsupported_count_pairwise_vs_r0.csv": "a50b531de2562aebb37b49fbc1f27843826583ea810497665b76b9ae98698abd",
+    "source_data/w_rq2_unsupported_mcnemar_vs_r0.csv": "c3c9648aae172b610361b2f51c915dab6bcb4261dfa76a4e45307d720d539ecc",
+    "source_data/w_rq2_unsupported_presence_by_condition.csv": "ae48ea2817d9fb3930ec1ce196ee61d2ad7bdf6c40e841d46f23abbd64035c03",
+    "source_data/w_rq3_case_by_condition.csv": "7aec21773a3e6f9503f974dfe6d9e865712373f16c5e6beeccfa49e566084b10",
+    "source_data/w_rq3_insufficient_label_distribution.csv": "5df1d0de46903c65f6b0093d79e3723d93c6d803fa10239d69cc259761fa81d3",
+    "supplement/Table_S1_stage_a_complete_pairwise.csv": "928ef70fb79233453f8bb302f3a08693e1d7b7f52abe9412b5d83a6bd03c8d25",
+    "supplement/Table_S1_stage_a_complete_pairwise.md": "ec6aa6f8f9f550926919ae95dccc6ad6775e1f212d956a4d10fa1dddf8bb0ce7",
+    "supplement/Table_S2_semantic_secondary_outcomes.csv": "764788aa895cb07bda99a60db1202da97bf0ed6bbe617622380a78804f5e325b",
+    "supplement/Table_S2_semantic_secondary_outcomes.md": "20d2534faa67a7a8257f45bc792f0fbad5de78e5c0ec628c8935e8ad14fd9672",
+    "supplement/Table_S3_insufficient_evidence.csv": "e6254f3f00aeb693d7c229e4d587700098e2cf2566f0bf4460044d69f778692a",
+    "supplement/Table_S3_insufficient_evidence.md": "78354a37e5e4810553b8fe982453b64cf9ae491457360300ccb0bd708cdcf0ae",
+    "tables/Table_1_stage_a_headline_metrics.csv": "171e6b6d44c0f6991669e83e8a9e4949afed4a23fe1c8b694164f649affbe392",
+    "tables/Table_1_stage_a_headline_metrics.md": "ef332b1a169d6b7d70e4756ca7c5354eba1561ad077c1ee884903b1655ae4f28",
+    "tables/Table_2_semantic_full_coverage.csv": "a069db84b7117deac178f2b95e6729baf3d9ed5aaffbdff913bb984ca3d136cc",
+    "tables/Table_2_semantic_full_coverage.md": "ac6e6514285fdd2dc60f633571262bb2ea9ec9a01b52df83588946054768472e",
+    "tables/Table_3_unsupported_and_contradictions.csv": "4633a32ae47ffa46b30d7d2992273e1241ef5ed063efedb4a31d50b2e3a9bc9f",
+    "tables/Table_3_unsupported_and_contradictions.md": "16b056431caf234198148c3514336c22602148a4ee19464773478a55d0d0f3fd"
+  }
+}

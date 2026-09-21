@@ -1,0 +1,5 @@
+retrieval_condition,covered,partially_covered,not_covered,contradicted,total_expected_points,n_cases
+R0,31,16,8,3,58,42
+R1,44,7,6,1,58,42
+R2,35,13,9,1,58,42
+R3,38,10,10,0,58,42

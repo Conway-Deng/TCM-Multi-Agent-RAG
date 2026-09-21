@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+<rect width="1200" height="560" fill="#FFFFFF"/>
+<text x="600.00" y="42.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#1F242D">Figure 3: Semantic Follow-Up Paired Full-Coverage Differences</text>
+<text x="600.00" y="72.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5A6578">Separate Western Semantic Follow-up v0.2; Comparison minus R0; n = 42 answerable cases; 95% bootstrap CIs</text>
+<line x1="220.00" y1="110.00" x2="220.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="220.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">-0.05</text>
+<line x1="286.00" y1="110.00" x2="286.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="286.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">0.00</text>
+<line x1="418.00" y1="110.00" x2="418.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="418.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.10</text>
+<line x1="550.00" y1="110.00" x2="550.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="550.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.20</text>
+<line x1="682.00" y1="110.00" x2="682.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="682.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.30</text>
+<line x1="814.00" y1="110.00" x2="814.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="814.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.40</text>
+<line x1="286.00" y1="110.00" x2="286.00" y2="460.00" stroke="#1F242D" stroke-width="2"/>
+<text x="196.00" y="174.33" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R1 - R0</text>
+<line x1="474.57" y1="168.33" x2="804.57" y2="168.33" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="474.57" y1="158.33" x2="474.57" y2="178.33" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="804.57" y1="158.33" x2="804.57" y2="178.33" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="631.71" cy="168.33" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="174.33" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.262  [95% CI: +0.143, +0.393]</text>
+<text x="196.00" y="291.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R2 - R0</text>
+<line x1="286.00" y1="285.00" x2="521.71" y2="285.00" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="286.00" y1="275.00" x2="286.00" y2="295.00" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="521.71" y1="275.00" x2="521.71" y2="295.00" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="396.00" cy="285.00" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="291.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.083  [95% CI: +0.000, +0.179]</text>
+<text x="196.00" y="407.67" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R3 - R0</text>
+<line x1="364.57" y1="401.67" x2="663.14" y2="401.67" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="364.57" y1="391.67" x2="364.57" y2="411.67" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="663.14" y1="391.67" x2="663.14" y2="411.67" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="506.00" cy="401.67" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="407.67" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.167  [95% CI: +0.060, +0.286]</text>
+<text x="550.00" y="535.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">Paired difference in full-coverage score (vs R0)</text>
+</svg>

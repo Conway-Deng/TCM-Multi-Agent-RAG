@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+<rect width="1200" height="560" fill="#FFFFFF"/>
+<text x="600.00" y="42.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#1F242D">Figure 2: Stage-A Paired Primary-Gold Chunk-Recall Differences</text>
+<text x="600.00" y="72.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" fill="#5A6578">Western Formal Study v0.1.5; Comparison minus R0; n = 42 paired cases; 95% bootstrap CIs</text>
+<line x1="220.00" y1="110.00" x2="220.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="220.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">-0.05</text>
+<line x1="293.33" y1="110.00" x2="293.33" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="293.33" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">0.00</text>
+<line x1="440.00" y1="110.00" x2="440.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="440.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.10</text>
+<line x1="586.67" y1="110.00" x2="586.67" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="586.67" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.20</text>
+<line x1="733.33" y1="110.00" x2="733.33" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="733.33" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.30</text>
+<line x1="880.00" y1="110.00" x2="880.00" y2="460.00" stroke="#E2E6EC" stroke-width="1"/>
+<text x="880.00" y="488.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#5A6578">+0.40</text>
+<line x1="293.33" y1="110.00" x2="293.33" y2="460.00" stroke="#1F242D" stroke-width="2"/>
+<text x="196.00" y="174.33" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R1 - R0</text>
+<line x1="415.56" y1="168.33" x2="782.22" y2="168.33" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="415.56" y1="158.33" x2="415.56" y2="178.33" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="782.22" y1="158.33" x2="782.22" y2="178.33" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="595.98" cy="168.33" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="174.33" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.206  [95% CI: +0.083, +0.333]</text>
+<text x="196.00" y="291.00" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R2 - R0</text>
+<line x1="310.79" y1="285.00" x2="572.70" y2="285.00" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="310.79" y1="275.00" x2="310.79" y2="295.00" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="572.70" y1="275.00" x2="572.70" y2="295.00" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="433.02" cy="285.00" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="291.00" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.095  [95% CI: +0.012, +0.190]</text>
+<text x="196.00" y="407.67" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#1F242D">R3 - R0</text>
+<line x1="310.79" y1="401.67" x2="613.44" y2="401.67" stroke="#2B4C7E" stroke-width="4"/>
+<line x1="310.79" y1="391.67" x2="310.79" y2="411.67" stroke="#2B4C7E" stroke-width="3"/>
+<line x1="613.44" y1="391.67" x2="613.44" y2="411.67" stroke="#2B4C7E" stroke-width="3"/>
+<circle cx="450.48" cy="401.67" r="8" fill="#2B4C7E" stroke="#FFFFFF" stroke-width="2"/>
+<text x="904.00" y="407.67" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">+0.107  [95% CI: +0.012, +0.218]</text>
+<text x="550.00" y="535.00" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1F242D">Paired difference in primary-gold chunk recall (vs R0)</text>
+</svg>
