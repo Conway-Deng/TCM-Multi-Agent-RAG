@@ -6,15 +6,21 @@ from providers import build_llm_provider
 from providers.base import LLMProvider
 
 from .model_calls import StructuredCallResult, call_structured_model
-from .schemas import ActivePerspectiveName, RoutingDecision
+from .schemas import ActivePerspectiveName, RouterDraft, RoutingDecision
 
 
 ROUTER_MODEL = "THUDM/GLM-4-9B-0414"
+ROUTER_STRUCTURAL_TEMPLATE = '''{
+  "use_tcm": true,
+  "use_western": true,
+  "reason_summary": "..."
+}'''
 ROUTER_SYSTEM_PROMPT = (
     "You are a routing component for a development-only evidence system. "
     "Decide whether the question should be sent to the TCM evidence pathway, the Western evidence pathway, or both. "
     "Do not answer the health question, offer medical advice, or add medical facts. "
-    "The only available perspectives are tcm and western. Return one JSON object matching the requested schema."
+    "Return exactly one JSON object with these three fields and no others: use_tcm, use_western, and reason_summary. "
+    "At least one of use_tcm or use_western must be true."
 )
 
 
@@ -25,17 +31,31 @@ class CrossPerspectiveRouter:
     async def route_auto(self, question: str) -> StructuredCallResult:
         prompt = (
             f"Question:\n{question}\n\n"
-            "Return JSON with use_tcm, use_western, reason_summary, and requested_perspectives. "
-            "requested_perspectives must exactly match the true routing booleans."
+            "Return exactly one JSON object containing only use_tcm, use_western, and reason_summary.\n"
+            f"Structural template:\n{ROUTER_STRUCTURAL_TEMPLATE}"
         )
-        return await call_structured_model(
+        result = await call_structured_model(
             provider=self.provider,
             role="router",
-            response_model=RoutingDecision,
+            response_model=RouterDraft,
             system=ROUTER_SYSTEM_PROMPT,
             prompt=prompt,
             max_tokens=256,
         )
+        draft = result.value
+        assert isinstance(draft, RouterDraft)
+        requested_perspectives: list[ActivePerspectiveName] = []
+        if draft.use_tcm:
+            requested_perspectives.append("tcm")
+        if draft.use_western:
+            requested_perspectives.append("western")
+        decision = RoutingDecision(
+            use_tcm=draft.use_tcm,
+            use_western=draft.use_western,
+            reason_summary=draft.reason_summary,
+            requested_perspectives=requested_perspectives,
+        )
+        return StructuredCallResult(value=decision, events=result.events)
 
     @staticmethod
     def route_forced(perspectives: list[ActivePerspectiveName]) -> RoutingDecision:

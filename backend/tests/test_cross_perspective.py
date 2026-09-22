@@ -26,7 +26,7 @@ from cross_perspective.governance import (
     validate_governance_grounding,
 )
 from cross_perspective.model_calls import StructuredCallResult, StructuredModelCallFailure
-from cross_perspective.router import CrossPerspectiveRouter, ROUTER_MODEL
+from cross_perspective.router import CrossPerspectiveRouter, ROUTER_MODEL, ROUTER_SYSTEM_PROMPT
 from cross_perspective.schemas import (
     Agreement,
     CrossPerspectiveAnswer,
@@ -43,6 +43,7 @@ from cross_perspective.schemas import (
     PerspectiveSummaries,
     PerspectiveSummary,
     ProvenanceRecord,
+    RouterDraft,
     RoutingDecision,
     SourceMapEntry,
     TCM_NO_CLAIM_SUMMARY,
@@ -419,21 +420,22 @@ def test_governance_rejects_fake_source_ids_without_retry() -> None:
 
 
 def test_router_allows_only_one_technical_retry() -> None:
-    routed = RoutingDecision(
+    draft = RouterDraft(
         use_tcm=True,
         use_western=True,
         reason_summary="Both evidence pathways are relevant.",
-        requested_perspectives=["tcm", "western"],
     )
     provider = QueueProvider(
         ROUTER_MODEL,
-        [ProviderUnavailable("LLM provider connectivity error", error_type="connectivity"), routed.model_dump(mode="json")],
+        [ProviderUnavailable("LLM provider connectivity error", error_type="connectivity"), draft.model_dump(mode="json")],
     )
     result = asyncio.run(CrossPerspectiveRouter(provider=provider).route_auto("Compare approaches to headache."))
     assert provider.calls == 2
     assert len(result.events) == 2
     assert result.events[0].retry_performed is True
     assert result.events[1].attempt == 2
+    assert isinstance(result.value, RoutingDecision)
+    assert result.value.requested_perspectives == ["tcm", "western"]
 
 
 def test_nutrition_is_disabled_with_frozen_message() -> None:
@@ -1363,3 +1365,152 @@ def test_governance_payload_size_diagnostic() -> None:
 
     # Diagnostic assertion: compact payload is strictly smaller than full packets
     assert len(compact_dump) < len(full_dump)
+
+
+def test_router_draft_schema_fields_and_forbids_extra() -> None:
+    # 1. RouterDraft contains exactly: use_tcm, use_western, reason_summary
+    fields = set(RouterDraft.model_fields.keys())
+    assert fields == {"use_tcm", "use_western", "reason_summary"}
+
+    draft_obj = RouterDraft(
+        use_tcm=True,
+        use_western=False,
+        reason_summary="TCM only applicable.",
+    )
+    assert draft_obj.use_tcm is True
+    assert draft_obj.use_western is False
+    assert draft_obj.reason_summary == "TCM only applicable."
+
+    # 2. RouterDraft rejects requested_perspectives as an extra field
+    with pytest.raises(ValidationError) as exc:
+        RouterDraft.model_validate({
+            "use_tcm": True,
+            "use_western": True,
+            "reason_summary": "Both needed.",
+            "requested_perspectives": ["tcm", "western"],
+        })
+    assert "extra_forbidden" in str(exc.value)
+
+
+def test_router_draft_rejects_all_false_and_empty_reason() -> None:
+    # 3. RouterDraft rejects use_tcm = false, use_western = false
+    with pytest.raises(ValidationError, match="router must select at least one available perspective"):
+        RouterDraft(use_tcm=False, use_western=False, reason_summary="Neither selected.")
+
+    with pytest.raises(ValidationError):
+        RouterDraft(use_tcm=True, use_western=False, reason_summary="")
+
+
+def test_auto_routing_materializes_both_perspectives() -> None:
+    # 4. Auto routing with use_tcm=true, use_western=true deterministically produces ["tcm", "western"]
+    draft_data = {"use_tcm": True, "use_western": True, "reason_summary": "Both perspectives relevant."}
+    provider = QueueProvider(ROUTER_MODEL, [draft_data])
+    router = CrossPerspectiveRouter(provider=provider)
+    result = asyncio.run(router.route_auto("Should I combine TCM and Western treatments?"))
+
+    assert isinstance(result.value, RoutingDecision)
+    assert result.value.use_tcm is True
+    assert result.value.use_western is True
+    assert result.value.requested_perspectives == ["tcm", "western"]
+    assert result.value.reason_summary == "Both perspectives relevant."
+
+
+def test_auto_routing_materializes_tcm_only() -> None:
+    # 5. Auto routing with only TCM produces ["tcm"]
+    draft_data = {"use_tcm": True, "use_western": False, "reason_summary": "Only TCM perspective relevant."}
+    provider = QueueProvider(ROUTER_MODEL, [draft_data])
+    router = CrossPerspectiveRouter(provider=provider)
+    result = asyncio.run(router.route_auto("TCM herbal question."))
+
+    assert isinstance(result.value, RoutingDecision)
+    assert result.value.use_tcm is True
+    assert result.value.use_western is False
+    assert result.value.requested_perspectives == ["tcm"]
+    assert result.value.reason_summary == "Only TCM perspective relevant."
+
+
+def test_auto_routing_materializes_western_only() -> None:
+    # 6. Auto routing with only Western produces ["western"]
+    draft_data = {"use_tcm": False, "use_western": True, "reason_summary": "Only Western perspective relevant."}
+    provider = QueueProvider(ROUTER_MODEL, [draft_data])
+    router = CrossPerspectiveRouter(provider=provider)
+    result = asyncio.run(router.route_auto("Western clinical guidelines."))
+
+    assert isinstance(result.value, RoutingDecision)
+    assert result.value.use_tcm is False
+    assert result.value.use_western is True
+    assert result.value.requested_perspectives == ["western"]
+    assert result.value.reason_summary == "Only Western perspective relevant."
+
+
+def test_auto_routing_single_provider_call_and_preserves_events() -> None:
+    # 7. Only one provider/model call occurs.
+    # 8. Provider/model events from the draft call are preserved unchanged.
+    draft_data = {"use_tcm": True, "use_western": True, "reason_summary": "Dual perspective."}
+    provider = QueueProvider(ROUTER_MODEL, [draft_data])
+    router = CrossPerspectiveRouter(provider=provider)
+    result = asyncio.run(router.route_auto("Test single call."))
+
+    assert provider.calls == 1
+    assert len(result.events) == 1
+    event = result.events[0]
+    assert event.role == "router"
+    assert event.success is True
+    assert event.attempt == 1
+    assert event.requested_model == ROUTER_MODEL
+    assert event.reported_model == ROUTER_MODEL
+
+
+def test_auto_routing_prompt_does_not_request_perspectives() -> None:
+    # 9. Auto-router prompt does not ask the model to generate requested_perspectives.
+    assert "requested_perspectives" not in ROUTER_SYSTEM_PROMPT
+    assert "use_tcm" in ROUTER_SYSTEM_PROMPT
+    assert "use_western" in ROUTER_SYSTEM_PROMPT
+    assert "reason_summary" in ROUTER_SYSTEM_PROMPT
+
+    draft_data = {"use_tcm": True, "use_western": True, "reason_summary": "Dual."}
+    provider = QueueProvider(ROUTER_MODEL, [draft_data])
+    router = CrossPerspectiveRouter(provider=provider)
+    asyncio.run(router.route_auto("Check prompt content."))
+
+    prompt_captured = provider.prompts[0]
+    assert "requested_perspectives" not in prompt_captured
+    assert "use_tcm" in prompt_captured
+    assert "use_western" in prompt_captured
+    assert "reason_summary" in prompt_captured
+
+
+def test_routing_decision_public_schema_and_forced_routing_unchanged() -> None:
+    # 10. Existing RoutingDecision public schema remains unchanged.
+    expected_fields = {"use_tcm", "use_western", "reason_summary", "requested_perspectives"}
+    assert set(RoutingDecision.model_fields.keys()) == expected_fields
+
+    decision = RoutingDecision(
+        use_tcm=True,
+        use_western=False,
+        reason_summary="TCM chosen",
+        requested_perspectives=["tcm"],
+    )
+    assert decision.model_dump() == {
+        "use_tcm": True,
+        "use_western": False,
+        "reason_summary": "TCM chosen",
+        "requested_perspectives": ["tcm"],
+    }
+
+    # 11. Forced routing behavior remains unchanged.
+    forced_dual = CrossPerspectiveRouter.route_forced(["tcm", "western"])
+    assert forced_dual.use_tcm is True
+    assert forced_dual.use_western is True
+    assert forced_dual.requested_perspectives == ["tcm", "western"]
+    assert "forced development routing" in forced_dual.reason_summary
+
+    forced_tcm = CrossPerspectiveRouter.route_forced(["tcm"])
+    assert forced_tcm.use_tcm is True
+    assert forced_tcm.use_western is False
+    assert forced_tcm.requested_perspectives == ["tcm"]
+
+    forced_western = CrossPerspectiveRouter.route_forced(["western"])
+    assert forced_western.use_tcm is False
+    assert forced_western.use_western is True
+    assert forced_western.requested_perspectives == ["western"]

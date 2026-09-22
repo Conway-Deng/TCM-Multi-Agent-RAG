@@ -192,4 +192,20 @@ The development trace is intentionally capable of supporting later comparisons o
 - This is not a formal experiment result.
 - Xing4.0-29B remains a possible future challenger, not the current runtime Judge.
 
-GLM-4 DEVELOPMENT GOVERNANCE ASSIGNMENT PATCH COMPLETE — READY FOR SOL REVIEW
+## Deterministic auto-routing materialization
+
+- The first full forced smoke with GLM-4 Governance completed successfully.
+- TCM and Western evidence pathways were available.
+- Governance completed successfully.
+- Post-hoc grounding validation passed.
+- The first auto-router smoke stopped at the Router before evidence collection.
+- GLM-4 returned finish_reason=stop and valid JSON.
+- It correctly selected use_tcm=true and use_western=true.
+- It incorrectly emitted requested_perspectives=[true,true].
+- RoutingDecision validation therefore failed.
+- This was identified as redundant LLM-controlled bookkeeping rather than an incorrect semantic routing decision.
+- requested_perspectives is now deterministically materialized from the two routing booleans.
+- No formal experiment was run.
+- This does not establish model inferiority.
+
+DETERMINISTIC AUTO-ROUTING MATERIALIZATION PATCH COMPLETE — READY FOR SOL REVIEW

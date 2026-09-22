@@ -91,6 +91,18 @@ class PerspectiveEvidencePacket(StrictModel):
         return self
 
 
+class RouterDraft(StrictModel):
+    use_tcm: bool
+    use_western: bool
+    reason_summary: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_selection(self) -> "RouterDraft":
+        if not self.use_tcm and not self.use_western:
+            raise ValueError("router must select at least one available perspective")
+        return self
+
+
 class RoutingDecision(StrictModel):
     use_tcm: bool
     use_western: bool
