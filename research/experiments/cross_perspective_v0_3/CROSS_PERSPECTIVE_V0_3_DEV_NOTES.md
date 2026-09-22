@@ -78,6 +78,8 @@ The first synthetic live smoke exposed a development integration issue in the Go
 
 A follow-up development diagnostic encountered two Governance technical timeouts at the existing 45-second provider timeout (attempt 1 timed out at ~46.08 s, attempt 2 timed out at ~46.03 s; forced router made 0 provider calls, and TCM and Western both completed). Governance alone now uses an explicit 90-second timeout (`GOVERNANCE_TIMEOUT_SECONDS = 90.0`) to accommodate its larger evidence-packet prompt. No model changed, no retry policy changed, no provenance rule changed, and this was not a formal experiment result.
 
+The next development diagnostic successfully passed the new 90-second Governance timeout boundary, and Governance returned from the correct Qwen3-8B model. However, finish_reason was "length" with completion_tokens reaching exactly 1400, and the generated JSON was truncated and therefore invalid. Governance had already requested 1800 tokens, but the provider-level global 1400 cap silently reduced it. Governance now receives its intended 1800-token local cap (`GOVERNANCE_MAX_TOKENS = 1800`, passed via `max_tokens_override=1800` to `build_llm_provider`). Global token settings remain unchanged, no model, retry policy, or provenance rule changed, and this is not a formal experiment result.
+
 The prototype exposes evidence provenance and concise rationale fields, not hidden chain-of-thought.
 
 ## Development endpoint

@@ -116,6 +116,28 @@ def test_shared_builder_preserves_verified_qwen_configuration(monkeypatch: pytes
         )["enable_thinking"] is False
 
 
+def test_build_llm_provider_max_tokens_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = Settings(
+        llm_provider="siliconflow",
+        llm_api_key="unit-test-placeholder",
+        llm_base_url="https://api.siliconflow.cn/v1",
+        llm_timeout_seconds=45,
+        llm_max_tokens=1400,
+    )
+    monkeypatch.setattr("providers.factory.get_settings", lambda: settings)
+
+    # A. Without max_tokens_override: provider.max_tokens uses settings.llm_max_tokens unchanged.
+    default_provider = build_llm_provider(QWEN)
+    assert isinstance(default_provider, OpenAICompatibleLLMProvider)
+    assert default_provider.max_tokens == settings.llm_max_tokens
+    assert default_provider.max_tokens == 1400
+
+    # B. With max_tokens_override=1800: provider.max_tokens == 1800.
+    override_provider = build_llm_provider(QWEN, max_tokens_override=1800)
+    assert isinstance(override_provider, OpenAICompatibleLLMProvider)
+    assert override_provider.max_tokens == 1800
+
+
 def test_every_configured_remote_provider_uses_one_builder(monkeypatch: pytest.MonkeyPatch) -> None:
     import providers.factory as factory
 

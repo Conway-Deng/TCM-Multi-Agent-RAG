@@ -19,6 +19,7 @@ from .schemas import (
 
 GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
 GOVERNANCE_TIMEOUT_SECONDS = 90.0
+GOVERNANCE_MAX_TOKENS = 1800
 GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
   "overall_summary": "...",
   "overall_supporting_claim_ids": [],
@@ -267,6 +268,7 @@ class CrossPerspectiveGovernanceAgent:
         self.provider = provider or build_llm_provider(
             GOVERNANCE_MODEL,
             timeout_override=GOVERNANCE_TIMEOUT_SECONDS,
+            max_tokens_override=GOVERNANCE_MAX_TOKENS,
             thinking_behavior="send_false",
         )
 
@@ -300,7 +302,7 @@ class CrossPerspectiveGovernanceAgent:
             response_model=CrossPerspectiveAnswer,
             system=GOVERNANCE_SYSTEM_PROMPT,
             prompt=prompt,
-            max_tokens=1800,
+            max_tokens=GOVERNANCE_MAX_TOKENS,
         )
         answer = result.value
         assert isinstance(answer, CrossPerspectiveAnswer)

@@ -37,6 +37,7 @@ def build_llm_provider(
     model_id: str,
     *,
     timeout_override: float | None = None,
+    max_tokens_override: int | None = None,
     thinking_behavior: Literal["auto", "omit", "send_false"] = "auto",
 ) -> LLMProvider:
     """Build every configured remote model through the verified Qwen path."""
@@ -46,7 +47,11 @@ def build_llm_provider(
         base_url=settings.llm_base_url,
         model=model_id,
         timeout=settings.llm_timeout_seconds if timeout_override is None else timeout_override,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=(
+            settings.llm_max_tokens
+            if max_tokens_override is None
+            else max_tokens_override
+        ),
         provider_name=settings.llm_provider,
         thinking_behavior=thinking_behavior,
     )

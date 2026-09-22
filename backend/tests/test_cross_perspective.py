@@ -16,6 +16,7 @@ from cross_perspective.adapters import (
 )
 from cross_perspective.governance import (
     CrossPerspectiveGovernanceAgent,
+    GOVERNANCE_MAX_TOKENS,
     GOVERNANCE_SYSTEM_PROMPT,
     GOVERNANCE_TIMEOUT_SECONDS,
     build_governance_payload,
@@ -897,11 +898,13 @@ def test_governance_default_provider_configuration(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(governance_module, "build_llm_provider", fake_build_llm_provider)
 
     assert GOVERNANCE_TIMEOUT_SECONDS == 90.0
+    assert GOVERNANCE_MAX_TOKENS == 1800
     agent = CrossPerspectiveGovernanceAgent()
     assert len(captured) == 1
     assert captured[0] == {
         "model_id": "Qwen/Qwen3-8B",
         "timeout_override": 90.0,
+        "max_tokens_override": 1800,
         "thinking_behavior": "send_false",
     }
     assert agent.provider is fake_provider
