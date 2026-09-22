@@ -11,11 +11,17 @@ from pydantic import BaseModel, ValidationError
 from providers.base import LLMProvider
 from providers.openai_compatible import ProviderUnavailable
 
-from .schemas import ModelCallEvent
+from .schemas import ActivePerspectiveName, ModelCallEvent
 
 
 T = TypeVar("T", bound=BaseModel)
-Role = Literal["router", "governance"]
+Role = Literal[
+    "router",
+    "governance",
+    "evidence_specialist",
+    "coverage_auditor",
+    "grounding_skeptic",
+]
 RETRYABLE_FAILURES = {"timeout", "rate_limit", "http_5xx", "connectivity"}
 
 
@@ -75,6 +81,7 @@ async def call_structured_model(
     system: str,
     prompt: str,
     max_tokens: int,
+    perspective: ActivePerspectiveName | None = None,
 ) -> StructuredCallResult:
     """Call a fixed provider with at most one retry for technical failures."""
     events: list[ModelCallEvent] = []
@@ -105,6 +112,7 @@ async def call_structured_model(
                     retry_performed=attempt == 2,
                     prompt_tokens=generated.prompt_tokens,
                     completion_tokens=generated.completion_tokens,
+                    perspective=perspective,
                 )
             )
             return StructuredCallResult(value=value, events=events)
@@ -124,6 +132,7 @@ async def call_structured_model(
                     failure_class=failure_class,  # type: ignore[arg-type]
                     error_summary=error_summary,
                     retry_performed=should_retry,
+                    perspective=perspective,
                 )
             )
             if not should_retry:

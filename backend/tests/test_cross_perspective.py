@@ -26,9 +26,25 @@ from cross_perspective.governance import (
     validate_governance_grounding,
 )
 from cross_perspective.model_calls import StructuredCallResult, StructuredModelCallFailure
+from cross_perspective.perspective_agents import (
+    ADVISORY_MAX_TOKENS,
+    COVERAGE_AUDITOR_MODEL,
+    EVIDENCE_SPECIALIST_MODEL,
+    GROUNDING_SKEPTIC_MODEL,
+    AdvisoryRunResult,
+    PerspectiveAdvisorySuite,
+    PerspectiveAssessmentError,
+    build_advisory_payload,
+    build_advisory_structural_template,
+    build_advisory_user_prompt,
+    validate_perspective_assessment,
+)
 from cross_perspective.router import CrossPerspectiveRouter, ROUTER_MODEL, ROUTER_SYSTEM_PROMPT
 from cross_perspective.schemas import (
+    ActivePerspectiveName,
+    AgentRole,
     Agreement,
+    AssessmentIssue,
     CrossPerspectiveAnswer,
     CrossPerspectiveConsultRequest,
     CrossPerspectiveDraft,
@@ -37,6 +53,7 @@ from cross_perspective.schemas import (
     ModelCallEvent,
     NUTRITION_UNAVAILABLE_MESSAGE,
     OVERALL_NO_CLAIM_SUMMARY,
+    PerspectiveAgentAssessment,
     PerspectiveClaim,
     PerspectiveEvidencePacket,
     PerspectiveFailure,
@@ -51,7 +68,7 @@ from cross_perspective.schemas import (
     WESTERN_NO_CLAIM_SUMMARY,
     WESTERN_UNAVAILABLE_SUMMARY,
 )
-from cross_perspective.service import CrossPerspectiveService, NutritionUnavailableError
+from cross_perspective.service import CrossPerspectiveRunError, CrossPerspectiveService, NutritionUnavailableError
 from cross_perspective.tracing import DevelopmentTraceLogger
 from providers.base import GenerationResult
 from providers.openai_compatible import ProviderUnavailable
@@ -213,6 +230,32 @@ class MemoryTraceSink:
         self.items.append(trace)
 
 
+class StubAdvisorySuite:
+    def __init__(
+        self,
+        assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] | None = None,
+        events: list[ModelCallEvent] | None = None,
+        latency_by_role: dict[str, float] | None = None,
+        failed_roles: list[str] | None = None,
+    ) -> None:
+        self.assessments = assessments or {"tcm": [], "western": []}
+        self.events = events or []
+        self.latency_by_role = latency_by_role or {}
+        self.failed_roles = failed_roles or []
+
+    async def analyze(
+        self,
+        question: str,
+        packets: dict[ActivePerspectiveName, PerspectiveEvidencePacket],
+    ) -> AdvisoryRunResult:
+        return AdvisoryRunResult(
+            assessments=self.assessments,
+            events=self.events,
+            latency_by_role=self.latency_by_role,
+            failed_roles=self.failed_roles,
+        )
+
+
 def test_tcm_packet_schema_preserves_claim_to_source_traceability() -> None:
     tcm = packet("tcm")
     claim = tcm.claims[0]
@@ -366,6 +409,7 @@ def test_forced_tcm_western_routing_bypasses_router_model() -> None:
         router=router,
         tcm_adapter=tcm_adapter,
         western_adapter=western_adapter,
+        advisory_suite=StubAdvisorySuite(),
         governance=governance,
         trace_sink=sink,
     )
@@ -387,6 +431,7 @@ def test_one_perspective_failure_is_visible_to_governance_and_not_fabricated() -
         western_adapter=StubAdapter(
             PerspectiveAdapterError("western", "Provider unavailable.", failure_type="provider")
         ),
+        advisory_suite=StubAdvisorySuite(),
         governance=governance,
         trace_sink=MemoryTraceSink(),
     )
@@ -908,6 +953,7 @@ def test_trace_omits_raw_question_by_default_and_hashes_it(tmp_path: Path, monke
     service = CrossPerspectiveService(
         router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
         tcm_adapter=StubAdapter(packet("tcm")), western_adapter=StubAdapter(packet("western")),
+        advisory_suite=StubAdvisorySuite(),
         governance=StubGovernance(), trace_sink=sink,
     )
     result = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question=question, question_id="q-1")))
@@ -1514,3 +1560,765 @@ def test_routing_decision_public_schema_and_forced_routing_unchanged() -> None:
     assert forced_western.use_tcm is False
     assert forced_western.use_western is True
     assert forced_western.requested_perspectives == ["western"]
+
+
+# =====================================================================
+# Cross-Perspective v0.4 Patch 2: Advisory Agents Tests
+# =====================================================================
+
+
+def test_assessment_issue_rejects_extra_fields() -> None:
+    # 1. AssessmentIssue rejects extra fields
+    with pytest.raises(ValidationError) as exc:
+        AssessmentIssue.model_validate({
+            "issue_type": "uncertainty",
+            "description": "Valid description",
+            "claim_ids": ["tcm:c1"],
+            "extra_forbidden_field": "disallowed",
+        })
+    assert "extra_forbidden" in str(exc.value)
+
+
+def test_perspective_agent_assessment_rejects_extra_fields() -> None:
+    # 2. PerspectiveAgentAssessment rejects extra fields
+    with pytest.raises(ValidationError) as exc:
+        PerspectiveAgentAssessment.model_validate({
+            "perspective": "tcm",
+            "role": "evidence_specialist",
+            "assessment_summary": "Valid summary.",
+            "referenced_claim_ids": ["tcm:c1"],
+            "issues": [],
+            "extra_disallowed_field": "disallowed",
+        })
+    assert "extra_forbidden" in str(exc.value)
+
+
+def test_advisory_roles_valid_structured_output_passes() -> None:
+    # 3, 4, 5. Valid structured output passes for each advisory role
+    tcm_pkt = packet("tcm")
+    for role in ("evidence_specialist", "coverage_auditor", "grounding_skeptic"):
+        ass = PerspectiveAgentAssessment(
+            perspective="tcm",
+            role=role,
+            assessment_summary=f"Summary for {role}.",
+            referenced_claim_ids=["tcm:c1"],
+            issues=[
+                AssessmentIssue(
+                    issue_type="uncertainty",
+                    description=f"Issue description for {role}.",
+                    claim_ids=["tcm:c1"],
+                )
+            ],
+        )
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role=role)
+
+
+def test_advisory_invented_referenced_claim_id_fails() -> None:
+    # 6. Invented referenced_claim_id fails
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="evidence_specialist",
+        assessment_summary="Valid summary.",
+        referenced_claim_ids=["tcm:invented_claim_999"],
+        issues=[],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="not an existing claim"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="evidence_specialist")
+
+
+def test_advisory_referenced_claim_ids_rejects_insufficient_claim() -> None:
+    # 7. referenced_claim_ids cannot include an existing insufficient claim
+    tcm_pkt = packet("tcm").model_copy(deep=True)
+    tcm_pkt.claims.append(
+        PerspectiveClaim(
+            claim_id="tcm:insuf1",
+            claim_text="Insufficiently supported claim text.",
+            support_status="insufficient",
+        )
+    )
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="evidence_specialist",
+        assessment_summary="Valid summary.",
+        referenced_claim_ids=["tcm:insuf1"],
+        issues=[],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="insufficient support_status"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="evidence_specialist")
+
+
+def test_advisory_issues_claim_ids_may_include_insufficient_claim() -> None:
+    # 8. issues[*].claim_ids MAY include an existing insufficient claim
+    tcm_pkt = packet("tcm").model_copy(deep=True)
+    tcm_pkt.claims.append(
+        PerspectiveClaim(
+            claim_id="tcm:insuf1",
+            claim_text="Insufficiently supported claim text.",
+            support_status="insufficient",
+        )
+    )
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="grounding_skeptic",
+        assessment_summary="Skeptic flags insufficient claim.",
+        referenced_claim_ids=["tcm:c1"],
+        issues=[
+            AssessmentIssue(
+                issue_type="grounding_risk",
+                description="This claim is marked insufficient.",
+                claim_ids=["tcm:insuf1"],
+            )
+        ],
+    )
+    # Must succeed without raising:
+    validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="grounding_skeptic")
+
+
+def test_advisory_issues_claim_ids_rejects_unknown_claim_id() -> None:
+    # 9. issues[*].claim_ids rejects unknown claim ID
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="coverage_auditor",
+        assessment_summary="Auditor summary.",
+        referenced_claim_ids=["tcm:c1"],
+        issues=[
+            AssessmentIssue(
+                issue_type="coverage_gap",
+                description="Issue referencing non-existent claim.",
+                claim_ids=["tcm:c_unknown_xyz"],
+            )
+        ],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="not an existing claim"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="coverage_auditor")
+
+
+def test_advisory_perspective_mismatch_fails() -> None:
+    # 10. Perspective mismatch fails
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="western",
+        role="evidence_specialist",
+        assessment_summary="Summary.",
+        referenced_claim_ids=[],
+        issues=[],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="did not match packet perspective"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="evidence_specialist")
+
+
+def test_advisory_role_mismatch_fails() -> None:
+    # 11. Role mismatch fails
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="coverage_auditor",
+        assessment_summary="Summary.",
+        referenced_claim_ids=["tcm:c1"],
+        issues=[],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="did not match expected role"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="evidence_specialist")
+
+
+def test_advisory_duplicate_referenced_claim_ids_fails() -> None:
+    # 12. Duplicate referenced_claim_ids fails
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="evidence_specialist",
+        assessment_summary="Summary.",
+        referenced_claim_ids=["tcm:c1", "tcm:c1"],
+        issues=[],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="referenced_claim_ids must not contain duplicates"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="evidence_specialist")
+
+
+def test_advisory_duplicate_issue_claim_ids_fails() -> None:
+    # 13. Duplicate issue.claim_ids fails
+    tcm_pkt = packet("tcm")
+    ass = PerspectiveAgentAssessment(
+        perspective="tcm",
+        role="grounding_skeptic",
+        assessment_summary="Summary.",
+        referenced_claim_ids=["tcm:c1"],
+        issues=[
+            AssessmentIssue(
+                issue_type="uncertainty",
+                description="Duplicate claim IDs in issue.",
+                claim_ids=["tcm:c1", "tcm:c1"],
+            )
+        ],
+    )
+    with pytest.raises(PerspectiveAssessmentError, match="duplicate entries"):
+        validate_perspective_assessment(ass, packet=tcm_pkt, expected_role="grounding_skeptic")
+
+
+def test_advisory_agent_emits_correct_role_perspective_and_model() -> None:
+    # 14, 15, 16. Correct role, perspective, and model identity preserved
+    tcm_pkt = packet("tcm")
+    ass_data = {
+        "perspective": "tcm",
+        "role": "evidence_specialist",
+        "assessment_summary": "Strong evidence exists in packet.",
+        "referenced_claim_ids": ["tcm:c1"],
+        "issues": [],
+    }
+    provider = QueueProvider(EVIDENCE_SPECIALIST_MODEL, [ass_data])
+    suite = PerspectiveAdvisorySuite(evidence_specialist_provider=provider)
+    ass, events, latency, failed_role = asyncio.run(
+        suite._run_role(
+            role="evidence_specialist",
+            perspective="tcm",
+            packet=tcm_pkt,
+            question="Question on headache?",
+        )
+    )
+    assert ass is not None
+    assert failed_role is None
+    assert len(events) == 1
+    event = events[0]
+    assert event.role == "evidence_specialist"
+    assert event.perspective == "tcm"
+    assert event.requested_model == EVIDENCE_SPECIALIST_MODEL
+    assert event.reported_model == EVIDENCE_SPECIALIST_MODEL
+    assert event.success is True
+
+
+def test_advisory_reported_model_mismatch_fails() -> None:
+    # 17. Reported model mismatch fails
+    tcm_pkt = packet("tcm")
+    ass_data = {
+        "perspective": "tcm",
+        "role": "evidence_specialist",
+        "assessment_summary": "Strong evidence exists.",
+        "referenced_claim_ids": ["tcm:c1"],
+        "issues": [],
+    }
+
+    class MismatchProvider(QueueProvider):
+        async def generate(self, **kwargs):
+            res = await super().generate(**kwargs)
+            return GenerationResult(
+                text=res.text,
+                provider=res.provider,
+                model="Substituted/Wrong-Model",
+                prompt_tokens=1,
+                completion_tokens=1,
+            )
+
+    provider = MismatchProvider(EVIDENCE_SPECIALIST_MODEL, [ass_data])
+    suite = PerspectiveAdvisorySuite(evidence_specialist_provider=provider)
+    ass, events, latency, failed_role = asyncio.run(
+        suite._run_role(
+            role="evidence_specialist",
+            perspective="tcm",
+            packet=tcm_pkt,
+            question="Test question?",
+        )
+    )
+    assert ass is None
+    assert failed_role == "tcm:evidence_specialist"
+    assert len(events) == 1
+    assert events[0].success is False
+    assert events[0].failure_class == "semantic"
+
+
+def test_advisory_technical_retry_allowed_once() -> None:
+    # 18. At most one technical retry remains allowed
+    tcm_pkt = packet("tcm")
+    ass_data = {
+        "perspective": "tcm",
+        "role": "coverage_auditor",
+        "assessment_summary": "Coverage is adequate.",
+        "referenced_claim_ids": ["tcm:c1"],
+        "issues": [],
+    }
+    provider = QueueProvider(
+        COVERAGE_AUDITOR_MODEL,
+        [
+            ProviderUnavailable("Temporary network timeout", error_type="timeout"),
+            ass_data,
+        ],
+    )
+    suite = PerspectiveAdvisorySuite(coverage_auditor_provider=provider)
+    ass, events, latency, failed_role = asyncio.run(
+        suite._run_role(
+            role="coverage_auditor",
+            perspective="tcm",
+            packet=tcm_pkt,
+            question="Question?",
+        )
+    )
+    assert ass is not None
+    assert failed_role is None
+    assert provider.calls == 2
+    assert len(events) == 2
+    assert events[0].retry_performed is True
+    assert events[1].attempt == 2
+    assert events[1].success is True
+
+
+def test_advisory_semantic_failure_receives_zero_retry() -> None:
+    # 19. Semantic/schema failure receives zero retry
+    tcm_pkt = packet("tcm")
+    bad_data = {
+        "perspective": "tcm",
+        "role": "grounding_skeptic",
+        "assessment_summary": "Summary.",
+        "referenced_claim_ids": ["tcm:c1"],
+        "issues": [],
+        "invented_extra_field": "invalid",
+    }
+    provider = QueueProvider(GROUNDING_SKEPTIC_MODEL, [bad_data])
+    suite = PerspectiveAdvisorySuite(grounding_skeptic_provider=provider)
+    ass, events, latency, failed_role = asyncio.run(
+        suite._run_role(
+            role="grounding_skeptic",
+            perspective="tcm",
+            packet=tcm_pkt,
+            question="Question?",
+        )
+    )
+    assert ass is None
+    assert failed_role == "tcm:grounding_skeptic"
+    assert provider.calls == 1
+    assert len(events) == 1
+    assert events[0].retry_performed is False
+    assert events[0].success is False
+    assert events[0].failure_class == "semantic"
+
+
+def test_advisory_suite_skips_not_selected_unavailable_and_zero_claims() -> None:
+    # 20, 21, 22. not_selected, unavailable, and zero claims cause zero advisory calls
+    provider = QueueProvider(EVIDENCE_SPECIALIST_MODEL, [])
+    suite = PerspectiveAdvisorySuite(
+        evidence_specialist_provider=provider,
+        coverage_auditor_provider=QueueProvider(COVERAGE_AUDITOR_MODEL, []),
+        grounding_skeptic_provider=QueueProvider(GROUNDING_SKEPTIC_MODEL, []),
+    )
+    p_not_sel = packet("tcm").model_copy(update={"execution_status": "not_selected", "available": False})
+    p_unavail = packet("western").model_copy(update={"execution_status": "unavailable", "available": False})
+    res1 = asyncio.run(suite.analyze("Question?", {"tcm": p_not_sel, "western": p_unavail}))
+    assert res1.assessments == {"tcm": [], "western": []}
+    assert res1.events == []
+    assert provider.calls == 0
+
+    p_zero = packet("tcm").model_copy(update={"available": True, "execution_status": "available", "claims": []})
+    res2 = asyncio.run(suite.analyze("Question?", {"tcm": p_zero}))
+    assert res2.assessments == {"tcm": [], "western": []}
+    assert res2.events == []
+    assert provider.calls == 0
+
+
+def test_advisory_failure_isolation_sibling_and_perspective_resilience() -> None:
+    # 23, 24, 25. Single failure does not fabricate, does not cancel siblings, does not block other perspective
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    valid_tcm_es = {"perspective": "tcm", "role": "evidence_specialist", "assessment_summary": "TCM ES", "referenced_claim_ids": ["tcm:c1"], "issues": []}
+    valid_tcm_ca = {"perspective": "tcm", "role": "coverage_auditor", "assessment_summary": "TCM CA", "referenced_claim_ids": ["tcm:c1"], "issues": []}
+    bad_tcm_gs = {"perspective": "tcm", "role": "grounding_skeptic", "assessment_summary": "TCM GS", "referenced_claim_ids": ["tcm:invented_claim"], "issues": []}
+
+    valid_w_es = {"perspective": "western", "role": "evidence_specialist", "assessment_summary": "West ES", "referenced_claim_ids": ["western:c1"], "issues": []}
+    valid_w_ca = {"perspective": "western", "role": "coverage_auditor", "assessment_summary": "West CA", "referenced_claim_ids": ["western:c1"], "issues": []}
+    valid_w_gs = {"perspective": "western", "role": "grounding_skeptic", "assessment_summary": "West GS", "referenced_claim_ids": ["western:c1"], "issues": []}
+
+    suite = PerspectiveAdvisorySuite(
+        evidence_specialist_provider=QueueProvider(EVIDENCE_SPECIALIST_MODEL, [valid_tcm_es, valid_w_es]),
+        coverage_auditor_provider=QueueProvider(COVERAGE_AUDITOR_MODEL, [valid_tcm_ca, valid_w_ca]),
+        grounding_skeptic_provider=QueueProvider(GROUNDING_SKEPTIC_MODEL, [bad_tcm_gs, valid_w_gs]),
+    )
+
+    result = asyncio.run(suite.analyze("Dual question", {"tcm": tcm_pkt, "western": west_pkt}))
+
+    # 23. No replacement fabricated:
+    tcm_roles = [a.role for a in result.assessments["tcm"]]
+    assert "grounding_skeptic" not in tcm_roles
+    assert len(tcm_roles) == 2
+
+    # 24. Siblings succeed:
+    assert set(tcm_roles) == {"evidence_specialist", "coverage_auditor"}
+
+    # 25. Opposing perspective is unaffected:
+    west_roles = [a.role for a in result.assessments["western"]]
+    assert set(west_roles) == {"evidence_specialist", "coverage_auditor", "grounding_skeptic"}
+
+    assert result.failed_roles == ["tcm:grounding_skeptic"]
+
+
+def test_advisory_failure_with_successful_governance_yields_partial_failure() -> None:
+    # 26, 27, 28, 29, 30. Advisory failure + successful Governance yields partial_failure, trace writing, and failed_roles
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    failing_suite = StubAdvisorySuite(
+        assessments={
+            "tcm": [
+                PerspectiveAgentAssessment(
+                    perspective="tcm",
+                    role="evidence_specialist",
+                    assessment_summary="TCM ES ok.",
+                    referenced_claim_ids=["tcm:c1"],
+                    issues=[],
+                )
+            ],
+            "western": [],
+        },
+        events=[
+            ModelCallEvent(
+                role="grounding_skeptic",
+                attempt=1,
+                provider="fixture",
+                requested_model=GROUNDING_SKEPTIC_MODEL,
+                success=False,
+                latency_ms=10.0,
+                failure_class="semantic",
+                error_summary="Failed grounding",
+                perspective="tcm",
+            )
+        ],
+        latency_by_role={"tcm:evidence_specialist": 15.0, "tcm:grounding_skeptic": 10.0},
+        failed_roles=["tcm:grounding_skeptic"],
+    )
+
+    sink = MemoryTraceSink()
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=failing_suite,
+        governance=StubGovernance(),
+        trace_sink=sink,
+    )
+
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Compare headache evidence.")))
+
+    # 26. Governance was not blocked and produced answer:
+    assert resp.answer is not None
+
+    # 27. Overall status is partial_failure:
+    assert resp.status == "partial_failure"
+
+    # 28. Successful advisory role is written to perspective_assessments:
+    assert len(resp.perspective_assessments["tcm"]) == 1
+    assert resp.perspective_assessments["tcm"][0].role == "evidence_specialist"
+
+    # 29. Failed advisory role is absent from perspective_assessments:
+    assert not any(a.role == "grounding_skeptic" for a in resp.perspective_assessments["tcm"])
+
+    # 30. Failed role appears in failed_roles:
+    assert "tcm:grounding_skeptic" in resp.failed_roles
+    assert "tcm:grounding_skeptic" in sink.items[0].failed_roles
+
+
+def test_governance_input_does_not_contain_assessments_and_payload_identical() -> None:
+    # 31, 32. Governance input does NOT contain assessments and payload is identical
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    packets = {"tcm": tcm_pkt, "western": west_pkt}
+
+    gov = StubGovernance()
+    advisory_suite = StubAdvisorySuite(
+        assessments={
+            "tcm": [
+                PerspectiveAgentAssessment(
+                    perspective="tcm",
+                    role="evidence_specialist",
+                    assessment_summary="Advisory assessment.",
+                    referenced_claim_ids=["tcm:c1"],
+                    issues=[],
+                )
+            ],
+            "western": [],
+        }
+    )
+    sink = MemoryTraceSink()
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=advisory_suite,
+        governance=gov,
+        trace_sink=sink,
+    )
+
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Compare evidence for headache.")))
+
+    # 31. Governance input does not contain assessments:
+    assert "perspective_assessments" not in resp.trace.governance_input
+    assert "perspective_assessments" not in gov.received
+    assert set(gov.received.keys()) == {"tcm", "western"}
+
+    # 32. build_governance_payload is completely unaffected:
+    payload = build_governance_payload(packets)
+    assert "perspective_assessments" not in payload
+    assert "tcm" in payload and "western" in payload
+
+
+def test_concurrent_advisory_orchestration_all_roles() -> None:
+    # 38. Concurrent orchestration produces all successful assessments without changing result semantics
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    valid_tcm_es = {"perspective": "tcm", "role": "evidence_specialist", "assessment_summary": "TCM ES", "referenced_claim_ids": ["tcm:c1"], "issues": []}
+    valid_tcm_ca = {"perspective": "tcm", "role": "coverage_auditor", "assessment_summary": "TCM CA", "referenced_claim_ids": ["tcm:c1"], "issues": []}
+    valid_tcm_gs = {"perspective": "tcm", "role": "grounding_skeptic", "assessment_summary": "TCM GS", "referenced_claim_ids": ["tcm:c1"], "issues": []}
+
+    valid_w_es = {"perspective": "western", "role": "evidence_specialist", "assessment_summary": "West ES", "referenced_claim_ids": ["western:c1"], "issues": []}
+    valid_w_ca = {"perspective": "western", "role": "coverage_auditor", "assessment_summary": "West CA", "referenced_claim_ids": ["western:c1"], "issues": []}
+    valid_w_gs = {"perspective": "western", "role": "grounding_skeptic", "assessment_summary": "West GS", "referenced_claim_ids": ["western:c1"], "issues": []}
+
+    suite = PerspectiveAdvisorySuite(
+        evidence_specialist_provider=QueueProvider(EVIDENCE_SPECIALIST_MODEL, [valid_tcm_es, valid_w_es]),
+        coverage_auditor_provider=QueueProvider(COVERAGE_AUDITOR_MODEL, [valid_tcm_ca, valid_w_ca]),
+        grounding_skeptic_provider=QueueProvider(GROUNDING_SKEPTIC_MODEL, [valid_tcm_gs, valid_w_gs]),
+    )
+
+    result = asyncio.run(suite.analyze("Concurrent test", {"tcm": tcm_pkt, "western": west_pkt}))
+
+    assert len(result.assessments["tcm"]) == 3
+    assert len(result.assessments["western"]) == 3
+    assert len(result.events) == 6
+    assert result.failed_roles == []
+    assert set(result.latency_by_role.keys()) == {
+        "tcm:evidence_specialist",
+        "tcm:coverage_auditor",
+        "tcm:grounding_skeptic",
+        "western:evidence_specialist",
+        "western:coverage_auditor",
+        "western:grounding_skeptic",
+    }
+
+
+def test_build_advisory_payload_projection_excludes_forbidden_fields() -> None:
+    tcm_pkt = packet("tcm")
+    payload = build_advisory_payload(tcm_pkt)
+    assert set(payload.keys()) == {
+        "perspective",
+        "available",
+        "execution_status",
+        "claims",
+        "provenance",
+        "uncertainty",
+        "missing_information",
+        "limitations",
+    }
+    assert "interpretation" not in payload
+    assert "source_url" not in payload
+    assert "identifier" not in payload
+    assert "license" not in payload
+    assert "router" not in payload
+    assert "governance" not in payload
+
+
+def test_consult_run_id_prefix_is_v0_4() -> None:
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(packet("tcm")),
+        western_adapter=StubAdapter(packet("western")),
+        advisory_suite=StubAdvisorySuite(),
+        governance=StubGovernance(),
+        trace_sink=MemoryTraceSink(),
+    )
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Check run ID format.")))
+    assert resp.run_id.startswith("cross-perspective-v0.4-dev-")
+    assert resp.trace.run_id == resp.run_id
+
+
+def test_trace_model_ids_contains_advisory_assignments() -> None:
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(packet("tcm")),
+        western_adapter=StubAdapter(packet("western")),
+        advisory_suite=StubAdvisorySuite(),
+        governance=StubGovernance(),
+        trace_sink=MemoryTraceSink(),
+    )
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Check model IDs.")))
+    assert resp.trace.model_ids["evidence_specialist"] == EVIDENCE_SPECIALIST_MODEL
+    assert resp.trace.model_ids["coverage_auditor"] == COVERAGE_AUDITOR_MODEL
+    assert resp.trace.model_ids["grounding_skeptic"] == GROUNDING_SKEPTIC_MODEL
+
+
+def test_auto_router_failure_trace_has_perspective_assessments_and_skips_downstream() -> None:
+    class TrackingGovernance(StubGovernance):
+        def __init__(self) -> None:
+            super().__init__()
+            self.called = False
+
+        async def synthesize(self, **kwargs):
+            self.called = True
+            return await super().synthesize(**kwargs)
+
+    class TrackingAdvisorySuite(StubAdvisorySuite):
+        def __init__(self) -> None:
+            super().__init__()
+            self.called = False
+
+        async def analyze(self, **kwargs):
+            self.called = True
+            return await super().analyze(**kwargs)
+
+    sink = MemoryTraceSink()
+    gov = TrackingGovernance()
+    advisory = TrackingAdvisorySuite()
+    router_provider = QueueProvider(ROUTER_MODEL, ["invalid json not an object"])
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=router_provider),
+        tcm_adapter=StubAdapter(packet("tcm")),
+        western_adapter=StubAdapter(packet("western")),
+        advisory_suite=advisory,
+        governance=gov,
+        trace_sink=sink,
+    )
+    request = CrossPerspectiveConsultRequest(
+        question="Compare headache evidence.",
+        router_mode="auto",
+    )
+
+    with pytest.raises(CrossPerspectiveRunError) as exc_info:
+        asyncio.run(service.consult(request))
+
+    run_err = exc_info.value
+    trace = run_err.trace
+    assert "router" in trace.failed_roles
+    assert trace.perspective_assessments == {}
+    assert advisory.called is False
+    assert gov.called is False
+    assert len(sink.items) == 1
+    assert sink.items[0].perspective_assessments == {}
+
+
+def test_perspective_agent_assessment_rejects_more_than_four_issues() -> None:
+    issues = [
+        AssessmentIssue(issue_type="uncertainty", description=f"Issue {i}", claim_ids=["tcm:c1"])
+        for i in range(5)
+    ]
+    with pytest.raises(ValidationError):
+        PerspectiveAgentAssessment(
+            perspective="tcm",
+            role="evidence_specialist",
+            assessment_summary="Summary.",
+            referenced_claim_ids=["tcm:c1"],
+            issues=issues,
+        )
+
+
+def test_advisory_structural_templates_and_prompts_are_role_and_perspective_specific() -> None:
+    tcm_pkt = packet("tcm")
+    tcm_payload = build_advisory_payload(tcm_pkt)
+    west_pkt = packet("western")
+    west_payload = build_advisory_payload(west_pkt)
+
+    prompt_west_gs = build_advisory_user_prompt(
+        role="grounding_skeptic",
+        perspective="western",
+        question="Western grounding question?",
+        payload=west_payload,
+    )
+    assert '"perspective": "western"' in prompt_west_gs
+    assert '"role": "grounding_skeptic"' in prompt_west_gs
+
+    prompt_tcm_ca = build_advisory_user_prompt(
+        role="coverage_auditor",
+        perspective="tcm",
+        question="TCM coverage question?",
+        payload=tcm_payload,
+    )
+    assert '"perspective": "tcm"' in prompt_tcm_ca
+    assert '"role": "coverage_auditor"' in prompt_tcm_ca
+
+    # Check structural templates for all combinations do not contain fake claim IDs
+    for p in ("tcm", "western"):
+        for r in ("evidence_specialist", "coverage_auditor", "grounding_skeptic"):
+            tmpl = build_advisory_structural_template(perspective=p, role=r)  # type: ignore[arg-type]
+            assert f'"perspective": "{p}"' in tmpl
+            assert f'"role": "{r}"' in tmpl
+            assert '"referenced_claim_ids": []' in tmpl
+            assert '"issues": []' in tmpl
+            assert '"c1"' not in tmpl
+            assert '"c2"' not in tmpl
+
+
+def test_advisory_technical_retry_preserves_telemetry_when_semantic_validation_fails() -> None:
+    tcm_pkt = packet("tcm")
+    bad_assessment_data = {
+        "perspective": "tcm",
+        "role": "coverage_auditor",
+        "assessment_summary": "Coverage summary.",
+        "referenced_claim_ids": ["tcm:invented_claim_999"],
+        "issues": [],
+    }
+    provider = QueueProvider(
+        COVERAGE_AUDITOR_MODEL,
+        [
+            ProviderUnavailable("Initial network timeout", error_type="timeout"),
+            bad_assessment_data,
+        ],
+    )
+    suite = PerspectiveAdvisorySuite(coverage_auditor_provider=provider)
+    ass, events, latency, failed_role = asyncio.run(
+        suite._run_role(
+            role="coverage_auditor",
+            perspective="tcm",
+            packet=tcm_pkt,
+            question="Question?",
+        )
+    )
+    assert ass is None
+    assert failed_role == "tcm:coverage_auditor"
+    assert provider.calls == 2
+    assert len(events) == 2
+
+    # Event 1: preserved as technical timeout failure
+    assert events[0].attempt == 1
+    assert events[0].success is False
+    assert events[0].failure_class == "timeout"
+    assert events[0].retry_performed is True
+    assert "Initial network timeout" in events[0].error_summary
+
+    # Event 2: provider call succeeded, but reclassified as semantic failure due to validation error
+    assert events[1].attempt == 2
+    assert events[1].success is False
+    assert events[1].failure_class == "semantic"
+    assert "not an existing claim" in events[1].error_summary
+
+
+def test_advisory_prompt_contract_exposes_assessment_issue_schema_and_claim_id_rules() -> None:
+    tcm_pkt = packet("tcm")
+    tcm_payload = build_advisory_payload(tcm_pkt)
+    prompt = build_advisory_user_prompt(
+        role="coverage_auditor",
+        perspective="tcm",
+        question="Check prompt contract rules.",
+        payload=tcm_payload,
+    )
+
+    # 1. Contains AssessmentIssue fields
+    assert '"issue_type"' in prompt
+    assert '"description"' in prompt
+    assert '"claim_ids"' in prompt
+
+    # 2. Contains all allowed issue_type values
+    for itype in ("coverage_gap", "grounding_risk", "support_ambiguity", "redundancy", "uncertainty", "other"):
+        assert itype in prompt
+
+    # 3. Explicitly says issues must not be returned as plain strings
+    assert "Do NOT return issues as plain strings." in prompt
+    assert '"Some coverage concern."' in prompt
+
+    # 4. Explicit claim ID rules
+    assert "Claim ID Rules:" in prompt
+    assert "Never create, abbreviate, normalize, or rewrite claim IDs." in prompt
+
+    # 5. Dynamic perspective and role preserved
+    assert '"perspective": "tcm"' in prompt
+    assert '"role": "coverage_auditor"' in prompt
+
+    # 6. No fake claim IDs like c1 or c2 anywhere in the prompt
+    assert '"c1"' not in prompt
+    assert '"c2"' not in prompt

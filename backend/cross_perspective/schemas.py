@@ -11,6 +11,11 @@ ActivePerspectiveName = Literal["tcm", "western"]
 SupportStatus = Literal["supported", "partially_supported", "insufficient"]
 ExecutionStatus = Literal["available", "degraded", "abstained", "unavailable", "not_selected"]
 RouterMode = Literal["auto", "forced"]
+AgentRole = Literal[
+    "evidence_specialist",
+    "coverage_auditor",
+    "grounding_skeptic",
+]
 
 NUTRITION_UNAVAILABLE_MESSAGE = (
     "Nutrition perspective unavailable until a dedicated provenance-preserving "
@@ -173,8 +178,37 @@ class CrossPerspectiveAnswer(StrictModel):
     source_map: list[SourceMapEntry] = Field(default_factory=list)
 
 
+class AssessmentIssue(StrictModel):
+    issue_type: Literal[
+        "coverage_gap",
+        "grounding_risk",
+        "support_ambiguity",
+        "redundancy",
+        "uncertainty",
+        "other",
+    ]
+    description: str = Field(min_length=1)
+    claim_ids: list[str] = Field(default_factory=list)
+
+
+class PerspectiveAgentAssessment(StrictModel):
+    perspective: ActivePerspectiveName
+    role: AgentRole
+    assessment_summary: str = Field(min_length=1)
+    referenced_claim_ids: list[str] = Field(default_factory=list)
+    issues: list[AssessmentIssue] = Field(default_factory=list, max_length=4)
+
+
 class ModelCallEvent(StrictModel):
-    role: Literal["router", "tcm", "western", "governance"]
+    role: Literal[
+        "router",
+        "tcm",
+        "western",
+        "governance",
+        "evidence_specialist",
+        "coverage_auditor",
+        "grounding_skeptic",
+    ]
     attempt: int = Field(ge=1, le=2)
     provider: str
     requested_model: str
@@ -187,6 +221,7 @@ class ModelCallEvent(StrictModel):
     retry_performed: bool = False
     prompt_tokens: int = Field(default=0, ge=0)
     completion_tokens: int = Field(default=0, ge=0)
+    perspective: ActivePerspectiveName | None = None
 
 
 class CrossPerspectiveTrace(StrictModel):
@@ -208,6 +243,7 @@ class CrossPerspectiveTrace(StrictModel):
     provider_events: list[ModelCallEvent] = Field(default_factory=list)
     retry_count: int = Field(default=0, ge=0)
     failed_roles: list[str] = Field(default_factory=list)
+    perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] = Field(default_factory=dict)
 
 
 class CrossPerspectiveConsultRequest(StrictModel):
@@ -248,4 +284,5 @@ class CrossPerspectiveConsultResponse(StrictModel):
     perspective_packets: dict[ActivePerspectiveName, PerspectiveEvidencePacket]
     answer: CrossPerspectiveAnswer | None = None
     failed_roles: list[str] = Field(default_factory=list)
+    perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] = Field(default_factory=dict)
     trace: CrossPerspectiveTrace

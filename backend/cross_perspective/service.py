@@ -16,6 +16,12 @@ from .adapters import (
 )
 from .governance import CrossPerspectiveGovernanceAgent, GOVERNANCE_MODEL, build_governance_payload
 from .model_calls import StructuredModelCallFailure
+from .perspective_agents import (
+    COVERAGE_AUDITOR_MODEL,
+    EVIDENCE_SPECIALIST_MODEL,
+    GROUNDING_SKEPTIC_MODEL,
+    PerspectiveAdvisorySuite,
+)
 from .router import CrossPerspectiveRouter, ROUTER_MODEL
 from .schemas import (
     ActivePerspectiveName,
@@ -25,6 +31,7 @@ from .schemas import (
     CrossPerspectiveTrace,
     ModelCallEvent,
     NUTRITION_UNAVAILABLE_MESSAGE,
+    PerspectiveAgentAssessment,
     PerspectiveEvidencePacket,
     PerspectiveFailure,
     RoutingDecision,
@@ -95,6 +102,7 @@ class CrossPerspectiveService:
         router: CrossPerspectiveRouter | None = None,
         tcm_adapter: EvidenceAdapter | None = None,
         western_adapter: EvidenceAdapter | None = None,
+        advisory_suite: PerspectiveAdvisorySuite | None = None,
         governance: CrossPerspectiveGovernanceAgent | None = None,
         trace_sink: TraceSink | None = None,
     ) -> None:
@@ -103,6 +111,7 @@ class CrossPerspectiveService:
             "tcm": tcm_adapter or TCMEvidenceAdapter(),
             "western": western_adapter or WesternEvidenceAdapter(),
         }
+        self.advisory_suite = advisory_suite or PerspectiveAdvisorySuite()
         self.governance = governance or CrossPerspectiveGovernanceAgent()
         self.trace_sink = trace_sink or DevelopmentTraceLogger()
 
@@ -110,7 +119,7 @@ class CrossPerspectiveService:
         if "nutrition" in request.perspectives:
             raise NutritionUnavailableError(NUTRITION_UNAVAILABLE_MESSAGE)
 
-        run_id = f"cross-perspective-v0.3-dev-{uuid4()}"
+        run_id = f"cross-perspective-v0.4-dev-{uuid4()}"
         timestamp = datetime.now(timezone.utc)
         started = perf_counter()
         events: list[ModelCallEvent] = []
@@ -140,6 +149,7 @@ class CrossPerspectiveService:
                     latency_by_stage=latency_by_stage,
                     total_started=started,
                     failed_roles=["router"],
+                    perspective_assessments={},
                 )
                 self.trace_sink.write(trace)
                 raise CrossPerspectiveRunError("Router model call failed; no evidence pathway was selected.", trace=trace) from exc
@@ -170,6 +180,15 @@ class CrossPerspectiveService:
             if not result.packet.available or result.packet.failure is not None:
                 failed_roles.append(perspective)
 
+        advisory_result = await self.advisory_suite.analyze(
+            question=request.question,
+            packets=packets,
+        )
+        events.extend(advisory_result.events)
+        latency_by_stage.update(advisory_result.latency_by_role)
+        failed_roles.extend(advisory_result.failed_roles)
+        perspective_assessments = advisory_result.assessments
+
         governance_started = perf_counter()
         answer: CrossPerspectiveAnswer | None = None
         try:
@@ -196,6 +215,7 @@ class CrossPerspectiveService:
             latency_by_stage=latency_by_stage,
             total_started=started,
             failed_roles=failed_roles,
+            perspective_assessments=perspective_assessments,
         )
         self.trace_sink.write(trace)
         status = "failed" if answer is None else "partial_failure" if failed_roles else "completed"
@@ -206,6 +226,7 @@ class CrossPerspectiveService:
             perspective_packets=packets,
             answer=answer,
             failed_roles=list(dict.fromkeys(failed_roles)),
+            perspective_assessments=perspective_assessments,
             trace=trace,
         )
 
@@ -222,6 +243,7 @@ class CrossPerspectiveService:
         latency_by_stage: dict[str, float],
         total_started: float,
         failed_roles: list[str],
+        perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]],
     ) -> CrossPerspectiveTrace:
         source_ids = {
             name: list(dict.fromkeys(item.source_id for item in packet.provenance))
@@ -256,6 +278,9 @@ class CrossPerspectiveService:
                 "router": ROUTER_MODEL,
                 "tcm": "Qwen/Qwen3-8B",
                 "western": "Qwen/Qwen3-8B",
+                "evidence_specialist": EVIDENCE_SPECIALIST_MODEL,
+                "coverage_auditor": COVERAGE_AUDITOR_MODEL,
+                "grounding_skeptic": GROUNDING_SKEPTIC_MODEL,
                 "governance": GOVERNANCE_MODEL,
             },
             model_calls=len(events),
@@ -264,4 +289,5 @@ class CrossPerspectiveService:
             provider_events=events,
             retry_count=sum(1 for event in events if event.attempt == 2),
             failed_roles=list(dict.fromkeys(failed_roles)),
+            perspective_assessments=perspective_assessments,
         )
