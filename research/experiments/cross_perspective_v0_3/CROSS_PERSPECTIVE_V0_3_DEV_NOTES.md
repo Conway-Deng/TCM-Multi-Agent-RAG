@@ -29,7 +29,7 @@ The Western Phase 1B runtime explicitly does not establish sentence-level claim 
 | Router | `THUDM/GLM-4-9B-0414` | Automatic pathway selection only; no health answer |
 | TCM evidence generation | `Qwen/Qwen3-8B` | Existing TCM pathway |
 | Western evidence generation | `Qwen/Qwen3-8B` | Existing `WesternEvidenceAgent` |
-| Governance/final chatbot | `XingChenAGI/Xing4.0-29B` | Packet-only structured synthesis |
+| Governance/final chatbot | `THUDM/GLM-4-9B-0414` | Packet-only structured synthesis |
 
 These choices establish a development configuration, not a claim of model superiority. No paid model, DeepSeek-V3.2, or GPT-5.6 Sol runtime role is configured.
 
@@ -176,4 +176,20 @@ The development trace is intentionally capable of supporting later comparisons o
 - Governance LLM input was therefore compacted while preserving complete provenance outside the model for deterministic source mapping and traceability.
 - No formal experiment was run.
 
-COMPACT GOVERNANCE SEMANTIC-PAYLOAD PATCH COMPLETE — READY FOR SOL REVIEW
+## Development Governance model assignment
+
+- Compact Governance payload replay used the same saved TCM and Western packets.
+- Real compact payload size was 9,528 characters versus 23,160 for the full packet serialization, a development diagnostic reduction of 58.9%.
+- Xing4.0-29B again returned finish_reason=repetition and invalid JSON under the compact workload.
+- This does not establish general model inferiority.
+- GLM-4-9B-0414 returned finish_reason=stop.
+- Reported model matched THUDM/GLM-4-9B-0414.
+- JSON parsing succeeded.
+- CrossPerspectiveDraft validation succeeded.
+- deterministic source-map materialization succeeded.
+- governance grounding validation succeeded.
+- GLM-4-9B-0414 is therefore the current development Governance/Judge assignment.
+- This is not a formal experiment result.
+- Xing4.0-29B remains a possible future challenger, not the current runtime Judge.
+
+GLM-4 DEVELOPMENT GOVERNANCE ASSIGNMENT PATCH COMPLETE — READY FOR SOL REVIEW

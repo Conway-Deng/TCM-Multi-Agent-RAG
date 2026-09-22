@@ -945,7 +945,7 @@ def test_governance_default_provider_configuration(monkeypatch: pytest.MonkeyPat
     agent = CrossPerspectiveGovernanceAgent()
     assert len(captured) == 1
     assert captured[0] == {
-        "model_id": "XingChenAGI/Xing4.0-29B",
+        "model_id": "THUDM/GLM-4-9B-0414",
         "timeout_override": 90.0,
         "max_tokens_override": 2400,
         "thinking_behavior": "omit",
@@ -973,8 +973,8 @@ def test_router_default_provider_configuration(monkeypatch: pytest.MonkeyPatch) 
     assert router.provider is fake_provider
 
 
-def test_governance_model_is_xing4_29b() -> None:
-    assert GOVERNANCE_MODEL == "XingChenAGI/Xing4.0-29B"
+def test_governance_model_is_glm_4_9b() -> None:
+    assert GOVERNANCE_MODEL == "THUDM/GLM-4-9B-0414"
 
 
 def test_governance_response_model_is_cross_perspective_draft(monkeypatch: pytest.MonkeyPatch) -> None:
