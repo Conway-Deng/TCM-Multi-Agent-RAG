@@ -707,6 +707,22 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "compaction must never omit a required statement or represented perspective" in prompt_text
     assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in prompt_text
 
+    # Source map exact statement-binding requirements in system prompt
+    assert "final_claim_or_statement is bound to the final output statement value, not selected by perspective" in prompt_text
+    assert "o means exact overall_summary value" in prompt_text
+    assert "t means exact perspectives.tcm.summary value" in prompt_text
+    assert "w means exact perspectives.western.summary value" in prompt_text
+    assert "when both perspectives support overall_summary, the tcm and western overall rows use identical overall_summary text" in prompt_text
+    assert "do not put t into the tcm overall row" in prompt_text
+    assert "do not put w into the western overall row" in prompt_text
+    assert "perspective summary rows remain separate" in prompt_text
+    assert "do not substitute t or w for o in an overall-summary row" in prompt_text
+    assert "never duplicate a perspective-summary row and treat it as an overall row" in prompt_text
+    assert "1. final_claim_or_statement = 'combined statement.', perspective = 'tcm'" in prompt_text
+    assert "2. final_claim_or_statement = 'combined statement.', perspective = 'western'" in prompt_text
+    assert "3. final_claim_or_statement = 'tcm statement.', perspective = 'tcm'" in prompt_text
+    assert "4. final_claim_or_statement = 'western statement.', perspective = 'western'" in prompt_text
+
     provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
@@ -760,6 +776,22 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "different final statements must never be merged merely because they use the same claims" in captured_prompt
     assert "compaction must never omit a required statement or represented perspective" in captured_prompt
     assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in captured_prompt
+
+    # Source map exact statement-binding requirements in per-request prompt
+    assert "final_claim_or_statement is bound to the final output statement value, not selected by perspective" in captured_prompt
+    assert "o means exact overall_summary value" in captured_prompt
+    assert "t means exact perspectives.tcm.summary value" in captured_prompt
+    assert "w means exact perspectives.western.summary value" in captured_prompt
+    assert "when both perspectives support overall_summary, the tcm and western overall rows use identical overall_summary text" in captured_prompt
+    assert "do not put t into the tcm overall row" in captured_prompt
+    assert "do not put w into the western overall row" in captured_prompt
+    assert "perspective summary rows remain separate" in captured_prompt
+    assert "do not substitute t or w for o in an overall-summary row" in captured_prompt
+    assert "never duplicate a perspective-summary row and treat it as an overall row" in captured_prompt
+    assert "1. final_claim_or_statement = 'combined statement.', perspective = 'tcm'" in captured_prompt
+    assert "2. final_claim_or_statement = 'combined statement.', perspective = 'western'" in captured_prompt
+    assert "3. final_claim_or_statement = 'tcm statement.', perspective = 'tcm'" in captured_prompt
+    assert "4. final_claim_or_statement = 'western statement.', perspective = 'western'" in captured_prompt
 
 
 def test_list_form_source_map_entries_fail_contract() -> None:
