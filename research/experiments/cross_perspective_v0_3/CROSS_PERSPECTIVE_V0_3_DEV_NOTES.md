@@ -76,6 +76,8 @@ The governance prompt prohibits new substantive medical claims, equivalence betw
 
 The first synthetic live smoke exposed a development integration issue in the Governance structured-output shape: the provider returned valid, non-truncated JSON from the requested Qwen3-8B model, but emitted `tcm` and `western` at the top level instead of nesting them under `perspectives`. The Governance prompt now includes the exact eight-field top-level contract, an explicit nested structural template, a top-level `source_map` requirement, and compact-output instructions. This was not a formal experiment result, and no provenance validator or safety rule was weakened.
 
+A follow-up development diagnostic encountered two Governance technical timeouts at the existing 45-second provider timeout (attempt 1 timed out at ~46.08 s, attempt 2 timed out at ~46.03 s; forced router made 0 provider calls, and TCM and Western both completed). Governance alone now uses an explicit 90-second timeout (`GOVERNANCE_TIMEOUT_SECONDS = 90.0`) to accommodate its larger evidence-packet prompt. No model changed, no retry policy changed, no provenance rule changed, and this was not a formal experiment result.
+
 The prototype exposes evidence provenance and concise rationale fields, not hidden chain-of-thought.
 
 ## Development endpoint

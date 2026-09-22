@@ -18,6 +18,7 @@ from .schemas import (
 
 
 GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
+GOVERNANCE_TIMEOUT_SECONDS = 90.0
 GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
   "overall_summary": "...",
   "overall_supporting_claim_ids": [],
@@ -263,7 +264,11 @@ def validate_governance_grounding(
 
 class CrossPerspectiveGovernanceAgent:
     def __init__(self, provider: LLMProvider | None = None) -> None:
-        self.provider = provider or build_llm_provider(GOVERNANCE_MODEL, thinking_behavior="send_false")
+        self.provider = provider or build_llm_provider(
+            GOVERNANCE_MODEL,
+            timeout_override=GOVERNANCE_TIMEOUT_SECONDS,
+            thinking_behavior="send_false",
+        )
 
     async def synthesize(
         self,

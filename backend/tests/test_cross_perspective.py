@@ -17,6 +17,7 @@ from cross_perspective.adapters import (
 from cross_perspective.governance import (
     CrossPerspectiveGovernanceAgent,
     GOVERNANCE_SYSTEM_PROMPT,
+    GOVERNANCE_TIMEOUT_SECONDS,
     build_governance_payload,
     validate_governance_grounding,
 )
@@ -881,3 +882,26 @@ def test_development_endpoint_is_registered() -> None:
     from main import app
 
     assert "/api/cross-perspective/consult" in app.openapi()["paths"]
+
+
+def test_governance_default_provider_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: list[dict[str, object]] = []
+    fake_provider = object()
+
+    def fake_build_llm_provider(model_id: str, **kwargs: object) -> object:
+        captured.append({"model_id": model_id, **kwargs})
+        return fake_provider
+
+    import cross_perspective.governance as governance_module
+
+    monkeypatch.setattr(governance_module, "build_llm_provider", fake_build_llm_provider)
+
+    assert GOVERNANCE_TIMEOUT_SECONDS == 90.0
+    agent = CrossPerspectiveGovernanceAgent()
+    assert len(captured) == 1
+    assert captured[0] == {
+        "model_id": "Qwen/Qwen3-8B",
+        "timeout_override": 90.0,
+        "thinking_behavior": "send_false",
+    }
+    assert agent.provider is fake_provider
