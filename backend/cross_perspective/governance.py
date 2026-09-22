@@ -49,8 +49,12 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Use only the supplied evidence packets. Never introduce substantive medical claims absent from those packets. "
     "Keep TCM traditional-framework interpretations distinct from Western biomedical interpretations; never imply that their mechanisms are equivalent. "
     "Agreement between perspectives is not proof. Preserve disagreement, insufficient evidence, uncertainty, missing information, and unavailable perspectives. "
-    "The packet interpretation field is presentation text, not evidence. Only non-insufficient claims with linked provenance may support substantive final statements. "
+    "The packet interpretation field is presentation text, not evidence and is omitted from the model payload. "
+    "Claims were pre-associated with provenance by the evidence pathways. "
+    'Only claims with support_status != "insufficient" may support substantive synthesis. '
     "Insufficient claims cannot support agreements or substantive statements. "
+    "Citation and source-map materialization is handled deterministically outside the model. "
+    "The Judge must reference exact supplied claim IDs and must not invent evidence, claims, citations, or outside medical knowledge. "
     "Overall summaries, perspective summaries, agreements, and differences must cite the exact non-insufficient claim IDs that support them. "
     "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
     f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '
@@ -82,23 +86,38 @@ class GovernanceContractError(RuntimeError):
 def build_governance_payload(
     packets: dict[str, PerspectiveEvidencePacket],
 ) -> dict[str, dict[str, object]]:
-    """Return the packet fields the governance model is allowed to use.
+    """Return the compact semantic packet fields the governance model is allowed to use.
 
-    ``interpretation`` remains in the full packet and trace, but is deliberately
-    omitted here because it may contain unverified presentation text.
+    ``interpretation``, ``provenance``, and claim-level ``evidence_refs`` are
+    intentionally omitted because citation materialization and provenance grounding
+    are handled deterministically outside the LLM.
     """
     payload: dict[str, dict[str, object]] = {}
     for name, packet in packets.items():
+        failure_dict = None
+        if packet.failure is not None:
+            failure_dict = {
+                "failure_type": packet.failure.failure_type,
+                "error_summary": packet.failure.error_summary,
+            }
+        claims_list = [
+            {
+                "claim_id": claim.claim_id,
+                "claim_text": claim.claim_text,
+                "support_status": claim.support_status,
+                "claim_kind": claim.claim_kind,
+            }
+            for claim in packet.claims
+        ]
         payload[name] = {
             "perspective": packet.perspective,
             "available": packet.available,
             "execution_status": packet.execution_status,
-            "claims": [claim.model_dump(mode="json") for claim in packet.claims],
+            "claims": claims_list,
             "uncertainty": list(packet.uncertainty),
             "missing_information": list(packet.missing_information),
             "limitations": list(packet.limitations),
-            "provenance": [item.model_dump(mode="json") for item in packet.provenance],
-            "failure": packet.failure.model_dump(mode="json") if packet.failure else None,
+            "failure": failure_dict,
         }
     return payload
 
@@ -463,7 +482,10 @@ class CrossPerspectiveGovernanceAgent:
             f"Original question:\n{question}\n\n"
             f"Evidence packets:\n{json.dumps(packet_payload, ensure_ascii=False, sort_keys=True)}\n\n"
             "The packet interpretation field is not evidence and is intentionally omitted from this payload. "
-            "Only non-insufficient claims with linked provenance may support substantive final statements. "
+            "Claims were pre-associated with provenance by the evidence pathways. "
+            'Only claims with support_status != "insufficient" may support substantive synthesis. '
+            "Citation and source-map materialization is handled deterministically outside the model. "
+            "The Judge must reference exact supplied claim IDs and must not invent evidence, claims, or outside medical knowledge. "
             "overall_supporting_claim_ids must be non-empty whenever any usable claim exists. "
             "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
             f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '

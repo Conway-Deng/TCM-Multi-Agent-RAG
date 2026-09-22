@@ -39,6 +39,7 @@ from cross_perspective.schemas import (
     OVERALL_NO_CLAIM_SUMMARY,
     PerspectiveClaim,
     PerspectiveEvidencePacket,
+    PerspectiveFailure,
     PerspectiveSummaries,
     PerspectiveSummary,
     ProvenanceRecord,
@@ -1222,3 +1223,143 @@ def test_governance_unavailable_perspective_deterministic_summary_materializes_s
     assert len(answer.source_map) == 2
     assert all(entry.perspective == "tcm" for entry in answer.source_map)
     assert provider.calls == 1
+
+
+def test_governance_payload_excludes_provenance_and_citation_metadata() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    payload = build_governance_payload({"tcm": tcm_pkt, "western": west_pkt})
+    raw_dump = json.dumps(payload)
+
+    # Excluded top-level and packet fields
+    assert all("interpretation" not in item for item in payload.values())
+    assert all("provenance" not in item for item in payload.values())
+
+    # Excluded claim-level citation fields
+    for p_name, item in payload.items():
+        for clm in item["claims"]:
+            assert "evidence_refs" not in clm
+            assert "source_id" not in clm
+            assert "chunk_id" not in clm
+            assert "title" not in clm
+
+    # Excluded metadata strings in raw payload dump
+    for forbidden in (
+        "source_id",
+        "chunk_id",
+        "excerpt",
+        "source_url",
+        "title",
+        "identifier",
+        "license",
+        "evidence_refs",
+    ):
+        assert f'"{forbidden}"' not in raw_dump
+
+
+def test_governance_payload_retains_semantic_and_concise_failure_fields() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western").model_copy(
+        update={
+            "available": False,
+            "execution_status": "unavailable",
+            "claims": [],
+            "failure": PerspectiveFailure(
+                role="western",
+                failure_type="provider",
+                error_summary="Model provider timeout.",
+                http_status=504,
+                retry_count=1,
+            ),
+        }
+    )
+    payload = build_governance_payload({"tcm": tcm_pkt, "western": west_pkt})
+
+    tcm_data = payload["tcm"]
+    assert tcm_data["perspective"] == "tcm"
+    assert tcm_data["available"] is True
+    assert tcm_data["execution_status"] == "available"
+    assert len(tcm_data["claims"]) == 1
+    tcm_claim = tcm_data["claims"][0]
+    assert tcm_claim["claim_id"] == "tcm:c1"
+    assert tcm_claim["claim_text"] == tcm_pkt.claims[0].claim_text
+    assert tcm_claim["support_status"] == "supported"
+    assert tcm_claim["claim_kind"] == tcm_pkt.claims[0].claim_kind
+    assert tcm_data["uncertainty"] == tcm_pkt.uncertainty
+    assert tcm_data["missing_information"] == tcm_pkt.missing_information
+    assert tcm_data["limitations"] == tcm_pkt.limitations
+    assert tcm_data["failure"] is None
+
+    west_data = payload["western"]
+    assert west_data["perspective"] == "western"
+    assert west_data["available"] is False
+    assert west_data["execution_status"] == "unavailable"
+    assert west_data["claims"] == []
+    assert west_data["failure"] == {
+        "failure_type": "provider",
+        "error_summary": "Model provider timeout.",
+    }
+    assert "http_status" not in west_data["failure"]
+    assert "retry_count" not in west_data["failure"]
+    assert "role" not in west_data["failure"]
+
+
+def test_original_packets_unmodified_by_payload_construction() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    # Verify original has provenance and refs
+    assert len(tcm_pkt.provenance) > 0
+    assert len(tcm_pkt.claims[0].evidence_refs) > 0
+
+    _ = build_governance_payload({"tcm": tcm_pkt, "western": west_pkt})
+
+    # Still retains complete provenance and refs
+    assert len(tcm_pkt.provenance) > 0
+    assert tcm_pkt.provenance[0].source_id == "t-source-1"
+    assert tcm_pkt.provenance[0].chunk_id == "t-chunk-1"
+    assert len(tcm_pkt.claims[0].evidence_refs) > 0
+    assert tcm_pkt.claims[0].evidence_refs[0].source_id == "t-source-1"
+
+
+def test_deterministic_source_map_equivalent_before_and_after_payload_construction() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True, include_difference=True)
+
+    sm_before = build_deterministic_source_map(d, packets)
+    _ = build_governance_payload(packets)
+    sm_after = build_deterministic_source_map(d, packets)
+
+    assert sm_before == sm_after
+    assert [entry.model_dump(mode="json") for entry in sm_before] == [
+        entry.model_dump(mode="json") for entry in sm_after
+    ]
+
+
+def test_governance_prompt_does_not_claim_provenance_metadata_in_payload() -> None:
+    prompt_text = GOVERNANCE_SYSTEM_PROMPT.casefold()
+    assert "claims were pre-associated with provenance" in prompt_text
+    assert "citation and source-map materialization is handled deterministically outside the model" in prompt_text
+    assert "claims with linked provenance" not in prompt_text
+
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    asyncio.run(
+        CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
+            question="Compare evidence for headache.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    captured = provider.prompts[0].casefold()
+    assert "claims were pre-associated with provenance" in captured
+    assert "citation and source-map materialization is handled deterministically outside the model" in captured
+    assert "claims with linked provenance" not in captured
+
+
+def test_governance_payload_size_diagnostic() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    full_dump = json.dumps({k: v.model_dump(mode="json") for k, v in packets.items()})
+    compact_payload = build_governance_payload(packets)
+    compact_dump = json.dumps(compact_payload)
+
+    # Diagnostic assertion: compact payload is strictly smaller than full packets
+    assert len(compact_dump) < len(full_dump)

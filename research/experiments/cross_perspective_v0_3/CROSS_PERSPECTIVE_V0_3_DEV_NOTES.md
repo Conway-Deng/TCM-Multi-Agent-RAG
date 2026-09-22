@@ -164,4 +164,16 @@ The development trace is intentionally capable of supporting later comparisons o
 - semantic support selection remains model-controlled.
 - this is development architecture work, not a formal experiment result.
 
-GOVERNANCE DRAFT + DETERMINISTIC SOURCE-MAP PATCH COMPLETE — READY FOR SOL REVIEW
+## Compact semantic Governance payload
+
+- A Governance-only replay using the same saved evidence packets was attempted.
+- Xing4.0-29B previously returned finish_reason=repetition on the full payload.
+- GLM-Z1-9B failed the structured-output contract.
+- DeepSeek-R1-Qwen3-8B timed out twice under the 90-second development limit.
+- Qwen3-8B failed the structured-output contract.
+- These diagnostics do NOT establish model inferiority.
+- The shared Governance input remained large and duplicated semantic evidence with full provenance/excerpts.
+- Governance LLM input was therefore compacted while preserving complete provenance outside the model for deterministic source mapping and traceability.
+- No formal experiment was run.
+
+COMPACT GOVERNANCE SEMANTIC-PAYLOAD PATCH COMPLETE — READY FOR SOL REVIEW
