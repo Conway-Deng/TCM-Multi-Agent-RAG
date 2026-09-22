@@ -9,7 +9,7 @@ from .model_calls import StructuredCallResult, call_structured_model
 from .schemas import ActivePerspectiveName, RoutingDecision
 
 
-ROUTER_MODEL = "Qwen/Qwen3.5-4B"
+ROUTER_MODEL = "THUDM/GLM-4-9B-0414"
 ROUTER_SYSTEM_PROMPT = (
     "You are a routing component for a development-only evidence system. "
     "Decide whether the question should be sent to the TCM evidence pathway, the Western evidence pathway, or both. "
@@ -20,7 +20,7 @@ ROUTER_SYSTEM_PROMPT = (
 
 class CrossPerspectiveRouter:
     def __init__(self, provider: LLMProvider | None = None) -> None:
-        self.provider = provider or build_llm_provider(ROUTER_MODEL, thinking_behavior="send_false")
+        self.provider = provider or build_llm_provider(ROUTER_MODEL, thinking_behavior="omit")
 
     async def route_auto(self, question: str) -> StructuredCallResult:
         prompt = (

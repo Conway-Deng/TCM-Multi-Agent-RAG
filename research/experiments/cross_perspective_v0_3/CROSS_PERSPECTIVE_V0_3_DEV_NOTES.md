@@ -26,12 +26,12 @@ The Western Phase 1B runtime explicitly does not establish sentence-level claim 
 
 | Role | Model | Use |
 |---|---|---|
-| Router | `Qwen/Qwen3.5-4B` | Automatic pathway selection only; no health answer |
+| Router | `THUDM/GLM-4-9B-0414` | Automatic pathway selection only; no health answer |
 | TCM evidence generation | `Qwen/Qwen3-8B` | Existing TCM pathway |
 | Western evidence generation | `Qwen/Qwen3-8B` | Existing `WesternEvidenceAgent` |
-| Governance/final chatbot | `Qwen/Qwen3-8B` | Packet-only structured synthesis |
+| Governance/final chatbot | `XingChenAGI/Xing4.0-29B` | Packet-only structured synthesis |
 
-These choices establish a development configuration, not a claim of model superiority. No paid model, DeepSeek-V3.2, Xing4.0-29B primary model, or GPT-5.6 Sol runtime role is configured.
+These choices establish a development configuration, not a claim of model superiority. No paid model, DeepSeek-V3.2, or GPT-5.6 Sol runtime role is configured.
 
 ## Evidence packet contract
 
@@ -50,7 +50,7 @@ Schema validation rejects a claim evidence reference that is absent from the pac
 
 ## Router contract
 
-`router_mode="forced"` bypasses the routing model and permits a controlled selection such as `perspectives=["tcm", "western"]`. `router_mode="auto"` uses only `Qwen/Qwen3.5-4B` and returns `use_tcm`, `use_western`, a concise reason summary, and the exact requested perspectives. The router prompt prohibits answering the health question or introducing medical advice.
+`router_mode="forced"` bypasses the routing model and permits a controlled selection such as `perspectives=["tcm", "western"]`. `router_mode="auto"` uses only `THUDM/GLM-4-9B-0414` and returns `use_tcm`, `use_western`, a concise reason summary, and the exact requested perspectives. The router prompt prohibits answering the health question or introducing medical advice.
 
 ## Governance contract
 
@@ -154,3 +154,14 @@ Nutrition must remain disabled until such a corpus and its provenance contract a
 - Live connectivity is optional and limited to at most two non-formal development questions; it is not automated by the test suite and must never be treated as research data.
 
 The development trace is intentionally capable of supporting later comparisons of single-perspective, dual-perspective, and governance-synthesis configurations, including evidence coverage, unsupported claims, contradictions, traceability, uncertainty, conflict representation, perspective coverage, latency, model-call burden, and token burden. That capability does not itself constitute an experiment.
+
+## Governance draft and deterministic source map
+
+- Qwen3.5-4B timed out in the 45-second development health check; do NOT call it unavailable.
+- GLM-4-9B-0414 successfully passed callable/model-match/exact-JSON health check and is now the development Router candidate.
+- Xing4.0-29B successfully passed callable/model-match/exact-JSON health check and is now the development final Governance/Judge candidate.
+- source_map is now deterministically materialized from model-declared claim IDs and their existing provenance.
+- semantic support selection remains model-controlled.
+- this is development architecture work, not a formal experiment result.
+
+GOVERNANCE DRAFT + DETERMINISTIC SOURCE-MAP PATCH COMPLETE — READY FOR SOL REVIEW

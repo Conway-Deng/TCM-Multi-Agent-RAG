@@ -8,8 +8,12 @@ from providers.base import LLMProvider
 from .model_calls import StructuredCallResult, StructuredModelCallFailure, call_structured_model
 from .schemas import (
     CrossPerspectiveAnswer,
+    CrossPerspectiveDraft,
+    EvidenceReference,
     OVERALL_NO_CLAIM_SUMMARY,
+    PerspectiveClaim,
     PerspectiveEvidencePacket,
+    SourceMapEntry,
     TCM_NO_CLAIM_SUMMARY,
     TCM_UNAVAILABLE_SUMMARY,
     WESTERN_NO_CLAIM_SUMMARY,
@@ -17,7 +21,7 @@ from .schemas import (
 )
 
 
-GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
+GOVERNANCE_MODEL = "XingChenAGI/Xing4.0-29B"
 GOVERNANCE_TIMEOUT_SECONDS = 90.0
 GOVERNANCE_MAX_TOKENS = 2400
 GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
@@ -38,20 +42,7 @@ GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
   "agreements": [],
   "differences_or_conflicts": [],
   "evidence_gaps": [],
-  "uncertainty": [],
-  "source_map": [
-    {
-      "final_claim_or_statement": "<exact final statement text>",
-      "perspective": "tcm",
-      "claim_ids": ["<exact supplied claim id>"],
-      "evidence_refs": [
-        {
-          "source_id": "<exact supplied source id>",
-          "chunk_id": "<exact supplied chunk id>"
-        }
-      ]
-    }
-  ]
+  "uncertainty": []
 }'''
 GOVERNANCE_SYSTEM_PROMPT = (
     "You are the governance and synthesis component of a development-only cross-perspective health QA prototype. "
@@ -59,12 +50,16 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Keep TCM traditional-framework interpretations distinct from Western biomedical interpretations; never imply that their mechanisms are equivalent. "
     "Agreement between perspectives is not proof. Preserve disagreement, insufficient evidence, uncertainty, missing information, and unavailable perspectives. "
     "The packet interpretation field is presentation text, not evidence. Only non-insufficient claims with linked provenance may support substantive final statements. "
-    "Insufficient claims cannot support agreements or source-mapped final claims. "
-    "Overall summaries and perspective summaries must cite the exact non-insufficient claim IDs that support them. "
-    "If no usable claim exists for a perspective or overall answer, use the deterministic unavailable status statement rather than a substantive assertion. "
-    "Return exactly one JSON object with these eight top-level keys and no others: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty, source_map. "
+    "Insufficient claims cannot support agreements or substantive statements. "
+    "Overall summaries, perspective summaries, agreements, and differences must cite the exact non-insufficient claim IDs that support them. "
+    "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
+    f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '
+    f'Western unavailable: "{WESTERN_UNAVAILABLE_SUMMARY}"; '
+    f'TCM available but no usable claim: "{TCM_NO_CLAIM_SUMMARY}"; '
+    f'Western available but no usable claim: "{WESTERN_NO_CLAIM_SUMMARY}"; '
+    f'overall answer without usable claims: "{OVERALL_NO_CLAIM_SUMMARY}". '
+    "Return exactly one JSON object with these seven top-level keys and no others: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty. "
     "TCM and Western must never appear as top-level keys; they may appear only as perspectives.tcm and perspectives.western. "
-    "source_map is a top-level array, never nested inside a perspective. Emit every field even when its value is an empty list. "
     "Output minified JSON: no indentation, no pretty printing, no Markdown, and no prose outside JSON. "
     "Compactness rules: "
     "overall_summary: maximum 2 concise sentences. "
@@ -75,66 +70,7 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "evidence_gaps: maximum 3 items, each item one short sentence. "
     "uncertainty: maximum 3 items, each item one short sentence. "
     "Supported claim IDs: use the smallest sufficient subset of usable claim IDs; do not enumerate every usable claim merely because it exists. "
-    "source_map: emit ONLY rows required to support: "
-    "a. overall_summary, b. the TCM perspective summary, c. the Western perspective summary, d. each non-empty agreement, e. each non-empty difference/conflict. "
-    "Do NOT create source-map rows for evidence_gaps or uncertainty. "
-    "Do NOT duplicate the same (final_claim_or_statement, perspective) pair. "
-    "Use the smallest sufficient claim/evidence subset. "
-    "Source map object shape: every source_map element must be a JSON object; source_map elements must never be arrays/lists/tuples/pairs. "
-    "Exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs. "
-    "perspective may be only 'tcm' or 'western'. "
-    "evidence_refs items are JSON objects containing source_id and chunk_id only; omit the optional evidence_refs.title field; no excerpts. "
-    "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary' or 'perspectives.tcm.summary'. "
-    "Emit one source_map object per (final_claim_or_statement, perspective) pair. "
-    "Multiple supporting claim IDs for the same pair are combined into one object's claim_ids array with the corresponding exact evidence_refs; "
-    "do not emit one source_map element per individual claim when those claims support the same final statement + perspective. "
-    "Source map coverage rules: "
-    "1. overall_summary: look at overall_supporting_claim_ids grouped by perspective. "
-    "For EACH perspective represented in overall_supporting_claim_ids, emit one overall-summary source-map object for each represented perspective, "
-    "where final_claim_or_statement is the exact overall_summary text, perspective is that perspective, "
-    "and overall row claim_ids exactly equal that perspective's overall IDs. "
-    "Never omit either represented perspective. "
-    "2. Perspective summaries: TCM perspective summary requires its own separate row when supported IDs are non-empty "
-    "(final_claim_or_statement is perspectives.tcm.summary, perspective is 'tcm', and claim_ids are perspectives.tcm.supported_claim_ids). "
-    "Western perspective summary requires its own separate row when supported IDs are non-empty "
-    "(final_claim_or_statement is perspectives.western.summary, perspective is 'western', and claim_ids are perspectives.western.supported_claim_ids). "
-    "Perspective-summary rows are separate from overall-summary rows even if they reuse claims; "
-    "different final statements must never be merged merely because they use the same claims. "
-    "3. Agreements: for every non-empty agreement, agreements require one TCM and one Western row "
-    "(agreement.statement + tcm with its TCM claims, and agreement.statement + western with its Western claims). "
-    "4. Differences/conflicts: for every non-empty difference/conflict, differences/conflicts require one TCM and one Western row "
-    "(difference.statement + tcm with difference.tcm_claim_ids, and difference.statement + western with difference.western_claim_ids). "
-    "5. Compaction priority: multiple claims may be combined only for the same statement+perspective pair. "
-    "Compaction must never omit a required statement or represented perspective, and must never reduce the number of rows below what the grounding contract requires. "
-    "As an illustration, the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows "
-    "(overall+tcm, overall+western, tcm summary+tcm, western summary+western). "
-    "Exact statement-binding rules: "
-    "Bind final_claim_or_statement to field VALUES literally, not to the perspective associated with the row. "
-    "Do not choose final_claim_or_statement according to perspective; final_claim_or_statement is bound to the final output statement value, not selected by perspective (choose it according to which final output statement the row is mapping). "
-    "Let: O = the exact complete string value written in overall_summary (O means exact overall_summary value); "
-    "T = the exact complete string value written in perspectives.tcm.summary (T means exact perspectives.tcm.summary value); "
-    "W = the exact complete string value written in perspectives.western.summary (W means exact perspectives.western.summary value). "
-    "When both perspectives support overall_summary, the TCM and Western overall rows use identical overall_summary text: "
-    "final_claim_or_statement = O with perspective = 'tcm', and final_claim_or_statement = O with perspective = 'western'. "
-    "The final_claim_or_statement value in those two rows MUST be identical character-for-character because both map the same overall_summary statement. "
-    "Do not put T into the TCM overall row. Do not put W into the Western overall row. "
-    "Perspective summary rows remain separate. "
-    "When perspectives.tcm.supported_claim_ids is non-empty, the required TCM perspective-summary row uses final_claim_or_statement = T and perspective = 'tcm'. "
-    "When perspectives.western.supported_claim_ids is non-empty, the required Western perspective-summary row uses final_claim_or_statement = W and perspective = 'western'. "
-    "Do not substitute T or W for O in an overall-summary row. "
-    "Never duplicate a perspective-summary row and treat it as an overall row. "
-    "Concise statement-binding example: overall_summary = 'Combined statement.', perspectives.tcm.summary = 'TCM statement.', perspectives.western.summary = 'Western statement.'. "
-    "If both perspectives support overall_summary and both perspective summaries have supported claims, source_map contains rows equivalent to: "
-    "1. final_claim_or_statement = 'Combined statement.', perspective = 'tcm'; "
-    "2. final_claim_or_statement = 'Combined statement.', perspective = 'western'; "
-    "3. final_claim_or_statement = 'TCM statement.', perspective = 'tcm'; "
-    "4. final_claim_or_statement = 'Western statement.', perspective = 'western'. "
-    "(Rows 1 and 2 intentionally use identical 'Combined statement.' text). "
-    "Never copy evidence excerpts, claim text, provenance text, URLs, limitations, or packet metadata into source_map. "
-    "Do not echo full packet claims or provenance into output. "
-    "Use this structural template only as a shape guide; replace IDs only with exact IDs supplied in the evidence packets and never copy placeholder IDs:\n"
-    f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
-    "Never invent claim IDs, source IDs, chunk IDs, or citations, and never upgrade possible or partial support into certainty. "
+    "Never invent claim IDs or citations, and never upgrade possible or partial support into certainty. "
     "Do not expose chain-of-thought. Return only concise structured JSON matching the requested contract."
 )
 
@@ -338,13 +274,182 @@ def validate_governance_grounding(
             raise GovernanceContractError(f"{name} summary requires matching source-map support")
 
 
+def build_deterministic_source_map(
+    draft: CrossPerspectiveDraft,
+    packets: dict[str, PerspectiveEvidencePacket],
+) -> list[SourceMapEntry]:
+    claims_by_perspective = {
+        name: {claim.claim_id: claim for claim in packet.claims}
+        for name, packet in packets.items()
+    }
+    all_claim_ids = {
+        claim_id
+        for perspective_claims in claims_by_perspective.values()
+        for claim_id in perspective_claims
+    }
+    if len(all_claim_ids) != sum(len(items) for items in claims_by_perspective.values()):
+        raise GovernanceContractError("claim IDs must be unique across perspectives")
+
+    claim_to_perspective: dict[str, str] = {}
+    claim_by_id: dict[str, PerspectiveClaim] = {}
+    for name, p_claims in claims_by_perspective.items():
+        for claim_id, claim in p_claims.items():
+            claim_to_perspective[claim_id] = name
+            claim_by_id[claim_id] = claim
+
+    usable_by_perspective = {
+        name: {
+            claim_id
+            for claim_id, claim in perspective_claims.items()
+            if packets[name].available and claim.support_status != "insufficient"
+        }
+        for name, perspective_claims in claims_by_perspective.items()
+    }
+
+    def collect_refs(claim_ids: list[str]) -> list[EvidenceReference]:
+        seen_pairs: set[tuple[str, str]] = set()
+        refs: list[EvidenceReference] = []
+        for cid in claim_ids:
+            claim = claim_by_id[cid]
+            for ref in claim.evidence_refs:
+                pair = (ref.source_id, ref.chunk_id)
+                if pair not in seen_pairs:
+                    seen_pairs.add(pair)
+                    refs.append(EvidenceReference(source_id=ref.source_id, chunk_id=ref.chunk_id))
+        if not refs:
+            raise GovernanceContractError(f"no evidence references found for claims: {claim_ids}")
+        return refs
+
+    entries: list[SourceMapEntry] = []
+
+    # 1. Overall summary
+    overall_ids = draft.overall_supporting_claim_ids
+    if len(overall_ids) != len(set(overall_ids)):
+        raise GovernanceContractError("overall supporting claim IDs must be unique")
+    for cid in overall_ids:
+        if cid not in claim_by_id:
+            raise GovernanceContractError(f"overall summary references unknown claim ID: {cid}")
+        p = claim_to_perspective[cid]
+        if cid not in usable_by_perspective.get(p, set()):
+            raise GovernanceContractError(f"overall summary references insufficient or unavailable claim: {cid}")
+
+    for p in ("tcm", "western"):
+        p_ids = [cid for cid in overall_ids if claim_to_perspective[cid] == p]
+        if p_ids:
+            entries.append(
+                SourceMapEntry(
+                    final_claim_or_statement=draft.overall_summary,
+                    perspective=p,
+                    claim_ids=p_ids,
+                    evidence_refs=collect_refs(p_ids),
+                )
+            )
+
+    # 2. Perspective summaries
+    for p in ("tcm", "western"):
+        summary = getattr(draft.perspectives, p)
+        if summary.supported_claim_ids:
+            p_ids = list(summary.supported_claim_ids)
+            if len(p_ids) != len(set(p_ids)):
+                raise GovernanceContractError(f"{p} summary supported claim IDs must be unique")
+            for cid in p_ids:
+                if cid not in claim_by_id:
+                    raise GovernanceContractError(f"unknown {p} claim ID: {cid}")
+                if claim_to_perspective[cid] != p:
+                    raise GovernanceContractError(f"wrong-perspective claim ID in {p} summary: {cid}")
+                if cid not in usable_by_perspective.get(p, set()):
+                    raise GovernanceContractError(f"insufficient or unavailable claim listed as supported: {cid}")
+            entries.append(
+                SourceMapEntry(
+                    final_claim_or_statement=summary.summary,
+                    perspective=p,
+                    claim_ids=p_ids,
+                    evidence_refs=collect_refs(p_ids),
+                )
+            )
+
+    # 3. Agreements
+    for agreement in draft.agreements:
+        if not agreement.supporting_claim_ids:
+            raise GovernanceContractError("agreement must declare supporting claim IDs")
+        if len(agreement.supporting_claim_ids) != len(set(agreement.supporting_claim_ids)):
+            raise GovernanceContractError("agreement claim IDs must be unique")
+        for cid in agreement.supporting_claim_ids:
+            if cid not in claim_by_id:
+                raise GovernanceContractError(f"agreement references an unknown claim ID: {cid}")
+            p = claim_to_perspective[cid]
+            if cid not in usable_by_perspective.get(p, set()):
+                raise GovernanceContractError(f"agreement cannot use an insufficient claim: {cid}")
+        tcm_ids = [cid for cid in agreement.supporting_claim_ids if claim_to_perspective[cid] == "tcm"]
+        western_ids = [cid for cid in agreement.supporting_claim_ids if claim_to_perspective[cid] == "western"]
+        if not tcm_ids or not western_ids:
+            raise GovernanceContractError("agreement must be supported by both perspectives")
+        entries.append(
+            SourceMapEntry(
+                final_claim_or_statement=agreement.statement,
+                perspective="tcm",
+                claim_ids=tcm_ids,
+                evidence_refs=collect_refs(tcm_ids),
+            )
+        )
+        entries.append(
+            SourceMapEntry(
+                final_claim_or_statement=agreement.statement,
+                perspective="western",
+                claim_ids=western_ids,
+                evidence_refs=collect_refs(western_ids),
+            )
+        )
+
+    # 4. Differences / conflicts
+    for difference in draft.differences_or_conflicts:
+        if not difference.tcm_claim_ids or not difference.western_claim_ids:
+            raise GovernanceContractError("difference/conflict must name claims from both perspectives")
+        if len(difference.tcm_claim_ids) != len(set(difference.tcm_claim_ids)):
+            raise GovernanceContractError("difference TCM claim IDs must be unique")
+        if len(difference.western_claim_ids) != len(set(difference.western_claim_ids)):
+            raise GovernanceContractError("difference Western claim IDs must be unique")
+        for cid in difference.tcm_claim_ids:
+            if cid not in claim_by_id:
+                raise GovernanceContractError(f"difference references an unknown TCM claim ID: {cid}")
+            if claim_to_perspective[cid] != "tcm":
+                raise GovernanceContractError(f"wrong-perspective claim ID in difference TCM claim IDs: {cid}")
+            if cid not in usable_by_perspective.get("tcm", set()):
+                raise GovernanceContractError(f"difference cannot use an insufficient TCM claim: {cid}")
+        for cid in difference.western_claim_ids:
+            if cid not in claim_by_id:
+                raise GovernanceContractError(f"difference references an unknown Western claim ID: {cid}")
+            if claim_to_perspective[cid] != "western":
+                raise GovernanceContractError(f"wrong-perspective claim ID in difference Western claim IDs: {cid}")
+            if cid not in usable_by_perspective.get("western", set()):
+                raise GovernanceContractError(f"difference cannot use an insufficient Western claim: {cid}")
+        entries.append(
+            SourceMapEntry(
+                final_claim_or_statement=difference.statement,
+                perspective="tcm",
+                claim_ids=list(difference.tcm_claim_ids),
+                evidence_refs=collect_refs(difference.tcm_claim_ids),
+            )
+        )
+        entries.append(
+            SourceMapEntry(
+                final_claim_or_statement=difference.statement,
+                perspective="western",
+                claim_ids=list(difference.western_claim_ids),
+                evidence_refs=collect_refs(difference.western_claim_ids),
+            )
+        )
+
+    return entries
+
+
 class CrossPerspectiveGovernanceAgent:
     def __init__(self, provider: LLMProvider | None = None) -> None:
         self.provider = provider or build_llm_provider(
             GOVERNANCE_MODEL,
             timeout_override=GOVERNANCE_TIMEOUT_SECONDS,
             max_tokens_override=GOVERNANCE_MAX_TOKENS,
-            thinking_behavior="send_false",
+            thinking_behavior="omit",
         )
 
     async def synthesize(
@@ -359,10 +464,15 @@ class CrossPerspectiveGovernanceAgent:
             f"Evidence packets:\n{json.dumps(packet_payload, ensure_ascii=False, sort_keys=True)}\n\n"
             "The packet interpretation field is not evidence and is intentionally omitted from this payload. "
             "Only non-insufficient claims with linked provenance may support substantive final statements. "
-            "overall_supporting_claim_ids must be non-empty whenever any usable claim exists, and overall_summary must have exact source-map entries for every represented perspective. "
-            "When no usable claim exists, use the deterministic no-claim status statement. "
-            "Emit exactly these eight top-level keys: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty, source_map. "
-            "Never emit tcm or western at the top level; nest them only under perspectives. source_map is a top-level array. "
+            "overall_supporting_claim_ids must be non-empty whenever any usable claim exists. "
+            "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
+            f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '
+            f'Western unavailable: "{WESTERN_UNAVAILABLE_SUMMARY}"; '
+            f'TCM available but no usable claim: "{TCM_NO_CLAIM_SUMMARY}"; '
+            f'Western available but no usable claim: "{WESTERN_NO_CLAIM_SUMMARY}"; '
+            f'overall answer without usable claims: "{OVERALL_NO_CLAIM_SUMMARY}". '
+            "Emit exactly these seven top-level keys: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty. "
+            "Never emit tcm or western at the top level; nest them only under perspectives. "
             "Output minified JSON: no indentation, no pretty printing, no Markdown, and no prose outside JSON. "
             "Compactness rules: "
             "overall_summary: maximum 2 concise sentences. "
@@ -373,80 +483,33 @@ class CrossPerspectiveGovernanceAgent:
             "evidence_gaps: maximum 3 items, each item one short sentence. "
             "uncertainty: maximum 3 items, each item one short sentence. "
             "Supported claim IDs: use the smallest sufficient subset of usable claim IDs; do not enumerate every usable claim merely because it exists. "
-            "source_map: emit ONLY rows required to support: "
-            "a. overall_summary, b. the TCM perspective summary, c. the Western perspective summary, d. each non-empty agreement, e. each non-empty difference/conflict. "
-            "Do NOT create source-map rows for evidence_gaps or uncertainty. "
-            "Do NOT duplicate the same (final_claim_or_statement, perspective) pair. "
-            "Use the smallest sufficient claim/evidence subset. "
-            "Source map object shape: every source_map element must be a JSON object; source_map elements must never be arrays/lists/tuples/pairs. "
-            "Exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs. "
-            "perspective may be only 'tcm' or 'western'. "
-            "evidence_refs items are JSON objects containing source_id and chunk_id only; omit the optional evidence_refs.title field; no excerpts. "
-            "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary' or 'perspectives.tcm.summary'. "
-            "Emit one source_map object per (final_claim_or_statement, perspective) pair. "
-            "Multiple supporting claim IDs for the same pair are combined into one object's claim_ids array with the corresponding exact evidence_refs; "
-            "do not emit one source_map element per individual claim when those claims support the same final statement + perspective. "
-            "Source map coverage rules: "
-            "1. overall_summary: look at overall_supporting_claim_ids grouped by perspective. "
-            "For EACH perspective represented in overall_supporting_claim_ids, emit one overall-summary source-map object for each represented perspective, "
-            "where final_claim_or_statement is the exact overall_summary text, perspective is that perspective, "
-            "and overall row claim_ids exactly equal that perspective's overall IDs. "
-            "Never omit either represented perspective. "
-            "2. Perspective summaries: TCM perspective summary requires its own separate row when supported IDs are non-empty "
-            "(final_claim_or_statement is perspectives.tcm.summary, perspective is 'tcm', and claim_ids are perspectives.tcm.supported_claim_ids). "
-            "Western perspective summary requires its own separate row when supported IDs are non-empty "
-            "(final_claim_or_statement is perspectives.western.summary, perspective is 'western', and claim_ids are perspectives.western.supported_claim_ids). "
-            "Perspective-summary rows are separate from overall-summary rows even if they reuse claims; "
-            "different final statements must never be merged merely because they use the same claims. "
-            "3. Agreements: for every non-empty agreement, agreements require one TCM and one Western row "
-            "(agreement.statement + tcm with its TCM claims, and agreement.statement + western with its Western claims). "
-            "4. Differences/conflicts: for every non-empty difference/conflict, differences/conflicts require one TCM and one Western row "
-            "(difference.statement + tcm with difference.tcm_claim_ids, and difference.statement + western with difference.western_claim_ids). "
-            "5. Compaction priority: multiple claims may be combined only for the same statement+perspective pair. "
-            "Compaction must never omit a required statement or represented perspective, and must never reduce the number of rows below what the grounding contract requires. "
-            "As an illustration, the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows "
-            "(overall+tcm, overall+western, tcm summary+tcm, western summary+western). "
-            "Exact statement-binding rules: "
-            "Bind final_claim_or_statement to field VALUES literally, not to the perspective associated with the row. "
-            "Do not choose final_claim_or_statement according to perspective; final_claim_or_statement is bound to the final output statement value, not selected by perspective (choose it according to which final output statement the row is mapping). "
-            "Let: O = the exact complete string value written in overall_summary (O means exact overall_summary value); "
-            "T = the exact complete string value written in perspectives.tcm.summary (T means exact perspectives.tcm.summary value); "
-            "W = the exact complete string value written in perspectives.western.summary (W means exact perspectives.western.summary value). "
-            "When both perspectives support overall_summary, the TCM and Western overall rows use identical overall_summary text: "
-            "final_claim_or_statement = O with perspective = 'tcm', and final_claim_or_statement = O with perspective = 'western'. "
-            "The final_claim_or_statement value in those two rows MUST be identical character-for-character because both map the same overall_summary statement. "
-            "Do not put T into the TCM overall row. Do not put W into the Western overall row. "
-            "Perspective summary rows remain separate. "
-            "When perspectives.tcm.supported_claim_ids is non-empty, the required TCM perspective-summary row uses final_claim_or_statement = T and perspective = 'tcm'. "
-            "When perspectives.western.supported_claim_ids is non-empty, the required Western perspective-summary row uses final_claim_or_statement = W and perspective = 'western'. "
-            "Do not substitute T or W for O in an overall-summary row. "
-            "Never duplicate a perspective-summary row and treat it as an overall row. "
-            "Concise statement-binding example: overall_summary = 'Combined statement.', perspectives.tcm.summary = 'TCM statement.', perspectives.western.summary = 'Western statement.'. "
-            "If both perspectives support overall_summary and both perspective summaries have supported claims, source_map contains rows equivalent to: "
-            "1. final_claim_or_statement = 'Combined statement.', perspective = 'tcm'; "
-            "2. final_claim_or_statement = 'Combined statement.', perspective = 'western'; "
-            "3. final_claim_or_statement = 'TCM statement.', perspective = 'tcm'; "
-            "4. final_claim_or_statement = 'Western statement.', perspective = 'western'. "
-            "(Rows 1 and 2 intentionally use identical 'Combined statement.' text). "
-            "Never copy evidence excerpts, claim text, provenance text, URLs, limitations, or packet metadata into source_map. "
-            "Do not echo full packet claims or provenance into output. "
             "Structural template (shape only; replace placeholders with exact supplied IDs and preserve required empty lists when no entries apply):\n"
             f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
-            "Return the CrossPerspectiveAnswer JSON contract. Every supported_claim_id and every source-map ID must exist in the supplied packets. "
-            "A source-map entry must include exact evidence_refs pairs linked to its claim_ids. "
+            "Return the CrossPerspectiveDraft JSON contract. Every supported_claim_id must exist in the supplied packets. "
             "Both tcm and western perspective summaries are required; mark unavailable perspectives unavailable and do not reconstruct them."
         )
         result = await call_structured_model(
             provider=self.provider,
             role="governance",
-            response_model=CrossPerspectiveAnswer,
+            response_model=CrossPerspectiveDraft,
             system=GOVERNANCE_SYSTEM_PROMPT,
             prompt=prompt,
             max_tokens=GOVERNANCE_MAX_TOKENS,
         )
-        answer = result.value
-        assert isinstance(answer, CrossPerspectiveAnswer)
+        draft = result.value
+        assert isinstance(draft, CrossPerspectiveDraft)
         try:
+            source_map = build_deterministic_source_map(draft, packets)
+            answer = CrossPerspectiveAnswer(
+                overall_summary=draft.overall_summary,
+                overall_supporting_claim_ids=draft.overall_supporting_claim_ids,
+                perspectives=draft.perspectives,
+                agreements=draft.agreements,
+                differences_or_conflicts=draft.differences_or_conflicts,
+                evidence_gaps=draft.evidence_gaps,
+                uncertainty=draft.uncertainty,
+                source_map=source_map,
+            )
             validate_governance_grounding(answer, packets)
         except GovernanceContractError as exc:
             # This is a semantic contract failure. It is never retried or substituted.
@@ -458,4 +521,4 @@ class CrossPerspectiveGovernanceAgent:
                 }
             )
             raise StructuredModelCallFailure(str(exc), events=[*result.events[:-1], event]) from exc
-        return result
+        return StructuredCallResult(value=answer, events=result.events)

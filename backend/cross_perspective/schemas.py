@@ -140,6 +140,16 @@ class SourceMapEntry(StrictModel):
     evidence_refs: list[EvidenceReference] = Field(min_length=1)
 
 
+class CrossPerspectiveDraft(StrictModel):
+    overall_summary: str = Field(min_length=1)
+    overall_supporting_claim_ids: list[str] = Field(default_factory=list)
+    perspectives: PerspectiveSummaries
+    agreements: list[Agreement] = Field(default_factory=list)
+    differences_or_conflicts: list[DifferenceOrConflict] = Field(default_factory=list)
+    evidence_gaps: list[str] = Field(default_factory=list)
+    uncertainty: list[str] = Field(default_factory=list)
+
+
 class CrossPerspectiveAnswer(StrictModel):
     overall_summary: str = Field(min_length=1)
     overall_supporting_claim_ids: list[str] = Field(default_factory=list)

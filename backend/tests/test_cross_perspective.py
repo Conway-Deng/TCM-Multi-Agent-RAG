@@ -17,24 +17,33 @@ from cross_perspective.adapters import (
 from cross_perspective.governance import (
     CrossPerspectiveGovernanceAgent,
     GOVERNANCE_MAX_TOKENS,
+    GOVERNANCE_MODEL,
     GOVERNANCE_SYSTEM_PROMPT,
     GOVERNANCE_TIMEOUT_SECONDS,
+    GovernanceContractError,
+    build_deterministic_source_map,
     build_governance_payload,
     validate_governance_grounding,
 )
 from cross_perspective.model_calls import StructuredCallResult, StructuredModelCallFailure
 from cross_perspective.router import CrossPerspectiveRouter, ROUTER_MODEL
 from cross_perspective.schemas import (
+    Agreement,
     CrossPerspectiveAnswer,
     CrossPerspectiveConsultRequest,
+    CrossPerspectiveDraft,
+    DifferenceOrConflict,
     EvidenceReference,
     ModelCallEvent,
     NUTRITION_UNAVAILABLE_MESSAGE,
     OVERALL_NO_CLAIM_SUMMARY,
     PerspectiveClaim,
     PerspectiveEvidencePacket,
+    PerspectiveSummaries,
+    PerspectiveSummary,
     ProvenanceRecord,
     RoutingDecision,
+    SourceMapEntry,
     TCM_NO_CLAIM_SUMMARY,
     TCM_UNAVAILABLE_SUMMARY,
     WESTERN_NO_CLAIM_SUMMARY,
@@ -88,92 +97,56 @@ def packet(perspective: str) -> PerspectiveEvidencePacket:
     )
 
 
-def answer(*, western_available: bool = True) -> CrossPerspectiveAnswer:
+def draft(*, western_available: bool = True, include_difference: bool = False) -> CrossPerspectiveDraft:
     overall_summary = "The selected evidence is reported separately."
-    source_map = [
-        {
-            "final_claim_or_statement": "TCM packet summary.",
-            "perspective": "tcm",
-            "claim_ids": ["tcm:c1"],
-            "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
-        }
-    ]
-    if western_available:
-        source_map.append(
-            {
-                "final_claim_or_statement": "Western packet summary.",
-                "perspective": "western",
-                "claim_ids": ["western:c1"],
-                "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
-            }
-        )
-        source_map.extend(
-            [
-                {
-                    "final_claim_or_statement": "Both packets describe the topic.",
-                    "perspective": "tcm",
-                    "claim_ids": ["tcm:c1"],
-                    "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
-                },
-                {
-                    "final_claim_or_statement": "Both packets describe the topic.",
-                    "perspective": "western",
-                    "claim_ids": ["western:c1"],
-                    "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
-                },
-            ]
-        )
-        source_map.extend(
-            [
-                {
-                    "final_claim_or_statement": overall_summary,
-                    "perspective": "tcm",
-                    "claim_ids": ["tcm:c1"],
-                    "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
-                },
-                {
-                    "final_claim_or_statement": overall_summary,
-                    "perspective": "western",
-                    "claim_ids": ["western:c1"],
-                    "evidence_refs": [{"source_id": "w-source-1", "chunk_id": "w-chunk-1", "title": "Western source"}],
-                },
-            ]
-        )
-    else:
-        source_map.append(
-            {
-                "final_claim_or_statement": overall_summary,
-                "perspective": "tcm",
-                "claim_ids": ["tcm:c1"],
-                "evidence_refs": [{"source_id": "t-source-1", "chunk_id": "t-chunk-1", "title": "TCM source"}],
-            }
-        )
-    return CrossPerspectiveAnswer.model_validate(
-        {
-            "overall_summary": overall_summary,
-            "overall_supporting_claim_ids": ["tcm:c1", "western:c1"] if western_available else ["tcm:c1"],
-            "perspectives": {
-                "western": {
-                    "available": western_available,
-                    "summary": "Western packet summary." if western_available else WESTERN_UNAVAILABLE_SUMMARY,
-                    "supported_claim_ids": ["western:c1"] if western_available else [],
-                },
-                "tcm": {
-                    "available": True,
-                    "summary": "TCM packet summary.",
-                    "supported_claim_ids": ["tcm:c1"],
-                },
-            },
-            "agreements": (
-                [{"statement": "Both packets describe the topic.", "supporting_claim_ids": ["tcm:c1", "western:c1"]}]
-                if western_available
-                else []
+    agreements = (
+        [Agreement(statement="Both packets describe the topic.", supporting_claim_ids=["tcm:c1", "western:c1"])]
+        if western_available
+        else []
+    )
+    differences = (
+        [DifferenceOrConflict(statement="Perspective difference statement.", tcm_claim_ids=["tcm:c1"], western_claim_ids=["western:c1"])]
+        if (western_available and include_difference)
+        else []
+    )
+    return CrossPerspectiveDraft(
+        overall_summary=overall_summary,
+        overall_supporting_claim_ids=["tcm:c1", "western:c1"] if western_available else ["tcm:c1"],
+        perspectives=PerspectiveSummaries(
+            western=PerspectiveSummary(
+                available=western_available,
+                summary="Western packet summary." if western_available else WESTERN_UNAVAILABLE_SUMMARY,
+                supported_claim_ids=["western:c1"] if western_available else [],
             ),
-            "differences_or_conflicts": [],
-            "evidence_gaps": ["No clinical conclusion is established."],
-            "uncertainty": ["This is a development output."],
-            "source_map": source_map,
-        }
+            tcm=PerspectiveSummary(
+                available=True,
+                summary="TCM packet summary.",
+                supported_claim_ids=["tcm:c1"],
+            ),
+        ),
+        agreements=agreements,
+        differences_or_conflicts=differences,
+        evidence_gaps=["No clinical conclusion is established."],
+        uncertainty=["This is a development output."],
+    )
+
+
+def answer(*, western_available: bool = True) -> CrossPerspectiveAnswer:
+    d = draft(western_available=western_available)
+    packets = {
+        "tcm": packet("tcm"),
+        "western": packet("western") if western_available else packet("western").model_copy(update={"available": False, "claims": []}),
+    }
+    source_map = build_deterministic_source_map(d, packets)
+    return CrossPerspectiveAnswer(
+        overall_summary=d.overall_summary,
+        overall_supporting_claim_ids=d.overall_supporting_claim_ids,
+        perspectives=d.perspectives,
+        agreements=d.agreements,
+        differences_or_conflicts=d.differences_or_conflicts,
+        evidence_gaps=d.evidence_gaps,
+        uncertainty=d.uncertainty,
+        source_map=source_map,
     )
 
 
@@ -214,7 +187,18 @@ class StubGovernance:
 
     async def synthesize(self, *, question: str, packets):
         self.received = packets
-        result = answer(western_available=packets["western"].available)
+        d = draft(western_available=packets["western"].available)
+        source_map = build_deterministic_source_map(d, packets)
+        result = CrossPerspectiveAnswer(
+            overall_summary=d.overall_summary,
+            overall_supporting_claim_ids=d.overall_supporting_claim_ids,
+            perspectives=d.perspectives,
+            agreements=d.agreements,
+            differences_or_conflicts=d.differences_or_conflicts,
+            evidence_gaps=d.evidence_gaps,
+            uncertainty=d.uncertainty,
+            source_map=source_map,
+        )
         validate_governance_grounding(result, packets)
         return StructuredCallResult(value=result, events=[])
 
@@ -416,9 +400,9 @@ def test_one_perspective_failure_is_visible_to_governance_and_not_fabricated() -
 
 
 def test_governance_rejects_fake_source_ids_without_retry() -> None:
-    invalid = answer().model_dump(mode="json")
-    invalid["source_map"][0]["evidence_refs"] = [{"source_id": "fabricated-source", "chunk_id": "t-chunk-1"}]
-    provider = QueueProvider("Qwen/Qwen3-8B", [invalid])
+    invalid = draft().model_dump(mode="json")
+    invalid["overall_supporting_claim_ids"] = ["fabricated-claim-id"]
+    provider = QueueProvider(GOVERNANCE_MODEL, [invalid])
     governance = CrossPerspectiveGovernanceAgent(provider=provider)
 
     with pytest.raises(StructuredModelCallFailure) as caught:
@@ -635,7 +619,7 @@ def test_multi_claim_source_map_requires_evidence_for_every_claim() -> None:
 def test_governance_payload_omits_unverified_interpretation() -> None:
     payload = build_governance_payload({"tcm": packet("tcm"), "western": packet("western")})
     assert all("interpretation" not in item for item in payload.values())
-    provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
             question="Compare evidence for headache.",
@@ -654,16 +638,17 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
         "differences_or_conflicts",
         "evidence_gaps",
         "uncertainty",
-        "source_map",
     }
     prompt_text = GOVERNANCE_SYSTEM_PROMPT.casefold()
     for field_name in required_top_level:
         assert field_name.casefold() in prompt_text
     assert "must never appear as top-level keys" in prompt_text
-    assert "source_map is a top-level array" in prompt_text
-    assert '"perspectives"' in GOVERNANCE_SYSTEM_PROMPT
-    assert '"tcm"' in GOVERNANCE_SYSTEM_PROMPT
-    assert '"western"' in GOVERNANCE_SYSTEM_PROMPT
+    assert "source_map" not in prompt_text
+    assert "sourcemapentry" not in prompt_text
+    assert "evidence_refs" not in prompt_text
+    assert "perspectives" in prompt_text
+    assert "perspectives.tcm" in prompt_text
+    assert "perspectives.western" in prompt_text
 
     # Output compaction requirements in system prompt
     assert "minified json" in prompt_text
@@ -676,54 +661,16 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "evidence_gaps: maximum 3 items" in prompt_text
     assert "uncertainty: maximum 3 items" in prompt_text
     assert "smallest sufficient subset of usable claim ids" in prompt_text
-    assert "source_map: emit only rows required to support" in prompt_text
-    assert "do not create source-map rows for evidence_gaps or uncertainty" in prompt_text
-    assert "do not duplicate the same (final_claim_or_statement, perspective) pair" in prompt_text
-    assert "omit the optional evidence_refs.title field" in prompt_text
-    assert "never copy evidence excerpts" in prompt_text
-    assert "provenance text" in prompt_text
-    assert "do not echo full packet claims or provenance into output" in prompt_text
+    for status_str in (
+        TCM_UNAVAILABLE_SUMMARY,
+        WESTERN_UNAVAILABLE_SUMMARY,
+        TCM_NO_CLAIM_SUMMARY,
+        WESTERN_NO_CLAIM_SUMMARY,
+        OVERALL_NO_CLAIM_SUMMARY,
+    ):
+        assert status_str in GOVERNANCE_SYSTEM_PROMPT
 
-    # Source map object shape requirements in system prompt
-    assert "every source_map element must be a json object" in prompt_text
-    assert "source_map elements must never be arrays/lists/tuples/pairs" in prompt_text
-    assert "exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs" in prompt_text
-    assert "evidence_refs items are json objects containing source_id and chunk_id only" in prompt_text
-    assert "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary'" in prompt_text
-    assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in prompt_text
-    assert "multiple supporting claim ids for the same pair are combined into one object" in prompt_text
-
-    # Source map coverage requirements in system prompt
-    assert "overall_supporting_claim_ids grouped by perspective" in prompt_text
-    assert "one overall-summary source-map object for each represented perspective" in prompt_text
-    assert "overall row claim_ids exactly equal that perspective's overall ids" in prompt_text
-    assert "tcm perspective summary requires its own separate row when supported ids are non-empty" in prompt_text
-    assert "western perspective summary requires its own separate row when supported ids are non-empty" in prompt_text
-    assert "perspective-summary rows are separate from overall-summary rows even if they reuse claims" in prompt_text
-    assert "agreements require one tcm and one western row" in prompt_text
-    assert "differences/conflicts require one tcm and one western row" in prompt_text
-    assert "multiple claims may be combined only for the same statement+perspective pair" in prompt_text
-    assert "different final statements must never be merged merely because they use the same claims" in prompt_text
-    assert "compaction must never omit a required statement or represented perspective" in prompt_text
-    assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in prompt_text
-
-    # Source map exact statement-binding requirements in system prompt
-    assert "final_claim_or_statement is bound to the final output statement value, not selected by perspective" in prompt_text
-    assert "o means exact overall_summary value" in prompt_text
-    assert "t means exact perspectives.tcm.summary value" in prompt_text
-    assert "w means exact perspectives.western.summary value" in prompt_text
-    assert "when both perspectives support overall_summary, the tcm and western overall rows use identical overall_summary text" in prompt_text
-    assert "do not put t into the tcm overall row" in prompt_text
-    assert "do not put w into the western overall row" in prompt_text
-    assert "perspective summary rows remain separate" in prompt_text
-    assert "do not substitute t or w for o in an overall-summary row" in prompt_text
-    assert "never duplicate a perspective-summary row and treat it as an overall row" in prompt_text
-    assert "1. final_claim_or_statement = 'combined statement.', perspective = 'tcm'" in prompt_text
-    assert "2. final_claim_or_statement = 'combined statement.', perspective = 'western'" in prompt_text
-    assert "3. final_claim_or_statement = 'tcm statement.', perspective = 'tcm'" in prompt_text
-    assert "4. final_claim_or_statement = 'western statement.', perspective = 'western'" in prompt_text
-
-    provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
             question="Compare evidence for headache.",
@@ -731,9 +678,12 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
         )
     )
     captured_prompt = provider.prompts[0].casefold()
-    assert "emit exactly these eight top-level keys" in captured_prompt
+    assert "emit exactly these seven top-level keys" in captured_prompt
     assert "never emit tcm or western at the top level" in captured_prompt
-    assert "source_map is a top-level array" in captured_prompt
+    instructions = captured_prompt.split("the packet interpretation field", 1)[1]
+    assert "source_map" not in instructions
+    assert "sourcemapentry" not in instructions
+    assert "evidence_refs" not in instructions
 
     # Output compaction requirements in per-request prompt
     assert "minified json" in captured_prompt
@@ -746,52 +696,14 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "evidence_gaps: maximum 3 items" in captured_prompt
     assert "uncertainty: maximum 3 items" in captured_prompt
     assert "smallest sufficient subset of usable claim ids" in captured_prompt
-    assert "source_map: emit only rows required to support" in captured_prompt
-    assert "do not create source-map rows for evidence_gaps or uncertainty" in captured_prompt
-    assert "do not duplicate the same (final_claim_or_statement, perspective) pair" in captured_prompt
-    assert "omit the optional evidence_refs.title field" in captured_prompt
-    assert "never copy evidence excerpts" in captured_prompt
-    assert "provenance text" in captured_prompt
-    assert "do not echo full packet claims or provenance into output" in captured_prompt
-
-    # Source map object shape requirements in per-request prompt
-    assert "every source_map element must be a json object" in captured_prompt
-    assert "source_map elements must never be arrays/lists/tuples/pairs" in captured_prompt
-    assert "exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs" in captured_prompt
-    assert "evidence_refs items are json objects containing source_id and chunk_id only" in captured_prompt
-    assert "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary'" in captured_prompt
-    assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in captured_prompt
-    assert "multiple supporting claim ids for the same pair are combined into one object" in captured_prompt
-
-    # Source map coverage requirements in per-request prompt
-    assert "overall_supporting_claim_ids grouped by perspective" in captured_prompt
-    assert "one overall-summary source-map object for each represented perspective" in captured_prompt
-    assert "overall row claim_ids exactly equal that perspective's overall ids" in captured_prompt
-    assert "tcm perspective summary requires its own separate row when supported ids are non-empty" in captured_prompt
-    assert "western perspective summary requires its own separate row when supported ids are non-empty" in captured_prompt
-    assert "perspective-summary rows are separate from overall-summary rows even if they reuse claims" in captured_prompt
-    assert "agreements require one tcm and one western row" in captured_prompt
-    assert "differences/conflicts require one tcm and one western row" in captured_prompt
-    assert "multiple claims may be combined only for the same statement+perspective pair" in captured_prompt
-    assert "different final statements must never be merged merely because they use the same claims" in captured_prompt
-    assert "compaction must never omit a required statement or represented perspective" in captured_prompt
-    assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in captured_prompt
-
-    # Source map exact statement-binding requirements in per-request prompt
-    assert "final_claim_or_statement is bound to the final output statement value, not selected by perspective" in captured_prompt
-    assert "o means exact overall_summary value" in captured_prompt
-    assert "t means exact perspectives.tcm.summary value" in captured_prompt
-    assert "w means exact perspectives.western.summary value" in captured_prompt
-    assert "when both perspectives support overall_summary, the tcm and western overall rows use identical overall_summary text" in captured_prompt
-    assert "do not put t into the tcm overall row" in captured_prompt
-    assert "do not put w into the western overall row" in captured_prompt
-    assert "perspective summary rows remain separate" in captured_prompt
-    assert "do not substitute t or w for o in an overall-summary row" in captured_prompt
-    assert "never duplicate a perspective-summary row and treat it as an overall row" in captured_prompt
-    assert "1. final_claim_or_statement = 'combined statement.', perspective = 'tcm'" in captured_prompt
-    assert "2. final_claim_or_statement = 'combined statement.', perspective = 'western'" in captured_prompt
-    assert "3. final_claim_or_statement = 'tcm statement.', perspective = 'tcm'" in captured_prompt
-    assert "4. final_claim_or_statement = 'western statement.', perspective = 'western'" in captured_prompt
+    for status_str in (
+        TCM_UNAVAILABLE_SUMMARY,
+        WESTERN_UNAVAILABLE_SUMMARY,
+        TCM_NO_CLAIM_SUMMARY,
+        WESTERN_NO_CLAIM_SUMMARY,
+        OVERALL_NO_CLAIM_SUMMARY,
+    ):
+        assert status_str in provider.prompts[0]
 
 
 def test_list_form_source_map_entries_fail_contract() -> None:
@@ -1032,9 +944,281 @@ def test_governance_default_provider_configuration(monkeypatch: pytest.MonkeyPat
     agent = CrossPerspectiveGovernanceAgent()
     assert len(captured) == 1
     assert captured[0] == {
-        "model_id": "Qwen/Qwen3-8B",
+        "model_id": "XingChenAGI/Xing4.0-29B",
         "timeout_override": 90.0,
         "max_tokens_override": 2400,
-        "thinking_behavior": "send_false",
+        "thinking_behavior": "omit",
     }
     assert agent.provider is fake_provider
+
+
+def test_router_model_is_glm_4_9b() -> None:
+    assert ROUTER_MODEL == "THUDM/GLM-4-9B-0414"
+
+
+def test_router_default_provider_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: list[dict[str, object]] = []
+    fake_provider = object()
+
+    def fake_build(model_id: str, **kwargs: object) -> object:
+        captured.append({"model_id": model_id, **kwargs})
+        return fake_provider
+
+    import cross_perspective.router as router_module
+
+    monkeypatch.setattr(router_module, "build_llm_provider", fake_build)
+    router = CrossPerspectiveRouter()
+    assert captured == [{"model_id": "THUDM/GLM-4-9B-0414", "thinking_behavior": "omit"}]
+    assert router.provider is fake_provider
+
+
+def test_governance_model_is_xing4_29b() -> None:
+    assert GOVERNANCE_MODEL == "XingChenAGI/Xing4.0-29B"
+
+
+def test_governance_response_model_is_cross_perspective_draft(monkeypatch: pytest.MonkeyPatch) -> None:
+    import cross_perspective.governance as gov_mod
+    called_response_models: list[type] = []
+    real_call = gov_mod.call_structured_model
+
+    async def fake_call(*args, **kwargs):
+        called_response_models.append(kwargs.get("response_model"))
+        return await real_call(*args, **kwargs)
+
+    monkeypatch.setattr(gov_mod, "call_structured_model", fake_call)
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    agent = CrossPerspectiveGovernanceAgent(provider=provider)
+    asyncio.run(
+        agent.synthesize(
+            question="Compare evidence.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    assert called_response_models == [CrossPerspectiveDraft]
+
+
+def test_draft_rejects_source_map_as_extra_field() -> None:
+    data = draft().model_dump(mode="json")
+    data["source_map"] = []
+    with pytest.raises(ValidationError, match="extra|extra_forbidden|Extra inputs"):
+        CrossPerspectiveDraft.model_validate(data)
+
+
+def test_deterministic_source_map_materialization_order_and_content() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True, include_difference=True)
+    source_map = build_deterministic_source_map(d, packets)
+
+    assert len(source_map) == 8
+
+    # 1. overall TCM row
+    assert source_map[0].final_claim_or_statement == d.overall_summary
+    assert source_map[0].perspective == "tcm"
+    assert source_map[0].claim_ids == ["tcm:c1"]
+
+    # 2. overall Western row
+    assert source_map[1].final_claim_or_statement == d.overall_summary
+    assert source_map[1].perspective == "western"
+    assert source_map[1].claim_ids == ["western:c1"]
+
+    # 3. TCM summary row
+    assert source_map[2].final_claim_or_statement == d.perspectives.tcm.summary
+    assert source_map[2].perspective == "tcm"
+    assert source_map[2].claim_ids == ["tcm:c1"]
+
+    # 4. Western summary row
+    assert source_map[3].final_claim_or_statement == d.perspectives.western.summary
+    assert source_map[3].perspective == "western"
+    assert source_map[3].claim_ids == ["western:c1"]
+
+    # 5. Agreement TCM row
+    assert source_map[4].final_claim_or_statement == d.agreements[0].statement
+    assert source_map[4].perspective == "tcm"
+    assert source_map[4].claim_ids == ["tcm:c1"]
+
+    # 6. Agreement Western row
+    assert source_map[5].final_claim_or_statement == d.agreements[0].statement
+    assert source_map[5].perspective == "western"
+    assert source_map[5].claim_ids == ["western:c1"]
+
+    # 7. Difference TCM row
+    assert source_map[6].final_claim_or_statement == d.differences_or_conflicts[0].statement
+    assert source_map[6].perspective == "tcm"
+    assert source_map[6].claim_ids == ["tcm:c1"]
+
+    # 8. Difference Western row
+    assert source_map[7].final_claim_or_statement == d.differences_or_conflicts[0].statement
+    assert source_map[7].perspective == "western"
+    assert source_map[7].claim_ids == ["western:c1"]
+
+
+def test_deterministic_source_map_evidence_refs_from_declared_claims_only() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True)
+    source_map = build_deterministic_source_map(d, packets)
+    for entry in source_map:
+        for ref in entry.evidence_refs:
+            assert ref.title is None
+            if entry.perspective == "tcm":
+                assert ref.source_id == "t-source-1"
+                assert ref.chunk_id == "t-chunk-1"
+            else:
+                assert ref.source_id == "w-source-1"
+                assert ref.chunk_id == "w-chunk-1"
+
+
+def test_deterministic_source_map_unknown_ids_fail_closed() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    # Unknown in overall
+    d1 = draft().model_copy(update={"overall_supporting_claim_ids": ["unknown:claim"]})
+    with pytest.raises(GovernanceContractError, match="unknown"):
+        build_deterministic_source_map(d1, packets)
+
+    # Unknown in TCM summary
+    d2 = draft()
+    d2.perspectives.tcm.supported_claim_ids = ["unknown:claim"]
+    with pytest.raises(GovernanceContractError, match="unknown"):
+        build_deterministic_source_map(d2, packets)
+
+    # Unknown in Western summary
+    d3 = draft()
+    d3.perspectives.western.supported_claim_ids = ["unknown:claim"]
+    with pytest.raises(GovernanceContractError, match="unknown"):
+        build_deterministic_source_map(d3, packets)
+
+    # Unknown in agreements
+    d4 = draft()
+    d4.agreements = [Agreement(statement="agree", supporting_claim_ids=["tcm:c1", "unknown:claim"])]
+    with pytest.raises(GovernanceContractError, match="unknown"):
+        build_deterministic_source_map(d4, packets)
+
+    # Unknown in differences
+    d5 = draft()
+    d5.differences_or_conflicts = [
+        DifferenceOrConflict(statement="diff", tcm_claim_ids=["unknown:claim"], western_claim_ids=["western:c1"])
+    ]
+    with pytest.raises(GovernanceContractError, match="unknown"):
+        build_deterministic_source_map(d5, packets)
+
+
+def test_deterministic_source_map_insufficient_ids_fail_closed() -> None:
+    tcm_insufficient = packet("tcm")
+    tcm_insufficient.claims[0].support_status = "insufficient"
+    packets = {"tcm": tcm_insufficient, "western": packet("western")}
+
+    # Insufficient in overall
+    with pytest.raises(GovernanceContractError, match="insufficient"):
+        build_deterministic_source_map(draft(), packets)
+
+    # Insufficient in TCM summary
+    d_clean_overall = draft().model_copy(update={"overall_supporting_claim_ids": ["western:c1"]})
+    with pytest.raises(GovernanceContractError, match="insufficient"):
+        build_deterministic_source_map(d_clean_overall, packets)
+
+
+def test_deterministic_source_map_wrong_perspective_ids_fail_closed() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+
+    # TCM summary citing Western claim
+    d1 = draft()
+    d1.perspectives.tcm.supported_claim_ids = ["western:c1"]
+    with pytest.raises(GovernanceContractError, match="wrong-perspective"):
+        build_deterministic_source_map(d1, packets)
+
+    # Western summary citing TCM claim
+    d2 = draft()
+    d2.perspectives.western.supported_claim_ids = ["tcm:c1"]
+    with pytest.raises(GovernanceContractError, match="wrong-perspective"):
+        build_deterministic_source_map(d2, packets)
+
+    # Difference TCM citing Western claim
+    d3 = draft()
+    d3.differences_or_conflicts = [
+        DifferenceOrConflict(statement="diff", tcm_claim_ids=["western:c1"], western_claim_ids=["western:c1"])
+    ]
+    with pytest.raises(GovernanceContractError, match="wrong-perspective"):
+        build_deterministic_source_map(d3, packets)
+
+    # Difference Western citing TCM claim
+    d4 = draft()
+    d4.differences_or_conflicts = [
+        DifferenceOrConflict(statement="diff", tcm_claim_ids=["tcm:c1"], western_claim_ids=["tcm:c1"])
+    ]
+    with pytest.raises(GovernanceContractError, match="wrong-perspective"):
+        build_deterministic_source_map(d4, packets)
+
+
+def test_valid_materialized_answer_passes_validate_governance_grounding() -> None:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True, include_difference=True)
+    source_map = build_deterministic_source_map(d, packets)
+    answer = CrossPerspectiveAnswer(
+        overall_summary=d.overall_summary,
+        overall_supporting_claim_ids=d.overall_supporting_claim_ids,
+        perspectives=d.perspectives,
+        agreements=d.agreements,
+        differences_or_conflicts=d.differences_or_conflicts,
+        evidence_gaps=d.evidence_gaps,
+        uncertainty=d.uncertainty,
+        source_map=source_map,
+    )
+    validate_governance_grounding(answer, packets)
+
+
+def test_public_cross_perspective_answer_shape_remains_unchanged() -> None:
+    expected_fields = {
+        "overall_summary",
+        "overall_supporting_claim_ids",
+        "perspectives",
+        "agreements",
+        "differences_or_conflicts",
+        "evidence_gaps",
+        "uncertainty",
+        "source_map",
+    }
+    assert set(CrossPerspectiveAnswer.model_fields.keys()) == expected_fields
+
+
+def test_governance_instructions_contain_all_exact_deterministic_status_strings() -> None:
+    expected_status_strings = [
+        TCM_UNAVAILABLE_SUMMARY,
+        WESTERN_UNAVAILABLE_SUMMARY,
+        TCM_NO_CLAIM_SUMMARY,
+        WESTERN_NO_CLAIM_SUMMARY,
+        OVERALL_NO_CLAIM_SUMMARY,
+    ]
+    for expected in expected_status_strings:
+        assert expected in GOVERNANCE_SYSTEM_PROMPT
+
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    asyncio.run(
+        CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
+            question="Compare evidence for headache.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    request_prompt = provider.prompts[0]
+    for expected in expected_status_strings:
+        assert expected in request_prompt
+
+
+def test_governance_unavailable_perspective_deterministic_summary_materializes_successfully() -> None:
+    unavailable_western = packet("western").model_copy(update={"available": False, "claims": []})
+    packets = {"tcm": packet("tcm"), "western": unavailable_western}
+    d = draft(western_available=False)
+    provider = QueueProvider(GOVERNANCE_MODEL, [d.model_dump(mode="json")])
+    agent = CrossPerspectiveGovernanceAgent(provider=provider)
+    result = asyncio.run(
+        agent.synthesize(
+            question="Compare evidence for headache.",
+            packets=packets,
+        )
+    )
+    answer = result.value
+    assert isinstance(answer, CrossPerspectiveAnswer)
+    assert answer.perspectives.western.available is False
+    assert answer.perspectives.western.summary == WESTERN_UNAVAILABLE_SUMMARY
+    assert answer.perspectives.western.supported_claim_ids == []
+    assert len(answer.source_map) == 2
+    assert all(entry.perspective == "tcm" for entry in answer.source_map)
+    assert provider.calls == 1
