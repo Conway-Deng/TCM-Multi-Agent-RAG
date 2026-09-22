@@ -665,6 +665,25 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert '"tcm"' in GOVERNANCE_SYSTEM_PROMPT
     assert '"western"' in GOVERNANCE_SYSTEM_PROMPT
 
+    # Output compaction requirements in system prompt
+    assert "minified json" in prompt_text
+    assert "no pretty printing" in prompt_text
+    assert "overall_summary: maximum 2 concise sentences" in prompt_text
+    assert "perspectives.tcm.summary: maximum 2 concise sentences" in prompt_text
+    assert "perspectives.western.summary: maximum 2 concise sentences" in prompt_text
+    assert "agreements: include only clearly evidence-supported agreements, maximum 2 entries" in prompt_text
+    assert "differences_or_conflicts: include only clearly evidence-supported differences/conflicts, maximum 2 entries" in prompt_text
+    assert "evidence_gaps: maximum 3 items" in prompt_text
+    assert "uncertainty: maximum 3 items" in prompt_text
+    assert "smallest sufficient subset of usable claim ids" in prompt_text
+    assert "source_map: emit only rows required to support" in prompt_text
+    assert "do not create source-map rows for evidence_gaps or uncertainty" in prompt_text
+    assert "do not duplicate the same (final_claim_or_statement, perspective) pair" in prompt_text
+    assert "omit the optional evidence_refs.title field" in prompt_text
+    assert "never copy evidence excerpts" in prompt_text
+    assert "provenance text" in prompt_text
+    assert "do not echo full packet claims or provenance into output" in prompt_text
+
     provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
@@ -676,6 +695,25 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "emit exactly these eight top-level keys" in captured_prompt
     assert "never emit tcm or western at the top level" in captured_prompt
     assert "source_map is a top-level array" in captured_prompt
+
+    # Output compaction requirements in per-request prompt
+    assert "minified json" in captured_prompt
+    assert "no pretty printing" in captured_prompt
+    assert "overall_summary: maximum 2 concise sentences" in captured_prompt
+    assert "perspectives.tcm.summary: maximum 2 concise sentences" in captured_prompt
+    assert "perspectives.western.summary: maximum 2 concise sentences" in captured_prompt
+    assert "agreements: include only clearly evidence-supported agreements, maximum 2 entries" in captured_prompt
+    assert "differences_or_conflicts: include only clearly evidence-supported differences/conflicts, maximum 2 entries" in captured_prompt
+    assert "evidence_gaps: maximum 3 items" in captured_prompt
+    assert "uncertainty: maximum 3 items" in captured_prompt
+    assert "smallest sufficient subset of usable claim ids" in captured_prompt
+    assert "source_map: emit only rows required to support" in captured_prompt
+    assert "do not create source-map rows for evidence_gaps or uncertainty" in captured_prompt
+    assert "do not duplicate the same (final_claim_or_statement, perspective) pair" in captured_prompt
+    assert "omit the optional evidence_refs.title field" in captured_prompt
+    assert "never copy evidence excerpts" in captured_prompt
+    assert "provenance text" in captured_prompt
+    assert "do not echo full packet claims or provenance into output" in captured_prompt
 
 
 def test_flat_governance_shape_with_top_level_perspectives_fails_contract() -> None:
