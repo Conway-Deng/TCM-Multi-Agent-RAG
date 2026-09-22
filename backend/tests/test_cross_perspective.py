@@ -693,6 +693,20 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in prompt_text
     assert "multiple supporting claim ids for the same pair are combined into one object" in prompt_text
 
+    # Source map coverage requirements in system prompt
+    assert "overall_supporting_claim_ids grouped by perspective" in prompt_text
+    assert "one overall-summary source-map object for each represented perspective" in prompt_text
+    assert "overall row claim_ids exactly equal that perspective's overall ids" in prompt_text
+    assert "tcm perspective summary requires its own separate row when supported ids are non-empty" in prompt_text
+    assert "western perspective summary requires its own separate row when supported ids are non-empty" in prompt_text
+    assert "perspective-summary rows are separate from overall-summary rows even if they reuse claims" in prompt_text
+    assert "agreements require one tcm and one western row" in prompt_text
+    assert "differences/conflicts require one tcm and one western row" in prompt_text
+    assert "multiple claims may be combined only for the same statement+perspective pair" in prompt_text
+    assert "different final statements must never be merged merely because they use the same claims" in prompt_text
+    assert "compaction must never omit a required statement or represented perspective" in prompt_text
+    assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in prompt_text
+
     provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
@@ -732,6 +746,20 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary'" in captured_prompt
     assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in captured_prompt
     assert "multiple supporting claim ids for the same pair are combined into one object" in captured_prompt
+
+    # Source map coverage requirements in per-request prompt
+    assert "overall_supporting_claim_ids grouped by perspective" in captured_prompt
+    assert "one overall-summary source-map object for each represented perspective" in captured_prompt
+    assert "overall row claim_ids exactly equal that perspective's overall ids" in captured_prompt
+    assert "tcm perspective summary requires its own separate row when supported ids are non-empty" in captured_prompt
+    assert "western perspective summary requires its own separate row when supported ids are non-empty" in captured_prompt
+    assert "perspective-summary rows are separate from overall-summary rows even if they reuse claims" in captured_prompt
+    assert "agreements require one tcm and one western row" in captured_prompt
+    assert "differences/conflicts require one tcm and one western row" in captured_prompt
+    assert "multiple claims may be combined only for the same statement+perspective pair" in captured_prompt
+    assert "different final statements must never be merged merely because they use the same claims" in captured_prompt
+    assert "compaction must never omit a required statement or represented perspective" in captured_prompt
+    assert "the example case with both perspectives represented in overall plus both perspective summaries normally requires at least four rows" in captured_prompt
 
 
 def test_list_form_source_map_entries_fail_contract() -> None:
