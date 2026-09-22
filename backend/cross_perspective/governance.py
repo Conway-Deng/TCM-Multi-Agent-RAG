@@ -19,7 +19,7 @@ from .schemas import (
 
 GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
 GOVERNANCE_TIMEOUT_SECONDS = 90.0
-GOVERNANCE_MAX_TOKENS = 1800
+GOVERNANCE_MAX_TOKENS = 2400
 GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
   "overall_summary": "...",
   "overall_supporting_claim_ids": [],
