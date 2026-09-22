@@ -18,6 +18,27 @@ from .schemas import (
 
 
 GOVERNANCE_MODEL = "Qwen/Qwen3-8B"
+GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
+  "overall_summary": "...",
+  "overall_supporting_claim_ids": [],
+  "perspectives": {
+    "tcm": {
+      "available": true,
+      "summary": "...",
+      "supported_claim_ids": []
+    },
+    "western": {
+      "available": true,
+      "summary": "...",
+      "supported_claim_ids": []
+    }
+  },
+  "agreements": [],
+  "differences_or_conflicts": [],
+  "evidence_gaps": [],
+  "uncertainty": [],
+  "source_map": []
+}'''
 GOVERNANCE_SYSTEM_PROMPT = (
     "You are the governance and synthesis component of a development-only cross-perspective health QA prototype. "
     "Use only the supplied evidence packets. Never introduce substantive medical claims absent from those packets. "
@@ -27,6 +48,15 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Insufficient claims cannot support agreements or source-mapped final claims. "
     "Overall summaries and perspective summaries must cite the exact non-insufficient claim IDs that support them. "
     "If no usable claim exists for a perspective or overall answer, use the deterministic unavailable status statement rather than a substantive assertion. "
+    "Return exactly one JSON object with these eight top-level keys and no others: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty, source_map. "
+    "TCM and Western must never appear as top-level keys; they may appear only as perspectives.tcm and perspectives.western. "
+    "source_map is a top-level array, never nested inside a perspective. Emit every field even when its value is an empty list. "
+    "Use this structural template only as a shape guide; replace IDs only with exact IDs supplied in the evidence packets and never copy placeholder IDs:\n"
+    f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
+    "Each source_map entry must contain exactly final_claim_or_statement, perspective, claim_ids, and evidence_refs. "
+    "Each evidence_refs item contains exact source_id and chunk_id only; title is optional and evidence excerpts must not be copied. "
+    "Keep summaries concise, use the smallest sufficient subset of usable claims, do not enumerate every claim unless necessary, and do not repeat excerpts. "
+    "Agreements and differences_or_conflicts may be empty when none are evidence-supported. Output JSON only, with no Markdown fences or prose outside the object. "
     "Never invent claim IDs, source IDs, chunk IDs, or citations, and never upgrade possible or partial support into certainty. "
     "Do not expose chain-of-thought. Return only concise structured JSON matching the requested contract."
 )
@@ -249,6 +279,12 @@ class CrossPerspectiveGovernanceAgent:
             "Only non-insufficient claims with linked provenance may support substantive final statements. "
             "overall_supporting_claim_ids must be non-empty whenever any usable claim exists, and overall_summary must have exact source-map entries for every represented perspective. "
             "When no usable claim exists, use the deterministic no-claim status statement. "
+            "Emit exactly these eight top-level keys: overall_summary, overall_supporting_claim_ids, perspectives, agreements, differences_or_conflicts, evidence_gaps, uncertainty, source_map. "
+            "Never emit tcm or western at the top level; nest them only under perspectives. source_map is a top-level array. "
+            "Structural template (shape only; replace placeholders with exact supplied IDs and keep all empty lists):\n"
+            f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
+            "Each source_map entry has final_claim_or_statement, perspective, claim_ids, and evidence_refs; each evidence_refs item uses exact source_id and chunk_id, with no copied excerpts. "
+            "Keep the output compact: concise summaries, smallest sufficient claim subset, no repeated excerpts, no prose outside JSON, and no Markdown fences. "
             "Return the CrossPerspectiveAnswer JSON contract. Every supported_claim_id and every source-map ID must exist in the supplied packets. "
             "A source-map entry must include exact evidence_refs pairs linked to its claim_ids. "
             "Both tcm and western perspective summaries are required; mark unavailable perspectives unavailable and do not reconstruct them."

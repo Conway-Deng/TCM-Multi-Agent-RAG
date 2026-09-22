@@ -16,6 +16,7 @@ from cross_perspective.adapters import (
 )
 from cross_perspective.governance import (
     CrossPerspectiveGovernanceAgent,
+    GOVERNANCE_SYSTEM_PROMPT,
     build_governance_payload,
     validate_governance_grounding,
 )
@@ -640,6 +641,48 @@ def test_governance_payload_omits_unverified_interpretation() -> None:
         )
     )
     assert '"interpretation"' not in provider.prompts[0]
+
+
+def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
+    required_top_level = {
+        "overall_summary",
+        "overall_supporting_claim_ids",
+        "perspectives",
+        "agreements",
+        "differences_or_conflicts",
+        "evidence_gaps",
+        "uncertainty",
+        "source_map",
+    }
+    prompt_text = GOVERNANCE_SYSTEM_PROMPT.casefold()
+    for field_name in required_top_level:
+        assert field_name.casefold() in prompt_text
+    assert "must never appear as top-level keys" in prompt_text
+    assert "source_map is a top-level array" in prompt_text
+    assert '"perspectives"' in GOVERNANCE_SYSTEM_PROMPT
+    assert '"tcm"' in GOVERNANCE_SYSTEM_PROMPT
+    assert '"western"' in GOVERNANCE_SYSTEM_PROMPT
+
+    provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
+    asyncio.run(
+        CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
+            question="Compare evidence for headache.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    captured_prompt = provider.prompts[0].casefold()
+    assert "emit exactly these eight top-level keys" in captured_prompt
+    assert "never emit tcm or western at the top level" in captured_prompt
+    assert "source_map is a top-level array" in captured_prompt
+
+
+def test_flat_governance_shape_with_top_level_perspectives_fails_contract() -> None:
+    flat = answer().model_dump(mode="json")
+    perspective_values = flat.pop("perspectives")
+    flat["tcm"] = perspective_values["tcm"]
+    flat["western"] = perspective_values["western"]
+    with pytest.raises(ValidationError, match="perspectives|extra inputs"):
+        CrossPerspectiveAnswer.model_validate(flat)
 
 
 def test_western_generation_failure_keeps_source_evidence_as_degraded() -> None:

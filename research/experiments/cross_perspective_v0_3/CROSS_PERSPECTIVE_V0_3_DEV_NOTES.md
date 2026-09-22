@@ -74,6 +74,8 @@ The governance prompt prohibits new substantive medical claims, equivalence betw
 - source-map rows in which one of several mapped claims contributes no evidence reference; and
 - agreement or difference statements without matching source-map support from both perspectives.
 
+The first synthetic live smoke exposed a development integration issue in the Governance structured-output shape: the provider returned valid, non-truncated JSON from the requested Qwen3-8B model, but emitted `tcm` and `western` at the top level instead of nesting them under `perspectives`. The Governance prompt now includes the exact eight-field top-level contract, an explicit nested structural template, a top-level `source_map` requirement, and compact-output instructions. This was not a formal experiment result, and no provenance validator or safety rule was weakened.
+
 The prototype exposes evidence provenance and concise rationale fields, not hidden chain-of-thought.
 
 ## Development endpoint
