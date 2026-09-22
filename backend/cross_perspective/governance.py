@@ -39,7 +39,19 @@ GOVERNANCE_STRUCTURAL_TEMPLATE = '''{
   "differences_or_conflicts": [],
   "evidence_gaps": [],
   "uncertainty": [],
-  "source_map": []
+  "source_map": [
+    {
+      "final_claim_or_statement": "<exact final statement text>",
+      "perspective": "tcm",
+      "claim_ids": ["<exact supplied claim id>"],
+      "evidence_refs": [
+        {
+          "source_id": "<exact supplied source id>",
+          "chunk_id": "<exact supplied chunk id>"
+        }
+      ]
+    }
+  ]
 }'''
 GOVERNANCE_SYSTEM_PROMPT = (
     "You are the governance and synthesis component of a development-only cross-perspective health QA prototype. "
@@ -68,7 +80,14 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Do NOT create source-map rows for evidence_gaps or uncertainty. "
     "Do NOT duplicate the same (final_claim_or_statement, perspective) pair. "
     "Use the smallest sufficient claim/evidence subset. "
-    "Omit the optional evidence_refs.title field; evidence_refs must contain only: source_id, chunk_id. "
+    "Source map object shape: every source_map element must be a JSON object; source_map elements must never be arrays/lists/tuples/pairs. "
+    "Exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs. "
+    "perspective may be only 'tcm' or 'western'. "
+    "evidence_refs items are JSON objects containing source_id and chunk_id only; omit the optional evidence_refs.title field; no excerpts. "
+    "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary' or 'perspectives.tcm.summary'. "
+    "Emit one source_map object per (final_claim_or_statement, perspective) pair. "
+    "Multiple supporting claim IDs for the same pair are combined into one object's claim_ids array with the corresponding exact evidence_refs; "
+    "do not emit one source_map element per individual claim when those claims support the same final statement + perspective. "
     "Never copy evidence excerpts, claim text, provenance text, URLs, limitations, or packet metadata into source_map. "
     "Do not echo full packet claims or provenance into output. "
     "Use this structural template only as a shape guide; replace IDs only with exact IDs supplied in the evidence packets and never copy placeholder IDs:\n"
@@ -317,10 +336,17 @@ class CrossPerspectiveGovernanceAgent:
             "Do NOT create source-map rows for evidence_gaps or uncertainty. "
             "Do NOT duplicate the same (final_claim_or_statement, perspective) pair. "
             "Use the smallest sufficient claim/evidence subset. "
-            "Omit the optional evidence_refs.title field; evidence_refs must contain only: source_id, chunk_id. "
+            "Source map object shape: every source_map element must be a JSON object; source_map elements must never be arrays/lists/tuples/pairs. "
+            "Exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs. "
+            "perspective may be only 'tcm' or 'western'. "
+            "evidence_refs items are JSON objects containing source_id and chunk_id only; omit the optional evidence_refs.title field; no excerpts. "
+            "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary' or 'perspectives.tcm.summary'. "
+            "Emit one source_map object per (final_claim_or_statement, perspective) pair. "
+            "Multiple supporting claim IDs for the same pair are combined into one object's claim_ids array with the corresponding exact evidence_refs; "
+            "do not emit one source_map element per individual claim when those claims support the same final statement + perspective. "
             "Never copy evidence excerpts, claim text, provenance text, URLs, limitations, or packet metadata into source_map. "
             "Do not echo full packet claims or provenance into output. "
-            "Structural template (shape only; replace placeholders with exact supplied IDs and keep all empty lists):\n"
+            "Structural template (shape only; replace placeholders with exact supplied IDs and preserve required empty lists when no entries apply):\n"
             f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
             "Return the CrossPerspectiveAnswer JSON contract. Every supported_claim_id and every source-map ID must exist in the supplied packets. "
             "A source-map entry must include exact evidence_refs pairs linked to its claim_ids. "

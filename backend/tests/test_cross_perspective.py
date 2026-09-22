@@ -684,6 +684,15 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "provenance text" in prompt_text
     assert "do not echo full packet claims or provenance into output" in prompt_text
 
+    # Source map object shape requirements in system prompt
+    assert "every source_map element must be a json object" in prompt_text
+    assert "source_map elements must never be arrays/lists/tuples/pairs" in prompt_text
+    assert "exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs" in prompt_text
+    assert "evidence_refs items are json objects containing source_id and chunk_id only" in prompt_text
+    assert "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary'" in prompt_text
+    assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in prompt_text
+    assert "multiple supporting claim ids for the same pair are combined into one object" in prompt_text
+
     provider = QueueProvider("Qwen/Qwen3-8B", [answer().model_dump(mode="json")])
     asyncio.run(
         CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
@@ -714,6 +723,29 @@ def test_governance_prompt_requires_explicit_nested_output_shape() -> None:
     assert "never copy evidence excerpts" in captured_prompt
     assert "provenance text" in captured_prompt
     assert "do not echo full packet claims or provenance into output" in captured_prompt
+
+    # Source map object shape requirements in per-request prompt
+    assert "every source_map element must be a json object" in captured_prompt
+    assert "source_map elements must never be arrays/lists/tuples/pairs" in captured_prompt
+    assert "exact fields are: final_claim_or_statement, perspective, claim_ids, evidence_refs" in captured_prompt
+    assert "evidence_refs items are json objects containing source_id and chunk_id only" in captured_prompt
+    assert "final_claim_or_statement is the exact actual final statement text, not a field path such as 'overall_summary'" in captured_prompt
+    assert "emit one source_map object per (final_claim_or_statement, perspective) pair" in captured_prompt
+    assert "multiple supporting claim ids for the same pair are combined into one object" in captured_prompt
+
+
+def test_list_form_source_map_entries_fail_contract() -> None:
+    payload = answer().model_dump(mode="json")
+    payload["source_map"] = [
+        [
+            "overall statement",
+            "tcm",
+            ["claim-1"],
+            [{"source_id": "src-1", "chunk_id": "chk-1"}],
+        ]
+    ]
+    with pytest.raises(ValidationError, match="source_map"):
+        CrossPerspectiveAnswer.model_validate(payload)
 
 
 def test_flat_governance_shape_with_top_level_perspectives_fails_contract() -> None:
