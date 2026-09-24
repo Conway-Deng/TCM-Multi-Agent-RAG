@@ -16,6 +16,18 @@ AgentRole = Literal[
     "coverage_auditor",
     "grounding_skeptic",
 ]
+CrossPerspectiveRelationType = Literal[
+    "possible_agreement",
+    "possible_difference_or_conflict",
+    "not_directly_comparable",
+]
+CriticExecutionStatus = Literal[
+    "completed",
+    "not_applicable",
+    "skipped_insufficient_assessments",
+    "failed",
+]
+
 
 NUTRITION_UNAVAILABLE_MESSAGE = (
     "Nutrition perspective unavailable until a dedicated provenance-preserving "
@@ -199,6 +211,34 @@ class PerspectiveAgentAssessment(StrictModel):
     issues: list[AssessmentIssue] = Field(default_factory=list, max_length=4)
 
 
+CRITIC_CANONICAL_STATEMENTS: dict[CrossPerspectiveRelationType, str] = {
+    "possible_agreement": "The cited TCM and Western claims may reflect a possible agreement.",
+    "possible_difference_or_conflict": "The cited TCM and Western claims may reflect a possible difference or conflict.",
+    "not_directly_comparable": "The cited TCM and Western claims may not be directly comparable.",
+}
+
+
+class CriticRelationDraft(StrictModel):
+    relation_type: CrossPerspectiveRelationType
+    tcm_claim_ids: list[str] = Field(min_length=1, max_length=4)
+    western_claim_ids: list[str] = Field(min_length=1, max_length=4)
+
+
+class CriticDraft(StrictModel):
+    relations: list[CriticRelationDraft] = Field(default_factory=list, max_length=4)
+
+
+class CrossPerspectiveRelation(StrictModel):
+    relation_type: CrossPerspectiveRelationType
+    statement: str = Field(min_length=1)
+    tcm_claim_ids: list[str] = Field(min_length=1, max_length=4)
+    western_claim_ids: list[str] = Field(min_length=1, max_length=4)
+
+
+class CrossPerspectiveCritique(StrictModel):
+    relations: list[CrossPerspectiveRelation] = Field(default_factory=list, max_length=4)
+
+
 class ModelCallEvent(StrictModel):
     role: Literal[
         "router",
@@ -208,6 +248,7 @@ class ModelCallEvent(StrictModel):
         "evidence_specialist",
         "coverage_auditor",
         "grounding_skeptic",
+        "cross_perspective_critic",
     ]
     attempt: int = Field(ge=1, le=2)
     provider: str
@@ -244,6 +285,8 @@ class CrossPerspectiveTrace(StrictModel):
     retry_count: int = Field(default=0, ge=0)
     failed_roles: list[str] = Field(default_factory=list)
     perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] = Field(default_factory=dict)
+    critic_status: CriticExecutionStatus = "not_applicable"
+    cross_perspective_critique: CrossPerspectiveCritique | None = None
 
 
 class CrossPerspectiveConsultRequest(StrictModel):
@@ -285,4 +328,6 @@ class CrossPerspectiveConsultResponse(StrictModel):
     answer: CrossPerspectiveAnswer | None = None
     failed_roles: list[str] = Field(default_factory=list)
     perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] = Field(default_factory=dict)
+    critic_status: CriticExecutionStatus = "not_applicable"
+    cross_perspective_critique: CrossPerspectiveCritique | None = None
     trace: CrossPerspectiveTrace

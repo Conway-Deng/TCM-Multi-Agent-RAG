@@ -45,6 +45,15 @@ EVIDENCE_SPECIALIST_SYSTEM_PROMPT = (
     "Prefer the smallest sufficient subset of claims. Preserve uncertainty and avoid redundant claim selection. "
     "You MUST NOT invent missing medical facts, add new claims, change support_status, retrieve new evidence, "
     "infer unsupported mechanisms, or treat your own prose as evidence. "
+    "PERSPECTIVE-LOCAL BOUNDARY: Evaluate only this perspective packet. Evaluate only the assigned perspective. "
+    "Do not evaluate whether the other perspective is present or missing, and do not evaluate whether the other perspective is correct, incorrect, or adequately addressed. "
+    "Cross-perspective comparison is outside this role. "
+    "If a claim inside the assigned packet contains text about another perspective, that cross-perspective text remains OUT OF SCOPE. "
+    "Do not assess whether another perspective is: present, missing, supported, unsupported, correct, incorrect, "
+    "adequately addressed, clinically valid, or incomplete. "
+    "Do not create an issue whose substantive description evaluates the other perspective. "
+    "A cross-perspective sentence appearing inside an assigned packet does NOT authorize cross-perspective analysis. "
+    "Cross-perspective comparison belongs only to the Cross-Perspective Critic and Governance. "
     "Return JSON only conforming to the schema. Maximum 2 concise sentences for assessment_summary. Maximum 4 issues."
 )
 
@@ -54,6 +63,15 @@ COVERAGE_AUDITOR_SYSTEM_PROMPT = (
     "Identify potentially omitted usable claims, visible redundancy, and visible coverage gaps inside the supplied packet. "
     "IMPORTANT: 'coverage gap' means a gap detectable from within the supplied packet, NOT from external medical knowledge. "
     "You MUST NOT use outside medical knowledge to declare missing content or invent missing medical facts. "
+    "PERSPECTIVE-LOCAL BOUNDARY: Evaluate only this perspective packet. Evaluate only the assigned perspective. "
+    "Do not evaluate whether the other perspective is present or missing, and do not evaluate whether the other perspective is correct, incorrect, or adequately addressed. "
+    "Cross-perspective comparison is outside this role. "
+    "If a claim inside the assigned packet contains text about another perspective, that cross-perspective text remains OUT OF SCOPE. "
+    "Do not assess whether another perspective is: present, missing, supported, unsupported, correct, incorrect, "
+    "adequately addressed, clinically valid, or incomplete. "
+    "Do not create an issue whose substantive description evaluates the other perspective. "
+    "A cross-perspective sentence appearing inside an assigned packet does NOT authorize cross-perspective analysis. "
+    "Cross-perspective comparison belongs only to the Cross-Perspective Critic and Governance. "
     "Return JSON only conforming to the schema. Maximum 2 concise sentences for assessment_summary. Maximum 4 issues."
 )
 
@@ -64,6 +82,15 @@ GROUNDING_SKEPTIC_SYSTEM_PROMPT = (
     "ambiguity, partial support, or uncertainty, and flag insufficient claims where appropriate. "
     "You MUST NOT determine absolute clinical truth, introduce external medical knowledge, replace evidence, "
     "rewrite claims, or invent citations. "
+    "PERSPECTIVE-LOCAL BOUNDARY: Evaluate only this perspective packet. Evaluate only the assigned perspective. "
+    "Do not evaluate whether the other perspective is present or missing, and do not evaluate whether the other perspective is correct, incorrect, or adequately addressed. "
+    "Cross-perspective comparison is outside this role. "
+    "If a claim inside the assigned packet contains text about another perspective, that cross-perspective text remains OUT OF SCOPE. "
+    "Do not assess whether another perspective is: present, missing, supported, unsupported, correct, incorrect, "
+    "adequately addressed, clinically valid, or incomplete. "
+    "Do not create an issue whose substantive description evaluates the other perspective. "
+    "A cross-perspective sentence appearing inside an assigned packet does NOT authorize cross-perspective analysis. "
+    "Cross-perspective comparison belongs only to the Cross-Perspective Critic and Governance. "
     "Return JSON only conforming to the schema. Maximum 2 concise sentences for assessment_summary. Maximum 4 issues."
 )
 
@@ -182,6 +209,11 @@ def build_advisory_user_prompt(
         "- issues[*].claim_ids\n"
         "must be copied exactly from claim_id values that appear in the supplied packet.\n"
         "Never create, abbreviate, normalize, or rewrite claim IDs.\n\n"
+        "Perspective Boundary Rules:\n"
+        "- Evaluate only the assigned perspective.\n"
+        "- If a claim inside the assigned packet contains text about another perspective, that cross-perspective text remains OUT OF SCOPE.\n"
+        "- Do not assess whether another perspective is present, missing, supported, unsupported, correct, incorrect, adequately addressed, clinically valid, or incomplete.\n"
+        "- Do not create an issue whose substantive description evaluates the other perspective.\n\n"
         "Issues Format Rules:\n"
         'The "issues" field MUST be a JSON array. Maximum 4 issues.\n'
         'If there are no issues: "issues": []\n'

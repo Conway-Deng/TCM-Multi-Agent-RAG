@@ -21,7 +21,9 @@ Role = Literal[
     "evidence_specialist",
     "coverage_auditor",
     "grounding_skeptic",
+    "cross_perspective_critic",
 ]
+
 RETRYABLE_FAILURES = {"timeout", "rate_limit", "http_5xx", "connectivity"}
 
 

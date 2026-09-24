@@ -14,7 +14,17 @@ from .adapters import (
     TCMEvidenceAdapter,
     WesternEvidenceAdapter,
 )
-from .governance import CrossPerspectiveGovernanceAgent, GOVERNANCE_MODEL, build_governance_payload
+from .cross_perspective_critic import (
+    CRITIC_MODEL,
+    CrossPerspectiveCriticAgent,
+    check_critic_preconditions,
+)
+from .governance import (
+    CrossPerspectiveGovernanceAgent,
+    GOVERNANCE_MODEL,
+    build_governance_advisory_context,
+    build_governance_payload,
+)
 from .model_calls import StructuredModelCallFailure
 from .perspective_agents import (
     COVERAGE_AUDITOR_MODEL,
@@ -25,9 +35,11 @@ from .perspective_agents import (
 from .router import CrossPerspectiveRouter, ROUTER_MODEL
 from .schemas import (
     ActivePerspectiveName,
+    CriticExecutionStatus,
     CrossPerspectiveAnswer,
     CrossPerspectiveConsultRequest,
     CrossPerspectiveConsultResponse,
+    CrossPerspectiveCritique,
     CrossPerspectiveTrace,
     ModelCallEvent,
     NUTRITION_UNAVAILABLE_MESSAGE,
@@ -103,6 +115,7 @@ class CrossPerspectiveService:
         tcm_adapter: EvidenceAdapter | None = None,
         western_adapter: EvidenceAdapter | None = None,
         advisory_suite: PerspectiveAdvisorySuite | None = None,
+        critic: CrossPerspectiveCriticAgent | None = None,
         governance: CrossPerspectiveGovernanceAgent | None = None,
         trace_sink: TraceSink | None = None,
     ) -> None:
@@ -112,6 +125,7 @@ class CrossPerspectiveService:
             "western": western_adapter or WesternEvidenceAdapter(),
         }
         self.advisory_suite = advisory_suite or PerspectiveAdvisorySuite()
+        self.critic = critic or CrossPerspectiveCriticAgent()
         self.governance = governance or CrossPerspectiveGovernanceAgent()
         self.trace_sink = trace_sink or DevelopmentTraceLogger()
 
@@ -150,6 +164,8 @@ class CrossPerspectiveService:
                     total_started=started,
                     failed_roles=["router"],
                     perspective_assessments={},
+                    critic_status="not_applicable",
+                    cross_perspective_critique=None,
                 )
                 self.trace_sink.write(trace)
                 raise CrossPerspectiveRunError("Router model call failed; no evidence pathway was selected.", trace=trace) from exc
@@ -189,12 +205,41 @@ class CrossPerspectiveService:
         failed_roles.extend(advisory_result.failed_roles)
         perspective_assessments = advisory_result.assessments
 
+        critic_eligible, initial_critic_status = check_critic_preconditions(
+            packets=packets,
+            assessments=perspective_assessments,
+        )
+        critic_status: CriticExecutionStatus = initial_critic_status
+        cross_perspective_critique: CrossPerspectiveCritique | None = None
+        if critic_eligible:
+            critic_started = perf_counter()
+            try:
+                critic_result = await self.critic.critique(
+                    question=request.question,
+                    packets=packets,
+                    assessments=perspective_assessments,
+                )
+                cross_perspective_critique = critic_result.value
+                assert isinstance(cross_perspective_critique, CrossPerspectiveCritique)
+                events.extend(critic_result.events)
+                critic_status = "completed"
+            except StructuredModelCallFailure as exc:
+                events.extend(exc.events)
+                failed_roles.append("cross_perspective_critic")
+                critic_status = "failed"
+            except Exception:
+                failed_roles.append("cross_perspective_critic")
+                critic_status = "failed"
+            latency_by_stage["cross_perspective_critic"] = round((perf_counter() - critic_started) * 1000, 3)
+
         governance_started = perf_counter()
         answer: CrossPerspectiveAnswer | None = None
         try:
             governance_result = await self.governance.synthesize(
                 question=request.question,
                 packets=packets,
+                assessments=perspective_assessments,
+                critique=cross_perspective_critique,
             )
             answer = governance_result.value
             assert isinstance(answer, CrossPerspectiveAnswer)
@@ -216,6 +261,8 @@ class CrossPerspectiveService:
             total_started=started,
             failed_roles=failed_roles,
             perspective_assessments=perspective_assessments,
+            critic_status=critic_status,
+            cross_perspective_critique=cross_perspective_critique,
         )
         self.trace_sink.write(trace)
         status = "failed" if answer is None else "partial_failure" if failed_roles else "completed"
@@ -227,6 +274,8 @@ class CrossPerspectiveService:
             answer=answer,
             failed_roles=list(dict.fromkeys(failed_roles)),
             perspective_assessments=perspective_assessments,
+            critic_status=critic_status,
+            cross_perspective_critique=cross_perspective_critique,
             trace=trace,
         )
 
@@ -244,6 +293,8 @@ class CrossPerspectiveService:
         total_started: float,
         failed_roles: list[str],
         perspective_assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]],
+        critic_status: CriticExecutionStatus = "not_applicable",
+        cross_perspective_critique: CrossPerspectiveCritique | None = None,
     ) -> CrossPerspectiveTrace:
         source_ids = {
             name: list(dict.fromkeys(item.source_id for item in packet.provenance))
@@ -255,6 +306,9 @@ class CrossPerspectiveService:
         }
         governance_input = {
             "perspective_packets": build_governance_payload(packets),
+            "advisory_context": build_governance_advisory_context(
+                perspective_assessments, cross_perspective_critique, packets=packets
+            ),
         }
         question_hash = hashlib.sha256(request.question.encode("utf-8")).hexdigest()
         governance_input["question_hash"] = question_hash
@@ -281,6 +335,7 @@ class CrossPerspectiveService:
                 "evidence_specialist": EVIDENCE_SPECIALIST_MODEL,
                 "coverage_auditor": COVERAGE_AUDITOR_MODEL,
                 "grounding_skeptic": GROUNDING_SKEPTIC_MODEL,
+                "cross_perspective_critic": CRITIC_MODEL,
                 "governance": GOVERNANCE_MODEL,
             },
             model_calls=len(events),
@@ -290,4 +345,6 @@ class CrossPerspectiveService:
             retry_count=sum(1 for event in events if event.attempt == 2),
             failed_roles=list(dict.fromkeys(failed_roles)),
             perspective_assessments=perspective_assessments,
+            critic_status=critic_status,
+            cross_perspective_critique=cross_perspective_critique,
         )

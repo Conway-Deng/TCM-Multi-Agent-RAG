@@ -2,15 +2,21 @@ from __future__ import annotations
 
 import json
 
+from collections.abc import Mapping
+from typing import Any
+
 from providers import build_llm_provider
 from providers.base import LLMProvider
 
 from .model_calls import StructuredCallResult, StructuredModelCallFailure, call_structured_model
 from .schemas import (
+    ActivePerspectiveName,
     CrossPerspectiveAnswer,
+    CrossPerspectiveCritique,
     CrossPerspectiveDraft,
     EvidenceReference,
     OVERALL_NO_CLAIM_SUMMARY,
+    PerspectiveAgentAssessment,
     PerspectiveClaim,
     PerspectiveEvidencePacket,
     SourceMapEntry,
@@ -51,11 +57,58 @@ GOVERNANCE_SYSTEM_PROMPT = (
     "Agreement between perspectives is not proof. Preserve disagreement, insufficient evidence, uncertainty, missing information, and unavailable perspectives. "
     "The packet interpretation field is presentation text, not evidence and is omitted from the model payload. "
     "Claims were pre-associated with provenance by the evidence pathways. "
+    'A "usable claim" is defined structurally as a supplied packet claim with support_status != "insufficient". '
     'Only claims with support_status != "insufficient" may support substantive synthesis. '
     "Insufficient claims cannot support agreements or substantive statements. "
+    "Claims with support_status == 'insufficient': cannot support substantive synthesis, cannot be copied or paraphrased as substantive evidence, must not be used to introduce content about another perspective, and must not be used indirectly through advisory context to support a final statement. "
+    "Limited direct relevance, limited applicability, uncertainty, coverage gaps, or weak case-specific fit do NOT make a usable claim disappear or become unusable. "
+    "Advisory context cannot upgrade a packet claim's support_status. "
+    "Advisory context cannot remove, invalidate, or downgrade a packet claim; advisory issue_type=\"coverage_gap\" does NOT redefine packet claims as unusable. "
+    "If a perspective is available and contains one or more usable claims, and its perspective summary states what those claims/evidence discuss, "
+    "supported_claim_ids MUST contain the smallest sufficient subset of those exact usable claim IDs. "
+    "A perspective summary may state that evidence is indirect, incomplete, or poorly matched to the exact question, "
+    "but it must still cite the claim IDs supporting the substantive evidence description. "
+    "supported_claim_ids may be empty for an available perspective ONLY when that perspective truly contains zero usable claims. "
+    '"no_usable_claims" means literally zero claims with support_status != "insufficient". '
+    "no_usable_claims must NOT be inferred merely from poor relevance, indirectness, or an advisory coverage gap. "
     "Citation and source-map materialization is handled deterministically outside the model. "
     "The Judge must reference exact supplied claim IDs and must not invent evidence, claims, citations, or outside medical knowledge. "
     "Overall summaries, perspective summaries, agreements, and differences must cite the exact non-insufficient claim IDs that support them. "
+    "Every substantive evidence statement in overall_summary must be supported by the smallest sufficient subset of exact usable Section A claim IDs. "
+    "If overall_summary describes substantive evidence from BOTH TCM and Western perspectives, overall_supporting_claim_ids must include the needed claim IDs from BOTH perspectives. "
+    "Do not cite a perspective merely because it exists; cite it when its substantive evidence content is actually used. "
+    "ADVISORY CONTEXT RULES: Section A contains the ONLY substantive evidence packets. "
+    "Section B contains advisory signals (local audit flags and cross-perspective critic comparisons) to guide synthesis attention. "
+    "Advisory signals are NOT evidence, MUST NOT be cited in supported_claim_ids, and MUST NOT be used to introduce new claims. "
+    "If advisory guidance conflicts with packet evidence, packet evidence wins. "
+    "Agreement between advisory agents is not evidence. "
+    "Critic statements are not evidence. "
+    "The Critic canonical statement contains no substantive evidence content. "
+    "Use relation_type and cited IDs only as advisory navigation. "
+    "Any substantive difference/conflict wording in final Governance output must be derived independently from Section A packet claims. "
+    "Do not copy the canonical statement as evidence. "
+    "Do not infer medical content from it. "
+    "Missing advisory roles must not be hallucinated or reconstructed. "
+    "Critic absence or failure must be tolerated. "
+    "Advisory context cannot upgrade a packet claim's support_status. "
+    "Final substantive statements must still resolve to usable Section A claim IDs. "
+    "DIFFERENCES_OR_CONFLICTS SHAPE RULES: Every element of differences_or_conflicts MUST be one JSON object matching the DifferenceOrConflict schema: "
+    '{"statement": "...", "tcm_claim_ids": ["exact TCM claim IDs"], "western_claim_ids": ["exact Western claim IDs"]}. '
+    'Do NOT output ["relation_type", "statement"] or any list/tuple format. '
+    "Do NOT copy the Critic relation object directly. The Critic schema and Governance DifferenceOrConflict schema are DIFFERENT contracts. "
+    "Critic relation_type is advisory metadata. Governance must not place relation_type inside differences_or_conflicts unless the existing Governance schema already contains such a field. "
+    "If advisory Critic output is useful, Governance must independently express a properly evidence-supported DifferenceOrConflict object using the Governance schema. "
+    "If no packet-grounded difference/conflict is necessary, return []. "
+    "EVIDENCE_GAPS AND UNCERTAINTY RULES: "
+    "Every item in evidence_gaps and uncertainty must remain faithful to usable Section A claims, packet.missing_information, packet.limitations, and packet.uncertainty. "
+    "These fields must NOT introduce or paraphrase unsupported substantive content from insufficient claims, advisory text, Critic text, or outside knowledge. "
+    "Insufficient claims must not be copied, paraphrased, or used to supply content to overall_summary, perspective summaries, agreements, differences/conflicts, evidence_gaps, or uncertainty. "
+    "Do not convert 'evidence is educational / indirect / incomplete' into 'the perspective provides no information / no insight' when usable claims actually provide perspective-specific information. "
+    "Distinguish explicitly between: (1) no evidence/information exists, and (2) available evidence exists but is educational, indirect, incomplete, not clinically validated, or not sufficient for case-specific confirmation. "
+    "evidence_gaps must not contradict overall_summary, perspectives.tcm.summary, or perspectives.western.summary. "
+    "uncertainty must not contradict the summaries either. "
+    "If a perspective has usable claims describing case-related evidence, do NOT say 'no insight', 'no information', or 'no evidence is provided' unless the packet literally supports that absence. "
+    "When the packet contains usable educational pattern information but lacks clinical confirmation, prefer wording such as: 'The available TCM evidence is educational and does not establish clinical treatment efficacy or a fully confirmed case-specific pattern.' "
     "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
     f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '
     f'Western unavailable: "{WESTERN_UNAVAILABLE_SUMMARY}"; '
@@ -108,6 +161,7 @@ def build_governance_payload(
                 "claim_kind": claim.claim_kind,
             }
             for claim in packet.claims
+            if claim.support_status != "insufficient"
         ]
         payload[name] = {
             "perspective": packet.perspective,
@@ -120,6 +174,76 @@ def build_governance_payload(
             "failure": failure_dict,
         }
     return payload
+
+
+def build_governance_advisory_context(
+    assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]],
+    critique: CrossPerspectiveCritique | None,
+    packets: Mapping[str, PerspectiveEvidencePacket] | None = None,
+) -> dict[str, Any]:
+    """Project local assessments and critic output into a controlled advisory context for Governance.
+
+    Scientific constraints:
+    - Evidence packets remain the only substantive evidence.
+    - assessment_summary is strictly omitted.
+    - Downstream advisory safety projection: an issue description may be passed downstream
+      ONLY IF:
+      1. issue.claim_ids is non-empty AND
+      2. EVERY referenced issue claim exists in that perspective packet AND
+      3. EVERY referenced issue claim has support_status != "insufficient".
+      Otherwise pass ONLY issue_type and claim_ids: [], omitting description.
+    - Do NOT delete the issue, do NOT change the stored PerspectiveAgentAssessment, and do NOT expose insufficient claim_ids.
+    - Critic relations pass relation_type, statement, tcm_claim_ids, and western_claim_ids.
+    """
+    perspective_signals: dict[str, list[dict[str, Any]]] = {}
+    for perspective in ("tcm", "western"):
+        packet = packets.get(perspective) if packets else None
+        packet_claims = {c.claim_id: c for c in packet.claims} if packet else {}
+        role_signals: list[dict[str, Any]] = []
+        for assessment in assessments.get(perspective, []):  # type: ignore[arg-type]
+            issues_proj: list[dict[str, Any]] = []
+            for issue in assessment.issues:
+                is_usable_anchored = (
+                    len(issue.claim_ids) > 0
+                    and all(cid in packet_claims for cid in issue.claim_ids)
+                    and all(packet_claims[cid].support_status != "insufficient" for cid in issue.claim_ids)
+                )
+                if is_usable_anchored:
+                    issues_proj.append({
+                        "issue_type": issue.issue_type,
+                        "description": issue.description,
+                        "claim_ids": list(issue.claim_ids),
+                    })
+                else:
+                    issues_proj.append({
+                        "issue_type": issue.issue_type,
+                        "claim_ids": [],
+                    })
+            ref_ids = [
+                cid for cid in assessment.referenced_claim_ids
+                if not packet_claims or (cid in packet_claims and packet_claims[cid].support_status != "insufficient")
+            ]
+            role_signals.append({
+                "role": assessment.role,
+                "referenced_claim_ids": ref_ids,
+                "issues": issues_proj,
+            })
+        perspective_signals[perspective] = role_signals
+
+    critic_signals: list[dict[str, Any]] = []
+    if critique is not None:
+        for rel in critique.relations:
+            critic_signals.append({
+                "relation_type": rel.relation_type,
+                "statement": rel.statement,
+                "tcm_claim_ids": list(rel.tcm_claim_ids),
+                "western_claim_ids": list(rel.western_claim_ids),
+            })
+
+    return {
+        "perspective_advisory": perspective_signals,
+        "critic_relations": critic_signals,
+    }
 
 
 def validate_governance_grounding(
@@ -476,17 +600,61 @@ class CrossPerspectiveGovernanceAgent:
         *,
         question: str,
         packets: dict[str, PerspectiveEvidencePacket],
+        assessments: dict[ActivePerspectiveName, list[PerspectiveAgentAssessment]] | None = None,
+        critique: CrossPerspectiveCritique | None = None,
     ) -> StructuredCallResult:
         packet_payload = build_governance_payload(packets)
+        advisory_context = build_governance_advisory_context(assessments or {}, critique, packets=packets)
         prompt = (
             f"Original question:\n{question}\n\n"
-            f"Evidence packets:\n{json.dumps(packet_payload, ensure_ascii=False, sort_keys=True)}\n\n"
+            f"=== SECTION A: EVIDENCE PACKETS (PRIMARY EVIDENCE) ===\n"
+            f"{json.dumps(packet_payload, ensure_ascii=False, sort_keys=True)}\n\n"
+            f"=== SECTION B: ADVISORY CONTEXT (CONTROLLED ADVISORY SIGNALS ONLY - NOT EVIDENCE) ===\n"
+            f"{json.dumps(advisory_context, ensure_ascii=False, sort_keys=True)}\n\n"
             "The packet interpretation field is not evidence and is intentionally omitted from this payload. "
             "Claims were pre-associated with provenance by the evidence pathways. "
+            'A "usable claim" is defined structurally as a supplied packet claim with support_status != "insufficient". '
             'Only claims with support_status != "insufficient" may support substantive synthesis. '
+            "Claims with support_status == 'insufficient': "
+            "cannot support substantive synthesis, cannot be copied or paraphrased as substantive evidence, "
+            "must not be used to introduce content about another perspective, and must not be used indirectly through advisory context to support a final statement. "
+            "Insufficient claims must not be copied, paraphrased, or used to supply content to overall_summary, perspective summaries, agreements, differences/conflicts, evidence_gaps, or uncertainty. "
+            "Limited direct relevance, limited applicability, uncertainty, coverage gaps, or weak case-specific fit do NOT make a usable claim disappear or become unusable. "
+            "Advisory signals in Section B are attention guides, NOT evidence, and cannot be cited in supported_claim_ids. "
+            "Advisory context cannot remove, invalidate, downgrade, or upgrade a packet claim. "
+            "Advisory context cannot upgrade a packet claim's support_status. "
+            'Advisory issue_type="coverage_gap" does NOT redefine packet claims as unusable. '
+            "If advisory guidance conflicts with packet evidence, packet evidence wins. "
+            "Agreement between advisory agents is not evidence. Critic statements are not evidence. "
+            "The Critic canonical statement contains no substantive evidence content. "
+            "Use relation_type and cited IDs only as advisory navigation. "
+            "Any substantive difference/conflict wording in final Governance output must be derived independently from Section A packet claims. "
+            "Do not copy the canonical statement as evidence. Do not infer medical content from it. "
+            "Missing advisory roles must not be hallucinated or reconstructed. Critic absence or failure must be tolerated. "
+            "Final substantive statements must still resolve to usable Section A claim IDs. "
             "Citation and source-map materialization is handled deterministically outside the model. "
-            "The Judge must reference exact supplied claim IDs and must not invent evidence, claims, or outside medical knowledge. "
+            "The Judge must reference exact supplied claim IDs from Section A and must not invent evidence, claims, or outside medical knowledge. "
             "overall_supporting_claim_ids must be non-empty whenever any usable claim exists. "
+            "Every substantive evidence statement in overall_summary must be supported by the smallest sufficient subset of exact usable Section A claim IDs. "
+            "If overall_summary describes substantive evidence from BOTH TCM and Western perspectives, overall_supporting_claim_ids must include the needed claim IDs from BOTH perspectives. "
+            "Operational rules for each perspective summary (perspectives.tcm and perspectives.western): "
+            "IF >=1 usable packet claim exists for that perspective: "
+            "1. Perspective status remains available (available: true). "
+            "2. Summarize only what the packet evidence actually discusses or supports. "
+            "3. If the summary mentions substantive packet content, supported_claim_ids MUST cite the smallest sufficient subset of those exact usable claim IDs. "
+            "4. If direct case relevance is weak, indirect, or limited, say so in the summary, evidence_gaps, or uncertainty. "
+            "5. DO NOT leave supported_claim_ids empty merely because direct relevance is limited. "
+            "IF literally zero usable packet claims exist (zero claims with support_status != \"insufficient\"): "
+            "1. Use the deterministic no-claim status statement. "
+            "2. supported_claim_ids must be []. "
+            "Differences/Conflicts Format Rules: "
+            "Every element in differences_or_conflicts MUST be a JSON object matching the DifferenceOrConflict schema: "
+            '{"statement": "...", "tcm_claim_ids": ["exact TCM claim IDs"], "western_claim_ids": ["exact Western claim IDs"]}. '
+            'Do NOT output ["relation_type", "statement"] or any list/tuple format. '
+            "Do NOT copy the Critic relation object directly. The Critic schema and Governance DifferenceOrConflict schema are DIFFERENT contracts. "
+            "Critic relation_type is advisory metadata. Governance must not place relation_type inside differences_or_conflicts unless the existing Governance schema already contains such a field. "
+            "If advisory Critic output is useful, Governance must independently express a properly evidence-supported DifferenceOrConflict object using the Governance schema. "
+            "If no packet-grounded difference/conflict is necessary, return []. "
             "Deterministic status statements when no usable claim exists or a perspective is unavailable: "
             f'TCM unavailable: "{TCM_UNAVAILABLE_SUMMARY}"; '
             f'Western unavailable: "{WESTERN_UNAVAILABLE_SUMMARY}"; '
@@ -502,12 +670,19 @@ class CrossPerspectiveGovernanceAgent:
             "perspectives.western.summary: maximum 2 concise sentences. "
             "agreements: include only clearly evidence-supported agreements, maximum 2 entries, use [] if none are necessary. "
             "differences_or_conflicts: include only clearly evidence-supported differences/conflicts, maximum 2 entries, use [] if none are necessary. "
+            "Rules for evidence_gaps and uncertainty: "
+            "Every evidence_gaps and uncertainty item must be grounded only in usable Section A claims, packet.missing_information, packet.limitations, and packet.uncertainty. "
+            "For evidence_gaps: describe WHAT is missing; do not erase information that is already present; do not contradict overall_summary, perspectives.tcm.summary, or perspectives.western.summary. "
+            "For uncertainty: describe WHY confidence/applicability is limited; do not restate available evidence as absent; do not contradict the summaries. "
+            "Do not convert 'evidence is educational / indirect / incomplete' into 'the perspective provides no information / no insight' when usable claims exist. "
+            "Distinguish explicitly between: (1) no evidence exists, and (2) evidence exists but is insufficient for clinical or case-specific confirmation. "
+            "If a perspective has usable claims describing case-related evidence, do NOT say 'no insight', 'no information', or 'no evidence is provided' unless the packet literally supports that absence. "
             "evidence_gaps: maximum 3 items, each item one short sentence. "
             "uncertainty: maximum 3 items, each item one short sentence. "
-            "Supported claim IDs: use the smallest sufficient subset of usable claim IDs; do not enumerate every usable claim merely because it exists. "
+            "Supported claim IDs: use the smallest sufficient subset of usable claim IDs from Section A; do not enumerate every usable claim merely because it exists. "
             "Structural template (shape only; replace placeholders with exact supplied IDs and preserve required empty lists when no entries apply):\n"
             f"{GOVERNANCE_STRUCTURAL_TEMPLATE}\n"
-            "Return the CrossPerspectiveDraft JSON contract. Every supported_claim_id must exist in the supplied packets. "
+            "Return the CrossPerspectiveDraft JSON contract. Every supported_claim_id must exist in Section A evidence packets. "
             "Both tcm and western perspective summaries are required; mark unavailable perspectives unavailable and do not reconstruct them."
         )
         result = await call_structured_model(

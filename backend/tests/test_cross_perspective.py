@@ -14,6 +14,18 @@ from cross_perspective.adapters import (
     TCMEvidenceAdapter,
     WesternEvidenceAdapter,
 )
+from cross_perspective.cross_perspective_critic import (
+    CRITIC_MAX_TOKENS,
+    CRITIC_MODEL,
+    CRITIC_SYSTEM_PROMPT,
+    CRITIC_TIMEOUT_SECONDS,
+    CriticValidationError,
+    CrossPerspectiveCriticAgent,
+    build_critic_payload,
+    build_critic_user_prompt,
+    check_critic_preconditions,
+    validate_critic_critique,
+)
 from cross_perspective.governance import (
     CrossPerspectiveGovernanceAgent,
     GOVERNANCE_MAX_TOKENS,
@@ -22,6 +34,7 @@ from cross_perspective.governance import (
     GOVERNANCE_TIMEOUT_SECONDS,
     GovernanceContractError,
     build_deterministic_source_map,
+    build_governance_advisory_context,
     build_governance_payload,
     validate_governance_grounding,
 )
@@ -29,8 +42,11 @@ from cross_perspective.model_calls import StructuredCallResult, StructuredModelC
 from cross_perspective.perspective_agents import (
     ADVISORY_MAX_TOKENS,
     COVERAGE_AUDITOR_MODEL,
+    COVERAGE_AUDITOR_SYSTEM_PROMPT,
     EVIDENCE_SPECIALIST_MODEL,
+    EVIDENCE_SPECIALIST_SYSTEM_PROMPT,
     GROUNDING_SKEPTIC_MODEL,
+    GROUNDING_SKEPTIC_SYSTEM_PROMPT,
     AdvisoryRunResult,
     PerspectiveAdvisorySuite,
     PerspectiveAssessmentError,
@@ -45,9 +61,16 @@ from cross_perspective.schemas import (
     AgentRole,
     Agreement,
     AssessmentIssue,
+    CRITIC_CANONICAL_STATEMENTS,
+    CriticDraft,
+    CriticExecutionStatus,
+    CriticRelationDraft,
     CrossPerspectiveAnswer,
     CrossPerspectiveConsultRequest,
+    CrossPerspectiveCritique,
     CrossPerspectiveDraft,
+    CrossPerspectiveRelation,
+    CrossPerspectiveRelationType,
     DifferenceOrConflict,
     EvidenceReference,
     ModelCallEvent,
@@ -203,9 +226,21 @@ class StubAdapter:
 class StubGovernance:
     def __init__(self) -> None:
         self.received = None
+        self.received_assessments = None
+        self.received_critique = None
 
-    async def synthesize(self, *, question: str, packets):
+    async def synthesize(
+        self,
+        *,
+        question: str,
+        packets,
+        assessments=None,
+        critique=None,
+        **kwargs,
+    ):
         self.received = packets
+        self.received_assessments = assessments
+        self.received_critique = critique
         d = draft(western_available=packets["western"].available)
         source_map = build_deterministic_source_map(d, packets)
         result = CrossPerspectiveAnswer(
@@ -2322,3 +2357,2085 @@ def test_advisory_prompt_contract_exposes_assessment_issue_schema_and_claim_id_r
     # 6. No fake claim IDs like c1 or c2 anywhere in the prompt
     assert '"c1"' not in prompt
     assert '"c2"' not in prompt
+
+
+# =====================================================================
+# Cross-Perspective v0.4 Patch 3: Critic and Governance Integration Tests
+# =====================================================================
+
+
+def test_critic_schemas_reject_extra_fields() -> None:
+    # 1. CrossPerspectiveRelation rejects extra fields
+    with pytest.raises(ValidationError) as exc:
+        CrossPerspectiveRelation.model_validate({
+            "relation_type": "possible_agreement",
+            "statement": "Both agree on mild analgesia.",
+            "tcm_claim_ids": ["tcm:c1"],
+            "western_claim_ids": ["western:c1"],
+            "extra_field": "forbidden",
+        })
+    assert "extra_forbidden" in str(exc.value)
+
+    # 2. CrossPerspectiveCritique rejects extra fields
+    with pytest.raises(ValidationError) as exc2:
+        CrossPerspectiveCritique.model_validate({
+            "relations": [],
+            "extra_field": "forbidden",
+        })
+    assert "extra_forbidden" in str(exc2.value)
+
+
+def test_critic_schema_field_bounds_and_validations() -> None:
+    # Statement cannot be empty
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="possible_agreement",
+            statement="",
+            tcm_claim_ids=["tcm:c1"],
+            western_claim_ids=["western:c1"],
+        )
+
+    # Empty tcm_claim_ids fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="possible_agreement",
+            statement="Valid statement.",
+            tcm_claim_ids=[],
+            western_claim_ids=["western:c1"],
+        )
+
+    # tcm_claim_ids > 4 fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="possible_agreement",
+            statement="Valid statement.",
+            tcm_claim_ids=["c1", "c2", "c3", "c4", "c5"],
+            western_claim_ids=["western:c1"],
+        )
+
+    # Empty western_claim_ids fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="possible_agreement",
+            statement="Valid statement.",
+            tcm_claim_ids=["tcm:c1"],
+            western_claim_ids=[],
+        )
+
+    # western_claim_ids > 4 fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="possible_agreement",
+            statement="Valid statement.",
+            tcm_claim_ids=["tcm:c1"],
+            western_claim_ids=["w1", "w2", "w3", "w4", "w5"],
+        )
+
+    # Invalid relation_type fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveRelation(
+            relation_type="unsupported_relation_type",  # type: ignore[arg-type]
+            statement="Valid statement.",
+            tcm_claim_ids=["tcm:c1"],
+            western_claim_ids=["western:c1"],
+        )
+
+    # Relations > 4 in critique fails
+    with pytest.raises(ValidationError):
+        CrossPerspectiveCritique(
+            relations=[
+                CrossPerspectiveRelation(
+                    relation_type="possible_agreement",
+                    statement=f"Statement {i}",
+                    tcm_claim_ids=["tcm:c1"],
+                    western_claim_ids=["western:c1"],
+                )
+                for i in range(5)
+            ]
+        )
+
+
+def test_critic_deterministic_validation_valid_cases() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    # Empty relations list is valid
+    critique_empty = CrossPerspectiveCritique(relations=[])
+    validate_critic_critique(critique_empty, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # Relations across all 3 allowed relation types
+    critique_valid = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=CRITIC_CANONICAL_STATEMENTS["possible_agreement"],
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            ),
+            CrossPerspectiveRelation(
+                relation_type="possible_difference_or_conflict",
+                statement=CRITIC_CANONICAL_STATEMENTS["possible_difference_or_conflict"],
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            ),
+            CrossPerspectiveRelation(
+                relation_type="not_directly_comparable",
+                statement=CRITIC_CANONICAL_STATEMENTS["not_directly_comparable"],
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            ),
+        ]
+    )
+    validate_critic_critique(critique_valid, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+
+def test_critic_deterministic_validation_rejects_invalid_claims() -> None:
+    tcm_pkt = packet("tcm").model_copy(deep=True)
+    tcm_pkt.claims.append(
+        PerspectiveClaim(
+            claim_id="tcm:insuf",
+            claim_text="Insufficient TCM claim.",
+            support_status="insufficient",
+        )
+    )
+    west_pkt = packet("western").model_copy(deep=True)
+    west_pkt.claims.append(
+        PerspectiveClaim(
+            claim_id="western:insuf",
+            claim_text="Insufficient Western claim.",
+            support_status="insufficient",
+        )
+    )
+
+    canonical_stmt = CRITIC_CANONICAL_STATEMENTS["possible_agreement"]
+
+    # 1. Unknown TCM claim ID fails
+    crit_bad_tcm = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:invented_claim_999"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="non-existent TCM claim ID"):
+        validate_critic_critique(crit_bad_tcm, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 2. Unknown Western claim ID fails
+    crit_bad_west = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:invented_claim_999"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="non-existent Western claim ID"):
+        validate_critic_critique(crit_bad_west, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 3. Insufficient TCM claim ID fails
+    crit_insuf_tcm = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:insuf"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="TCM claim ID.*support_status 'insufficient'"):
+        validate_critic_critique(crit_insuf_tcm, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 4. Insufficient Western claim ID fails
+    crit_insuf_west = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:insuf"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="Western claim ID.*support_status 'insufficient'"):
+        validate_critic_critique(crit_insuf_west, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 5. Duplicate TCM claim IDs inside one relation fails
+    crit_dup_tcm = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1", "tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="duplicate tcm_claim_ids"):
+        validate_critic_critique(crit_dup_tcm, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 6. Duplicate Western claim IDs inside one relation fails
+    crit_dup_west = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1", "western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="duplicate western_claim_ids"):
+        validate_critic_critique(crit_dup_west, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 7. Duplicate relation fails
+    crit_dup_rel = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            ),
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement=canonical_stmt,
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            ),
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="duplicate of a previous relation"):
+        validate_critic_critique(crit_dup_rel, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # 8. Non-canonical statement fails
+    crit_non_canonical = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Free-text custom statement that is non-canonical.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="statement is non-canonical"):
+        validate_critic_critique(crit_non_canonical, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+
+def test_critic_preconditions() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    valid_assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM summary.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West summary.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    # 1. Both packets usable and assessments present -> (True, "completed")
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": west_pkt},
+        assessments=valid_assessments,
+    )
+    assert ready is True
+    assert status == "completed"
+
+    # 2. TCM packet unavailable -> (False, "not_applicable")
+    tcm_unavail = tcm_pkt.model_copy(update={"available": False, "execution_status": "unavailable"})
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_unavail, "western": west_pkt},
+        assessments=valid_assessments,
+    )
+    assert ready is False
+    assert status == "not_applicable"
+
+    # 3. Western packet not selected -> (False, "not_applicable")
+    west_not_sel = west_pkt.model_copy(update={"available": False, "execution_status": "not_selected"})
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": west_not_sel},
+        assessments=valid_assessments,
+    )
+    assert ready is False
+    assert status == "not_applicable"
+
+    # 4. Zero usable claims in TCM -> (False, "not_applicable")
+    tcm_no_claims = tcm_pkt.model_copy(update={"claims": []})
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_no_claims, "western": west_pkt},
+        assessments=valid_assessments,
+    )
+    assert ready is False
+    assert status == "not_applicable"
+
+    # 5. Only insufficient claims in Western -> (False, "not_applicable")
+    west_insuf_only = west_pkt.model_copy(update={
+        "claims": [
+            PerspectiveClaim(
+                claim_id="western:insuf1",
+                claim_text="Insufficient claim only.",
+                support_status="insufficient",
+            )
+        ]
+    })
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": west_insuf_only},
+        assessments=valid_assessments,
+    )
+    assert ready is False
+    assert status == "not_applicable"
+
+    # 6. Packets usable, but TCM has 0 assessments -> (False, "skipped_insufficient_assessments")
+    missing_tcm_ass = {"tcm": [], "western": valid_assessments["western"]}
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": west_pkt},
+        assessments=missing_tcm_ass,
+    )
+    assert ready is False
+    assert status == "skipped_insufficient_assessments"
+
+    # 7. Packets usable, but Western has 0 assessments -> (False, "skipped_insufficient_assessments")
+    missing_west_ass = {"tcm": valid_assessments["tcm"], "western": []}
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": west_pkt},
+        assessments=missing_west_ass,
+    )
+    assert ready is False
+    assert status == "skipped_insufficient_assessments"
+
+
+def test_build_critic_payload_and_prompts_structure() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="This secret summary should be omitted.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[
+                    AssessmentIssue(
+                        issue_type="uncertainty",
+                        description="Anchored uncertainty on c1.",
+                        claim_ids=["tcm:c1"],
+                    ),
+                    AssessmentIssue(
+                        issue_type="coverage_gap",
+                        description="Unanchored free-text coverage gap.",
+                        claim_ids=[],
+                    ),
+                ],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="coverage_auditor",
+                assessment_summary="Western secret summary.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    payload = build_critic_payload(
+        question="How do TCM and Western perspectives address headache?",
+        packets={"tcm": tcm_pkt, "western": west_pkt},
+        assessments=assessments,
+    )
+
+    # 1. Payload contains question, packets, and assessments
+    assert payload["question"] == "How do TCM and Western perspectives address headache?"
+    assert "tcm" in payload["evidence_packets"]
+    assert "western" in payload["evidence_packets"]
+    assert len(payload["perspective_assessments"]["tcm"]) == 1
+    assert len(payload["perspective_assessments"]["western"]) == 1
+
+    # 2. Limitations included for both perspectives
+    assert "limitations" in payload["evidence_packets"]["tcm"]
+    assert "limitations" in payload["evidence_packets"]["western"]
+    assert payload["evidence_packets"]["tcm"]["limitations"] == list(tcm_pkt.limitations)
+    assert payload["evidence_packets"]["western"]["limitations"] == list(west_pkt.limitations)
+
+    # 3. Packet interpretation is strictly omitted from Critic payload
+    assert "interpretation" not in payload["evidence_packets"]["tcm"]
+    assert "interpretation" not in payload["evidence_packets"]["western"]
+
+    # 4. assessment_summary is strictly omitted
+    payload_str = json.dumps(payload)
+    assert "This secret summary should be omitted." not in payload_str
+    assert "Western secret summary." not in payload_str
+
+    # 5. Local issue projection: anchored description included, unanchored description omitted
+    tcm_issues = payload["perspective_assessments"]["tcm"][0]["issues"]
+    assert len(tcm_issues) == 2
+    anchored_issue = [i for i in tcm_issues if i["claim_ids"] == ["tcm:c1"]][0]
+    assert anchored_issue["description"] == "Anchored uncertainty on c1."
+    assert anchored_issue["issue_type"] == "uncertainty"
+
+    unanchored_issue = [i for i in tcm_issues if i["claim_ids"] == []][0]
+    assert "description" not in unanchored_issue
+    assert unanchored_issue["issue_type"] == "coverage_gap"
+    assert unanchored_issue["claim_ids"] == []
+    assert "Unanchored free-text coverage gap." not in payload_str
+
+    # 6. User prompt includes structural template and exact instructions
+    user_prompt = build_critic_user_prompt(
+        question="How do TCM and Western perspectives address headache?",
+        payload=payload,
+    )
+    # A. No fake claim IDs in template or prompt
+    assert "tcm_claim_id_1" not in user_prompt
+    assert "western_claim_id_1" not in user_prompt
+    assert '{\n  "relations": []\n}' in user_prompt
+
+    # B. Clearly specifies the three relation object fields and forbids statement
+    assert "- relation_type" in user_prompt
+    assert "- tcm_claim_ids" in user_prompt
+    assert "- western_claim_ids" in user_prompt
+    assert "Do NOT include a 'statement' field" in user_prompt
+    assert "Python will generate the display statement deterministically" in user_prompt
+
+    # C. Contains all three exact relation_type values
+    assert "possible_agreement" in user_prompt
+    assert "possible_difference_or_conflict" in user_prompt
+    assert "not_directly_comparable" in user_prompt
+
+    # 7. System prompt contains role boundary, model instructions, and strengthened safety rules
+    assert "Cross-Perspective Critic" in CRITIC_SYSTEM_PROMPT
+    assert "Do not use outside medical knowledge." in CRITIC_SYSTEM_PROMPT
+    assert "Similar wording is NOT automatically agreement." in CRITIC_SYSTEM_PROMPT
+    assert "Different frameworks are NOT automatically conflict." in CRITIC_SYSTEM_PROMPT
+    assert "Do not force a relation when none is clearly supported. relations may be []." in CRITIC_SYSTEM_PROMPT
+    assert "Advisory signals are not evidence. A local advisor's agreement or disagreement is not evidence." in CRITIC_SYSTEM_PROMPT
+    assert "Every relation must remain anchored to usable claim IDs from BOTH perspectives." in CRITIC_SYSTEM_PROMPT
+    assert "support_status != 'insufficient'" in CRITIC_SYSTEM_PROMPT
+    assert "Do not expose chain-of-thought." in CRITIC_SYSTEM_PROMPT
+
+
+def test_critic_timeout_and_agent_provider_configuration() -> None:
+    # 1. Constant is exactly 240.0 seconds
+    assert CRITIC_TIMEOUT_SECONDS == 240.0
+
+    # 2. Default agent construction passes 240.0 seconds to provider
+    agent = CrossPerspectiveCriticAgent()
+    assert agent.provider.model == CRITIC_MODEL
+    assert getattr(agent.provider, "timeout", None) == 240.0
+    assert getattr(agent.provider, "max_tokens", None) == CRITIC_MAX_TOKENS
+    assert getattr(agent.provider, "thinking_behavior", None) == "send_false"
+
+
+def test_critic_agent_structured_call_and_telemetry() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    valid_critique_data = {
+        "relations": [
+            {
+                "relation_type": "possible_agreement",
+                "tcm_claim_ids": ["tcm:c1"],
+                "western_claim_ids": ["western:c1"],
+            }
+        ]
+    }
+    provider = QueueProvider(CRITIC_MODEL, [valid_critique_data])
+    agent = CrossPerspectiveCriticAgent(provider=provider)
+
+    res = asyncio.run(
+        agent.critique(
+            question="Compare headache evidence.",
+            packets={"tcm": tcm_pkt, "western": west_pkt},
+            assessments=assessments,
+        )
+    )
+
+    assert isinstance(res.value, CrossPerspectiveCritique)
+    assert len(res.value.relations) == 1
+    assert res.value.relations[0].relation_type == "possible_agreement"
+    assert res.value.relations[0].statement == CRITIC_CANONICAL_STATEMENTS["possible_agreement"]
+    assert provider.calls == 1
+
+    # Check telemetry event
+    assert len(res.events) == 1
+    event = res.events[0]
+    assert event.role == "cross_perspective_critic"
+    assert event.perspective is None
+    assert event.requested_model == CRITIC_MODEL
+    assert event.success is True
+
+
+def test_critic_agent_semantic_validation_failure_raises_without_retry() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    bad_claim_critique_data = {
+        "relations": [
+            {
+                "relation_type": "possible_agreement",
+                "tcm_claim_ids": ["tcm:invented_non_existent"],
+                "western_claim_ids": ["western:c1"],
+            }
+        ]
+    }
+    provider = QueueProvider(CRITIC_MODEL, [bad_claim_critique_data])
+    agent = CrossPerspectiveCriticAgent(provider=provider)
+
+    with pytest.raises(StructuredModelCallFailure) as exc_info:
+        asyncio.run(
+            agent.critique(
+                question="Compare headache evidence.",
+                packets={"tcm": tcm_pkt, "western": west_pkt},
+                assessments=assessments,
+            )
+        )
+
+    assert provider.calls == 1
+    events = exc_info.value.events
+    assert len(events) == 1
+    assert events[0].success is False
+    assert events[0].failure_class == "semantic"
+    assert events[0].retry_performed is False
+    assert "non-existent TCM claim ID" in events[0].error_summary
+
+
+def test_critic_agent_technical_timeout_performs_single_retry() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    valid_critique_data = {
+        "relations": [
+            {
+                "relation_type": "possible_agreement",
+                "tcm_claim_ids": ["tcm:c1"],
+                "western_claim_ids": ["western:c1"],
+            }
+        ]
+    }
+    provider = QueueProvider(
+        CRITIC_MODEL,
+        [
+            ProviderUnavailable("Critic initial network timeout", error_type="timeout"),
+            valid_critique_data,
+        ],
+    )
+    agent = CrossPerspectiveCriticAgent(provider=provider)
+
+    res = asyncio.run(
+        agent.critique(
+            question="Compare headache evidence.",
+            packets={"tcm": tcm_pkt, "western": west_pkt},
+            assessments=assessments,
+        )
+    )
+
+    assert provider.calls == 2
+    assert len(res.events) == 2
+    assert res.events[0].attempt == 1
+    assert res.events[0].retry_performed is True
+    assert res.events[1].attempt == 2
+    assert res.events[1].success is True
+
+
+def test_build_governance_advisory_context_projection_rules() -> None:
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="Omitted summary text.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[
+                    # Anchored issue -> description MUST be included
+                    AssessmentIssue(
+                        issue_type="uncertainty",
+                        description="Anchored uncertainty on c1.",
+                        claim_ids=["tcm:c1"],
+                    ),
+                    # Unanchored issue -> description MUST be omitted to prevent hallucination leakage
+                    AssessmentIssue(
+                        issue_type="coverage_gap",
+                        description="Unanchored free-text coverage concern that should be omitted.",
+                        claim_ids=[],
+                    ),
+                ],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="coverage_auditor",
+                assessment_summary="Another omitted summary.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Both perspectives note symptom reduction.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+
+    test_packets = {"tcm": packet("tcm"), "western": packet("western")}
+    ctx = build_governance_advisory_context(assessments, critique, packets=test_packets)
+
+    # 1. assessment_summary is strictly omitted
+    ctx_str = json.dumps(ctx)
+    assert "Omitted summary text." not in ctx_str
+    assert "Another omitted summary." not in ctx_str
+
+    # 2. Anchored issue has description
+    tcm_issues = ctx["perspective_advisory"]["tcm"][0]["issues"]
+    anchored = [i for i in tcm_issues if i["claim_ids"] == ["tcm:c1"]][0]
+    assert anchored["description"] == "Anchored uncertainty on c1."
+    assert anchored["issue_type"] == "uncertainty"
+
+    # 3. Unanchored issue has description omitted
+    unanchored = [i for i in tcm_issues if i["claim_ids"] == []][0]
+    assert "description" not in unanchored
+    assert unanchored["issue_type"] == "coverage_gap"
+    assert unanchored["claim_ids"] == []
+
+    # 4. Critic relations are properly included
+    assert len(ctx["critic_relations"]) == 1
+    rel = ctx["critic_relations"][0]
+    assert rel["relation_type"] == "possible_agreement"
+    assert rel["statement"] == "Both perspectives note symptom reduction."
+    assert rel["tcm_claim_ids"] == ["tcm:c1"]
+    assert rel["western_claim_ids"] == ["western:c1"]
+
+    # 5. When critique is None, critic_relations is empty list
+    ctx_no_crit = build_governance_advisory_context(assessments, None, packets=test_packets)
+    assert ctx_no_crit["critic_relations"] == []
+
+
+def test_governance_synthesize_contains_two_separated_sections() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+    critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Agreement statement.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+
+    valid_draft_data = draft().model_dump(mode="json")
+    provider = QueueProvider(GOVERNANCE_MODEL, [valid_draft_data])
+    gov_agent = CrossPerspectiveGovernanceAgent(provider=provider)
+
+    res = asyncio.run(
+        gov_agent.synthesize(
+            question="Explain headache treatments.",
+            packets={"tcm": tcm_pkt, "western": west_pkt},
+            assessments=assessments,
+            critique=critique,
+        )
+    )
+
+    assert isinstance(res.value, CrossPerspectiveAnswer)
+    assert provider.calls == 1
+
+    prompt = provider.prompts[0]
+    # Check Section A (Evidence Packets) and Section B (Advisory Context) explicitly separated
+    assert "=== SECTION A: EVIDENCE PACKETS (PRIMARY EVIDENCE) ===" in prompt
+    assert "=== SECTION B: ADVISORY CONTEXT (CONTROLLED ADVISORY SIGNALS ONLY - NOT EVIDENCE) ===" in prompt
+
+    # Check advisory instructions in system prompt
+    assert "ADVISORY CONTEXT RULES:" in GOVERNANCE_SYSTEM_PROMPT
+    assert "Section A contains the ONLY substantive evidence packets." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Section B contains advisory signals" in GOVERNANCE_SYSTEM_PROMPT
+    assert "Advisory signals are NOT evidence" in GOVERNANCE_SYSTEM_PROMPT
+    assert "If advisory guidance conflicts with packet evidence, packet evidence wins." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Agreement between advisory agents is not evidence." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Critic statements are not evidence." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Missing advisory roles must not be hallucinated or reconstructed." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Critic absence or failure must be tolerated." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Advisory context cannot upgrade a packet claim's support_status." in GOVERNANCE_SYSTEM_PROMPT
+
+    # Check advisory safety rules in prompt
+    assert "If advisory guidance conflicts with packet evidence, packet evidence wins." in prompt
+    assert "Agreement between advisory agents is not evidence. Critic statements are not evidence." in prompt
+    assert "Missing advisory roles must not be hallucinated or reconstructed. Critic absence or failure must be tolerated." in prompt
+    assert "Advisory context cannot upgrade a packet claim's support_status." in prompt
+
+
+def test_perspective_local_boundary_rules_in_advisory_prompts() -> None:
+    # Verify that all 3 perspective-local advisory system prompts explicitly enforce the perspective-local boundary
+    for prompt_text in (
+        EVIDENCE_SPECIALIST_SYSTEM_PROMPT,
+        COVERAGE_AUDITOR_SYSTEM_PROMPT,
+        GROUNDING_SKEPTIC_SYSTEM_PROMPT,
+    ):
+        assert "PERSPECTIVE-LOCAL BOUNDARY:" in prompt_text
+        assert "Evaluate only this perspective packet." in prompt_text
+        assert "Do not evaluate whether the other perspective is present or missing" in prompt_text
+        assert "Cross-perspective comparison is outside this role." in prompt_text
+
+
+def test_critic_service_integration_success() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Integrated agreement.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+
+    advisory_suite = StubAdvisorySuite(
+        assessments={
+            "tcm": [
+                PerspectiveAgentAssessment(
+                    perspective="tcm",
+                    role="evidence_specialist",
+                    assessment_summary="TCM summary.",
+                    referenced_claim_ids=["tcm:c1"],
+                    issues=[],
+                )
+            ],
+            "western": [
+                PerspectiveAgentAssessment(
+                    perspective="western",
+                    role="evidence_specialist",
+                    assessment_summary="West summary.",
+                    referenced_claim_ids=["western:c1"],
+                    issues=[],
+                )
+            ],
+        }
+    )
+
+    class StubCritic:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def critique(self, *, question: str, packets, assessments):
+            self.calls += 1
+            return StructuredCallResult(
+                value=critique,
+                events=[
+                    ModelCallEvent(
+                        role="cross_perspective_critic",
+                        attempt=1,
+                        provider="fixture",
+                        requested_model=CRITIC_MODEL,
+                        success=True,
+                        latency_ms=25.0,
+                    )
+                ],
+            )
+
+    stub_critic = StubCritic()
+    stub_gov = StubGovernance()
+    sink = MemoryTraceSink()
+
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=advisory_suite,
+        critic=stub_critic,  # type: ignore[arg-type]
+        governance=stub_gov,
+        trace_sink=sink,
+    )
+
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Compare headache treatments.")))
+
+    assert resp.status == "completed"
+    assert stub_critic.calls == 1
+    assert resp.critic_status == "completed"
+    assert resp.cross_perspective_critique is not None
+    assert len(resp.cross_perspective_critique.relations) == 1
+
+    # Check trace
+    trace = sink.items[0]
+    assert trace.critic_status == "completed"
+    assert trace.cross_perspective_critique is not None
+    assert trace.model_ids["cross_perspective_critic"] == CRITIC_MODEL
+    assert "advisory_context" in trace.governance_input
+    assert len(trace.governance_input["advisory_context"]["critic_relations"]) == 1
+
+    # Check Governance received critique
+    assert stub_gov.received_critique is not None
+    assert stub_gov.received_critique.relations[0].statement == "Integrated agreement."
+
+
+def test_critic_service_integration_skipped_when_preconditions_not_met() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    class StubCritic:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def critique(self, **kwargs):
+            self.calls += 1
+            raise RuntimeError("Should not be called")
+
+    stub_critic = StubCritic()
+
+    # Case 1: Single perspective selected (TCM only) -> not_applicable
+    service1 = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=StubAdvisorySuite(),
+        critic=stub_critic,  # type: ignore[arg-type]
+        governance=StubGovernance(),
+        trace_sink=MemoryTraceSink(),
+    )
+
+    resp1 = asyncio.run(
+        service1.consult(
+            CrossPerspectiveConsultRequest(
+                question="TCM only query.",
+                perspectives=["tcm"],
+                router_mode="forced",
+            )
+        )
+    )
+    assert stub_critic.calls == 0
+    assert resp1.critic_status == "not_applicable"
+    assert resp1.cross_perspective_critique is None
+    assert "cross_perspective_critic" not in resp1.failed_roles
+
+    # Case 2: Dual selected, but TCM produced 0 assessments -> skipped_insufficient_assessments
+    advisory_suite_missing_tcm = StubAdvisorySuite(
+        assessments={
+            "tcm": [],
+            "western": [
+                PerspectiveAgentAssessment(
+                    perspective="western",
+                    role="evidence_specialist",
+                    assessment_summary="West summary.",
+                    referenced_claim_ids=["western:c1"],
+                    issues=[],
+                )
+            ],
+        }
+    )
+
+    service2 = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=advisory_suite_missing_tcm,
+        critic=stub_critic,  # type: ignore[arg-type]
+        governance=StubGovernance(),
+        trace_sink=MemoryTraceSink(),
+    )
+
+    resp2 = asyncio.run(
+        service2.consult(
+            CrossPerspectiveConsultRequest(
+                question="Dual query with missing TCM advisory.",
+                perspectives=["tcm", "western"],
+                router_mode="forced",
+            )
+        )
+    )
+    assert stub_critic.calls == 0
+    assert resp2.critic_status == "skipped_insufficient_assessments"
+    assert resp2.cross_perspective_critique is None
+    assert "cross_perspective_critic" not in resp2.failed_roles
+
+
+def test_critic_service_failure_isolation() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+
+    advisory_suite = StubAdvisorySuite(
+        assessments={
+            "tcm": [
+                PerspectiveAgentAssessment(
+                    perspective="tcm",
+                    role="evidence_specialist",
+                    assessment_summary="TCM summary.",
+                    referenced_claim_ids=["tcm:c1"],
+                    issues=[],
+                )
+            ],
+            "western": [
+                PerspectiveAgentAssessment(
+                    perspective="western",
+                    role="evidence_specialist",
+                    assessment_summary="West summary.",
+                    referenced_claim_ids=["western:c1"],
+                    issues=[],
+                )
+            ],
+        }
+    )
+
+    class FailingCritic:
+        async def critique(self, **kwargs):
+            raise StructuredModelCallFailure(
+                "Critic provider timed out.",
+                events=[
+                    ModelCallEvent(
+                        role="cross_perspective_critic",
+                        attempt=2,
+                        provider="fixture",
+                        requested_model=CRITIC_MODEL,
+                        success=False,
+                        failure_class="timeout",
+                        error_summary="Critic timeout",
+                    )
+                ],
+            )
+
+    sink = MemoryTraceSink()
+    stub_gov = StubGovernance()
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_pkt),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=advisory_suite,
+        critic=FailingCritic(),  # type: ignore[arg-type]
+        governance=stub_gov,
+        trace_sink=sink,
+    )
+
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Dual query with critic timeout.")))
+
+    # 1. Critic failure does NOT crash service; Governance still runs and produces an answer
+    assert resp.answer is not None
+    assert resp.status == "partial_failure"
+
+    # 2. Failed roles contains cross_perspective_critic
+    assert "cross_perspective_critic" in resp.failed_roles
+
+    # 3. Status is failed and critique is None
+    assert resp.critic_status == "failed"
+    assert resp.cross_perspective_critique is None
+
+    # 4. Trace records failure accurately
+    trace = sink.items[0]
+    assert trace.critic_status == "failed"
+    assert trace.cross_perspective_critique is None
+    assert "cross_perspective_critic" in trace.failed_roles
+
+    # 5. Governance advisory context safely defaulted
+    assert trace.governance_input["advisory_context"]["critic_relations"] == []
+    assert stub_gov.received_critique is None
+
+
+def test_critic_service_early_router_failure_trace_and_no_typeerror() -> None:
+    # Verify early router failure path does not crash on missing critic fields
+    provider = QueueProvider(ROUTER_MODEL, [ProviderUnavailable("Router network down", error_type="timeout")])
+    router = CrossPerspectiveRouter(provider=provider)
+    sink = MemoryTraceSink()
+    service = CrossPerspectiveService(
+        router=router,
+        trace_sink=sink,
+    )
+
+    with pytest.raises(CrossPerspectiveRunError) as exc_info:
+        asyncio.run(
+            service.consult(
+                CrossPerspectiveConsultRequest(
+                    question="Will router fail early?",
+                    router_mode="auto",
+                )
+            )
+        )
+
+    trace = exc_info.value.trace
+    assert trace.failed_roles == ["router"]
+    assert trace.perspective_assessments == {}
+    assert trace.critic_status == "not_applicable"
+    assert trace.cross_perspective_critique is None
+
+
+def test_critic_preconditions_degraded_packet_with_usable_claims_is_eligible() -> None:
+    # 1. TCM packet is degraded with failure metadata, but available and has usable claims
+    tcm_degraded = packet("tcm").model_copy(
+        update={
+            "available": True,
+            "execution_status": "degraded",
+            "failure": PerspectiveFailure(
+                role="tcm",
+                failure_type="provider",
+                error_summary="Primary provider failed; fallback evidence recovered.",
+                http_status=503,
+                retry_count=1,
+            ),
+        }
+    )
+    west_pkt = packet("western")
+    valid_assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM summary.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West summary.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    # Preconditions MUST pass because packet is available and has usable claims
+    ready, status = check_critic_preconditions(
+        packets={"tcm": tcm_degraded, "western": west_pkt},
+        assessments=valid_assessments,
+    )
+    assert ready is True
+    assert status == "completed"
+
+    # 2. Degraded + available + zero usable claims MUST be not_applicable
+    tcm_degraded_no_claims = tcm_degraded.model_copy(update={"claims": []})
+    ready2, status2 = check_critic_preconditions(
+        packets={"tcm": tcm_degraded_no_claims, "western": west_pkt},
+        assessments=valid_assessments,
+    )
+    assert ready2 is False
+    assert status2 == "not_applicable"
+
+
+def test_critic_service_executes_on_degraded_packet_with_usable_claims() -> None:
+    tcm_degraded = packet("tcm").model_copy(
+        update={
+            "available": True,
+            "execution_status": "degraded",
+            "failure": PerspectiveFailure(
+                role="tcm",
+                failure_type="timeout",
+                error_summary="Timeout on primary endpoint",
+            ),
+        }
+    )
+    west_pkt = packet("western")
+
+    class StubCritic:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def critique(self, **kwargs):
+            self.calls += 1
+            return StructuredCallResult(
+                value=CrossPerspectiveCritique(
+                    relations=[
+                        CrossPerspectiveRelation(
+                            relation_type="possible_agreement",
+                            statement="Agreement with degraded TCM.",
+                            tcm_claim_ids=["tcm:c1"],
+                            western_claim_ids=["western:c1"],
+                        )
+                    ]
+                ),
+                events=[
+                    ModelCallEvent(
+                        role="cross_perspective_critic",
+                        attempt=1,
+                        provider="fixture",
+                        requested_model=CRITIC_MODEL,
+                        success=True,
+                        latency_ms=20.0,
+                    )
+                ],
+            )
+
+    stub_critic = StubCritic()
+    service = CrossPerspectiveService(
+        router=CrossPerspectiveRouter(provider=QueueProvider(ROUTER_MODEL, [])),
+        tcm_adapter=StubAdapter(tcm_degraded),
+        western_adapter=StubAdapter(west_pkt),
+        advisory_suite=StubAdvisorySuite(
+            assessments={
+                "tcm": [
+                    PerspectiveAgentAssessment(
+                        perspective="tcm",
+                        role="evidence_specialist",
+                        assessment_summary="TCM summary.",
+                        referenced_claim_ids=["tcm:c1"],
+                        issues=[],
+                    )
+                ],
+                "western": [
+                    PerspectiveAgentAssessment(
+                        perspective="western",
+                        role="evidence_specialist",
+                        assessment_summary="West summary.",
+                        referenced_claim_ids=["western:c1"],
+                        issues=[],
+                    )
+                ],
+            }
+        ),
+        critic=stub_critic,  # type: ignore[arg-type]
+        governance=StubGovernance(),
+        trace_sink=MemoryTraceSink(),
+    )
+
+    resp = asyncio.run(service.consult(CrossPerspectiveConsultRequest(question="Question on degraded TCM?")))
+    # Critic was attempted and completed
+    assert stub_critic.calls == 1
+    assert resp.critic_status == "completed"
+    assert resp.cross_perspective_critique is not None
+
+
+def test_critic_telemetry_preserves_technical_timeout_when_subsequent_attempt_fails_semantically() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    # Attempt 1: Provider technical timeout
+    # Attempt 2: Provider returns valid JSON, but claim ID validation fails
+    invalid_claim_critique = {
+        "relations": [
+            {
+                "relation_type": "possible_agreement",
+                "tcm_claim_ids": ["tcm:non_existent_claim_id_999"],
+                "western_claim_ids": ["western:c1"],
+            }
+        ]
+    }
+    provider = QueueProvider(
+        CRITIC_MODEL,
+        [
+            ProviderUnavailable("Initial network timeout on critic endpoint", error_type="timeout"),
+            invalid_claim_critique,
+        ],
+    )
+    agent = CrossPerspectiveCriticAgent(provider=provider)
+
+    with pytest.raises(StructuredModelCallFailure) as exc_info:
+        asyncio.run(
+            agent.critique(
+                question="Compare headache evidence.",
+                packets={"tcm": tcm_pkt, "western": west_pkt},
+                assessments=assessments,
+            )
+        )
+
+    assert provider.calls == 2
+    events = exc_info.value.events
+    assert len(events) == 2
+
+    # Attempt 1: Technical timeout MUST remain timeout, NOT rewritten as semantic
+    assert events[0].attempt == 1
+    assert events[0].success is False
+    assert events[0].failure_class == "timeout"
+    assert events[0].retry_performed is True
+    assert "Initial network timeout on critic endpoint" in events[0].error_summary
+
+    # Attempt 2: Provider succeeded, but Critic claim validation failed -> semantic failure
+    assert events[1].attempt == 2
+    assert events[1].success is False
+    assert events[1].failure_class == "semantic"
+    assert "non-existent TCM claim ID" in events[1].error_summary
+
+
+def test_governance_advisory_context_does_not_mutate_original_packets() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    packets = {"tcm": tcm_pkt, "western": west_pkt}
+
+    tcm_dump_before = tcm_pkt.model_dump(mode="json")
+    west_dump_before = west_pkt.model_dump(mode="json")
+
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM summary.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[
+                    AssessmentIssue(
+                        issue_type="uncertainty",
+                        description="Anchored issue.",
+                        claim_ids=["tcm:c1"],
+                    )
+                ],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="coverage_auditor",
+                assessment_summary="West summary.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+    critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Both agree.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+
+    # Call build_governance_advisory_context
+    _ = build_governance_advisory_context(assessments, critique, packets=packets)
+
+    # Call Governance synthesize
+    gov_agent = CrossPerspectiveGovernanceAgent(provider=QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")]))
+    _ = asyncio.run(gov_agent.synthesize(question="Question?", packets=packets, assessments=assessments, critique=critique))
+
+    # Assert packets were not mutated in any way
+    assert packets["tcm"].model_dump(mode="json") == tcm_dump_before
+    assert packets["western"].model_dump(mode="json") == west_dump_before
+
+
+def test_governance_prompt_contract_hardened_rules() -> None:
+    # Test A: System/user prompt explicitly distinguishes: usable claim vs direct relevance
+    assert 'A "usable claim" is defined structurally as a supplied packet claim with support_status != "insufficient"' in GOVERNANCE_SYSTEM_PROMPT
+    assert "Limited direct relevance, limited applicability, uncertainty, coverage gaps, or weak case-specific fit do NOT make a usable claim disappear or become unusable" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test B: Prompt says limited relevance does not permit dropping required supported_claim_ids
+    assert "supported_claim_ids may be empty for an available perspective ONLY when that perspective truly contains zero usable claims" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test C: Prompt says no_usable_claims is allowed only when zero packet claims have support_status != "insufficient"
+    assert "supported_claim_ids may be empty for an available perspective ONLY when that perspective truly contains zero usable claims" in GOVERNANCE_SYSTEM_PROMPT
+    assert '"no_usable_claims" means literally zero claims with support_status != "insufficient"' in GOVERNANCE_SYSTEM_PROMPT
+    assert "no_usable_claims must NOT be inferred merely from poor relevance, indirectness, or an advisory coverage gap" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test D: Prompt says coverage-gap advisory signals cannot redefine a usable packet claim as unusable
+    assert 'advisory issue_type="coverage_gap" does NOT redefine packet claims as unusable' in GOVERNANCE_SYSTEM_PROMPT
+    assert "Advisory context cannot remove, invalidate, or downgrade a packet claim" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test E: Prompt says when perspective summary describes usable evidence, supported_claim_ids must cite the smallest sufficient exact IDs
+    assert "If a perspective is available and contains one or more usable claims, and its perspective summary states what those claims/evidence discuss, supported_claim_ids MUST contain the smallest sufficient subset of those exact usable claim IDs" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test F: Prompt says if overall_summary substantively describes both perspectives, support IDs must include the claims needed from both
+    assert "If overall_summary describes substantive evidence from BOTH TCM and Western perspectives, overall_supporting_claim_ids must include the needed claim IDs from BOTH perspectives" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Test user prompt in synthesize:
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    q_prov = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    gov_agent = CrossPerspectiveGovernanceAgent(provider=q_prov)
+    _ = asyncio.run(gov_agent.synthesize(question="Synthetic headache question?", packets=packets))
+    assert len(q_prov.prompts) == 1
+    u_prompt = q_prov.prompts[0]
+
+    # Check user prompt clauses
+    assert 'A "usable claim" is defined structurally as a supplied packet claim with support_status != "insufficient"' in u_prompt
+    assert "Limited direct relevance, limited applicability, uncertainty, coverage gaps, or weak case-specific fit do NOT make a usable claim disappear or become unusable" in u_prompt
+    assert 'Advisory issue_type="coverage_gap" does NOT redefine packet claims as unusable' in u_prompt
+    assert "DO NOT leave supported_claim_ids empty merely because direct relevance is limited" in u_prompt
+    assert 'IF literally zero usable packet claims exist (zero claims with support_status != "insufficient")' in u_prompt
+    assert "If overall_summary describes substantive evidence from BOTH TCM and Western perspectives, overall_supporting_claim_ids must include the needed claim IDs from BOTH perspectives" in u_prompt
+    assert "If the summary mentions substantive packet content, supported_claim_ids MUST cite the smallest sufficient subset of those exact usable claim IDs" in u_prompt
+
+
+def test_validator_rejects_available_perspective_with_usable_claims_and_empty_supported_ids() -> None:
+    # Test G: Existing deterministic validator still rejects:
+    # available perspective + >=1 usable claim + supported_claim_ids=[]
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True)
+    d.perspectives.western.supported_claim_ids = []
+    source_map = build_deterministic_source_map(d, packets)
+    ans = CrossPerspectiveAnswer(
+        overall_summary=d.overall_summary,
+        overall_supporting_claim_ids=d.overall_supporting_claim_ids,
+        perspectives=d.perspectives,
+        agreements=d.agreements,
+        differences_or_conflicts=d.differences_or_conflicts,
+        evidence_gaps=d.evidence_gaps,
+        uncertainty=d.uncertainty,
+        source_map=source_map,
+    )
+    with pytest.raises(GovernanceContractError, match="available western summary must cite usable claims"):
+        validate_governance_grounding(ans, packets)
+
+
+def test_validator_passes_limited_relevance_summary_when_supported_ids_cited() -> None:
+    # Test H: Construct a valid answer where:
+    # Western summary says the retrieved evidence discusses MEG/sleep but direct applicability is limited
+    # AND supported_claim_ids contains the relevant valid Western claim IDs.
+    # Confirm validate_governance_grounding(...) PASSES.
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    d = draft(western_available=True)
+    d.perspectives.western.summary = (
+        "The Western perspective discusses MEG and sleep architecture in headache disorders, "
+        "but direct relevance to recurrent mild headache is limited."
+    )
+    d.perspectives.western.supported_claim_ids = ["western:c1"]
+    source_map = build_deterministic_source_map(d, packets)
+    ans = CrossPerspectiveAnswer(
+        overall_summary=d.overall_summary,
+        overall_supporting_claim_ids=d.overall_supporting_claim_ids,
+        perspectives=d.perspectives,
+        agreements=d.agreements,
+        differences_or_conflicts=d.differences_or_conflicts,
+        evidence_gaps=["Direct clinical relevance of Western MEG/sleep data to mild headache is limited."],
+        uncertainty=["Limited applicability of retrieved Western studies."],
+        source_map=source_map,
+    )
+    validate_governance_grounding(ans, packets)
+
+
+def test_governance_prompt_difference_or_conflict_shape() -> None:
+    # Test A: Prompt explicitly defines exact DifferenceOrConflict object shape
+    expected_shape = '{"statement": "...", "tcm_claim_ids": ["exact TCM claim IDs"], "western_claim_ids": ["exact Western claim IDs"]}'
+    assert expected_shape in GOVERNANCE_SYSTEM_PROMPT
+    assert 'Do NOT output ["relation_type", "statement"] or any list/tuple format' in GOVERNANCE_SYSTEM_PROMPT
+    assert "The Critic schema and Governance DifferenceOrConflict schema are DIFFERENT contracts" in GOVERNANCE_SYSTEM_PROMPT
+    assert "Critic relation_type is advisory metadata" in GOVERNANCE_SYSTEM_PROMPT
+
+    # Check user prompt in synthesize
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    q_prov = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    gov_agent = CrossPerspectiveGovernanceAgent(provider=q_prov)
+    _ = asyncio.run(gov_agent.synthesize(question="Synthetic question?", packets=packets))
+    assert len(q_prov.prompts) == 1
+    u_prompt = q_prov.prompts[0]
+    assert expected_shape in u_prompt
+    assert 'Do NOT output ["relation_type", "statement"] or any list/tuple format' in u_prompt
+    assert "The Critic schema and Governance DifferenceOrConflict schema are DIFFERENT contracts" in u_prompt
+    assert "Critic relation_type is advisory metadata" in u_prompt
+    assert "Claims with support_status == 'insufficient':" in u_prompt
+    assert "cannot support substantive synthesis" in u_prompt
+
+
+def test_critic_semantic_anchor_prompt_rules() -> None:
+    # Under canonical materialization:
+    # Model decides relation_type, tcm_claim_ids, western_claim_ids only.
+    # Python deterministically materializes canonical statement.
+    assert "For each relation, output ONLY relation_type, tcm_claim_ids, and western_claim_ids." in CRITIC_SYSTEM_PROMPT
+    assert "Do NOT output or generate a 'statement' field or any prose fields." in CRITIC_SYSTEM_PROMPT
+    assert "Python will generate the display statement deterministically." in CRITIC_SYSTEM_PROMPT
+    assert "relation_type must still reflect the relationship between the cited claim sets." in CRITIC_SYSTEM_PROMPT
+    assert "relation_type is an advisory semantic judgment, not evidence." in CRITIC_SYSTEM_PROMPT
+
+    # Check user prompt
+    packets = {"tcm": packet("tcm"), "western": packet("western")}
+    payload = build_critic_payload(question="Q", packets=packets, assessments={"tcm": [], "western": []})
+    u_prompt = build_critic_user_prompt(question="Q", payload=payload)
+    assert "Do NOT include a 'statement' field or any prose fields. Python will generate the display statement deterministically." in u_prompt
+    assert "relation_type must accurately reflect the semantic relationship between the cited TCM claim IDs and Western claim IDs." in u_prompt
+    assert "relation_type is an advisory semantic judgment, not evidence." in u_prompt
+
+
+def test_critic_usable_claim_filter_and_preconditions() -> None:
+    # Test C: Construct packet with usable Western claim + western:western-answer-1 (insufficient)
+    tcm_pkt = packet("tcm")
+    west_pkt = PerspectiveEvidencePacket(
+        perspective="western",
+        interpretation="western interp",
+        claims=[
+            PerspectiveClaim(
+                claim_id="western:c1",
+                claim_text="Valid usable MEG neuroimaging finding.",
+                evidence_refs=[EvidenceReference(source_id="w-src-1", chunk_id="w-chk-1", title="Western source")],
+                support_status="supported",
+            ),
+            PerspectiveClaim(
+                claim_id="western:western-answer-1",
+                claim_text="Speculative TCM and Western claim text that should be filtered.",
+                evidence_refs=[],
+                support_status="insufficient",
+            ),
+        ],
+        uncertainty=[],
+        missing_information=[],
+        limitations=[],
+        provenance=[
+            ProvenanceRecord(source_id="w-src-1", chunk_id="w-chk-1", title="Western source"),
+        ],
+    )
+    packets = {"tcm": tcm_pkt, "western": west_pkt}
+    payload = build_critic_payload(question="Q", packets=packets, assessments={"tcm": [], "western": []})
+
+    # Confirm Critic payload contains usable claim but NOT insufficient claim
+    west_claims = payload["evidence_packets"]["western"]["claims"]
+    assert any(c["claim_id"] == "western:c1" for c in west_claims)
+    assert not any(c["claim_id"] == "western:western-answer-1" for c in west_claims)
+    payload_str = json.dumps(payload)
+    assert "western:western-answer-1" not in payload_str
+    assert "Speculative TCM and Western claim text that should be filtered." not in payload_str
+
+    # Confirm precondition counting semantics remain unchanged
+    # 1 usable TCM + 1 usable Western -> ready when assessments present
+    valid_ass = {
+        "tcm": [PerspectiveAgentAssessment(perspective="tcm", role="evidence_specialist", assessment_summary="S", referenced_claim_ids=["tcm:c1"], issues=[])],
+        "western": [PerspectiveAgentAssessment(perspective="western", role="evidence_specialist", assessment_summary="S", referenced_claim_ids=["western:c1"], issues=[])],
+    }
+    is_ready, status = check_critic_preconditions(packets=packets, assessments=valid_ass)
+    assert is_ready is True
+    assert status == "completed"
+
+    # If Western has only insufficient claim -> not_applicable
+    insufficient_west_pkt = PerspectiveEvidencePacket(
+        perspective="western",
+        interpretation="western interp",
+        claims=[
+            PerspectiveClaim(
+                claim_id="western:western-answer-1",
+                claim_text="Only insufficient claim.",
+                evidence_refs=[],
+                support_status="insufficient",
+            ),
+        ],
+        uncertainty=[],
+        missing_information=[],
+        limitations=[],
+        provenance=[],
+    )
+    is_ready_bad, status_bad = check_critic_preconditions(
+        packets={"tcm": tcm_pkt, "western": insufficient_west_pkt},
+        assessments=valid_ass,
+    )
+    assert is_ready_bad is False
+    assert status_bad == "not_applicable"
+
+
+def test_local_agent_perspective_boundary_prompts() -> None:
+    # Test D: Assert all three local prompts explicitly say cross-perspective content is out of scope
+    boundary_marker = "If a claim inside the assigned packet contains text about another perspective, that cross-perspective text remains OUT OF SCOPE"
+    for role_name, prompt_text in [
+        ("evidence_specialist", EVIDENCE_SPECIALIST_SYSTEM_PROMPT),
+        ("coverage_auditor", COVERAGE_AUDITOR_SYSTEM_PROMPT),
+        ("grounding_skeptic", GROUNDING_SKEPTIC_SYSTEM_PROMPT),
+    ]:
+        assert boundary_marker in prompt_text, f"{role_name} missing boundary marker"
+        assert "Do not assess whether another perspective is: present, missing, supported, unsupported" in prompt_text, f"{role_name} missing boundary details"
+        assert "Do not create an issue whose substantive description evaluates the other perspective" in prompt_text, f"{role_name} missing issue boundary"
+
+
+def test_downstream_advisory_insufficient_issue_description_suppression() -> None:
+    # Test E: Insufficient-only issue -> description omitted in Critic & Governance
+    # Test F: Usable-anchored issue -> description preserved
+    # Test G: Mixed usable + insufficient -> description omitted
+    # Test H: Packet & assessment immutability
+
+    tcm_pkt = packet("tcm")
+    west_pkt = PerspectiveEvidencePacket(
+        perspective="western",
+        interpretation="western interp",
+        claims=[
+            PerspectiveClaim(
+                claim_id="western:c1",
+                claim_text="Usable Western claim.",
+                evidence_refs=[EvidenceReference(source_id="w-src-1", chunk_id="w-chk-1", title="Western source")],
+                support_status="supported",
+            ),
+            PerspectiveClaim(
+                claim_id="western:western-answer-1",
+                claim_text="Insufficient Western claim.",
+                evidence_refs=[],
+                support_status="insufficient",
+            ),
+        ],
+        uncertainty=[],
+        missing_information=[],
+        limitations=[],
+        provenance=[
+            ProvenanceRecord(source_id="w-src-1", chunk_id="w-chk-1", title="Western source"),
+        ],
+    )
+    packets = {"tcm": tcm_pkt, "western": west_pkt}
+
+    # E: Insufficient-only issue
+    insufficient_issue = AssessmentIssue(
+        issue_type="grounding_risk",
+        description="The derived claim on TCM perspective is unsupported by the provided evidence.",
+        claim_ids=["western:western-answer-1"],
+    )
+    # F: Usable-anchored issue
+    usable_issue = AssessmentIssue(
+        issue_type="support_ambiguity",
+        description="Usable claim has slight ambiguity.",
+        claim_ids=["western:c1"],
+    )
+    # G: Mixed usable + insufficient issue
+    mixed_issue = AssessmentIssue(
+        issue_type="uncertainty",
+        description="Mixed claim issue.",
+        claim_ids=["western:c1", "western:western-answer-1"],
+    )
+
+    west_assessment = PerspectiveAgentAssessment(
+        perspective="western",
+        role="coverage_auditor",
+        assessment_summary="Summary.",
+        referenced_claim_ids=["western:c1"],
+        issues=[insufficient_issue, usable_issue, mixed_issue],
+    )
+    assessments = {"tcm": [], "western": [west_assessment]}
+
+    tcm_dump_before = tcm_pkt.model_dump(mode="json")
+    west_dump_before = west_pkt.model_dump(mode="json")
+    west_assessment_dump_before = west_assessment.model_dump(mode="json")
+
+    # Project to Critic
+    critic_payload = build_critic_payload(question="Q", packets=packets, assessments=assessments)
+    west_critic_issues = critic_payload["perspective_assessments"]["western"][0]["issues"]
+
+    # E in Critic:
+    issue_e_critic = [i for i in west_critic_issues if i["claim_ids"] == ["western:western-answer-1"]][0]
+    assert "description" not in issue_e_critic
+    assert issue_e_critic["issue_type"] == "grounding_risk"
+    assert issue_e_critic["claim_ids"] == ["western:western-answer-1"]
+
+    # F in Critic:
+    issue_f_critic = [i for i in west_critic_issues if i["claim_ids"] == ["western:c1"]][0]
+    assert issue_f_critic.get("description") == "Usable claim has slight ambiguity."
+    assert issue_f_critic["issue_type"] == "support_ambiguity"
+
+    # G in Critic:
+    issue_g_critic = [i for i in west_critic_issues if i["claim_ids"] == ["western:c1", "western:western-answer-1"]][0]
+    assert "description" not in issue_g_critic
+    assert issue_g_critic["issue_type"] == "uncertainty"
+
+    # Project to Governance
+    gov_ctx = build_governance_advisory_context(assessments, None, packets=packets)
+    west_gov_issues = gov_ctx["perspective_advisory"]["western"][0]["issues"]
+
+    # E in Governance:
+    issue_e_gov = [i for i in west_gov_issues if i["issue_type"] == "grounding_risk"][0]
+    assert "description" not in issue_e_gov
+    assert issue_e_gov["issue_type"] == "grounding_risk"
+    assert issue_e_gov["claim_ids"] == []
+
+    # F in Governance:
+    issue_f_gov = [i for i in west_gov_issues if i["issue_type"] == "support_ambiguity"][0]
+    assert issue_f_gov.get("description") == "Usable claim has slight ambiguity."
+    assert issue_f_gov["issue_type"] == "support_ambiguity"
+    assert issue_f_gov["claim_ids"] == ["western:c1"]
+
+    # G in Governance:
+    issue_g_gov = [i for i in west_gov_issues if i["issue_type"] == "uncertainty"][0]
+    assert "description" not in issue_g_gov
+    assert issue_g_gov["issue_type"] == "uncertainty"
+    assert issue_g_gov["claim_ids"] == []
+
+    # H: Immutability
+    assert packets["tcm"].model_dump(mode="json") == tcm_dump_before
+    assert packets["western"].model_dump(mode="json") == west_dump_before
+    assert west_assessment.model_dump(mode="json") == west_assessment_dump_before
+
+
+def test_critic_canonical_relations_section_9_regressions() -> None:
+    tcm_pkt = packet("tcm")
+    west_pkt = packet("western")
+    assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM ES.",
+                referenced_claim_ids=["tcm:c1"],
+                issues=[],
+            )
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="West ES.",
+                referenced_claim_ids=["western:c1"],
+                issues=[],
+            )
+        ],
+    }
+
+    # A: Internal Critic draft relation contains exactly:
+    # - relation_type
+    # - tcm_claim_ids
+    # - western_claim_ids
+    # and no statement field.
+    assert set(CriticRelationDraft.model_fields.keys()) == {
+        "relation_type",
+        "tcm_claim_ids",
+        "western_claim_ids",
+    }
+    assert "statement" not in CriticRelationDraft.model_fields
+    draft_rel = CriticRelationDraft(
+        relation_type="possible_agreement",
+        tcm_claim_ids=["tcm:c1"],
+        western_claim_ids=["western:c1"],
+    )
+    assert not hasattr(draft_rel, "statement") or "statement" not in draft_rel.model_fields
+
+    # B: Extra model-generated "statement" is rejected by StrictModel
+    with pytest.raises(ValidationError) as exc_b1:
+        CriticRelationDraft.model_validate({
+            "relation_type": "possible_agreement",
+            "statement": "Model-generated free-form statement",
+            "tcm_claim_ids": ["tcm:c1"],
+            "western_claim_ids": ["western:c1"],
+        })
+    assert "extra_forbidden" in str(exc_b1.value)
+
+    with pytest.raises(ValidationError) as exc_b2:
+        CriticDraft.model_validate({
+            "relations": [
+                {
+                    "relation_type": "possible_agreement",
+                    "statement": "Model-generated free-form statement",
+                    "tcm_claim_ids": ["tcm:c1"],
+                    "western_claim_ids": ["western:c1"],
+                }
+            ]
+        })
+    assert "extra_forbidden" in str(exc_b2.value)
+
+    # C: Each relation_type materializes to the exact canonical statement
+    expected_statements = {
+        "possible_agreement": "The cited TCM and Western claims may reflect a possible agreement.",
+        "possible_difference_or_conflict": "The cited TCM and Western claims may reflect a possible difference or conflict.",
+        "not_directly_comparable": "The cited TCM and Western claims may not be directly comparable.",
+    }
+    assert CRITIC_CANONICAL_STATEMENTS == expected_statements
+
+    draft_all = {
+        "relations": [
+            {
+                "relation_type": "possible_agreement",
+                "tcm_claim_ids": ["tcm:c1"],
+                "western_claim_ids": ["western:c1"],
+            },
+            {
+                "relation_type": "possible_difference_or_conflict",
+                "tcm_claim_ids": ["tcm:c1"],
+                "western_claim_ids": ["western:c1"],
+            },
+            {
+                "relation_type": "not_directly_comparable",
+                "tcm_claim_ids": ["tcm:c1"],
+                "western_claim_ids": ["western:c1"],
+            },
+        ]
+    }
+    prov_c = QueueProvider(CRITIC_MODEL, [draft_all])
+    agent_c = CrossPerspectiveCriticAgent(provider=prov_c)
+    res_c = asyncio.run(
+        agent_c.critique(
+            question="Compare evidence.",
+            packets={"tcm": tcm_pkt, "western": west_pkt},
+            assessments=assessments,
+        )
+    )
+    assert len(res_c.value.relations) == 3
+    for rel in res_c.value.relations:
+        assert rel.statement == expected_statements[rel.relation_type]
+
+    # D: Final validate_critic_critique rejects a non-canonical statement
+    bad_critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Arbitrary non-canonical statement wording.",
+                tcm_claim_ids=["tcm:c1"],
+                western_claim_ids=["western:c1"],
+            )
+        ]
+    )
+    with pytest.raises(CriticValidationError, match="statement is non-canonical"):
+        validate_critic_critique(bad_critique, tcm_packet=tcm_pkt, western_packet=west_pkt)
+
+    # E: Critic prompt does not ask the model to generate statement text
+    payload = build_critic_payload(
+        question="Compare headache evidence.",
+        packets={"tcm": tcm_pkt, "western": west_pkt},
+        assessments=assessments,
+    )
+    user_prompt = build_critic_user_prompt(question="Compare headache evidence.", payload=payload)
+    for forbidden_text in (
+        "concise statement of cross-perspective comparison",
+        "Every substantive factual clause in relation.statement",
+        "smallest semantically complete relation statement",
+        "- statement",
+        "output a statement",
+    ):
+        assert forbidden_text not in CRITIC_SYSTEM_PROMPT
+        assert forbidden_text not in user_prompt
+
+    # F: Critic prompt says Python deterministically materializes statement
+    assert "Python will generate the display statement deterministically" in CRITIC_SYSTEM_PROMPT
+    assert "Python will generate the display statement deterministically" in user_prompt
+
+    # H: Governance advisory receives canonical statement only
+    # And Governance prompt enforces advisory navigation rules
+    gov_ctx = build_governance_advisory_context(assessments, res_c.value, packets={"tcm": tcm_pkt, "western": west_pkt})
+    assert len(gov_ctx["critic_relations"]) == 3
+    for rel_dict in gov_ctx["critic_relations"]:
+        assert rel_dict["statement"] == expected_statements[rel_dict["relation_type"]]
+
+    assert "The Critic canonical statement contains no substantive evidence content." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Use relation_type and cited IDs only as advisory navigation." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Any substantive difference/conflict wording in final Governance output must be derived independently from Section A packet claims." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Do not copy the canonical statement as evidence." in GOVERNANCE_SYSTEM_PROMPT
+    assert "Do not infer medical content from it." in GOVERNANCE_SYSTEM_PROMPT
+
+    # I: Original packets and assessments remain immutable
+    tcm_before = tcm_pkt.model_dump(mode="json")
+    west_before = west_pkt.model_dump(mode="json")
+    assessments_before = {p: [a.model_dump(mode="json") for a in alist] for p, alist in assessments.items()}
+
+    prov_i = QueueProvider(CRITIC_MODEL, [draft_all])
+    agent_i = CrossPerspectiveCriticAgent(provider=prov_i)
+    asyncio.run(
+        agent_i.critique(
+            question="Compare evidence.",
+            packets={"tcm": tcm_pkt, "western": west_pkt},
+            assessments=assessments,
+        )
+    )
+
+    assert tcm_pkt.model_dump(mode="json") == tcm_before
+    assert west_pkt.model_dump(mode="json") == west_before
+    assert {p: [a.model_dump(mode="json") for a in alist] for p, alist in assessments.items()} == assessments_before
+
+
+def test_governance_prompt_evidence_gaps_and_uncertainty_grounding_rules() -> None:
+    # A & B: evidence_gaps and uncertainty must not contradict perspective summaries
+    assert "evidence_gaps must not contradict overall_summary, perspectives.tcm.summary, or perspectives.western.summary." in GOVERNANCE_SYSTEM_PROMPT
+    assert "uncertainty must not contradict the summaries either." in GOVERNANCE_SYSTEM_PROMPT
+
+    # C: Do not convert educational/indirect/incomplete into no information/no insight
+    assert "Do not convert 'evidence is educational / indirect / incomplete' into 'the perspective provides no information / no insight' when usable claims actually provide perspective-specific information." in GOVERNANCE_SYSTEM_PROMPT
+
+    # D: Grounded only in usable Section A claims, missing_information, limitations, uncertainty
+    assert "Every item in evidence_gaps and uncertainty must remain faithful to usable Section A claims, packet.missing_information, packet.limitations, and packet.uncertainty." in GOVERNANCE_SYSTEM_PROMPT
+    assert "These fields must NOT introduce or paraphrase unsupported substantive content from insufficient claims, advisory text, Critic text, or outside knowledge." in GOVERNANCE_SYSTEM_PROMPT
+
+    # E: Insufficient claims may not supply or be paraphrased into evidence_gaps or uncertainty
+    assert "Insufficient claims must not be copied, paraphrased, or used to supply content to overall_summary, perspective summaries, agreements, differences/conflicts, evidence_gaps, or uncertainty." in GOVERNANCE_SYSTEM_PROMPT
+
+    # F: Distinguishes "no evidence exists" from "evidence exists but is insufficient for clinical or case-specific confirmation"
+    assert "Distinguish explicitly between: (1) no evidence/information exists, and (2) available evidence exists but is educational, indirect, incomplete, not clinically validated, or not sufficient for case-specific confirmation." in GOVERNANCE_SYSTEM_PROMPT
+    assert "If a perspective has usable claims describing case-related evidence, do NOT say 'no insight', 'no information', or 'no evidence is provided' unless the packet literally supports that absence." in GOVERNANCE_SYSTEM_PROMPT
+
+    # G: Synthesize user prompt contains matching operational rules
+    provider = QueueProvider(GOVERNANCE_MODEL, [draft().model_dump(mode="json")])
+    asyncio.run(
+        CrossPerspectiveGovernanceAgent(provider=provider).synthesize(
+            question="Compare evidence for headache.",
+            packets={"tcm": packet("tcm"), "western": packet("western")},
+        )
+    )
+    user_prompt = provider.prompts[0]
+    assert "Rules for evidence_gaps and uncertainty:" in user_prompt
+    assert "For evidence_gaps: describe WHAT is missing; do not erase information that is already present" in user_prompt
+    assert "do not contradict overall_summary, perspectives.tcm.summary, or perspectives.western.summary." in user_prompt
+    assert "For uncertainty: describe WHY confidence/applicability is limited; do not restate available evidence as absent; do not contradict the summaries." in user_prompt
+    assert "Do not convert 'evidence is educational / indirect / incomplete' into 'the perspective provides no information / no insight' when usable claims exist." in user_prompt
+    assert "Distinguish explicitly between: (1) no evidence exists, and (2) evidence exists but is insufficient for clinical or case-specific confirmation." in user_prompt
+    assert "Insufficient claims must not be copied, paraphrased, or used to supply content to overall_summary, perspective summaries, agreements, differences/conflicts, evidence_gaps, or uncertainty." in user_prompt
+    assert "If a perspective has usable claims describing case-related evidence, do NOT say 'no insight', 'no information', or 'no evidence is provided' unless the packet literally supports that absence." in user_prompt
+
+
+def test_governance_usable_only_evidence_projection_and_advisory_safety() -> None:
+    # A. GOVERNANCE PAYLOAD USABLE-ONLY
+    # Construct a packet containing:
+    # - one supported/partially_supported claim
+    # - one insufficient claim
+    c_usable = PerspectiveClaim(
+        claim_id="tcm:claim_usable",
+        claim_text="Liver yang rising pattern educational direction.",
+        support_status="partially_supported",
+        claim_kind="derived_claim",
+        evidence_refs=[EvidenceReference(source_id="src_tcm", chunk_id="chunk_1")],
+    )
+    c_insufficient = PerspectiveClaim(
+        claim_id="tcm:claim_insufficient",
+        claim_text="Unsupported claims without evidence references.",
+        support_status="insufficient",
+        claim_kind="derived_claim",
+        evidence_refs=[],
+    )
+    tcm_pkt = PerspectiveEvidencePacket(
+        perspective="tcm",
+        available=True,
+        execution_status="available",
+        interpretation="TCM interpretation",
+        claims=[c_usable, c_insufficient],
+        uncertainty=["Some uncertainty."],
+        missing_information=["Some missing info."],
+        limitations=["Limited local corpus."],
+        provenance=[
+            ProvenanceRecord(source_id="src_tcm", chunk_id="chunk_1", title="TCM source"),
+        ],
+    )
+    tcm_pkt_dump_before = tcm_pkt.model_dump(mode="json")
+
+    payload = build_governance_payload({"tcm": tcm_pkt})
+
+    # Confirm build_governance_payload contains usable claim
+    tcm_proj_claims = payload["tcm"]["claims"]
+    assert len(tcm_proj_claims) == 1
+    assert tcm_proj_claims[0]["claim_id"] == "tcm:claim_usable"
+    assert tcm_proj_claims[0]["claim_text"] == "Liver yang rising pattern educational direction."
+    assert tcm_proj_claims[0]["support_status"] == "partially_supported"
+
+    # Confirm DOES NOT contain insufficient claim ID or claim_text
+    assert not any(c["claim_id"] == "tcm:claim_insufficient" for c in tcm_proj_claims)
+    assert not any("Unsupported claims" in c["claim_text"] for c in tcm_proj_claims)
+
+    # Confirm original packet remains unchanged
+    assert tcm_pkt.model_dump(mode="json") == tcm_pkt_dump_before
+    assert len(tcm_pkt.claims) == 2
+
+    # B. EXACT WESTERN REGRESSION
+    # Use western:western-answer-1 with support_status="insufficient"
+    c_west_usable = PerspectiveClaim(
+        claim_id="western:evidence:west-pmc-11794981-35724a28f8d4e70963c0",
+        claim_text="Twenty-nine studies were of an adult population.",
+        support_status="supported",
+        claim_kind="source_excerpt",
+        evidence_refs=[EvidenceReference(source_id="src_w1", chunk_id="chunk_w1")],
+    )
+    c_west_insufficient = PerspectiveClaim(
+        claim_id="western:western-answer-1",
+        claim_text="For a synthetic educational case, TCM focuses on balancing the body's energy...",
+        support_status="insufficient",
+        claim_kind="derived_claim",
+        evidence_refs=[],
+    )
+    west_pkt = PerspectiveEvidencePacket(
+        perspective="western",
+        available=True,
+        execution_status="available",
+        interpretation="Western interpretation",
+        claims=[c_west_usable, c_west_insufficient],
+        uncertainty=["Western sleep uncertainty."],
+        missing_information=[],
+        limitations=[],
+        provenance=[
+            ProvenanceRecord(source_id="src_w1", chunk_id="chunk_w1", title="Western source"),
+        ],
+    )
+    west_payload = build_governance_payload({"western": west_pkt})
+    west_proj_claims = west_payload["western"]["claims"]
+    assert len(west_proj_claims) == 1
+    assert west_proj_claims[0]["claim_id"] == "western:evidence:west-pmc-11794981-35724a28f8d4e70963c0"
+    assert not any(c["claim_id"] == "western:western-answer-1" for c in west_proj_claims)
+    assert not any("balancing the body's energy" in c["claim_text"] for c in west_proj_claims)
+
+    # C. ADVISORY INSUFFICIENT-ID SUPPRESSION
+    # Create advisory issue with claim_ids = ["western:western-answer-1"]
+    issue_insufficient = AssessmentIssue(
+        issue_type="grounding_risk",
+        description="Derived claim is not supported.",
+        claim_ids=["western:western-answer-1"],
+    )
+    ass_c = PerspectiveAgentAssessment(
+        perspective="western",
+        role="grounding_skeptic",
+        assessment_summary="Summary",
+        referenced_claim_ids=["western:western-answer-1"],
+        issues=[issue_insufficient],
+    )
+    ass_c_dump_before = ass_c.model_dump(mode="json")
+    adv_ctx_c = build_governance_advisory_context(
+        assessments={"western": [ass_c]},
+        critique=None,
+        packets={"western": west_pkt},
+    )
+    proj_issues_c = adv_ctx_c["perspective_advisory"]["western"][0]["issues"]
+    assert len(proj_issues_c) == 1
+    assert proj_issues_c[0] == {
+        "issue_type": "grounding_risk",
+        "claim_ids": [],
+    }
+    assert "description" not in proj_issues_c[0]
+
+    # D. MIXED ADVISORY ANCHORS
+    # Create issue with one usable ID + one insufficient ID
+    issue_mixed = AssessmentIssue(
+        issue_type="coverage_gap",
+        description="Joint issue covering both claims.",
+        claim_ids=["western:evidence:west-pmc-11794981-35724a28f8d4e70963c0", "western:western-answer-1"],
+    )
+    ass_d = PerspectiveAgentAssessment(
+        perspective="western",
+        role="coverage_auditor",
+        assessment_summary="Summary",
+        referenced_claim_ids=["western:evidence:west-pmc-11794981-35724a28f8d4e70963c0"],
+        issues=[issue_mixed],
+    )
+    adv_ctx_d = build_governance_advisory_context(
+        assessments={"western": [ass_d]},
+        critique=None,
+        packets={"western": west_pkt},
+    )
+    proj_issues_d = adv_ctx_d["perspective_advisory"]["western"][0]["issues"]
+    assert len(proj_issues_d) == 1
+    assert proj_issues_d[0] == {
+        "issue_type": "coverage_gap",
+        "claim_ids": [],
+    }
+    assert "description" not in proj_issues_d[0]
+
+    # E. USABLE ADVISORY ANCHORS
+    # Issue references only usable IDs
+    issue_usable = AssessmentIssue(
+        issue_type="uncertainty",
+        description="Adult population sample limits pediatric generalizability.",
+        claim_ids=["western:evidence:west-pmc-11794981-35724a28f8d4e70963c0"],
+    )
+    ass_e = PerspectiveAgentAssessment(
+        perspective="western",
+        role="coverage_auditor",
+        assessment_summary="Summary",
+        referenced_claim_ids=["western:evidence:west-pmc-11794981-35724a28f8d4e70963c0"],
+        issues=[issue_usable],
+    )
+    adv_ctx_e = build_governance_advisory_context(
+        assessments={"western": [ass_e]},
+        critique=None,
+        packets={"western": west_pkt},
+    )
+    proj_issues_e = adv_ctx_e["perspective_advisory"]["western"][0]["issues"]
+    assert len(proj_issues_e) == 1
+    assert proj_issues_e[0] == {
+        "issue_type": "uncertainty",
+        "description": "Adult population sample limits pediatric generalizability.",
+        "claim_ids": ["western:evidence:west-pmc-11794981-35724a28f8d4e70963c0"],
+    }
+
+    # F. IMMUTABILITY
+    assert tcm_pkt.model_dump(mode="json") == tcm_pkt_dump_before
+    assert ass_c.model_dump(mode="json") == ass_c_dump_before
