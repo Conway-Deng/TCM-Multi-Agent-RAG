@@ -1,0 +1,117 @@
+# Cross-Perspective MediRAG Advisory-Ablation Study v1
+
+> [!CAUTION]
+> **PREFLIGHT INFRASTRUCTURE ONLY — FORMAL EXECUTION HAS NOT STARTED.**  
+> No provider API calls have been made, no formal retrieval has run, no questions have been finalized, no evidence packets have been generated, and no evaluations have been scored. This directory contains offline preflight and verification infrastructure only.
+
+---
+
+## 1. Scientific Purpose
+
+This study investigates whether exposing structured perspective-local advisory signals and cross-perspective relational criticism to the Governance synthesis agent improves the yield of usable, fully grounded medical information in cross-perspective health consultation.
+
+The experiment tests four conditions:
+- **G0 (Baseline):** Governance receives fixed evidence packets only (no advisory signals, no critic relations).
+- **G1 (Local Advisory Only):** Governance receives fixed evidence packets and frozen local advisory signals (Evidence Specialist, Coverage Auditor, Grounding Skeptic) from both TCM and Western perspectives.
+- **G2 (Critic Only):** Governance receives fixed evidence packets and frozen Cross-Perspective Critic relational statements (without local advisory context visible to Governance). *Note: The Critic itself was produced upstream using the frozen local assessments.*
+- **G3 (Full Pipeline):** Governance receives fixed evidence packets, frozen local advisory signals, and frozen Cross-Perspective Critic relational statements.
+
+The primary confirmatory comparison is **G3 minus G0** on the **usable, fully grounded coverage yield** endpoint.
+
+---
+
+## 2. Experimental Phase Order
+
+1. **Question Population Selection (Pre-Retrieval):**
+   - 48 questions selected across 4 topic domains (cough, dyspepsia, headache, constipation; 12 per topic).
+   - Stratified across 3 task types (evidence description, cross-perspective synthesis, boundary/uncertainty; 4 per topic).
+   - Prospective lock: No question may be substituted after retrieval.
+2. **Prospective Reference Unit Definition:**
+   - Define reference units ($M_q \ge 1$) for each question before output generation.
+3. **Formal Evidence Retrieval & Freeze:**
+   - Run R0 lexical retrieval once on TCM Research Corpus v1 (`top_k = 4`).
+   - Run R0 lexical retrieval once on MediRAG-West v0.1 Pilot Corpus (`top_k = 4`).
+   - Freeze all queries, chunks, and provenance mappings.
+4. **Evidence Packet Pair Materialization & Freeze:**
+   - Construct immutable $\langle \text{TCM Packet}, \text{Western Packet} \rangle$ pairs.
+   - Compute canonical SHA256 hashes.
+5. **Perspective-Local Advisory Freeze:**
+   - Execute Evidence Specialist (`Qwen3-8B`), Coverage Auditor (`GLM-4-9B-0414`), and Grounding Skeptic (`GLM-Z1-9B-0414`) once per perspective.
+   - Freeze all assessments and failure states.
+6. **Cross-Perspective Critic Freeze:**
+   - Execute Cross-Perspective Critic (`DeepSeek-R1-0528-Qwen3-8B`) once per eligible question using frozen packets and assessments.
+   - Freeze critique and precondition status.
+7. **Governance Execution Matrix (G0–G3, 384 Cells):**
+   - 48 questions $\times$ 4 conditions (G0, G1, G2, G3) $\times$ 2 repetitions = 384 Governance cells.
+   - Model held fixed: `THUDM/GLM-4-9B-0414`.
+8. **Blinding & Evaluation Export:**
+   - Strip condition and repetition identifiers; generate deterministic opaque `blind_id`s.
+   - Store blind key separately.
+9. **Blinded Human Scoring & Audit:**
+   - Reviewer A scores all 384 blinded outputs.
+   - Reviewer B audits a stratified sample of 12 questions (96 outputs).
+10. **Reconciliation & Full Second Review Gate Check:**
+    - Calculate discrepancy rate between Reviewer A and Reviewer B.
+    - If $> 10\%$ primary score delta on audit sample, trigger `FULL_SECOND_REVIEW_REQUIRED`.
+11. **Unblinding & Statistical Analysis:**
+    - Average the two repetitions per question $\times$ condition cell.
+    - Compute paired $G3 - G0$ differences and 20,000-resample topic-stratified question bootstrap 95% CIs.
+
+---
+
+## 3. What Is Frozen
+
+- **Baseline Code & Orchestration:** Commit `bb043bfe4505821e7e55e022f633e410e91ea5aa` (tag `cross-perspective-v0.4-patch3-dev`).
+- **Research Corpora:**
+  - TCM Research Corpus v1: 4,461 chunks, SHA256 `316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9`.
+  - MediRAG-West v0.1 Pilot Corpus: 271 chunks, SHA256 `8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b`.
+- **Model Assignments:**
+  - Governance: `THUDM/GLM-4-9B-0414`
+  - Critic: `deepseek-ai/DeepSeek-R1-0528-Qwen3-8B`
+  - Evidence Specialist: `Qwen/Qwen3-8B`
+  - Coverage Auditor: `THUDM/GLM-4-9B-0414`
+  - Grounding Skeptic: `THUDM/GLM-Z1-9B-0414`
+- **Schemas and Prompts:** Patch 3 Governance and Critic schemas and prompt contracts.
+- **Statistical Specification:** Question-level paired analysis, 20,000 bootstrap resamples, nested repetitions.
+
+---
+
+## 4. What Is NOT Yet Generated
+
+- The final 48 questions (only empty template / schemas exist).
+- Formal evidence retrieval outputs and packet pairs.
+- Upstream advisory assessments and Critic outputs.
+- Governance outputs for the 384 cells.
+- The final blind key and human evaluation scores.
+
+---
+
+## 5. Commands for Future Execution Stages
+
+Once the prospective study is approved and real reviewers are confirmed, future execution will proceed in strict order:
+
+```bash
+# 1. Preflight validation of corpora, schemas, and environment
+python -m pytest backend/tests/test_advisory_ablation_study.py
+
+# 2. Preflight verification tool
+python -m research.experiments.cross_perspective_advisory_ablation_v1.preflight
+
+# 3. Generate execution plan (384 deterministic cells)
+python -m research.experiments.cross_perspective_advisory_ablation_v1.execution_plan --export-plan
+
+# 4. (FUTURE) Formal retrieval freeze
+# python -m research.experiments.cross_perspective_advisory_ablation_v1.runners.freeze_retrieval
+
+# 5. (FUTURE) Upstream advisory & critic freeze
+# python -m research.experiments.cross_perspective_advisory_ablation_v1.runners.freeze_advisory
+
+# 6. (FUTURE) Governance cell execution
+# python -m research.experiments.cross_perspective_advisory_ablation_v1.runners.run_governance_cells
+
+# 7. (FUTURE) Blinding export for human reviewers
+# python -m research.experiments.cross_perspective_advisory_ablation_v1.blinding --export-blinded
+
+# 8. (FUTURE) Reconciliation & statistical analysis
+# python -m research.experiments.cross_perspective_advisory_ablation_v1.statistics --run-analysis
+```
