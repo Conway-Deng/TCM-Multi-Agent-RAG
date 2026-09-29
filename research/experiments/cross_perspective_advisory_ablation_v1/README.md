@@ -148,14 +148,16 @@ Under amendment `CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1`, native packet contract `
 
 ---
 
-## 8. Phase 1F-FIX: Hardened Formal Packet Writer & Authorization Gates
+## 8. Phase 1F-AUTH-FIX: Hardened Formal Packet Writer & Authorization Gates
 
-Following SOL writer review recommendations, the formal packet writer was hardened:
+Following SOL review recommendations, the formal packet writer and authorization dispatch were finalized:
 - **Writer Exists:** High-level deterministic formal executor `execute_formal_packet_generation(...)` in `packet_writer.py` orchestrates the complete generation, write, disk audit, and sealing flow.
-- **Formal Authorization Remains CLOSED:** Tracked gate constant `PHASE_1G_FORMAL_AUTHORIZATION_GRANTED = False` remains strictly closed. Formal packet generation is **NOT** authorized.
-- **SHA-Bound Bytes Are Authoritative Parents:** `TrustedParentStore` retains immutable SHA256-verified file bytes. All parent records and manifest questions are reconstructed fresh from verified byte slices for authoritative validation; mutating exposed parsed objects has zero effect on validation truth.
+- **Formal Authorization Remains CLOSED:** Tracked gate constant `PHASE_1G_FORMAL_AUTHORIZATION_GRANTED = False` is the sole source of truth and remains strictly closed. Formal packet generation is **NOT** authorized.
+- **Formal CLI Dispatch Hardened:** `packet_runner.py`'s authorization guard now correctly consults `PHASE_1G_FORMAL_AUTHORIZATION_GRANTED` alongside explicit request flags.
+- **Fail-Closed on Any Existing Directory:** The formal executor rejects any pre-existing `packets/` directory (empty, partial, completed, or containing foreign files) and enforces exclusive directory creation (`exist_ok=False`).
+- **Future Authorization-Only Commit:** The future Phase 1G authorization transition requires changing only `PHASE_1G_FORMAL_AUTHORIZATION_GRANTED: False -> True`. No other code or test modification will be required.
+- **SHA-Bound Bytes Are Authoritative Parents:** `TrustedParentStore` retains immutable SHA256-verified file bytes. All parent records and manifest questions are reconstructed fresh from verified byte slices for authoritative validation.
 - **Receipt Is Final Sealing Artifact:** `packet_freeze_receipt.json` is written last and independently verified from disk. A formal packet run is `SEALED` if and only if the receipt exists and passes complete post-write disk verification.
 - **Partial Outputs Preserved on Failure:** In accordance with the locked forensic preservation policy, any write or verification failure immediately stops execution without deleting or unlinking already-written files.
-- **No Automatic Retry / Cleanup:** Overwrite and partial-run collision protection fails closed if any target formal artifact already exists. Resuming partial runs or automatic second attempts is forbidden.
 - **Exact Executing Committed HEAD:** `implementation_commit` is strictly bound to the real executing Git HEAD obtained via `git rev-parse HEAD` on a verified clean tracked working tree on the study branch.
-- **Next Step:** Return to SOL for final authorization review.
+- **Next Step:** Return to SOL for final Phase 1G authorization review.

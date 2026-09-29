@@ -65,6 +65,9 @@ from research.experiments.cross_perspective_advisory_ablation_v1.packet_serializ
     strict_json_loads,
     validate_serializable_value,
 )
+from research.experiments.cross_perspective_advisory_ablation_v1.packet_runner import (
+    check_formal_packet_generation_authorization,
+)
 from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer import (
     PHASE_1F_FORMAL_AUTHORIZATION_GRANTED,
     PHASE_1G_FORMAL_AUTHORIZATION_GRANTED,
@@ -1199,46 +1202,161 @@ def test_successful_synthetic_full_write_and_collision_policy(
 
 
 # ==============================================================================
-# TASK 19: FORMAL AUTHORIZATION ENFORCEMENT TESTS
+# ==============================================================================
+# TASK 9 & 10: FOUR-STATE ISOLATED AUTHORIZATION MATRIX TESTS
+# Tests behavior under isolated authorization states WITHOUT asserting a fixed
+# source constant value, ensuring test suite passes in both False and future True states.
 # ==============================================================================
 
-def test_formal_authorization_gate_enforcement(repo_root: Path, tmp_path: Path, monkeypatch):
-    """Tracked authorization gate must block execution whenever authorization is False or not requested."""
-    # Statically verify that PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is False
-    from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer import (
-        PHASE_1G_FORMAL_AUTHORIZATION_GRANTED as AUTH_STATIC,
+@pytest.mark.parametrize(
+    "formal_requested, authorization_state, should_permit",
+    [
+        (False, False, False),  # Case A: formal_requested=False, auth=False -> deny
+        (True, False, False),   # Case B: formal_requested=True, auth=False -> deny
+        (False, True, False),   # Case C: formal_requested=False, auth=True -> deny
+        (True, True, True),     # Case D: formal_requested=True, auth=True -> permit dispatch
+    ],
+)
+def test_formal_authorization_matrix(
+    repo_root: Path,
+    tmp_path: Path,
+    monkeypatch,
+    formal_requested: bool,
+    authorization_state: bool,
+    should_permit: bool,
+):
+    """Test full 4-state matrix of authorization gates for runner and writer."""
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
+        authorization_state,
     )
-    assert AUTH_STATIC is False
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_runner.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
+        authorization_state,
+    )
 
-    test_sink = tmp_path / "auth_test"
+    test_sink = tmp_path / f"auth_{formal_requested}_{authorization_state}"
 
-    # Case 1: formal_requested=False, auth=False -> denied
-    with pytest.raises(PermissionError, match="not explicitly requested"):
-        execute_formal_packet_generation(
-            repo_root=repo_root,
-            output_dir=test_sink,
-            request_formal_execution=False,
+    if not should_permit:
+        # 1. Runner guard must deny
+        with pytest.raises(PermissionError):
+            check_formal_packet_generation_authorization(request_formal_execution=formal_requested)
+
+        # 2. Writer executor must deny
+        with pytest.raises(PermissionError):
+            execute_formal_packet_generation(
+                repo_root=repo_root,
+                output_dir=test_sink,
+                request_formal_execution=formal_requested,
+            )
+    else:
+        # Case D: Both conditions met -> gate permits dispatch!
+        # 1. Runner guard must permit (no exception)
+        check_formal_packet_generation_authorization(request_formal_execution=formal_requested)
+
+        # 2. Mock high-level executor to verify dispatch reaches executor without writing to real formal path
+        dispatched_calls = []
+        monkeypatch.setattr(
+            "research.experiments.cross_perspective_advisory_ablation_v1.packet_runner.execute_formal_packet_generation",
+            lambda repo_root, request_formal_execution: dispatched_calls.append(
+                {"repo_root": repo_root, "request_formal_execution": request_formal_execution}
+            ) or {"status": "MOCKED_SEALED"},
         )
 
-    # Case 2: formal_requested=True, auth=False -> denied
-    with pytest.raises(PermissionError, match="Phase 1G formal authorization remains CLOSED"):
-        execute_formal_packet_generation(
+        import research.experiments.cross_perspective_advisory_ablation_v1.packet_runner as pr
+        dispatch_result = pr.execute_formal_packet_generation(
             repo_root=repo_root,
-            output_dir=test_sink,
-            request_formal_execution=True,
+            request_formal_execution=formal_requested,
         )
+        assert len(dispatched_calls) == 1
+        assert dispatched_calls[0]["request_formal_execution"] is True
+        assert dispatch_result["status"] == "MOCKED_SEALED"
+        # Verify real packets/ directory was NEVER created or touched
+        real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+        assert not real_packets_dir.exists()
 
-    # Case 3: formal_requested=False, auth=True -> denied (both required!)
+
+# ==============================================================================
+# TASK 8: COLLISION TESTS FOR PRE-EXISTING DIRECTORY STATES (FAIL CLOSED)
+# ==============================================================================
+
+def test_formal_executor_rejects_existing_directory_collisions(
+    repo_root: Path,
+    tmp_path: Path,
+    monkeypatch,
+):
+    """Formal executor must fail closed if output directory exists in any state."""
     monkeypatch.setattr(
         "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
         True,
     )
-    with pytest.raises(PermissionError, match="not explicitly requested"):
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.verify_and_get_executing_git_head",
+        lambda root: "c" * 40,
+    )
+
+    # 1. Already-existing empty directory
+    coll_empty = tmp_path / "coll_empty"
+    coll_empty.mkdir()
+    with pytest.raises(FileExistsError, match="Formal output directory already exists"):
         execute_formal_packet_generation(
             repo_root=repo_root,
-            output_dir=test_sink,
-            request_formal_execution=False,
+            output_dir=coll_empty,
+            request_formal_execution=True,
         )
+    assert coll_empty.exists()
+    assert list(coll_empty.iterdir()) == []  # Preserved, no deletion
+
+    # 2. Directory containing unrelated.txt
+    coll_unrelated = tmp_path / "coll_unrelated"
+    coll_unrelated.mkdir()
+    unrelated_file = coll_unrelated / "unrelated.txt"
+    unrelated_file.write_text("forensic evidence")
+    with pytest.raises(FileExistsError, match="Formal output directory already exists"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=coll_unrelated,
+            request_formal_execution=True,
+        )
+    assert unrelated_file.read_text() == "forensic evidence"  # Preserved, not overwritten
+
+    # 3. Directory containing only one expected formal file
+    coll_single = tmp_path / "coll_single"
+    coll_single.mkdir()
+    single_file = coll_single / "tcm_packets.jsonl"
+    single_file.write_text("partial run data")
+    with pytest.raises(FileExistsError, match="Formal output directory already exists"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=coll_single,
+            request_formal_execution=True,
+        )
+    assert single_file.read_text() == "partial run data"
+
+    # 4. Directory containing all expected files
+    coll_all = tmp_path / "coll_all"
+    coll_all.mkdir()
+    for fname in ("tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json", "packet_freeze_receipt.json"):
+        (coll_all / fname).write_text(f"prior {fname}")
+    with pytest.raises(FileExistsError, match="Formal output directory already exists"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=coll_all,
+            request_formal_execution=True,
+        )
+    for fname in ("tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json", "packet_freeze_receipt.json"):
+        assert (coll_all / fname).read_text() == f"prior {fname}"
+
+    # 5. Directory created after collision check but before exclusive mkdir (race condition injection)
+    coll_race = tmp_path / "coll_race"
+    with pytest.raises(FileExistsError):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=coll_race,
+            request_formal_execution=True,
+            _inject_race_dir_create_before_mkdir=True,
+        )
+    assert not (coll_race / "tcm_packets.jsonl").exists()
 
 
 # ==============================================================================

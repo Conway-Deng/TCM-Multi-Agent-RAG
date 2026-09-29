@@ -739,8 +739,9 @@ def test_formal_packet_generation_safeguards_unit_level():
     with pytest.raises(PermissionError, match="FATAL: Formal packet generation is not authorized in Phase 1E"):
         check_formal_packet_generation_authorization(authorized=True)
 
-    # Calling with False passes safely
-    check_formal_packet_generation_authorization(authorized=False)
+    # Calling with False fails closed (not explicitly requested)
+    with pytest.raises(PermissionError, match="not explicitly requested"):
+        check_formal_packet_generation_authorization(authorized=False)
 
     # 2. Formal writer function is absent / not implemented in this phase
     import research.experiments.cross_perspective_advisory_ablation_v1.packet_projection as pp

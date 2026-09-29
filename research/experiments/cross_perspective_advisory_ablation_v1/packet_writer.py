@@ -131,9 +131,12 @@ except ImportError:
         PacketRunManifest,
     )
 
-# Tracked Formal Execution Authorization Gate: STRICTLY CLOSED in Phase 1F-FIX
+# Tracked Formal Execution Authorization Gate: STRICTLY CLOSED in Phase 1F-AUTH-FIX
+# PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is the SOLE formal phase authorization source of truth.
 PHASE_1G_FORMAL_AUTHORIZATION_GRANTED: bool = False
-PHASE_1F_FORMAL_AUTHORIZATION_GRANTED: bool = False  # Backward-compatible alias
+
+# Backward-compatible alias (NOT consulted by the Phase 1G execution gate; PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is authoritative):
+PHASE_1F_FORMAL_AUTHORIZATION_GRANTED: bool = False
 
 
 @dataclass(frozen=True)
@@ -433,6 +436,7 @@ def execute_formal_packet_generation(
     output_dir: Path | None = None,
     request_formal_execution: bool = False,
     _inject_failure_after: str | None = None,
+    _inject_race_dir_create_before_mkdir: bool = False,
 ) -> dict[str, Any]:
     """Execute formal deterministic packet generation from frozen inputs to sealed disk receipt.
 
@@ -465,7 +469,14 @@ def execute_formal_packet_generation(
     manifest_file = output_dir / "packet_manifest.json"
     receipt_file = output_dir / "packet_freeze_receipt.json"
 
-    # Pre-check: fail closed before creating anything if ANY formal output exists
+    # Pre-check: fail closed before creating anything if the output directory or ANY formal output exists
+    if output_dir.exists():
+        raise FileExistsError(
+            f"Formal output directory already exists at {output_dir}. "
+            "Adopting pre-existing output directories, resuming partial runs, or overwriting formal "
+            "freeze artifacts is strictly FORBIDDEN. Forensic inspection required."
+        )
+
     for target in (tcm_file, western_file, manifest_file, receipt_file):
         if target.exists():
             raise FileExistsError(
@@ -492,8 +503,10 @@ def execute_formal_packet_generation(
 
     trusted_store = TrustedParentStore(repo_root)
 
-    # 6. Create output directory
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # 6. Create output directory with exclusive creation semantics (fail if exists)
+    if _inject_race_dir_create_before_mkdir:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=False)
 
     # 7. Write order Step 1: TCM packets (exclusive create, NO cleanup on failure)
     with open(tcm_file, "xb") as f:
@@ -626,6 +639,11 @@ def write_formal_packet_artifacts(
         "packet_freeze_receipt.json": artifacts.receipt_bytes,
     }
 
+    if output_dir.exists():
+        raise FileExistsError(
+            f"Formal output directory already exists: {output_dir}. Overwrite is forbidden."
+        )
+
     for filename in target_files:
         target_path = output_dir / filename
         if target_path.exists():
@@ -633,7 +651,7 @@ def write_formal_packet_artifacts(
                 f"Formal output target already exists: {target_path}. Overwrite is forbidden."
             )
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=False)
 
     # Write without deleting on failure (Task 10)
     for filename, data in target_files.items():

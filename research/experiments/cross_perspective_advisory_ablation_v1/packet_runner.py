@@ -178,11 +178,25 @@ def verify_python_runtime() -> str:
     return f"{sys.implementation.name} {actual_version}"
 
 
-def check_formal_packet_generation_authorization(authorized: bool = False) -> None:
-    """Fail-closed execution guard: formal packet generation is unauthorized in Phase 1E/1F."""
-    if authorized:
+def check_formal_packet_generation_authorization(
+    request_formal_execution: bool = False,
+    authorized: bool | None = None,
+) -> None:
+    """Fail-closed execution guard: formal packet generation requires explicit request AND tracked authorization.
+
+    Formal execution is permitted ONLY when BOTH are true:
+    1. user explicitly requested formal generation (request_formal_execution=True)
+    2. PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is True (single source of truth)
+    """
+    requested = request_formal_execution if authorized is None else authorized
+    if not requested:
         raise PermissionError(
-            "FATAL: Formal packet generation is not authorized in Phase 1E (unauthorized in Phase 1F/1G). Return to SOL."
+            "Formal packet execution was not explicitly requested (request_formal_execution=False)."
+        )
+    if not PHASE_1G_FORMAL_AUTHORIZATION_GRANTED:
+        raise PermissionError(
+            "FATAL: Formal packet generation is not authorized in Phase 1E "
+            "(PHASE_1G_FORMAL_AUTHORIZATION_GRANTED=False). Return to SOL."
         )
 
 
