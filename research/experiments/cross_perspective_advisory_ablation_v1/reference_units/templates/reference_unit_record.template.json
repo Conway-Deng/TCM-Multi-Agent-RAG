@@ -1,0 +1,30 @@
+{
+  "$comment": "NON-DATA TEMPLATE - DO NOT USE DIRECTLY AS STUDY ANNOTATION",
+  "schema_version": "cpaa1_reference_unit_v1",
+  "study_id": "cross-perspective-advisory-ablation-v1",
+  "question_id": "TEMPLATE_NON_STUDY_QUESTION_ID",
+  "reference_unit_id": null,
+  "unit_text": "TEMPLATE_NON_STUDY_UNIT_TEXT",
+  "unit_type": "content",
+  "perspective_scope": "tcm",
+  "evidence_anchors": [
+    {
+      "packet_id": "TEMPLATE_NON_STUDY_PACKET_ID",
+      "packet_canonical_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "perspective": "tcm",
+      "evidence_id": "TEMPLATE_NON_STUDY_EVIDENCE_ID",
+      "chunk_text_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "anchor_role": "supporting_span",
+      "spans": [
+        {
+          "start": 0,
+          "end": 1
+        }
+      ]
+    }
+  ],
+  "support_scope": "source_explicit",
+  "required_qualifiers": [],
+  "support_rationale": "TEMPLATE_NON_STUDY_SUPPORT_RATIONALE",
+  "review_status": "draft"
+}
