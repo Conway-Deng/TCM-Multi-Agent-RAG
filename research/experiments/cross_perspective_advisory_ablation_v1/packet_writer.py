@@ -133,7 +133,7 @@ except ImportError:
 
 # Tracked Formal Execution Authorization Gate: STRICTLY CLOSED in Phase 1F-AUTH-FIX
 # PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is the SOLE formal phase authorization source of truth.
-PHASE_1G_FORMAL_AUTHORIZATION_GRANTED: bool = False
+PHASE_1G_FORMAL_AUTHORIZATION_GRANTED: bool = True
 
 # Backward-compatible alias (NOT consulted by the Phase 1G execution gate; PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is authoritative):
 PHASE_1F_FORMAL_AUTHORIZATION_GRANTED: bool = False
