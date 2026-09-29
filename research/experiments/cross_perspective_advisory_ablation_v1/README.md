@@ -118,3 +118,15 @@ python -m research.experiments.cross_perspective_advisory_ablation_v1.execution_
 # 8. (FUTURE) Reconciliation & statistical analysis
 # python -m research.experiments.cross_perspective_advisory_ablation_v1.statistics --run-analysis
 ```
+
+---
+
+## 6. Phase 1E: Packet & Governance Amendment Implementation
+
+Under amendment `CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1` and native contract `CPAA1-FROZEN-PACKET-LOSSLESS-V1`:
+- **Dry Preflight Command:**
+  ```powershell
+  $env:PYTHONPATH="backend;."; .\.venv\Scripts\python.exe research/experiments/cross_perspective_advisory_ablation_v1/packet_runner.py
+  ```
+- **Formal Packet Generation Unauthorized:** Formal packet generation is **NOT** authorized in Phase 1E. The execution guard `--execute-formal-packet-generation` fails closed.
+- **Local-Only Future Packet Artifacts:** The future formal packet JSONL artifacts (`packets/tcm_packets.jsonl` and `packets/western_packets.jsonl`) will contain source-derived full passage texts and **must remain strictly local-only** (uncommitted and untracked). Only safe, text-free metadata receipts (`packet_manifest.json` or `packet_freeze_receipt.json`) may be committed.

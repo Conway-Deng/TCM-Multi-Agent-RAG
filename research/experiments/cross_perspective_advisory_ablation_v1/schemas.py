@@ -433,3 +433,119 @@ class RetrievalRunManifest(StrictResearchModel):
     generated_at_utc: str = Field(min_length=1)
     implementation_commit: str = Field(min_length=1)
     contract: dict[str, Any] = Field(default_factory=dict)
+
+
+class FrozenEvidenceItem(StrictResearchModel):
+    evidence_id: str = Field(min_length=1)
+    rank: int = Field(ge=1, le=4)
+    retrieval_score: float
+    score_is_zero: bool
+    chunk_id: str = Field(min_length=1)
+    corpus_record_ordinal: int = Field(ge=0)
+    exact_chunk_text: str = Field(min_length=1)
+    chunk_text_sha256: str = Field(min_length=64, max_length=64)
+    chunk_record_canonical_sha256: str = Field(min_length=64, max_length=64)
+    source_id: str = Field(min_length=1)
+    source_record_id: str | None = None
+    source_title: str | None = None
+    source_url: str | None = None
+    doi: str | None = None
+    pmcid: str | None = None
+    section_or_category: str | None = None
+    source_citation_or_version: str | None = None
+    license_or_access_status: str | None = None
+    review_status: str | None = None
+    provenance: dict[str, Any] = Field(default_factory=dict)
+    support_basis: Literal["verbatim_source_copy"] = "verbatim_source_copy"
+    semantic_support_status: Literal["not_assessed"] = "not_assessed"
+
+    @field_validator("retrieval_score")
+    @classmethod
+    def validate_score_finite(cls, v: float) -> float:
+        if not math.isfinite(v):
+            raise ValueError(f"Retrieval score must be finite, got {v}")
+        return v
+
+    @model_validator(mode="after")
+    def validate_zero_consistency(self) -> "FrozenEvidenceItem":
+        if self.score_is_zero and self.retrieval_score != 0.0:
+            raise ValueError(
+                f"score_is_zero is True but retrieval_score is non-zero ({self.retrieval_score})"
+            )
+        if not self.score_is_zero and self.retrieval_score == 0.0:
+            raise ValueError("score_is_zero is False but retrieval_score is 0.0")
+        return self
+
+
+class FrozenEvidencePacket(StrictResearchModel):
+    schema_version: str = "cpaa1_frozen_packet_v1"
+    transformation_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    packet_id: str = Field(min_length=1)
+    question_id: str = Field(min_length=1)
+    candidate_id: str = Field(min_length=1)
+    question_text: str = Field(min_length=1)
+    topic: Topic
+    task_type: TaskType
+    perspective: Literal["tcm", "western"]
+    question_manifest_sha256: str = Field(min_length=64, max_length=64)
+    retrieval_algorithm_id: str = "CPAA1-R0-LEXICAL-V1"
+    retrieval_artifact_sha256: str = Field(min_length=64, max_length=64)
+    retrieval_record_id: str = Field(min_length=1)
+    retrieval_record_canonical_sha256: str = Field(min_length=64, max_length=64)
+    corpus_id: str = Field(min_length=1)
+    corpus_version: str = Field(min_length=1)
+    corpus_sha256: str = Field(min_length=64, max_length=64)
+    evidence_items: list[FrozenEvidenceItem] = Field(default_factory=list)
+    packet_canonical_sha256: str = Field(min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def validate_packet_invariants(self) -> "FrozenEvidencePacket":
+        if len(self.evidence_items) != 4:
+            raise ValueError(
+                f"FrozenEvidencePacket must contain exactly 4 evidence items, got {len(self.evidence_items)}"
+            )
+        ranks = [item.rank for item in self.evidence_items]
+        if ranks != [1, 2, 3, 4]:
+            raise ValueError(f"Evidence item ranks must be exactly [1, 2, 3, 4], got {ranks}")
+        ev_ids = [item.evidence_id for item in self.evidence_items]
+        if len(set(ev_ids)) != len(ev_ids):
+            raise ValueError(f"Evidence IDs must be unique within packet, got {ev_ids}")
+        chunk_ids = [item.chunk_id for item in self.evidence_items]
+        if len(set(chunk_ids)) != len(chunk_ids):
+            raise ValueError(f"Chunk IDs must be unique within packet, got {chunk_ids}")
+        return self
+
+
+class PacketRunManifest(StrictResearchModel):
+    schema_version: str = "cpaa1_packet_manifest_v1"
+    study_id: str = "cross-perspective-advisory-ablation-v1"
+    packet_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    question_manifest_sha256: str = Field(min_length=64, max_length=64)
+    question_count: int = Field(default=48, ge=48, le=48)
+    tcm_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
+    western_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_count: int = Field(default=48, ge=48, le=48)
+    western_packet_count: int = Field(default=48, ge=48, le=48)
+    total_packet_count: int = Field(default=96, ge=96, le=96)
+    tcm_item_count: int = Field(default=192, ge=192, le=192)
+    western_item_count: int = Field(default=192, ge=192, le=192)
+    total_item_count: int = Field(default=384, ge=384, le=384)
+    generated_at_utc: str = Field(min_length=1)
+    implementation_commit: str = Field(min_length=1)
+
+
+class PacketFreezeReceipt(StrictResearchModel):
+    schema_version: str = "cpaa1_packet_freeze_receipt_v1"
+    study_id: str = "cross-perspective-advisory-ablation-v1"
+    packet_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    question_manifest_sha256: str = Field(min_length=64, max_length=64)
+    tcm_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
+    western_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_artifact_byte_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_artifact_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_canonical_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_canonical_sha256: str = Field(min_length=64, max_length=64)
+    counts: dict[str, int] = Field(default_factory=dict)
+    audit_status: str = Field(min_length=1)
+    local_only_raw_artifacts: bool = True
+    formal_execution_timestamp_utc: str = Field(min_length=1)

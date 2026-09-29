@@ -1,0 +1,52 @@
+[
+  {
+    "role": "evidence_specialist",
+    "original_prompt_identifier": "EVIDENCE_SPECIALIST_SYSTEM_PROMPT",
+    "original_prompt_path": "backend/cross_perspective/perspective_agents.py",
+    "original_prompt_sha256": "0b659434568f2975843f5e338f42e81ec908d389557136621b113d17b44a0d75",
+    "research_prompt_identifier": "CPAA1_EVIDENCE_SPECIALIST_SYSTEM_PROMPT",
+    "research_prompt_path": "research/experiments/cross_perspective_advisory_ablation_v1/prompt_variants.py",
+    "amendment_type": "shared_clarification_plus_role_delta",
+    "amended_prompt_sha256": "ccfb2380a86f0a1a23873858a26d33e0a2b3c1b0949576151b2f6704dbe0126f"
+  },
+  {
+    "role": "coverage_auditor",
+    "original_prompt_identifier": "COVERAGE_AUDITOR_SYSTEM_PROMPT",
+    "original_prompt_path": "backend/cross_perspective/perspective_agents.py",
+    "original_prompt_sha256": "ffb22307033e910752e90f9d325372e611802a9a682efb3748e2f2919efedba1",
+    "research_prompt_identifier": "CPAA1_COVERAGE_AUDITOR_SYSTEM_PROMPT",
+    "research_prompt_path": "research/experiments/cross_perspective_advisory_ablation_v1/prompt_variants.py",
+    "amendment_type": "shared_clarification_only",
+    "amended_prompt_sha256": "3ec8bb8be6ce3deb0f586b01c533566e9c859137e1da0e8cd46788fc5108c6ed"
+  },
+  {
+    "role": "grounding_skeptic",
+    "original_prompt_identifier": "GROUNDING_SKEPTIC_SYSTEM_PROMPT",
+    "original_prompt_path": "backend/cross_perspective/perspective_agents.py",
+    "original_prompt_sha256": "8e45e6c37b9013e89a9146515e08cc863f5939daf9ba5c68ccb7c8ca7a98e0e7",
+    "research_prompt_identifier": "CPAA1_GROUNDING_SKEPTIC_SYSTEM_PROMPT",
+    "research_prompt_path": "research/experiments/cross_perspective_advisory_ablation_v1/prompt_variants.py",
+    "amendment_type": "shared_clarification_plus_role_delta",
+    "amended_prompt_sha256": "79e58a4e11ff8bb0c7d2e15ae27363c0f94a51ff7dcd0f4df1711418162beffa"
+  },
+  {
+    "role": "critic",
+    "original_prompt_identifier": "CRITIC_SYSTEM_PROMPT",
+    "original_prompt_path": "backend/cross_perspective/cross_perspective_critic.py",
+    "original_prompt_sha256": "9cdf6f9cf157e1da37aa7b28d489af83fbc355e1b46aa761d01d297808835c36",
+    "research_prompt_identifier": "CPAA1_CRITIC_SYSTEM_PROMPT",
+    "research_prompt_path": "research/experiments/cross_perspective_advisory_ablation_v1/prompt_variants.py",
+    "amendment_type": "shared_clarification_only",
+    "amended_prompt_sha256": "251f1590e17f4d5301946e11f597a83e29d3aef713b00f193bd2f90f3f674edb"
+  },
+  {
+    "role": "governance",
+    "original_prompt_identifier": "GOVERNANCE_SYSTEM_PROMPT",
+    "original_prompt_path": "backend/cross_perspective/governance.py",
+    "original_prompt_sha256": "50bccba1fe344e971a50d5f1382262eb152bbb58bab051d34a46f69231807702",
+    "research_prompt_identifier": "CPAA1_GOVERNANCE_SYSTEM_PROMPT",
+    "research_prompt_path": "research/experiments/cross_perspective_advisory_ablation_v1/prompt_variants.py",
+    "amendment_type": "shared_clarification_only",
+    "amended_prompt_sha256": "154a394ce48e4d17d308149da01a721eef21e3f02c2c10f5fe749d803772f6f9"
+  }
+]

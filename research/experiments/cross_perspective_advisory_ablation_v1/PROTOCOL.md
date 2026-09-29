@@ -79,6 +79,17 @@ A separate, later robustness study may explore variability arising from upstream
   - Deterministic canonical serialization hash
 - Governance evidence boundary: Governance continues to use the existing Patch 3 packet projection (`build_governance_payload`, omitting interpretation and provenance while projecting usable claims). Governance evidence boundary must not be expanded.
 
+### 2.4 Prospective Amendment Linkage: CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1
+> [!NOTE]
+> **PROSPECTIVE AMENDMENT NOTICE (Approved 2026-09-29):**
+> Under independent review by Astra (verdict: `APPROVE AMENDMENT AS WRITTEN`, required changes: `NONE`), the study enacts formal amendment [`CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1`](PACKET_GOVERNANCE_AMENDMENT_V1.md) governing the evidence packet layer and research prompt adaptations.
+>
+> **Prospectively Superseded Clauses:**
+> 1. **Section 2.3 (Fixed Evidence Unit):** Supersedes the implicit assumption of atomic claim decomposition. Replaces with native lossless source-passage items under contract `CPAA1-FROZEN-PACKET-LOSSLESS-V1`, projected into `claim_kind="source_excerpt"` compatibility wrappers. The legacy value `support_status="supported"` is defined strictly as a structural indicator of faithful verbatim source extraction, not as certified semantic entailment.
+> 2. **Historical Truncation:** Supersedes legacy Western runtime character slicing at 2,000 characters, requiring full-text lossless preservation across all 384 hit occurrences (including 20 passages >2,000 characters).
+>
+> All other protocol definitions (endpoints, G0–G3 definitions, stratification, blinding architecture, statistical bootstrap analysis) remain unchanged.
+
 ---
 
 ## 3. Question Population & Topic Stratification
