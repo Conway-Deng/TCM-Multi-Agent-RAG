@@ -1,0 +1,45 @@
+{
+  "study_id": "cross-perspective-advisory-ablation-v1",
+  "branch": "research/cross-perspective-advisory-ablation-v1",
+  "commit_anchor": "5654fba041a456413635f649831475e2ef3e342c",
+  "candidate_count": 72,
+  "topic_counts": {
+    "CON": 18,
+    "COU": 18,
+    "DYS": 18,
+    "HEA": 18
+  },
+  "stratum_counts": {
+    "CON-BU": 6,
+    "CON-ED": 6,
+    "CON-SC": 6,
+    "COU-BU": 6,
+    "COU-ED": 6,
+    "COU-SC": 6,
+    "DYS-BU": 6,
+    "DYS-ED": 6,
+    "DYS-SC": 6,
+    "HEA-BU": 6,
+    "HEA-ED": 6,
+    "HEA-SC": 6
+  },
+  "serialization_spec": {
+    "format": "jsonl",
+    "line_encoding": "utf-8",
+    "json_canonical_rules": "sorted keys, no whitespace separators (',', ':'), ensure_ascii=False",
+    "terminal_newline": true
+  },
+  "candidate_pool_file": "research/experiments/cross_perspective_advisory_ablation_v1/candidate_pool_v1.jsonl",
+  "candidate_pool_byte_sha256": "161d0913d1e8083a71e6567f4199a51f767655469ca30772172876cfcb1f7e36",
+  "candidate_pool_canonical_sha256": "bfa0ac422aebb50bb9a34dda1b576dcf1745d1c1aae34afca27b849d9a9683fc",
+  "revised_candidate_override": {
+    "candidate_id": "CPAA1-DYS-SC-002",
+    "family_id": "DYS-TEMPORAL-SCOPE-ALIGNMENT",
+    "independent_review_status": "PASS",
+    "override_source": "SOURCE B"
+  },
+  "independent_review_completion_status": "ALL_PASS",
+  "pre_retrieval_attestation": "No retrieval, corpus match inspection, or question selection occurred prior to candidate pool freeze.",
+  "reserved_selection_seed": 20260928,
+  "selection_algorithm_id": "CPAA1-SHA256-STRATIFIED-SELECTION-V1"
+}

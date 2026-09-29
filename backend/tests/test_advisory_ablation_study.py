@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 import pytest
@@ -60,8 +61,15 @@ from research.experiments.cross_perspective_advisory_ablation_v1.execution_plan 
 from research.experiments.cross_perspective_advisory_ablation_v1.manifest import (
     canonical_json_dumps,
     sha256_canonical_obj,
+    sha256_file,
     sha256_text,
     verify_file_hash,
+)
+from research.experiments.cross_perspective_advisory_ablation_v1.selection import (
+    SELECTION_ALGORITHM_ID,
+    SELECTION_SEED,
+    SOURCE_B_DYS_SC_002,
+    validate_candidate_pool,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.preflight import (
     PreflightValidationError,
@@ -821,3 +829,45 @@ def test_statistics_synthetic_question_bootstrap():
     assert analysis.total_cells == 384
     assert len(analysis.secondary_comparisons) == 4
     assert all(sec.is_exploratory for sec in analysis.secondary_comparisons)
+
+
+# ==============================================================================
+# 8. Candidate Pool Tests (Phase 0G Freeze)
+# ==============================================================================
+
+def test_candidate_pool_72_count_contract_and_manifest():
+    """Verify 72-candidate pool contract, strata balance, review status, and manifest hashes."""
+    pool_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1.jsonl"
+    manifest_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1_manifest.json"
+
+    assert pool_path.is_file(), f"Missing candidate pool file: {pool_path}"
+    assert manifest_path.is_file(), f"Missing candidate pool manifest: {manifest_path}"
+
+    with pool_path.open("r", encoding="utf-8") as f:
+        candidates = [json.loads(line) for line in f if line.strip()]
+
+    assert len(candidates) == 72
+    validate_candidate_pool(candidates)
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["candidate_count"] == 72
+    assert manifest["independent_review_completion_status"] == "ALL_PASS"
+    assert manifest["reserved_selection_seed"] == SELECTION_SEED
+    assert manifest["selection_algorithm_id"] == SELECTION_ALGORITHM_ID
+
+    # Hash verification
+    actual_byte_sha = sha256_file(pool_path)
+    actual_canonical_sha = sha256_canonical_obj(candidates)
+    assert manifest["candidate_pool_byte_sha256"] == actual_byte_sha
+    assert manifest["candidate_pool_canonical_sha256"] == actual_canonical_sha
+
+
+def test_candidate_pool_revised_dys_sc_002_identity():
+    """Verify that CPAA1-DYS-SC-002 matches the approved revised SOURCE B record exactly."""
+    pool_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1.jsonl"
+    with pool_path.open("r", encoding="utf-8") as f:
+        candidates = [json.loads(line) for line in f if line.strip()]
+
+    dys_cand = [c for c in candidates if c["candidate_id"] == "CPAA1-DYS-SC-002"][0]
+    for key, expected_val in SOURCE_B_DYS_SC_002.items():
+        assert dys_cand[key] == expected_val, f"Mismatch in field {key!r}: got {dys_cand[key]!r}, expected {expected_val!r}"
