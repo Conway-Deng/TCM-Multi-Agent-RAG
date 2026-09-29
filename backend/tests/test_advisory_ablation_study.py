@@ -66,9 +66,13 @@ from research.experiments.cross_perspective_advisory_ablation_v1.manifest import
     verify_file_hash,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.selection import (
+    EXPECTED_TASK_CODES,
+    EXPECTED_TOPIC_CODES,
     SELECTION_ALGORITHM_ID,
     SELECTION_SEED,
     SOURCE_B_DYS_SC_002,
+    compute_selection_hash,
+    run_deterministic_selection,
     validate_candidate_pool,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.preflight import (
@@ -871,3 +875,115 @@ def test_candidate_pool_revised_dys_sc_002_identity():
     dys_cand = [c for c in candidates if c["candidate_id"] == "CPAA1-DYS-SC-002"][0]
     for key, expected_val in SOURCE_B_DYS_SC_002.items():
         assert dys_cand[key] == expected_val, f"Mismatch in field {key!r}: got {dys_cand[key]!r}, expected {expected_val!r}"
+
+
+def test_selection_algorithm_deterministic_reproducibility():
+    """Verify deterministic hash-selection reproducibility (Task 6)."""
+    # 1. Exact hash calculation on example candidate
+    example_cid = "CPAA1-COU-ED-001"
+    h = compute_selection_hash(example_cid, algorithm_id=SELECTION_ALGORITHM_ID, seed=SELECTION_SEED)
+    assert len(h) == 64
+    assert compute_selection_hash(example_cid, algorithm_id=SELECTION_ALGORITHM_ID, seed=SELECTION_SEED) == h
+
+    # 2. Loading candidate pool and running selection twice produces identical result
+    pool_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1.jsonl"
+    with pool_path.open("r", encoding="utf-8") as f:
+        candidates = [json.loads(line) for line in f if line.strip()]
+
+    sel1, unsel1, ledger1 = run_deterministic_selection(candidates, algorithm_id=SELECTION_ALGORITHM_ID, seed=SELECTION_SEED)
+    sel2, unsel2, ledger2 = run_deterministic_selection(candidates, algorithm_id=SELECTION_ALGORITHM_ID, seed=SELECTION_SEED)
+
+    assert [c["candidate_id"] for c in sel1] == [c["candidate_id"] for c in sel2]
+    assert [c["candidate_id"] for c in unsel1] == [c["candidate_id"] for c in unsel2]
+    assert ledger1 == ledger2
+
+
+def test_selection_ledger_strata_and_totals():
+    """Verify 4-of-6 selection per stratum, 48/24 selected/unselected totals, and ledger format."""
+    ledger_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "selection_ledger_v1.jsonl"
+    assert ledger_path.is_file(), f"Missing selection ledger file: {ledger_path}"
+
+    with ledger_path.open("r", encoding="utf-8") as f:
+        ledger = [json.loads(line) for line in f if line.strip()]
+
+    assert len(ledger) == 72
+    selected = [row for row in ledger if row["selected"]]
+    unselected = [row for row in ledger if not row["selected"]]
+    assert len(selected) == 48
+    assert len(unselected) == 24
+
+    for top in EXPECTED_TOPIC_CODES:
+        for tt in EXPECTED_TASK_CODES:
+            stratum_rows = [r for r in ledger if r["topic"] == top and r["task_type"] == tt]
+            assert len(stratum_rows) == 6
+            ranks = [r["rank_within_stratum"] for r in stratum_rows]
+            assert sorted(ranks) == [1, 2, 3, 4, 5, 6]
+            stratum_sel = [r for r in stratum_rows if r["selected"]]
+            stratum_unsel = [r for r in stratum_rows if not r["selected"]]
+            assert len(stratum_sel) == 4
+            assert len(stratum_unsel) == 2
+            assert all(r["rank_within_stratum"] <= 4 for r in stratum_sel)
+            assert all(r["rank_within_stratum"] >= 5 for r in stratum_unsel)
+
+
+def test_question_manifest_4x3x4_structure_and_preflight():
+    """Verify 48-question manifest 4x3x4 structure, deterministic ordering, and preflight validation."""
+    q_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "question_manifest.jsonl"
+    pool_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1.jsonl"
+    assert q_path.is_file(), f"Missing question manifest file: {q_path}"
+
+    with q_path.open("r", encoding="utf-8") as f:
+        questions = [SelectedQuestion.model_validate_json(line) for line in f if line.strip()]
+
+    with pool_path.open("r", encoding="utf-8") as f:
+        candidates = {json.loads(line)["candidate_id"]: json.loads(line) for line in f if line.strip()}
+
+    assert len(questions) == 48
+
+    # Run existing preflight validation
+    validate_question_population(questions)
+
+    # Verify 4 topics x 3 task types x 4 questions
+    for top in ["cough", "dyspepsia_digestive_symptoms", "headache", "constipation"]:
+        top_qs = [q for q in questions if q.topic == top]
+        assert len(top_qs) == 12
+        for tt in ["evidence_description", "cross_perspective_synthesis", "boundary_uncertainty"]:
+            tt_qs = [q for q in top_qs if q.task_type == tt]
+            assert len(tt_qs) == 4
+
+    # Verify monotonic 1..48 selection order
+    orders = [q.selection_order for q in questions]
+    assert orders == list(range(1, 49))
+
+    # Verify origin and provenance
+    for q in questions:
+        cid = q.selection_metadata["candidate_id"]
+        assert cid in candidates
+        cand = candidates[cid]
+        assert q.question_text == cand["question_text"]
+        assert cand["independent_review_status"] == "PASS"
+
+
+def test_selection_manifest_binding_to_candidate_pool():
+    """Verify selection manifest bindings to candidate pool freeze commit and file hashes."""
+    sel_manifest_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "selection_manifest.json"
+    pool_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "candidate_pool_v1.jsonl"
+    ledger_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "selection_ledger_v1.jsonl"
+    q_path = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "question_manifest.jsonl"
+
+    assert sel_manifest_path.is_file()
+    manifest = json.loads(sel_manifest_path.read_text(encoding="utf-8"))
+
+    with pool_path.open("r", encoding="utf-8") as f:
+        candidates = [json.loads(line) for line in f if line.strip()]
+
+    assert manifest["candidate_pool_freeze_commit_sha"] == "368e384a51db368a5f536153d2f8ef6c3783835a"
+    assert manifest["candidate_pool_byte_sha256"] == sha256_file(pool_path)
+    assert manifest["candidate_pool_canonical_sha256"] == sha256_canonical_obj(candidates)
+    assert manifest["selection_ledger_byte_sha256"] == sha256_file(ledger_path)
+    assert manifest["question_manifest_byte_sha256"] == sha256_file(q_path)
+    assert manifest["sample_size_selected"] == 48
+    assert manifest["sample_size_unselected"] == 24
+    assert len(manifest["selected_candidate_ids"]) == 48
+    assert len(manifest["unselected_candidate_ids"]) == 24
+    assert len(set(manifest["selected_candidate_ids"]).intersection(set(manifest["unselected_candidate_ids"]))) == 0
