@@ -1,0 +1,54 @@
+{
+  "schema_version": "cpaa1_retrieval_execution_deviation_v1",
+  "study_id": "cross-perspective-advisory-ablation-v1",
+  "classification": "ACCEPTABLE_EXECUTION_WITH_DOCUMENTED_NON_SUBSTANTIVE_DEVIATION",
+  "baseline_retrieval_implementation_commit": "b234f40f2beb017431de2ce27256b983d3eeb177",
+  "raw_retrieval_freeze_commit": "d02853141509e96293f817466ea1aee5f1874a95",
+  "first_cli_invocation": {
+    "formal_flag_requested": true,
+    "exit_status": 1,
+    "failure_type": "CLI authorization guard",
+    "selected_question_searches_executed": 0,
+    "candidate_specific_results_exposed": false,
+    "retrieval_output_files_created": false,
+    "partial_retrieval_outputs_created": false
+  },
+  "temporary_cli_edit": {
+    "classification": "PRE_RETRIEVAL_MECHANICAL_FIX",
+    "executed_runner_blob_sha1": "0ca3b747cb474d0f13da6ebc21f3562c6a8684fa",
+    "retrieval_semantics_changed": false,
+    "description": "CLI guard was replaced by invocation of the already-existing execute_formal_retrieval function; scientific retrieval logic was unchanged."
+  },
+  "completed_execution": {
+    "completed_formal_retrieval_executions": 1,
+    "records_total": 96,
+    "hits_total": 384,
+    "tcm_records": 48,
+    "western_records": 48,
+    "tcm_hits": 192,
+    "western_hits": 192
+  },
+  "reproducibility_verification": {
+    "verification_mode": "in-memory verification against committed retrieval contract; formal runner not rerun",
+    "records_checked": 96,
+    "hits_checked": 384,
+    "id_mismatches": 0,
+    "rank_mismatches": 0,
+    "score_mismatches": 0,
+    "corpus_ordinal_mismatches": 0
+  },
+  "raw_artifacts": {
+    "tcm_byte_sha256": "a82cd4894465cfabaf9de7fd47fde7afd2a956580230e14cf1797fe02ee97d40",
+    "western_byte_sha256": "a1933bba57d2c28609af19473954064fee4d7f1429717dfd93fe0e06bdd2f379",
+    "local_only": true,
+    "committed_to_git": false
+  },
+  "interpretation": {
+    "first_invocation_was_formal_retrieval_execution": false,
+    "completed_formal_retrieval_executions": 1,
+    "scientific_retrieval_contract_changed": false,
+    "rerun_required": false,
+    "current_raw_retrieval_accepted": true
+  },
+  "notes": "The implementation_commit recorded inside the retrieval artifacts identifies the frozen scientific baseline, while the successful execution used a temporary working-tree CLI wiring change whose retrieval semantics were verified identical."
+}
