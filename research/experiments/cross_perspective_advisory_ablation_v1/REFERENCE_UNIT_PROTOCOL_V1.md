@@ -385,5 +385,5 @@ Unresolved disputes requiring new methodological rules similarly block freeze un
 - No formal reference units, candidate reference units, or populated unit texts existed at the time of this freeze.
 - No downstream generated outputs (G0/G1/G2/G3) existed at the time of this freeze.
 - No local adviser, Cross-Perspective Critic, or Governance model outputs existed at the time of this freeze.
-- Any change or refinement after this freeze requires a documented, prospective scientific amendment.
+- After this protocol freeze, any methodological clarification required before formal reference construction must be documented prospectively, the affected protocol/template rules must be refrozen before formal construction resumes, and the clarification must be applied consistently to all affected questions. Any change to the frozen question population, M_q/denominator policy, or other locked confirmatory design element requires a separately identified prospective scientific amendment.
 - All subsequent human reference construction, calibration, reconciliation, and scoring must adhere strictly to this frozen protocol specification.
