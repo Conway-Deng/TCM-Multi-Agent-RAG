@@ -193,3 +193,13 @@ Prior to executing formal packet generation, the following preflight requirement
 3. Test suite verifying all contract assertions passes.
 4. Absence of formal packet files verified.
 5. All raw retrieval artifacts remain local-only and uncommitted.
+
+---
+
+## 12. Serialization Contract and Writer Implementation (Phase 1F)
+
+- **Serialization Specification:** `CPAA1-PACKET-SERIALIZATION-V1` establishes the canonical JSON representation (CPython 3.12.14 standard library reference), strict UTF-8 byte encoding, LF-only newlines, recursive key sorting, compact separators (`(',', ':')`), rejection of NaN/Infinity/lone surrogates/duplicate keys, and exact byte hashing.
+- **Deterministic Writer Status:** The deterministic formal packet writer implementation exists (`packet_writer.py`, `packet_serialization.py`).
+- **Execution Gate Status:** Formal packet generation remains **strictly unauthorized** in Phase 1F (non-execution checkpoint).
+- **Artifact Status:** Formal packet files (`packets/tcm_packets.jsonl`, `packets/western_packets.jsonl`, `packets/packet_manifest.json`, `packets/packet_freeze_receipt.json`) do **not** yet exist on disk and are not frozen.
+- **Next Operational Step:** SOL writer review and formal generation authorization decision.

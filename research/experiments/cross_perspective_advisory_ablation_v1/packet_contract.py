@@ -21,11 +21,38 @@ except ImportError:
         sha256_text,
     )
 
-# Study and Amendment Identifiers
+# Study, Amendment, and Contract Identifiers
 STUDY_ID: Final[str] = "cross-perspective-advisory-ablation-v1"
 AMENDMENT_ID: Final[str] = "CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1"
 PACKET_CONTRACT_ID: Final[str] = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+SERIALIZATION_VERSION: Final[str] = "CPAA1-PACKET-SERIALIZATION-V1"
 SCHEMA_VERSION: Final[str] = "cpaa1_frozen_packet_v1"
+MANIFEST_SCHEMA_VERSION: Final[str] = "cpaa1_packet_manifest_v1"
+RECEIPT_SCHEMA_VERSION: Final[str] = "cpaa1_packet_freeze_receipt_v1"
+
+# Frozen Corpus Anchors
+EXPECTED_TCM_CORPUS_SHA256: Final[str] = (
+    "316eade86599c4d59a640020b59a3e153719c962fe20e4953ce36f8ddf8988c9"
+)
+EXPECTED_WESTERN_CORPUS_SHA256: Final[str] = (
+    "8c53511e6193ebccea70c59f121fd456b5749b1e40a16eaeda3a4e53515a752b"
+)
+
+# Canonical JSON Specification (CPAA1-PACKET-SERIALIZATION-V1)
+# Reference operation:
+# json.dumps(
+#     obj,
+#     ensure_ascii=False,
+#     sort_keys=True,
+#     separators=(",", ":"),
+#     allow_nan=False,
+# )
+CANONICAL_JSON_KWARGS: Final[dict[str, Any]] = {
+    "ensure_ascii": False,
+    "sort_keys": True,
+    "separators": (",", ":"),
+    "allow_nan": False,
+}
 
 # Frozen Parent Artifact Anchors
 QUESTION_MANIFEST_RELPATH: Final[str] = (

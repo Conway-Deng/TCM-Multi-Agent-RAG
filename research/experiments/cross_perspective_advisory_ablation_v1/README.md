@@ -135,3 +135,13 @@ Under amendment `CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1` and native contract `CPAA
   ```
 - **Formal Packet Generation Unauthorized:** Formal packet generation is **NOT** authorized in Phase 1E. The execution guard `--execute-formal-packet-generation` fails closed.
 - **Local-Only Future Packet Artifacts:** The future formal packet JSONL artifacts (`packets/tcm_packets.jsonl` and `packets/western_packets.jsonl`) will contain source-derived full passage texts and **must remain strictly local-only** (uncommitted and untracked). Only safe, text-free metadata receipts (`packet_manifest.json` or `packet_freeze_receipt.json`) may be committed.
+
+---
+
+## 7. Phase 1F: Deterministic Packet Writer Implementation (Non-Execution Checkpoint)
+
+Under amendment `CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1`, native packet contract `CPAA1-FROZEN-PACKET-LOSSLESS-V1`, and serialization contract `CPAA1-PACKET-SERIALIZATION-V1`:
+- **Writer Implementation Exists:** Deterministic formal packet writer (`packet_writer.py`), canonical serialization module (`packet_serialization.py`), and full parent-hit validator with trusted byte anchoring are fully implemented.
+- **Formal Generation Remains Unauthorized:** Phase 1F formal execution authorization remains strictly **CLOSED**.
+- **Packet Files Do Not Yet Exist / Are Not Frozen:** Real `packets/` directory and formal packet JSONLs have **not** been created.
+- **Next Step:** Return to SOL for writer implementation review prior to authorizing formal generation.

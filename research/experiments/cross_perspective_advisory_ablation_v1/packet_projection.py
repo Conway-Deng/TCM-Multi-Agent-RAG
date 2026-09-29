@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import copy
 import sys
 from pathlib import Path
 from typing import Any
+
+from pydantic import BaseModel
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _BACKEND_DIR = _REPO_ROOT / "backend"
@@ -36,15 +39,31 @@ try:
     from .packet_contract import (
         COMPATIBILITY_CLAIM_KIND,
         COMPATIBILITY_SUPPORT_STATUS,
+        EXPECTED_QUESTION_COUNT,
+        EXPECTED_QUESTION_MANIFEST_SHA256,
+        EXPECTED_TCM_ITEMS,
+        EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+        EXPECTED_TCM_RECORDS,
+        EXPECTED_WESTERN_ITEMS,
+        EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256,
+        EXPECTED_WESTERN_RECORDS,
         HITS_PER_RECORD,
         PACKET_CONTRACT_ID,
+        QUESTION_MANIFEST_RELPATH,
         SCHEMA_VERSION,
-        SUPPORT_BASIS,
         SEMANTIC_SUPPORT_STATUS,
-        compute_packet_canonical_sha256,
+        SUPPORT_BASIS,
+        TCM_RAW_RETRIEVAL_RELPATH,
+        WESTERN_RAW_RETRIEVAL_RELPATH,
         format_compatibility_claim_id,
         format_evidence_id,
         format_packet_id,
+    )
+    from .packet_serialization import (
+        packet_canonical_sha256,
+        sha256_bytes,
+        strict_deep_compare,
+        strict_json_loads,
     )
     from .schemas import (
         FrozenEvidenceItem,
@@ -57,15 +76,31 @@ except ImportError:
     from research.experiments.cross_perspective_advisory_ablation_v1.packet_contract import (
         COMPATIBILITY_CLAIM_KIND,
         COMPATIBILITY_SUPPORT_STATUS,
+        EXPECTED_QUESTION_COUNT,
+        EXPECTED_QUESTION_MANIFEST_SHA256,
+        EXPECTED_TCM_ITEMS,
+        EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+        EXPECTED_TCM_RECORDS,
+        EXPECTED_WESTERN_ITEMS,
+        EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256,
+        EXPECTED_WESTERN_RECORDS,
         HITS_PER_RECORD,
         PACKET_CONTRACT_ID,
+        QUESTION_MANIFEST_RELPATH,
         SCHEMA_VERSION,
-        SUPPORT_BASIS,
         SEMANTIC_SUPPORT_STATUS,
-        compute_packet_canonical_sha256,
+        SUPPORT_BASIS,
+        TCM_RAW_RETRIEVAL_RELPATH,
+        WESTERN_RAW_RETRIEVAL_RELPATH,
         format_compatibility_claim_id,
         format_evidence_id,
         format_packet_id,
+    )
+    from research.experiments.cross_perspective_advisory_ablation_v1.packet_serialization import (
+        packet_canonical_sha256,
+        sha256_bytes,
+        strict_deep_compare,
+        strict_json_loads,
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.schemas import (
         FrozenEvidenceItem,
@@ -73,6 +108,102 @@ except ImportError:
         RawRetrievalItem,
         RawRetrievalRecord,
     )
+
+
+class TrustedParentStore:
+    """Loads and retains frozen parent file bytes as immutable anchors,
+    parsing parent records using strict duplicate-key-rejecting JSON parsing."""
+
+    def __init__(self, repo_root: Path) -> None:
+        self.repo_root = repo_root
+
+        # 1. Read and verify question manifest bytes
+        q_manifest_path = repo_root / QUESTION_MANIFEST_RELPATH
+        self.question_manifest_bytes = q_manifest_path.read_bytes()
+        actual_q_sha = sha256_bytes(self.question_manifest_bytes)
+        if actual_q_sha != EXPECTED_QUESTION_MANIFEST_SHA256:
+            raise ValueError(
+                f"Question manifest SHA256 mismatch: {actual_q_sha} != {EXPECTED_QUESTION_MANIFEST_SHA256}"
+            )
+
+        # 2. Read and verify TCM raw retrieval bytes
+        tcm_path = repo_root / TCM_RAW_RETRIEVAL_RELPATH
+        self.tcm_raw_bytes = tcm_path.read_bytes()
+        actual_tcm_sha = sha256_bytes(self.tcm_raw_bytes)
+        if actual_tcm_sha != EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256:
+            raise ValueError(
+                f"TCM raw retrieval byte SHA256 mismatch: {actual_tcm_sha} != {EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256}"
+            )
+
+        # 3. Read and verify Western raw retrieval bytes
+        western_path = repo_root / WESTERN_RAW_RETRIEVAL_RELPATH
+        self.western_raw_bytes = western_path.read_bytes()
+        actual_western_sha = sha256_bytes(self.western_raw_bytes)
+        if actual_western_sha != EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256:
+            raise ValueError(
+                f"Western raw retrieval byte SHA256 mismatch: {actual_western_sha} != {EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256}"
+            )
+
+        # 4. Parse question manifest records in physical manifest order
+        self.question_manifest_records: list[dict[str, Any]] = []
+        self.questions_by_id: dict[str, dict[str, Any]] = {}
+        for line in self.question_manifest_bytes.decode("utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            q_rec = strict_json_loads(line)
+            qid = q_rec["question_id"]
+            if qid in self.questions_by_id:
+                raise ValueError(f"Duplicate question_id in question manifest: {qid}")
+            self.question_manifest_records.append(q_rec)
+            self.questions_by_id[qid] = q_rec
+
+        if len(self.question_manifest_records) != EXPECTED_QUESTION_COUNT:
+            raise ValueError(
+                f"Expected {EXPECTED_QUESTION_COUNT} questions, got {len(self.question_manifest_records)}"
+            )
+
+        # 5. Parse TCM raw retrieval records
+        self.tcm_raw_records: dict[str, RawRetrievalRecord] = {}
+        for line in self.tcm_raw_bytes.decode("utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            rec_dict = strict_json_loads(line)
+            rec = RawRetrievalRecord.model_validate(rec_dict)
+            if rec.question_id in self.tcm_raw_records:
+                raise ValueError(f"Duplicate question_id in TCM raw retrieval: {rec.question_id}")
+            self.tcm_raw_records[rec.question_id] = rec
+
+        if len(self.tcm_raw_records) != EXPECTED_TCM_RECORDS:
+            raise ValueError(
+                f"Expected {EXPECTED_TCM_RECORDS} TCM records, got {len(self.tcm_raw_records)}"
+            )
+
+        # 6. Parse Western raw retrieval records
+        self.western_raw_records: dict[str, RawRetrievalRecord] = {}
+        for line in self.western_raw_bytes.decode("utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            rec_dict = strict_json_loads(line)
+            rec = RawRetrievalRecord.model_validate(rec_dict)
+            if rec.question_id in self.western_raw_records:
+                raise ValueError(f"Duplicate question_id in Western raw retrieval: {rec.question_id}")
+            self.western_raw_records[rec.question_id] = rec
+
+        if len(self.western_raw_records) != EXPECTED_WESTERN_RECORDS:
+            raise ValueError(
+                f"Expected {EXPECTED_WESTERN_RECORDS} Western records, got {len(self.western_raw_records)}"
+            )
+
+        # 7. Verify 1-to-1 correspondence with question manifest
+        for q_rec in self.question_manifest_records:
+            qid = q_rec["question_id"]
+            if qid not in self.tcm_raw_records:
+                raise ValueError(f"Missing TCM record for manifest question {qid}")
+            if qid not in self.western_raw_records:
+                raise ValueError(f"Missing Western record for manifest question {qid}")
 
 
 def project_raw_record_to_frozen_packet(
@@ -88,6 +219,7 @@ def project_raw_record_to_frozen_packet(
     - corpus_record_ordinal
     - source metadata and provenance (including None values)
     - chunk hashes
+    - defensive deep-copy of provenance
     """
     if len(record.results) != HITS_PER_RECORD:
         raise ValueError(
@@ -122,7 +254,7 @@ def project_raw_record_to_frozen_packet(
             source_citation_or_version=hit.source_citation_or_version,
             license_or_access_status=hit.license_or_access_status,
             review_status=hit.review_status,
-            provenance=dict(hit.provenance),
+            provenance=copy.deepcopy(hit.provenance),
             support_basis="verbatim_source_copy",
             semantic_support_status="not_assessed",
         )
@@ -148,9 +280,9 @@ def project_raw_record_to_frozen_packet(
         "corpus_id": record.corpus_id,
         "corpus_version": record.corpus_version,
         "corpus_sha256": record.corpus_sha256,
-        "evidence_items": [item.model_dump(mode="json") for item in evidence_items],
+        "evidence_items": tuple(item.model_dump(mode="json") for item in evidence_items),
     }
-    canonical_sha = compute_packet_canonical_sha256(packet_dict)
+    canonical_sha = packet_canonical_sha256(packet_dict)
     packet_dict["packet_canonical_sha256"] = canonical_sha
 
     return FrozenEvidencePacket.model_validate(packet_dict)
@@ -218,7 +350,7 @@ def validate_frozen_evidence_item_integrity(
     item: FrozenEvidenceItem,
     expected_question_id: str,
     expected_perspective: str,
-    raw_item: RawRetrievalItem | None = None,
+    raw_item: RawRetrievalItem | dict[str, Any] | None = None,
 ) -> None:
     """Independently recompute and verify the integrity of a FrozenEvidenceItem."""
     expected_id = format_evidence_id(
@@ -240,36 +372,59 @@ def validate_frozen_evidence_item_integrity(
             f"Chunk text SHA256 mismatch on {item.evidence_id}: recorded {item.chunk_text_sha256} != recomputed {recomputed_sha}"
         )
 
-    if raw_item is not None:
-        if item.rank != raw_item.rank:
-            raise ValueError(f"Rank mismatch with raw hit: {item.rank} != {raw_item.rank}")
-        if item.retrieval_score != raw_item.retrieval_score:
-            raise ValueError(f"Score mismatch with raw hit: {item.retrieval_score} != {raw_item.retrieval_score}")
-        if item.score_is_zero != raw_item.score_is_zero:
-            raise ValueError(f"score_is_zero mismatch: {item.score_is_zero} != {raw_item.score_is_zero}")
-        if item.chunk_id != raw_item.chunk_id:
-            raise ValueError(f"chunk_id mismatch: {item.chunk_id} != {raw_item.chunk_id}")
-        if item.corpus_record_ordinal != raw_item.corpus_record_ordinal:
-            raise ValueError(f"corpus_record_ordinal mismatch: {item.corpus_record_ordinal} != {raw_item.corpus_record_ordinal}")
-        if item.exact_chunk_text != raw_item.exact_original_chunk_text:
-            raise ValueError(f"exact text mismatch with raw hit on {item.evidence_id}")
-        if item.chunk_text_sha256 != raw_item.chunk_text_utf8_sha256:
-            raise ValueError(f"text SHA mismatch with raw hit on {item.evidence_id}")
-        if item.chunk_record_canonical_sha256 != raw_item.chunk_record_canonical_sha256:
-            raise ValueError(f"record canonical SHA mismatch with raw hit on {item.evidence_id}")
-        if item.source_id != raw_item.source_id:
-            raise ValueError(f"source_id mismatch: {item.source_id} != {raw_item.source_id}")
-
     if item.support_basis != SUPPORT_BASIS:
         raise ValueError(f"Invalid support_basis: {item.support_basis}")
     if item.semantic_support_status != SEMANTIC_SUPPORT_STATUS:
         raise ValueError(f"Invalid semantic_support_status: {item.semantic_support_status}")
 
+    if raw_item is not None:
+        if isinstance(raw_item, BaseModel):
+            raw_dict = raw_item.model_dump(mode="json")
+        else:
+            raw_dict = raw_item
+
+        item_dict = item.model_dump(mode="json")
+
+        # Compare ALL projected fields derived from raw hit
+        fields_to_compare = [
+            ("rank", "rank"),
+            ("retrieval_score", "retrieval_score"),
+            ("score_is_zero", "score_is_zero"),
+            ("chunk_id", "chunk_id"),
+            ("corpus_record_ordinal", "corpus_record_ordinal"),
+            ("exact_chunk_text", "exact_original_chunk_text"),
+            ("chunk_text_sha256", "chunk_text_utf8_sha256"),
+            ("chunk_record_canonical_sha256", "chunk_record_canonical_sha256"),
+            ("source_id", "source_id"),
+            ("source_record_id", "source_record_id"),
+            ("source_title", "source_title"),
+            ("source_url", "source_url"),
+            ("doi", "doi"),
+            ("pmcid", "pmcid"),
+            ("section_or_category", "section_or_category"),
+            ("source_citation_or_version", "source_citation_or_version"),
+            ("license_or_access_status", "license_or_access_status"),
+            ("review_status", "review_status"),
+        ]
+
+        for item_key, raw_key in fields_to_compare:
+            val_item = item_dict.get(item_key)
+            val_raw = raw_dict.get(raw_key)
+            strict_deep_compare(val_item, val_raw, path=f"{item.evidence_id}.{item_key}")
+
+        # Complete provenance structure comparison
+        strict_deep_compare(
+            item_dict.get("provenance", {}),
+            raw_dict.get("provenance", {}),
+            path=f"{item.evidence_id}.provenance",
+        )
+
 
 def validate_frozen_packet_integrity(
     packet: FrozenEvidencePacket,
-    raw_record: RawRetrievalRecord | None = None,
+    raw_record: RawRetrievalRecord | dict[str, Any] | None = None,
     raw_artifact_sha256: str | None = None,
+    manifest_question: dict[str, Any] | None = None,
 ) -> None:
     """Independently recompute and verify the integrity of a FrozenEvidencePacket."""
     expected_pkt_id = format_packet_id(packet.question_id, packet.perspective)
@@ -291,45 +446,93 @@ def validate_frozen_packet_integrity(
     chunk_ids = [item.chunk_id for item in packet.evidence_items]
     if len(set(chunk_ids)) != HITS_PER_RECORD:
         raise ValueError(f"Duplicate chunk IDs found in packet: {chunk_ids}")
+    ev_ids = [item.evidence_id for item in packet.evidence_items]
+    if len(set(ev_ids)) != HITS_PER_RECORD:
+        raise ValueError(f"Duplicate evidence IDs found in packet: {ev_ids}")
+
+    # Validate each evidence item
+    if raw_record is not None:
+        if isinstance(raw_record, BaseModel):
+            raw_hits = raw_record.results
+            raw_dict = raw_record.model_dump(mode="json")
+        else:
+            raw_hits = raw_record.get("results", [])
+            raw_dict = raw_record
+    else:
+        raw_hits = None
+        raw_dict = None
 
     for idx, item in enumerate(packet.evidence_items):
         raw_hit = None
-        if raw_record is not None and len(raw_record.results) > idx:
-            raw_hit = raw_record.results[idx]
+        if raw_hits is not None and len(raw_hits) > idx:
+            raw_hit = raw_hits[idx]
         validate_frozen_evidence_item_integrity(
             item,
             expected_question_id=packet.question_id,
             expected_perspective=packet.perspective,
             raw_item=raw_hit,
         )
+        expected_claim_id = format_compatibility_claim_id(item.evidence_id)
+        if not expected_claim_id.startswith("cpaa1:sx:"):
+            raise ValueError(f"Invalid wrapper claim ID format: {expected_claim_id}")
 
-    if raw_record is not None:
-        if packet.question_id != raw_record.question_id:
-            raise ValueError(f"question_id mismatch: {packet.question_id} != {raw_record.question_id}")
-        if packet.candidate_id != raw_record.candidate_id:
-            raise ValueError(f"candidate_id mismatch: {packet.candidate_id} != {raw_record.candidate_id}")
-        if packet.question_text != raw_record.question_text:
-            raise ValueError("question_text mismatch with raw record")
-        if packet.topic != raw_record.topic:
-            raise ValueError(f"topic mismatch: {packet.topic} != {raw_record.topic}")
-        if packet.task_type != raw_record.task_type:
-            raise ValueError(f"task_type mismatch: {packet.task_type} != {raw_record.task_type}")
-        if packet.perspective != raw_record.perspective:
-            raise ValueError(f"perspective mismatch: {packet.perspective} != {raw_record.perspective}")
-        if packet.question_manifest_sha256 != raw_record.question_manifest_sha256:
-            raise ValueError("question_manifest_sha256 mismatch with raw record")
-        if packet.retrieval_algorithm_id != raw_record.retrieval_algorithm_id:
-            raise ValueError("retrieval_algorithm_id mismatch with raw record")
-        if packet.retrieval_record_id != raw_record.retrieval_record_id:
-            raise ValueError("retrieval_record_id mismatch with raw record")
-        if packet.retrieval_record_canonical_sha256 != raw_record.record_canonical_sha256:
-            raise ValueError("retrieval_record_canonical_sha256 mismatch with raw record")
-        if packet.corpus_id != raw_record.corpus_id:
-            raise ValueError("corpus_id mismatch with raw record")
-        if packet.corpus_version != raw_record.corpus_version:
-            raise ValueError("corpus_version mismatch with raw record")
-        if packet.corpus_sha256 != raw_record.corpus_sha256:
-            raise ValueError("corpus_sha256 mismatch with raw record")
+    # Validate against parent raw record
+    if raw_dict is not None:
+        packet_dict = packet.model_dump(mode="json")
+        correspondence_fields = [
+            ("question_id", "question_id"),
+            ("candidate_id", "candidate_id"),
+            ("question_text", "question_text"),
+            ("topic", "topic"),
+            ("task_type", "task_type"),
+            ("perspective", "perspective"),
+            ("question_manifest_sha256", "question_manifest_sha256"),
+            ("retrieval_algorithm_id", "retrieval_algorithm_id"),
+            ("retrieval_record_id", "retrieval_record_id"),
+            ("retrieval_record_canonical_sha256", "record_canonical_sha256"),
+            ("corpus_id", "corpus_id"),
+            ("corpus_version", "corpus_version"),
+            ("corpus_sha256", "corpus_sha256"),
+        ]
+        for p_key, r_key in correspondence_fields:
+            strict_deep_compare(
+                packet_dict[p_key],
+                raw_dict[r_key],
+                path=f"packet.{p_key}",
+            )
+
+    # Validate against parent question manifest record
+    if manifest_question is not None:
+        manifest_candidate_id = (
+            manifest_question.get("candidate_id")
+            or manifest_question.get("selection_metadata", {}).get("candidate_id")
+        )
+        packet_dict = packet.model_dump(mode="json")
+        strict_deep_compare(
+            packet_dict["candidate_id"],
+            manifest_candidate_id,
+            path="packet.candidate_id_vs_manifest",
+        )
+        strict_deep_compare(
+            packet_dict["question_id"],
+            manifest_question["question_id"],
+            path="packet.question_id_vs_manifest",
+        )
+        strict_deep_compare(
+            packet_dict["question_text"],
+            manifest_question["question_text"],
+            path="packet.question_text_vs_manifest",
+        )
+        strict_deep_compare(
+            packet_dict["topic"],
+            manifest_question["topic"],
+            path="packet.topic_vs_manifest",
+        )
+        strict_deep_compare(
+            packet_dict["task_type"],
+            manifest_question["task_type"],
+            path="packet.task_type_vs_manifest",
+        )
 
     if raw_artifact_sha256 is not None:
         if packet.retrieval_artifact_sha256 != raw_artifact_sha256:
@@ -338,9 +541,38 @@ def validate_frozen_packet_integrity(
             )
 
     # Independent canonical hash recomputation
-    raw_dump = packet.model_dump(mode="json")
-    recomputed_hash = compute_packet_canonical_sha256(raw_dump)
+    recomputed_hash = packet_canonical_sha256(packet)
     if packet.packet_canonical_sha256 != recomputed_hash:
         raise ValueError(
             f"Packet canonical SHA256 mismatch! Stored {packet.packet_canonical_sha256} != recomputed {recomputed_hash}"
         )
+
+
+def validate_packet_against_trusted_parent(
+    packet: FrozenEvidencePacket,
+    trusted_store: TrustedParentStore,
+) -> None:
+    """Validate packet against trusted byte anchors retained in TrustedParentStore."""
+    if packet.perspective == "tcm":
+        if packet.question_id not in trusted_store.tcm_raw_records:
+            raise ValueError(f"Question ID {packet.question_id} not in trusted TCM raw records")
+        raw_rec = trusted_store.tcm_raw_records[packet.question_id]
+        expected_artifact_sha = EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256
+    elif packet.perspective == "western":
+        if packet.question_id not in trusted_store.western_raw_records:
+            raise ValueError(f"Question ID {packet.question_id} not in trusted Western raw records")
+        raw_rec = trusted_store.western_raw_records[packet.question_id]
+        expected_artifact_sha = EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256
+    else:
+        raise ValueError(f"Unknown perspective: {packet.perspective}")
+
+    if packet.question_id not in trusted_store.questions_by_id:
+        raise ValueError(f"Question ID {packet.question_id} not in trusted question manifest")
+    manifest_q = trusted_store.questions_by_id[packet.question_id]
+
+    validate_frozen_packet_integrity(
+        packet=packet,
+        raw_record=raw_rec,
+        raw_artifact_sha256=expected_artifact_sha,
+        manifest_question=manifest_q,
+    )

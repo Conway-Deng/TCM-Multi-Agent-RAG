@@ -499,7 +499,7 @@ class FrozenEvidencePacket(StrictResearchModel):
     corpus_id: str = Field(min_length=1)
     corpus_version: str = Field(min_length=1)
     corpus_sha256: str = Field(min_length=64, max_length=64)
-    evidence_items: list[FrozenEvidenceItem] = Field(default_factory=list)
+    evidence_items: tuple[FrozenEvidenceItem, ...] = Field(default_factory=tuple)
     packet_canonical_sha256: str = Field(min_length=64, max_length=64)
 
     @model_validator(mode="after")
@@ -521,35 +521,64 @@ class FrozenEvidencePacket(StrictResearchModel):
 
 
 class PacketRunManifest(StrictResearchModel):
-    schema_version: str = "cpaa1_packet_manifest_v1"
-    study_id: str = "cross-perspective-advisory-ablation-v1"
-    packet_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["cpaa1_packet_manifest_v1"] = "cpaa1_packet_manifest_v1"
+    study_id: Literal["cross-perspective-advisory-ablation-v1"] = "cross-perspective-advisory-ablation-v1"
+    amendment_id: Literal["CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1"] = "CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1"
+    packet_contract_id: Literal["CPAA1-FROZEN-PACKET-LOSSLESS-V1"] = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    serialization_version: Literal["CPAA1-PACKET-SERIALIZATION-V1"] = "CPAA1-PACKET-SERIALIZATION-V1"
+    implementation_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     question_manifest_sha256: str = Field(min_length=64, max_length=64)
-    question_count: int = Field(default=48, ge=48, le=48)
     tcm_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
     western_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_corpus_sha256: str = Field(min_length=64, max_length=64)
+    western_corpus_sha256: str = Field(min_length=64, max_length=64)
+    research_prompt_sha256: dict[str, str]
+    tcm_packet_byte_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_canonical_aggregate_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_canonical_aggregate_sha256: str = Field(min_length=64, max_length=64)
     tcm_packet_count: int = Field(default=48, ge=48, le=48)
     western_packet_count: int = Field(default=48, ge=48, le=48)
     total_packet_count: int = Field(default=96, ge=96, le=96)
-    tcm_item_count: int = Field(default=192, ge=192, le=192)
-    western_item_count: int = Field(default=192, ge=192, le=192)
-    total_item_count: int = Field(default=384, ge=384, le=384)
-    generated_at_utc: str = Field(min_length=1)
-    implementation_commit: str = Field(min_length=1)
+    tcm_evidence_item_count: int = Field(default=192, ge=192, le=192)
+    western_evidence_item_count: int = Field(default=192, ge=192, le=192)
+    total_evidence_item_count: int = Field(default=384, ge=384, le=384)
+    integrity_audit_status: Literal["PASS"] = "PASS"
+    no_retrieval_attestation: Literal[True] = True
+    no_model_provider_attestation: Literal[True] = True
+    local_only_packet_jsonls: Literal[True] = True
 
 
 class PacketFreezeReceipt(StrictResearchModel):
-    schema_version: str = "cpaa1_packet_freeze_receipt_v1"
-    study_id: str = "cross-perspective-advisory-ablation-v1"
-    packet_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: Literal["cpaa1_packet_freeze_receipt_v1"] = "cpaa1_packet_freeze_receipt_v1"
+    study_id: Literal["cross-perspective-advisory-ablation-v1"] = "cross-perspective-advisory-ablation-v1"
+    amendment_id: Literal["CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1"] = "CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1"
+    packet_contract_id: Literal["CPAA1-FROZEN-PACKET-LOSSLESS-V1"] = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
+    serialization_version: Literal["CPAA1-PACKET-SERIALIZATION-V1"] = "CPAA1-PACKET-SERIALIZATION-V1"
+    implementation_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     question_manifest_sha256: str = Field(min_length=64, max_length=64)
     tcm_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
     western_raw_retrieval_byte_sha256: str = Field(min_length=64, max_length=64)
-    tcm_packet_artifact_byte_sha256: str = Field(min_length=64, max_length=64)
-    western_packet_artifact_byte_sha256: str = Field(min_length=64, max_length=64)
-    tcm_packet_canonical_sha256: str = Field(min_length=64, max_length=64)
-    western_packet_canonical_sha256: str = Field(min_length=64, max_length=64)
-    counts: dict[str, int] = Field(default_factory=dict)
-    audit_status: str = Field(min_length=1)
-    local_only_raw_artifacts: bool = True
-    formal_execution_timestamp_utc: str = Field(min_length=1)
+    tcm_corpus_sha256: str = Field(min_length=64, max_length=64)
+    western_corpus_sha256: str = Field(min_length=64, max_length=64)
+    research_prompt_sha256: dict[str, str]
+    tcm_packet_byte_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_byte_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_canonical_aggregate_sha256: str = Field(min_length=64, max_length=64)
+    western_packet_canonical_aggregate_sha256: str = Field(min_length=64, max_length=64)
+    tcm_packet_count: int = Field(default=48, ge=48, le=48)
+    western_packet_count: int = Field(default=48, ge=48, le=48)
+    total_packet_count: int = Field(default=96, ge=96, le=96)
+    tcm_evidence_item_count: int = Field(default=192, ge=192, le=192)
+    western_evidence_item_count: int = Field(default=192, ge=192, le=192)
+    total_evidence_item_count: int = Field(default=384, ge=384, le=384)
+    integrity_audit_status: Literal["PASS"] = "PASS"
+    no_retrieval_attestation: Literal[True] = True
+    no_model_provider_attestation: Literal[True] = True
+    local_only_packet_jsonls: Literal[True] = True
+    manifest_byte_sha256: str = Field(min_length=64, max_length=64)
+    manifest_canonical_sha256: str = Field(min_length=64, max_length=64)
