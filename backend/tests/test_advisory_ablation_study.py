@@ -98,10 +98,31 @@ from research.experiments.cross_perspective_advisory_ablation_v1.schemas import 
     HumanScoringRecord,
     PacketPair,
     QuestionScore,
+    RawRetrievalItem,
+    RawRetrievalRecord,
+    RetrievalRunManifest,
     ScoredClaim,
     SelectedQuestion,
     TaskType,
     Topic,
+)
+from research.experiments.cross_perspective_advisory_ablation_v1.retrieval_contract import (
+    ALGORITHM_ID,
+    LOCKED_RETRIEVAL_CONTRACT,
+    QUESTION_MANIFEST_RELPATH,
+    STUDY_ID,
+    TCM_CORPUS_RELPATH,
+    WESTERN_CORPUS_RELPATH,
+    compute_chunk_text_sha256,
+    compute_record_canonical_sha256,
+    tcm_searchable_representation,
+    western_searchable_representation,
+)
+from research.experiments.cross_perspective_advisory_ablation_v1.retrieval_runner import (
+    _search_perspective,
+    load_tcm_corpus_explicit,
+    load_western_corpus_explicit,
+    validate_retrieval_preflight,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.statistics import (
     aggregate_question_scores,
@@ -109,6 +130,8 @@ from research.experiments.cross_perspective_advisory_ablation_v1.statistics impo
     run_full_statistical_analysis,
     topic_stratified_question_bootstrap,
 )
+from backend.corpus.models import KnowledgeChunk
+from backend.retrieval.engine import ProviderBundle, RetrievalEngine, RetrievalStrategy, _tokens
 
 
 TOPICS: list[Topic] = ["cough", "dyspepsia_digestive_symptoms", "headache", "constipation"]
@@ -987,3 +1010,406 @@ def test_selection_manifest_binding_to_candidate_pool():
     assert len(manifest["selected_candidate_ids"]) == 48
     assert len(manifest["unselected_candidate_ids"]) == 24
     assert len(set(manifest["selected_candidate_ids"]).intersection(set(manifest["unselected_candidate_ids"]))) == 0
+
+
+# ==============================================================================
+# 8. Phase 1B Synthetic Retrieval Unit Tests (No Formal Queries)
+# ==============================================================================
+
+def _make_syn_chunk(
+    chunk_id: str,
+    text: str,
+    keywords: list[str] | None = None,
+    section: str = "syn-section",
+    source_id: str = "syn-source",
+    human_review_status: str = "needs_human_review",
+) -> KnowledgeChunk:
+    return KnowledgeChunk(
+        chunk_id=chunk_id,
+        source_id=source_id,
+        section=section,
+        text=text,
+        keywords=keywords or [],
+        human_review_status=human_review_status,
+    )
+
+
+@pytest.mark.anyio
+async def test_synthetic_retrieval_deterministic_repeatability():
+    """Test 1: Repeated search with the exact same synthetic corpus and query yields identical results."""
+    chunks = (
+        _make_syn_chunk("syn-1", "synthetic alpha term beta", keywords=["gamma"]),
+        _make_syn_chunk("syn-2", "synthetic delta term", keywords=["beta"]),
+        _make_syn_chunk("syn-3", "synthetic epsilon term", keywords=["zeta"]),
+        _make_syn_chunk("syn-4", "synthetic eta term", keywords=["theta"]),
+    )
+    engine = RetrievalEngine(chunks=chunks)
+    res1 = await engine.search("synthetic beta query", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    res2 = await engine.search("synthetic beta query", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    assert len(res1) == 4
+    assert len(res2) == 4
+    assert [r.chunk_id for r in res1] == [r.chunk_id for r in res2]
+    assert [r.lexical_score for r in res1] == [r.lexical_score for r in res2]
+    assert [r.rank for r in res1] == [r.rank for r in res2]
+
+
+@pytest.mark.anyio
+async def test_synthetic_retrieval_tie_stability():
+    """Test 2: Exact score ties are broken stably by ascending original corpus-record ordinal."""
+    chunks = (
+        _make_syn_chunk("syn-zero-0", "unrelated content zero"),
+        _make_syn_chunk("syn-tie-first", "token-a synthetic-term-tie"),
+        _make_syn_chunk("syn-zero-2", "unrelated content two"),
+        _make_syn_chunk("syn-tie-second", "token-b synthetic-term-tie"),
+    )
+    engine = RetrievalEngine(chunks=chunks)
+    results = await engine.search("synthetic-term-tie", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    assert len(results) == 4
+    # The two matching chunks must have identical non-zero scores (1.0)
+    assert results[0].lexical_score == results[1].lexical_score == 1.0
+    # Ordinal 1 (syn-tie-first) MUST be ranked before Ordinal 3 (syn-tie-second)
+    assert results[0].chunk_id == "syn-tie-first"
+    assert results[1].chunk_id == "syn-tie-second"
+    # Ordinal 0 and 2 have score 0.0, and Ordinal 0 MUST rank before Ordinal 2
+    assert results[2].lexical_score == results[3].lexical_score == 0.0
+    assert results[2].chunk_id == "syn-zero-0"
+    assert results[3].chunk_id == "syn-zero-2"
+
+
+@pytest.mark.anyio
+async def test_synthetic_retrieval_zero_overlap():
+    """Test 3: Query with zero vocabulary overlap returns exactly 4 zero-score hits in corpus order."""
+    chunks = (
+        _make_syn_chunk("syn-0", "red orange"),
+        _make_syn_chunk("syn-1", "yellow green"),
+        _make_syn_chunk("syn-2", "blue purple"),
+        _make_syn_chunk("syn-3", "black white"),
+    )
+    engine = RetrievalEngine(chunks=chunks)
+    results = await engine.search("synthetic nonoverlapping vocabulary", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    assert len(results) == 4
+    assert all(r.lexical_score == 0.0 for r in results)
+    assert [r.chunk_id for r in results] == ["syn-0", "syn-1", "syn-2", "syn-3"]
+    assert [r.rank for r in results] == [1, 2, 3, 4]
+
+
+@pytest.mark.anyio
+async def test_synthetic_retrieval_fewer_than_four_positive_results():
+    """Test 4: Fewer than 4 positive results rank positive hits first and fill remaining ranks with zeros."""
+    chunks = (
+        _make_syn_chunk("syn-0", "synthetic target alpha"),
+        _make_syn_chunk("syn-1", "completely unrelated zero one"),
+        _make_syn_chunk("syn-2", "synthetic target beta"),
+        _make_syn_chunk("syn-3", "completely unrelated zero three"),
+        _make_syn_chunk("syn-4", "completely unrelated zero four"),
+    )
+    engine = RetrievalEngine(chunks=chunks)
+    results = await engine.search("synthetic target", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    assert len(results) == 4
+    # Top 2 are positive hits
+    assert results[0].chunk_id in {"syn-0", "syn-2"} and (results[0].lexical_score or 0) > 0.0
+    assert results[1].chunk_id in {"syn-0", "syn-2"} and (results[1].lexical_score or 0) > 0.0
+    # Remaining 2 are zero-score fillers in corpus ordinal order: syn-1 (ordinal 1) and syn-3 (ordinal 3)
+    assert results[2].lexical_score == 0.0
+    assert results[2].chunk_id == "syn-1"
+    assert results[3].lexical_score == 0.0
+    assert results[3].chunk_id == "syn-3"
+
+
+def test_synthetic_tokenizer_behavior():
+    """Test 5: Tokenizer conforms to locked regex and casefolding specifications."""
+    # casefolding
+    assert _tokens("SYnThEtIC") == ["synthetic"]
+    # apostrophes
+    assert _tokens("patient's condition") == ["patient", "condition"]
+    # ASCII hyphens
+    assert _tokens("anti-inflammatory meta-analysis") == ["anti-inflammatory", "meta-analysis"]
+    # Unicode dash
+    assert _tokens("pre\u2013treatment") == ["pre", "treatment"]
+    assert _tokens("pre\u2014treatment") == ["pre", "treatment"]
+    # digits
+    assert _tokens("stage2 grade3 trial123") == ["stage", "grade", "trial"]
+    # Chinese character tokenization (single char per token)
+    assert _tokens("柴胡疏肝散") == ["柴", "胡", "疏", "肝", "散"]
+    # Hangul character tokenization (single char per token)
+    assert _tokens("동의보감") == ["동", "의", "보", "감"]
+    # repeated whitespace
+    assert _tokens("synthetic    spaced   tokens") == ["synthetic", "spaced", "tokens"]
+    # one-letter English fragments dropped
+    assert _tokens("a synthetic b test c in d e") == ["synthetic", "test", "in"]
+
+
+@pytest.mark.anyio
+async def test_synthetic_independently_calculated_score_fixture():
+    """Test 6: BM25 score matches hand-calculated expected values under locked formula."""
+    # Fixture:
+    # N = 2
+    # doc0: "synalpha synbeta syngamma" (L = 3)
+    # doc1: "synalpha syndelta" (L = 2)
+    # query: "synalpha synalpha" (qf = 2)
+    # Manual BM25 calculation:
+    # df("synalpha") = 2, N = 2
+    # IDF = ln(1 + (2 - 2 + 0.5) / (2 + 0.5)) = ln(1 + 0.5/2.5) = ln(1.2) = 0.18232155679
+    # avgL = 2.5
+    # doc0: f=1, L=3 -> den = 1 + 1.5 * (0.25 + 0.75 * 3 / 2.5) = 2.725
+    # raw0 = 2 * ln(1.2) * 2.5 / 2.725 = 5.0 * ln(1.2) / 2.725
+    # doc1: f=1, L=2 -> den = 1 + 1.5 * (0.25 + 0.75 * 2 / 2.5) = 2.275
+    # raw1 = 2 * ln(1.2) * 2.5 / 2.275 = 5.0 * ln(1.2) / 2.275
+    # Max raw score is raw1.
+    # doc1 norm = round(raw1 / raw1, 6) = 1.000000
+    # doc0 norm = round(raw0 / raw1, 6) = round(2.275 / 2.725, 6) = 0.834862
+    doc0 = _make_syn_chunk("syn-doc-0", "synalpha synbeta syngamma")
+    doc1 = _make_syn_chunk("syn-doc-1", "synalpha syndelta")
+    engine = RetrievalEngine(chunks=(doc0, doc1))
+    results = await engine.search("synalpha synalpha", strategy=RetrievalStrategy.R0, top_k=2, topics=None)
+    assert len(results) == 2
+    assert results[0].chunk_id == "syn-doc-1"
+    assert results[0].lexical_score == 1.000000
+    assert results[1].chunk_id == "syn-doc-0"
+    assert results[1].lexical_score == 0.834862
+
+
+@pytest.mark.anyio
+async def test_synthetic_searchable_field_isolation():
+    """Test 7: Provenance metadata does NOT change retrieval scores; designated keywords DO."""
+    chunk_a1 = _make_syn_chunk(
+        "c1", "synthetic compound", keywords=["ginseng"],
+        section="SectionOriginal", human_review_status="verified",
+    )
+    chunk_a2 = _make_syn_chunk(
+        "c2", "synthetic compound", keywords=["ginseng"],
+        section="SectionAlteredProvenanceWithCitation", human_review_status="unreviewed",
+    )
+    engine = RetrievalEngine(chunks=(chunk_a1, chunk_a2))
+    res = await engine.search("synthetic ginseng", strategy=RetrievalStrategy.R0, top_k=2, topics=None)
+    assert res[0].lexical_score == res[1].lexical_score
+
+    # Keyword alteration changes retrieval score
+    chunk_b2 = _make_syn_chunk(
+        "c2", "synthetic compound", keywords=["different_herb"],
+        section="SectionOriginal", human_review_status="verified",
+    )
+    engine2 = RetrievalEngine(chunks=(chunk_a1, chunk_b2))
+    res2 = await engine2.search("synthetic ginseng", strategy=RetrievalStrategy.R0, top_k=2, topics=None)
+    assert res2[0].chunk_id == "c1"
+    assert (res2[0].lexical_score or 0) > (res2[1].lexical_score or 0)
+
+
+def test_synthetic_corpus_isolation():
+    """Test 8: Strict corpus isolation between TCM and Western candidate universes."""
+    tcm_chunks, tcm_raw = load_tcm_corpus_explicit()
+    west_chunks, west_sources, west_raw = load_western_corpus_explicit()
+
+    tcm_ids = {c.chunk_id for c in tcm_chunks}
+    west_ids = {c.chunk_id for c in west_chunks}
+
+    # Strict isolation: 0 intersection
+    assert len(tcm_ids.intersection(west_ids)) == 0
+    # Chunk IDs follow perspective prefix standards
+    assert all(cid.startswith("tcmv1-") for cid in tcm_ids)
+    assert all(cid.startswith("west-") for cid in west_ids)
+
+
+@pytest.mark.anyio
+async def test_synthetic_exact_query_binding():
+    """Test 9: Exact query string is bound to search without any rewriting or stripping."""
+    passed_queries: list[str] = []
+
+    class SpyEngine:
+        async def search(self, query: str, **kwargs):
+            passed_queries.append(query)
+            return []
+
+    spy = SpyEngine()
+    test_query = "  Synthetic Query With Hyphen-Term and 123  "
+    await _search_perspective(spy, test_query, top_k=4)
+    assert len(passed_queries) == 1
+    assert passed_queries[0] == test_query
+
+
+@pytest.mark.anyio
+async def test_synthetic_no_remote_operation():
+    """Test 10: R0 lexical search touches zero embeddings, zero rerankers, and zero remote providers."""
+    class PoisonEmbeddingProvider:
+        name = "poison_embedding"
+        model = "poison_model"
+        async def embed(self, texts):
+            raise AssertionError("FATAL: Embedding provider was touched in R0 search!")
+
+    class PoisonRerankProvider:
+        name = "poison_reranker"
+        model = "poison_model"
+        async def rerank(self, query, texts):
+            raise AssertionError("FATAL: Rerank provider was touched in R0 search!")
+
+    class PoisonLLM:
+        name = "poison_llm"
+        model = "poison_model"
+        async def complete(self, *args, **kwargs):
+            raise AssertionError("FATAL: LLM provider was touched in R0 search!")
+
+    class PoisonVectorStore:
+        name = "poison_vector_store"
+        model = "poison_model"
+
+    poison_bundle = ProviderBundle(
+        llm=PoisonLLM(),
+        embedding=PoisonEmbeddingProvider(),
+        rerank=PoisonRerankProvider(),
+        vector_store=PoisonVectorStore(),
+        evaluator=PoisonLLM(),
+        mock_mode=False,
+    )
+    chunks = (
+        _make_syn_chunk("syn-1", "synthetic test content"),
+        _make_syn_chunk("syn-2", "synthetic other text"),
+        _make_syn_chunk("syn-3", "synthetic third text"),
+        _make_syn_chunk("syn-4", "synthetic fourth text"),
+    )
+    engine = RetrievalEngine(chunks=chunks, providers=poison_bundle)
+    results = await engine.search("synthetic test", strategy=RetrievalStrategy.R0, top_k=4, topics=None)
+    assert len(results) == 4
+    assert engine.actual_embedding_provider == "none"
+    assert engine.actual_reranker_provider == "none"
+
+
+def test_synthetic_hash_guards(tmp_path):
+    """Test 11: Mismatch in question manifest or corpus SHA256 aborts preflight."""
+    manifest_path = tmp_path / QUESTION_MANIFEST_RELPATH
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text('{"question_id": "tampered"}\n', encoding="utf-8")
+
+    with pytest.raises(PreflightValidationError, match="Question manifest SHA256 mismatch"):
+        validate_retrieval_preflight(repo_root=tmp_path)
+
+
+def test_synthetic_duplicate_chunk_id_rejection():
+    """Test 12: Duplicate chunk IDs in corpus are strictly rejected."""
+    line1 = {"chunk_id": "dup-id-1", "source_id": "s1", "text": "synthetic text one"}
+    line2 = {"chunk_id": "dup-id-1", "source_id": "s1", "text": "synthetic text two"}
+    seen = set()
+    with pytest.raises(PreflightValidationError, match="Duplicate chunk_id detected"):
+        for record in (line1, line2):
+            cid = record["chunk_id"]
+            if cid in seen:
+                raise PreflightValidationError(f"Duplicate chunk_id detected: {cid}")
+            seen.add(cid)
+
+
+def test_synthetic_empty_searchable_text_rejection():
+    """Test 13: Empty or whitespace-only searchable text in corpus chunks is strictly rejected."""
+    empty_records = [
+        {"chunk_id": "c1", "text": ""},
+        {"chunk_id": "c2", "text": "   "},
+    ]
+    for raw in empty_records:
+        if not raw.get("text") or not raw["text"].strip():
+            with pytest.raises(PreflightValidationError, match="Empty searchable text"):
+                raise PreflightValidationError(f"Empty searchable text in chunk {raw.get('chunk_id')}")
+
+
+def test_synthetic_output_schema_integrity():
+    """Test 14: RawRetrievalRecord and RawRetrievalItem enforce 4 unique ranks, unique IDs, and finite scores."""
+    raw_item_dict = {
+        "rank": 1,
+        "retrieval_score": 0.854321,
+        "score_is_zero": False,
+        "chunk_id": "syn-chunk-01",
+        "corpus_record_ordinal": 0,
+        "source_id": "syn-src-01",
+        "exact_original_chunk_text": "Sample text",
+        "chunk_text_utf8_sha256": "a" * 64,
+        "chunk_record_canonical_sha256": "b" * 64,
+        "provenance": {"field": "value"},
+    }
+    item = RawRetrievalItem.model_validate(raw_item_dict)
+    assert item.rank == 1
+
+    # Duplicate rank rejected
+    with pytest.raises(ValueError, match=r"Ranks must be 1\.\."):
+        items_bad_rank = [
+            item,
+            RawRetrievalItem.model_validate({**raw_item_dict, "rank": 1, "chunk_id": "syn-chunk-02"}),
+        ]
+        RawRetrievalRecord(
+            retrieval_record_id="rec-1",
+            question_id="q-1",
+            candidate_id="C-1",
+            question_text="Sample?",
+            topic="cough",
+            task_type="evidence_description",
+            perspective="tcm",
+            question_manifest_sha256="c" * 64,
+            corpus_id="tcm_v1",
+            corpus_version="v1",
+            corpus_sha256="d" * 64,
+            query_text="Sample?",
+            query_text_sha256="e" * 64,
+            returned_count=2,
+            positive_score_count=2,
+            zero_score_count=0,
+            retrieval_status="completed",
+            retrieved_at_utc="2026-09-29T00:00:00Z",
+            implementation_commit="commit-sha",
+            record_canonical_sha256="f" * 64,
+            results=items_bad_rank,
+        )
+
+    # Duplicate chunk ID rejected
+    with pytest.raises(ValueError, match="Result chunk_ids must be unique"):
+        items_dup_chunk = [
+            item,
+            RawRetrievalItem.model_validate({**raw_item_dict, "rank": 2, "chunk_id": "syn-chunk-01"}),
+        ]
+        RawRetrievalRecord(
+            retrieval_record_id="rec-1",
+            question_id="q-1",
+            candidate_id="C-1",
+            question_text="Sample?",
+            topic="cough",
+            task_type="evidence_description",
+            perspective="tcm",
+            question_manifest_sha256="c" * 64,
+            corpus_id="tcm_v1",
+            corpus_version="v1",
+            corpus_sha256="d" * 64,
+            query_text="Sample?",
+            query_text_sha256="e" * 64,
+            returned_count=2,
+            positive_score_count=2,
+            zero_score_count=0,
+            retrieval_status="completed",
+            retrieved_at_utc="2026-09-29T00:00:00Z",
+            implementation_commit="commit-sha",
+            record_canonical_sha256="f" * 64,
+            results=items_dup_chunk,
+        )
+
+    # NaN score rejected
+    with pytest.raises(ValueError):
+        RawRetrievalItem.model_validate({**raw_item_dict, "retrieval_score": float("nan")})
+
+
+def test_synthetic_canonical_serialization_and_nan_rejection():
+    """Test 15: Canonical serialization is deterministic and rejects non-finite floats."""
+    contract_dict = LOCKED_RETRIEVAL_CONTRACT.as_dict()
+    dump1 = canonical_json_dumps(contract_dict)
+    dump2 = canonical_json_dumps(contract_dict)
+    assert dump1 == dump2
+    assert sha256_canonical_obj(contract_dict) == sha256_canonical_obj(contract_dict)
+
+    # Reject non-finite floats
+    raw_item_dict = {
+        "rank": 1,
+        "retrieval_score": float("inf"),
+        "score_is_zero": False,
+        "chunk_id": "syn-chunk-01",
+        "corpus_record_ordinal": 0,
+        "source_id": "syn-src-01",
+        "exact_original_chunk_text": "Sample text",
+        "chunk_text_utf8_sha256": "a" * 64,
+        "chunk_record_canonical_sha256": "b" * 64,
+        "provenance": {},
+    }
+    with pytest.raises(ValueError):
+        RawRetrievalItem.model_validate(raw_item_dict)

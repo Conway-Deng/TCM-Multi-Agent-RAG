@@ -47,8 +47,22 @@ A separate, later robustness study may explore variability arising from upstream
   - Location: `research/corpus/west_v0_1/chunks.jsonl`
 
 ### 2.2 Retrieval Protocol
-- **TCM Retrieval:** Existing research R0 lexical retrieval, `top_k = 4`.
-- **Western Retrieval:** Existing frozen R0 lexical retrieval, `top_k = 4`.
+- **Retrieval Algorithm ID:** `CPAA1-R0-LEXICAL-V1`
+- **Candidate Universes:**
+  - **TCM:** Complete, verified TCM Research Corpus v1 (4,461 chunks).
+  - **Western:** Complete, verified MediRAG-West PMC Open Access Pilot Corpus v0.1 (271 chunks).
+  - Full-corpus unfiltered search (`topics=None`). No topic routing, no candidate filtering, no threshold gating, no source diversification, no fallback corpus.
+- **Query Contract:**
+  - `query_text` is the EXACT frozen `question_text`.
+  - Prohibitions: No strip rewriting, no LLM rewriting, no synonym expansion, no translation, no topic/task prefixes, no router substitution, no entity-anchor query, no reflection search.
+  - Topic and task type are archival metadata only and must NOT constrain retrieval.
+- **Scoring & Ranking Contract:**
+  - Primary strategy: R0 BM25 lexical ($k_1 = 1.5, b = 0.75$, exposed scores rounded to 6 decimal places).
+  - Primary parameter: `top_k = 4` per question per perspective.
+  - Ties broken strictly by ascending original corpus-record ordinal (0-indexed order of nonblank records in SHA-bound JSONL).
+  - Zero-score retention: zero-score records are retained and ranked (ranks filled up to 4). Zero-score retrieval is a valid weak outcome, not an error.
+  - Raw retrieval records must be fully archived before downstream evidence packet construction.
+  - Weak retrieval remains observed benchmark output; questions must NOT be replaced or rewritten after retrieval.
 - **Retrieval Invariance:**
   - Retrieval configuration, exact query string, text preprocessing, ordering, tie-breaking, filters, selected chunks, and provenance links are executed **once** and frozen.
   - Retrieval occurs **strictly prior to condition execution**. Conditions G0–G3 must **NEVER** rerun retrieval.

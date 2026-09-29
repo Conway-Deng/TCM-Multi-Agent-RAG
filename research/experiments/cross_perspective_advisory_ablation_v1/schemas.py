@@ -1,7 +1,8 @@
+import math
 import sys
 from pathlib import Path
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _BACKEND_DIR = _REPO_ROOT / "backend"
@@ -322,3 +323,113 @@ class AnalysisRecord(StrictResearchModel):
     stratified: bool = True
     secondary_comparisons: list[SecondaryComparisonResult] = Field(default_factory=list)
     secondary_component_metrics: dict[str, Any] = Field(default_factory=dict)
+
+
+class RawRetrievalItem(StrictResearchModel):
+    rank: int = Field(ge=1, le=4)
+    retrieval_score: float = Field(ge=0.0, le=1.0)
+    score_is_zero: bool
+    chunk_id: str = Field(min_length=1)
+    corpus_record_ordinal: int = Field(ge=0)
+    source_id: str = Field(min_length=1)
+    source_record_id: str | None = None
+    source_title: str | None = None
+    source_url: str | None = None
+    doi: str | None = None
+    pmcid: str | None = None
+    section_or_category: str | None = None
+    license_or_access_status: str | None = None
+    source_citation_or_version: str | None = None
+    review_status: str | None = None
+    exact_original_chunk_text: str = Field(min_length=1)
+    chunk_text_utf8_sha256: str = Field(min_length=64, max_length=64)
+    chunk_record_canonical_sha256: str = Field(min_length=64, max_length=64)
+    provenance: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("retrieval_score")
+    @classmethod
+    def validate_retrieval_score_finite(cls, v: float) -> float:
+        if not math.isfinite(v):
+            raise ValueError(f"Retrieval score must be finite, got {v}")
+        return v
+
+    @model_validator(mode="after")
+    def validate_zero_consistency(self) -> "RawRetrievalItem":
+        if self.score_is_zero and self.retrieval_score != 0.0:
+            raise ValueError(
+                f"score_is_zero is True but retrieval_score is non-zero ({self.retrieval_score})"
+            )
+        if not self.score_is_zero and self.retrieval_score == 0.0:
+            raise ValueError(
+                "score_is_zero is False but retrieval_score is 0.0"
+            )
+        return self
+
+
+class RawRetrievalRecord(StrictResearchModel):
+    schema_version: str = "cpaa1_raw_retrieval_v1"
+    retrieval_record_id: str = Field(min_length=1)
+    question_id: str = Field(min_length=1)
+    candidate_id: str = Field(min_length=1)
+    question_text: str = Field(min_length=1)
+    topic: Topic
+    task_type: TaskType
+    perspective: Literal["tcm", "western"]
+    question_manifest_sha256: str = Field(min_length=64, max_length=64)
+    corpus_id: str = Field(min_length=1)
+    corpus_version: str = Field(min_length=1)
+    corpus_sha256: str = Field(min_length=64, max_length=64)
+    retrieval_algorithm_id: str = "CPAA1-R0-LEXICAL-V1"
+    retrieval_config: dict[str, Any] = Field(default_factory=dict)
+    query_text: str = Field(min_length=1)
+    query_text_sha256: str = Field(min_length=64, max_length=64)
+    requested_top_k: int = Field(default=4, ge=1, le=4)
+    returned_count: int = Field(ge=0, le=4)
+    positive_score_count: int = Field(ge=0, le=4)
+    zero_score_count: int = Field(ge=0, le=4)
+    retrieval_status: str = Field(min_length=1)
+    retrieved_at_utc: str = Field(min_length=1)
+    implementation_commit: str = Field(min_length=1)
+    record_canonical_sha256: str = Field(min_length=64, max_length=64)
+    results: list[RawRetrievalItem] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_counts_and_ranks(self) -> "RawRetrievalRecord":
+        if len(self.results) != self.returned_count:
+            raise ValueError(
+                f"returned_count ({self.returned_count}) != len(results) ({len(self.results)})"
+            )
+        pos = sum(1 for r in self.results if not r.score_is_zero)
+        zeros = sum(1 for r in self.results if r.score_is_zero)
+        if pos != self.positive_score_count:
+            raise ValueError(
+                f"positive_score_count mismatch: {pos} vs {self.positive_score_count}"
+            )
+        if zeros != self.zero_score_count:
+            raise ValueError(
+                f"zero_score_count mismatch: {zeros} vs {self.zero_score_count}"
+            )
+        ranks = [r.rank for r in self.results]
+        if ranks != list(range(1, len(self.results) + 1)):
+            raise ValueError(f"Ranks must be 1..{len(self.results)}, got {ranks}")
+        chunk_ids = [r.chunk_id for r in self.results]
+        if len(set(chunk_ids)) != len(chunk_ids):
+            raise ValueError(f"Result chunk_ids must be unique, got {chunk_ids}")
+        return self
+
+
+class RetrievalRunManifest(StrictResearchModel):
+    schema_version: str = "cpaa1_retrieval_manifest_v1"
+    study_id: str = "cross-perspective-advisory-ablation-v1"
+    algorithm_id: str = "CPAA1-R0-LEXICAL-V1"
+    question_manifest_sha256: str = Field(min_length=64, max_length=64)
+    question_count: int = Field(default=48, ge=48, le=48)
+    tcm_corpus_sha256: str = Field(min_length=64, max_length=64)
+    tcm_record_count: int = Field(default=48, ge=48, le=48)
+    tcm_retrieval_output_sha256: str = Field(min_length=64, max_length=64)
+    western_corpus_sha256: str = Field(min_length=64, max_length=64)
+    western_record_count: int = Field(default=48, ge=48, le=48)
+    western_retrieval_output_sha256: str = Field(min_length=64, max_length=64)
+    generated_at_utc: str = Field(min_length=1)
+    implementation_commit: str = Field(min_length=1)
+    contract: dict[str, Any] = Field(default_factory=dict)

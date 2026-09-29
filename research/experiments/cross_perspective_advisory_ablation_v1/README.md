@@ -28,10 +28,13 @@ The primary confirmatory comparison is **G3 minus G0** on the **usable, fully gr
    - Prospective lock: No question may be substituted after retrieval.
 2. **Prospective Reference Unit Definition:**
    - Define reference units ($M_q \ge 1$) for each question before output generation.
-3. **Formal Evidence Retrieval & Freeze:**
-   - Run R0 lexical retrieval once on TCM Research Corpus v1 (`top_k = 4`).
-   - Run R0 lexical retrieval once on MediRAG-West v0.1 Pilot Corpus (`top_k = 4`).
-   - Freeze all queries, chunks, and provenance mappings.
+3. **Formal Evidence Retrieval & Freeze (`CPAA1-R0-LEXICAL-V1`):**
+   - Run R0 BM25 lexical retrieval once per perspective on complete, verified research corpora (`top_k = 4`).
+   - Query text: EXACT frozen question text (no rewriting, no topic filtering, no synonym expansion).
+   - Candidate universes: Complete TCM Research Corpus v1 (4,461 chunks) and complete Western PMC Pilot Corpus v0.1 (271 chunks).
+   - Zero-score retention: zero-score chunks are retained up to `top_k=4`; ties broken by ascending corpus-record ordinal.
+   - Weak retrieval remains observed benchmark output; questions must not be replaced or rewritten after retrieval.
+   - Raw retrieval records archived before downstream evidence packet construction.
 4. **Evidence Packet Pair Materialization & Freeze:**
    - Construct immutable $\langle \text{TCM Packet}, \text{Western Packet} \rangle$ pairs.
    - Compute canonical SHA256 hashes.
