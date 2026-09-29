@@ -67,7 +67,10 @@ from research.experiments.cross_perspective_advisory_ablation_v1.packet_serializ
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer import (
     PHASE_1F_FORMAL_AUTHORIZATION_GRANTED,
+    PHASE_1G_FORMAL_AUTHORIZATION_GRANTED,
     build_in_memory_formal_packet_artifacts,
+    execute_formal_packet_generation,
+    verify_and_get_executing_git_head,
     verify_frozen_inputs,
     verify_research_prompts,
     write_formal_packet_artifacts,
@@ -781,3 +784,519 @@ def test_real_data_read_only_in_memory_preflight(repo_root: Path):
     # Verify real packets/ does NOT exist
     real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
     assert not real_packets_dir.exists()
+
+
+# ==============================================================================
+# TASK 4: REGRESSION TEST MUTATED TRUSTED PARENT (SOL DEMONSTRATED DEFECT)
+# Mutating an exposed or parsed parent object must NEVER alter validation truth.
+# ==============================================================================
+
+def test_mutated_parsed_parent_provenance_fails_validation(repo_root: Path):
+    """Mutating exposed parsed parent provenance must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+
+    # Get a fresh record to mutate
+    raw_rec = store.tcm_raw_records[qid]
+    # Mutate the exposed parsed record's provenance
+    raw_rec.results[0].provenance["tampered_key"] = "malicious_value"
+
+    # Build packet matching the mutated provenance
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    # The packet now has "tampered_key" in provenance
+    assert "tampered_key" in pkt.evidence_items[0].provenance
+
+    # Validation must FAIL because the store reconstructs the parent from SHA-bound bytes!
+    with pytest.raises((ValueError, KeyError), match="tampered_key"):
+        validate_packet_against_trusted_parent(pkt, store)
+
+
+def test_mutated_parsed_parent_source_title_fails_validation(repo_root: Path):
+    """Mutating exposed source_title must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+    raw_rec = store.tcm_raw_records[qid]
+    raw_rec.results[0].source_title = "MALICIOUS TAMPERED TITLE"
+
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    with pytest.raises(ValueError, match="MALICIOUS TAMPERED TITLE"):
+        validate_packet_against_trusted_parent(pkt, store)
+
+
+def test_mutated_parsed_parent_source_url_fails_validation(repo_root: Path):
+    """Mutating exposed source_url must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+    raw_rec = store.tcm_raw_records[qid]
+    raw_rec.results[0].source_url = "https://tampered-source.org"
+
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    with pytest.raises(ValueError, match="tampered-source"):
+        validate_packet_against_trusted_parent(pkt, store)
+
+
+def test_mutated_parsed_parent_retrieval_score_fails_validation(repo_root: Path):
+    """Mutating exposed retrieval_score must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+    raw_rec = store.tcm_raw_records[qid]
+    raw_rec.results[0].retrieval_score = 999.0
+
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    with pytest.raises(ValueError, match="999.0"):
+        validate_packet_against_trusted_parent(pkt, store)
+
+
+def test_mutated_parsed_parent_nullable_metadata_fails_validation(repo_root: Path):
+    """Mutating nullable metadata in exposed parent must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+    raw_rec = store.tcm_raw_records[qid]
+    raw_rec.results[0].provenance["volume"] = 99999
+
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    with pytest.raises((ValueError, KeyError)):
+        validate_packet_against_trusted_parent(pkt, store)
+
+
+def test_mutated_parsed_question_metadata_fails_validation(repo_root: Path):
+    """Mutating exposed question metadata must fail validation against byte anchor."""
+    store = TrustedParentStore(repo_root)
+    qid = store.get_manifest_question_ids()[0]
+
+    # Mutate the dictionary returned by question property
+    q_dict = store.questions_by_id[qid]
+    q_dict["clinical_domain"] = "TAMPERED_DOMAIN"
+
+    raw_rec = store.tcm_raw_records[qid]
+    pkt = project_raw_record_to_frozen_packet(
+        record=raw_rec,
+        raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    )
+    # The packet dict topic/task_type are bound to question manifest
+    pkt_dict = pkt.model_dump(mode="json")
+    pkt_dict["topic"] = "TAMPERED_TOPIC"
+    pkt_dict["packet_canonical_sha256"] = packet_canonical_sha256(pkt_dict)
+
+    with pytest.raises(ValueError, match="TAMPERED_TOPIC"):
+        validate_packet_against_trusted_parent(pkt_dict, store)
+
+
+# ==============================================================================
+# TASK 21: ORIGINAL KEY PRESENCE AND JSON TYPES TESTS
+# ==============================================================================
+
+def test_original_key_presence_missing_key_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Missing required key in packet evidence item or raw hit must fail."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # Missing in item
+    del item_dict["source_id"]
+    with pytest.raises(KeyError, match="source_id"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+    # Missing in raw parent
+    item_dict_restored = pkt.evidence_items[0].model_dump(mode="json")
+    del raw_hit_dict["source_id"]
+    with pytest.raises(KeyError, match="source_id"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict_restored,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_key_presence_extra_null_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Present null key when original key was absent must fail."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # Raw provenance does not have "nonexistent_key", but item provenance does with None
+    item_dict["provenance"]["nonexistent_key"] = None
+    with pytest.raises((ValueError, KeyError), match="nonexistent_key"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_key_presence_missing_null_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Absent key when original key was present as null must fail."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # Raw hit has "doi": None, delete it from item
+    assert raw_hit_dict["doi"] is None
+    del item_dict["doi"]
+    with pytest.raises(KeyError, match="doi"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_type_null_vs_empty_string_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Original null replaced by empty string must fail strict comparison."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # Raw hit has "doi": None, change item's "doi" to ""
+    assert raw_hit_dict["doi"] is None
+    item_dict["doi"] = ""
+    with pytest.raises(TypeError, match="Type mismatch"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_type_bool_vs_int_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Original boolean replaced by integer (e.g. True vs 1) must fail strict comparison."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # score_is_zero is bool
+    item_dict["score_is_zero"] = 0
+    with pytest.raises(TypeError, match="Type mismatch"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_type_int_vs_float_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Original integer replaced by float (e.g. 2124 vs 2124.0) must fail strict comparison."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # corpus_record_ordinal is int
+    item_dict["corpus_record_ordinal"] = float(item_dict["corpus_record_ordinal"])
+    with pytest.raises(TypeError, match="Type mismatch"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+def test_original_provenance_nested_type_fails(repo_root: Path, sample_tcm_packet_and_raw):
+    """Nested provenance type mutation (e.g. int vs str) must fail strict comparison."""
+    pkt, raw_rec, _ = sample_tcm_packet_and_raw
+    item_dict = pkt.evidence_items[0].model_dump(mode="json")
+    raw_hit_dict = raw_rec.results[0].model_dump(mode="json")
+
+    # Mutate provenance value type: find an int or str in provenance
+    if "chunk_index" in item_dict["provenance"]:
+        orig_val = item_dict["provenance"]["chunk_index"]
+        item_dict["provenance"]["chunk_index"] = str(orig_val)
+    else:
+        item_dict["provenance"]["test_field"] = "1"
+        raw_hit_dict["provenance"]["test_field"] = 1
+
+    with pytest.raises(TypeError, match="Type mismatch"):
+        validate_frozen_evidence_item_integrity(
+            item=item_dict,
+            expected_question_id=pkt.question_id,
+            expected_perspective=pkt.perspective,
+            raw_item=raw_hit_dict,
+        )
+
+
+# ==============================================================================
+# TASK 16: WRITE-BOUNDARY STALE / SUBSTITUTED BUFFER REJECTION TESTS
+# ==============================================================================
+
+def test_formal_executor_rejects_caller_supplied_buffers():
+    """execute_formal_packet_generation must not accept caller artifact bundles or buffers."""
+    import inspect
+    sig = inspect.signature(execute_formal_packet_generation)
+    params = sig.parameters
+    # Ensure no parameter allows passing candidate artifacts, jsonl bytes, or manifests
+    disallowed_params = ["artifacts", "tcm_bytes", "western_bytes", "manifest", "receipt", "tcm_packets"]
+    for p in disallowed_params:
+        assert p not in params, f"Formal executor unexpectedly accepted caller parameter: {p}"
+
+
+# ==============================================================================
+# TASK 17: FAILURE-INJECTION TESTS (STAGES A THROUGH G)
+# Injected failures must preserve all already-written artifacts (NO unlink).
+# ==============================================================================
+
+@pytest.mark.parametrize(
+    "stage, expected_files, unexpected_files",
+    [
+        (
+            "tcm_write",
+            ["tcm_packets.jsonl"],
+            ["western_packets.jsonl", "packet_manifest.json", "packet_freeze_receipt.json"],
+        ),
+        (
+            "western_write",
+            ["tcm_packets.jsonl", "western_packets.jsonl"],
+            ["packet_manifest.json", "packet_freeze_receipt.json"],
+        ),
+        (
+            "packet_audit",
+            ["tcm_packets.jsonl", "western_packets.jsonl"],
+            ["packet_manifest.json", "packet_freeze_receipt.json"],
+        ),
+        (
+            "manifest_write",
+            ["tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json"],
+            ["packet_freeze_receipt.json"],
+        ),
+        (
+            "manifest_audit",
+            ["tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json"],
+            ["packet_freeze_receipt.json"],
+        ),
+        (
+            "receipt_write",
+            ["tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json", "packet_freeze_receipt.json"],
+            [],
+        ),
+        (
+            "receipt_audit",
+            ["tcm_packets.jsonl", "western_packets.jsonl", "packet_manifest.json", "packet_freeze_receipt.json"],
+            [],
+        ),
+    ],
+)
+def test_formal_execution_failure_injection_preserves_artifacts(
+    repo_root: Path,
+    tmp_path: Path,
+    monkeypatch,
+    stage: str,
+    expected_files: list[str],
+    unexpected_files: list[str],
+):
+    """Failure at any stage must preserve already-written files and never return SEALED."""
+    # Monkeypatch authorization to True ONLY within this temporary test
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
+        True,
+    )
+    # Monkeypatch git HEAD verification for the test directory
+    dummy_head = "a" * 40
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.verify_and_get_executing_git_head",
+        lambda root: dummy_head,
+    )
+
+    sink_dir = tmp_path / f"failure_stage_{stage}"
+
+    with pytest.raises(RuntimeError, match="Injected failure after"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=sink_dir,
+            request_formal_execution=True,
+            _inject_failure_after=stage,
+        )
+
+    # Verify that expected files exist and were NOT unlinked/deleted
+    for fname in expected_files:
+        p = sink_dir / fname
+        assert p.exists(), f"Expected artifact {fname} was deleted on failure at stage {stage}!"
+        assert p.stat().st_size > 0, f"Artifact {fname} is empty!"
+
+    # Verify that unexpected files do NOT exist
+    for fname in unexpected_files:
+        p = sink_dir / fname
+        assert not p.exists(), f"Artifact {fname} should not have been created at stage {stage}!"
+
+
+# ==============================================================================
+# TASK 18 & 15: SUCCESSFUL SYNTHETIC FULL WRITE & COLLISION FAIL-CLOSED
+# ==============================================================================
+
+def test_successful_synthetic_full_write_and_collision_policy(
+    repo_root: Path,
+    tmp_path: Path,
+    monkeypatch,
+):
+    """Full execution in a synthetic test directory must succeed, seal, and fail-closed on collision."""
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
+        True,
+    )
+    dummy_head = "b" * 40
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.verify_and_get_executing_git_head",
+        lambda root: dummy_head,
+    )
+
+    sink_dir = tmp_path / "synthetic_successful_run"
+
+    res = execute_formal_packet_generation(
+        repo_root=repo_root,
+        output_dir=sink_dir,
+        request_formal_execution=True,
+    )
+
+    assert res["status"] == "SEALED"
+    assert res["implementation_commit"] == dummy_head
+
+    tcm_file = sink_dir / "tcm_packets.jsonl"
+    western_file = sink_dir / "western_packets.jsonl"
+    manifest_file = sink_dir / "packet_manifest.json"
+    receipt_file = sink_dir / "packet_freeze_receipt.json"
+
+    assert tcm_file.exists()
+    assert western_file.exists()
+    assert manifest_file.exists()
+    assert receipt_file.exists()
+
+    # Verify disk byte hashes match result
+    assert sha256_bytes(tcm_file.read_bytes()) == res["tcm_packet_byte_sha256"]
+    assert sha256_bytes(western_file.read_bytes()) == res["western_packet_byte_sha256"]
+    assert sha256_bytes(manifest_file.read_bytes()) == res["manifest_byte_sha256"]
+    assert sha256_bytes(receipt_file.read_bytes()) == res["receipt_byte_sha256"]
+
+    # Collision test (Task 15): Running a second time on the same directory MUST FAIL CLOSED
+    with pytest.raises(FileExistsError, match="already exists"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=sink_dir,
+            request_formal_execution=True,
+        )
+
+
+# ==============================================================================
+# TASK 19: FORMAL AUTHORIZATION ENFORCEMENT TESTS
+# ==============================================================================
+
+def test_formal_authorization_gate_enforcement(repo_root: Path, tmp_path: Path, monkeypatch):
+    """Tracked authorization gate must block execution whenever authorization is False or not requested."""
+    # Statically verify that PHASE_1G_FORMAL_AUTHORIZATION_GRANTED is False
+    from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer import (
+        PHASE_1G_FORMAL_AUTHORIZATION_GRANTED as AUTH_STATIC,
+    )
+    assert AUTH_STATIC is False
+
+    test_sink = tmp_path / "auth_test"
+
+    # Case 1: formal_requested=False, auth=False -> denied
+    with pytest.raises(PermissionError, match="not explicitly requested"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=test_sink,
+            request_formal_execution=False,
+        )
+
+    # Case 2: formal_requested=True, auth=False -> denied
+    with pytest.raises(PermissionError, match="Phase 1G formal authorization remains CLOSED"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=test_sink,
+            request_formal_execution=True,
+        )
+
+    # Case 3: formal_requested=False, auth=True -> denied (both required!)
+    monkeypatch.setattr(
+        "research.experiments.cross_perspective_advisory_ablation_v1.packet_writer.PHASE_1G_FORMAL_AUTHORIZATION_GRANTED",
+        True,
+    )
+    with pytest.raises(PermissionError, match="not explicitly requested"):
+        execute_formal_packet_generation(
+            repo_root=repo_root,
+            output_dir=test_sink,
+            request_formal_execution=False,
+        )
+
+
+# ==============================================================================
+# TASK 20: EXECUTING GIT HEAD TESTS
+# ==============================================================================
+
+def test_executing_git_head_verification(repo_root: Path, monkeypatch):
+    """Git HEAD verification must enforce exact branch, clean working tree, and 40-hex SHA."""
+    import subprocess
+
+    # Case 1: Wrong branch -> RuntimeError
+    def mock_branch(*args, **kwargs):
+        class MockRes:
+            returncode = 0
+            stdout = "main\n"
+            stderr = ""
+        return MockRes()
+
+    monkeypatch.setattr(subprocess, "run", mock_branch)
+    with pytest.raises(RuntimeError, match="Executing branch mismatch"):
+        verify_and_get_executing_git_head(repo_root)
+
+    # Case 2: Dirty tracked working tree -> RuntimeError
+    def mock_dirty_tree(cmd, *args, **kwargs):
+        class MockRes:
+            stderr = ""
+        res = MockRes()
+        if "branch" in cmd:
+            res.returncode = 0
+            res.stdout = "research/cross-perspective-advisory-ablation-v1\n"
+        elif "diff-index" in cmd:
+            res.returncode = 1  # Uncommitted changes detected!
+            res.stdout = ""
+        else:
+            res.returncode = 0
+            res.stdout = "a" * 40 + "\n"
+        return res
+
+    monkeypatch.setattr(subprocess, "run", mock_dirty_tree)
+    with pytest.raises(RuntimeError, match="Tracked working tree has uncommitted modifications"):
+        verify_and_get_executing_git_head(repo_root)
+
+    # Case 3: Invalid HEAD SHA format -> ValueError
+    def mock_invalid_sha(cmd, *args, **kwargs):
+        class MockRes:
+            stderr = ""
+        res = MockRes()
+        if "branch" in cmd:
+            res.returncode = 0
+            res.stdout = "research/cross-perspective-advisory-ablation-v1\n"
+        elif "diff-index" in cmd:
+            res.returncode = 0
+            res.stdout = ""
+        elif "rev-parse" in cmd:
+            res.returncode = 0
+            res.stdout = "NOT_A_VALID_40_HEX_COMMIT\n"
+        return res
+
+    monkeypatch.setattr(subprocess, "run", mock_invalid_sha)
+    with pytest.raises(ValueError, match="Invalid executing git HEAD SHA format"):
+        verify_and_get_executing_git_head(repo_root)

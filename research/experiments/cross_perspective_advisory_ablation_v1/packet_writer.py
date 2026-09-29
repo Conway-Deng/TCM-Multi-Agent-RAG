@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import copy
 import re
+import shutil
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,8 +66,10 @@ try:
     )
     from .prompt_variants import (
         EXPECTED_AMENDED_PROMPT_HASHES,
+        EXPECTED_ORIGINAL_PROMPT_HASHES,
         RESEARCH_SYSTEM_PROMPTS,
         sha256_prompt,
+        verify_baseline_prompt_hash,
     )
     from .schemas import (
         FrozenEvidencePacket,
@@ -116,8 +120,10 @@ except ImportError:
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.prompt_variants import (
         EXPECTED_AMENDED_PROMPT_HASHES,
+        EXPECTED_ORIGINAL_PROMPT_HASHES,
         RESEARCH_SYSTEM_PROMPTS,
         sha256_prompt,
+        verify_baseline_prompt_hash,
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.schemas import (
         FrozenEvidencePacket,
@@ -125,9 +131,9 @@ except ImportError:
         PacketRunManifest,
     )
 
-
-# Phase 1F Formal Execution Authorization Gate: CLOSED
-PHASE_1F_FORMAL_AUTHORIZATION_GRANTED: bool = False
+# Tracked Formal Execution Authorization Gate: STRICTLY CLOSED in Phase 1F-FIX
+PHASE_1G_FORMAL_AUTHORIZATION_GRANTED: bool = False
+PHASE_1F_FORMAL_AUTHORIZATION_GRANTED: bool = False  # Backward-compatible alias
 
 
 @dataclass(frozen=True)
@@ -148,6 +154,71 @@ class InMemoryFormalPacketArtifacts:
     receipt_bytes: bytes
     receipt_canonical_sha256: str
     receipt_byte_sha256: str
+
+
+def get_git_executable() -> str:
+    """Locate the git binary on the host system."""
+    git_bin = shutil.which("git")
+    if git_bin:
+        return git_bin
+    common_locations = [
+        Path(r"D:\Git\cmd\git.exe"),
+        Path(r"C:\Program Files\Git\cmd\git.exe"),
+        Path(r"C:\Program Files\Git\bin\git.exe"),
+    ]
+    for loc in common_locations:
+        if loc.exists():
+            return str(loc)
+    raise FileNotFoundError("git executable not found in PATH or standard installation locations")
+
+
+def verify_and_get_executing_git_head(
+    repo_root: Path,
+    expected_branch: str = "research/cross-perspective-advisory-ablation-v1",
+) -> str:
+    """Retrieve and verify real executing git HEAD SHA and clean tracked working tree."""
+    git_bin = get_git_executable()
+
+    # 1. Verify branch
+    res_b = subprocess.run(
+        [git_bin, "branch", "--show-current"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+    )
+    if res_b.returncode != 0:
+        raise RuntimeError(f"Failed to query git branch: {res_b.stderr}")
+    current_branch = res_b.stdout.strip()
+    if current_branch != expected_branch:
+        raise RuntimeError(
+            f"Executing branch mismatch: expected '{expected_branch}', got '{current_branch}'"
+        )
+
+    # 2. Verify clean tracked tree (both working-tree modifications and staged changes)
+    res_diff = subprocess.run(
+        [git_bin, "diff-index", "--quiet", "HEAD", "--"],
+        cwd=repo_root,
+        capture_output=True,
+    )
+    if res_diff.returncode != 0:
+        raise RuntimeError(
+            "Tracked working tree has uncommitted modifications; formal execution requires a clean tracked tree."
+        )
+
+    # 3. Retrieve HEAD commit SHA
+    res_h = subprocess.run(
+        [git_bin, "rev-parse", "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+    )
+    if res_h.returncode != 0:
+        raise RuntimeError(f"Failed to query git HEAD: {res_h.stderr}")
+    head_sha = res_h.stdout.strip()
+    if not re.match(r"^[0-9a-f]{40}$", head_sha):
+        raise ValueError(f"Invalid executing git HEAD SHA format: {head_sha!r}")
+
+    return head_sha
 
 
 def validate_implementation_commit_format(commit: str) -> None:
@@ -222,20 +293,10 @@ def build_in_memory_formal_packet_artifacts(
     repo_root: Path,
     implementation_commit: str,
 ) -> InMemoryFormalPacketArtifacts:
-    """Build all formal packet artifacts completely in memory.
+    """Build candidate formal packet artifacts completely in memory.
     
-    Executes steps 1–12 of the formal writer design:
-    1. Verify frozen parent file hashes
-    2. Verify research prompt hashes
-    3. Load trusted parent records from verified file bytes
-    4. Project exactly 96 packets (48 TCM + 48 Western) in physical question manifest order
-    5. Validate all packets against trusted parents
-    6. Compute deterministic output buffers in memory
-    7. Parse output buffers and revalidate reconstructed packets
-    8. Compute byte and canonical aggregate hashes
-    9. Build manifest in memory
-    10. Build freeze receipt in memory
-    11. Validate all metadata schemas
+    This function performs non-writing preflight construction. It does NOT write files
+    or seal a formal run; formal freeze requires execute_formal_packet_generation.
     """
     validate_implementation_commit_format(implementation_commit)
     verify_frozen_inputs(repo_root)
@@ -243,14 +304,14 @@ def build_in_memory_formal_packet_artifacts(
 
     # Load trusted parent store from verified file bytes
     trusted_store = TrustedParentStore(repo_root)
+    manifest_qids = trusted_store.get_manifest_question_ids()
 
     # Project TCM packets in physical question manifest order
     tcm_packets: list[FrozenEvidencePacket] = []
-    for q_rec in trusted_store.question_manifest_records:
-        qid = q_rec["question_id"]
-        raw_rec = trusted_store.tcm_raw_records[qid]
+    for qid in manifest_qids:
+        raw_dict = trusted_store.get_fresh_raw_record_dict("tcm", qid)
         pkt = project_raw_record_to_frozen_packet(
-            record=raw_rec,
+            record=raw_dict,
             raw_artifact_sha256=EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
         )
         validate_packet_against_trusted_parent(pkt, trusted_store)
@@ -258,11 +319,10 @@ def build_in_memory_formal_packet_artifacts(
 
     # Project Western packets in physical question manifest order
     western_packets: list[FrozenEvidencePacket] = []
-    for q_rec in trusted_store.question_manifest_records:
-        qid = q_rec["question_id"]
-        raw_rec = trusted_store.western_raw_records[qid]
+    for qid in manifest_qids:
+        raw_dict = trusted_store.get_fresh_raw_record_dict("western", qid)
         pkt = project_raw_record_to_frozen_packet(
-            record=raw_rec,
+            record=raw_dict,
             raw_artifact_sha256=EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256,
         )
         validate_packet_against_trusted_parent(pkt, trusted_store)
@@ -368,20 +428,177 @@ def build_in_memory_formal_packet_artifacts(
     )
 
 
+def execute_formal_packet_generation(
+    repo_root: Path,
+    output_dir: Path | None = None,
+    request_formal_execution: bool = False,
+    _inject_failure_after: str | None = None,
+) -> dict[str, Any]:
+    """Execute formal deterministic packet generation from frozen inputs to sealed disk receipt.
+
+    THE SINGLE HIGH-LEVEL FORMAL EXECUTION PATH.
+    Does NOT trust caller-supplied artifact bundles.
+    Does NOT unlink partial files on failure (preserves forensic evidence).
+    Does NOT retry automatically.
+
+    Sealing rule: A run is SEALED only if packet_freeze_receipt.json exists and passes post-write audit.
+    """
+    # 1. Tracked authorization gate
+    if not request_formal_execution:
+        raise PermissionError(
+            "Formal packet execution was not explicitly requested (request_formal_execution=False)."
+        )
+
+    if not PHASE_1G_FORMAL_AUTHORIZATION_GRANTED:
+        raise PermissionError(
+            "FORMAL EXECUTION DENIED: Phase 1G formal authorization remains CLOSED "
+            "(PHASE_1G_FORMAL_AUTHORIZATION_GRANTED=False). "
+            "Formal packet generation is not authorized. Return to SOL."
+        )
+
+    # 2. Target path & collision verification
+    if output_dir is None:
+        output_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+
+    tcm_file = output_dir / "tcm_packets.jsonl"
+    western_file = output_dir / "western_packets.jsonl"
+    manifest_file = output_dir / "packet_manifest.json"
+    receipt_file = output_dir / "packet_freeze_receipt.json"
+
+    # Pre-check: fail closed before creating anything if ANY formal output exists
+    for target in (tcm_file, western_file, manifest_file, receipt_file):
+        if target.exists():
+            raise FileExistsError(
+                f"Formal output target already exists at {target}. "
+                "Resuming partial runs or overwriting formal freeze artifacts is strictly FORBIDDEN. "
+                "Forensic inspection required."
+            )
+
+    # 3. Verify CPython 3.12.14 runtime requirement
+    if sys.implementation.name != "cpython" or sys.version_info[:3] != (3, 12, 14):
+        raise RuntimeError(
+            f"Serialization reference requirement failed: expected CPython 3.12.14, "
+            f"got {sys.implementation.name} {sys.version_info}"
+        )
+
+    # 4. Verify executing Git HEAD and clean tracked tree
+    executing_head = verify_and_get_executing_git_head(repo_root)
+
+    # 5. Build candidate artifacts internally from verified bytes
+    artifacts = build_in_memory_formal_packet_artifacts(
+        repo_root=repo_root,
+        implementation_commit=executing_head,
+    )
+
+    trusted_store = TrustedParentStore(repo_root)
+
+    # 6. Create output directory
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 7. Write order Step 1: TCM packets (exclusive create, NO cleanup on failure)
+    with open(tcm_file, "xb") as f:
+        f.write(artifacts.tcm_jsonl_bytes)
+    if _inject_failure_after == "tcm_write":
+        raise RuntimeError("Injected failure after TCM write")
+
+    # 8. Write order Step 2: Western packets (exclusive create, NO cleanup on failure)
+    with open(western_file, "xb") as f:
+        f.write(artifacts.western_jsonl_bytes)
+    if _inject_failure_after == "western_write":
+        raise RuntimeError("Injected failure after Western write")
+
+    # 9. Write order Step 3: Reread and audit BOTH packet files from disk
+    tcm_disk_bytes = tcm_file.read_bytes()
+    if sha256_bytes(tcm_disk_bytes) != artifacts.tcm_packet_byte_sha256:
+        raise ValueError("TCM packet disk bytes SHA mismatch against in-memory verification")
+    tcm_lines = [l for l in tcm_disk_bytes.decode("utf-8").splitlines() if l.strip()]
+    if len(tcm_lines) != EXPECTED_TCM_RECORDS:
+        raise ValueError(f"Expected {EXPECTED_TCM_RECORDS} TCM disk records, got {len(tcm_lines)}")
+    for line in tcm_lines:
+        pkt_dict = strict_json_loads(line)
+        validate_packet_against_trusted_parent(pkt_dict, trusted_store)
+
+    western_disk_bytes = western_file.read_bytes()
+    if sha256_bytes(western_disk_bytes) != artifacts.western_packet_byte_sha256:
+        raise ValueError("Western packet disk bytes SHA mismatch against in-memory verification")
+    western_lines = [l for l in western_disk_bytes.decode("utf-8").splitlines() if l.strip()]
+    if len(western_lines) != EXPECTED_WESTERN_RECORDS:
+        raise ValueError(f"Expected {EXPECTED_WESTERN_RECORDS} Western disk records, got {len(western_lines)}")
+    for line in western_lines:
+        pkt_dict = strict_json_loads(line)
+        validate_packet_against_trusted_parent(pkt_dict, trusted_store)
+
+    if _inject_failure_after == "packet_audit":
+        raise RuntimeError("Injected failure after packet audit")
+
+    # 10. Post-write parent hash, prompt hash, and Git HEAD recheck from disk
+    verify_frozen_inputs(repo_root)
+    verify_research_prompts()
+    current_head = verify_and_get_executing_git_head(repo_root)
+    if current_head != executing_head:
+        raise RuntimeError(
+            f"Git HEAD changed during packet write: initial {executing_head} != current {current_head}"
+        )
+    if _inject_failure_after == "post_write_parent_recheck":
+        raise RuntimeError("Injected failure after post-write parent recheck")
+
+    # 11. Write order Step 4: Write packet_manifest.json
+    with open(manifest_file, "xb") as f:
+        f.write(artifacts.manifest_bytes)
+    if _inject_failure_after == "manifest_write":
+        raise RuntimeError("Injected failure after manifest write")
+
+    # Reread and audit manifest
+    manifest_disk_bytes = manifest_file.read_bytes()
+    if sha256_bytes(manifest_disk_bytes) != artifacts.manifest_byte_sha256:
+        raise ValueError("Manifest disk bytes SHA mismatch")
+    strict_json_loads(manifest_disk_bytes)
+    PacketRunManifest.model_validate_json(manifest_disk_bytes)
+    if _inject_failure_after == "manifest_audit":
+        raise RuntimeError("Injected failure after manifest audit")
+
+    # 12. Write order Step 5: Write packet_freeze_receipt.json LAST (sealing artifact)
+    with open(receipt_file, "xb") as f:
+        f.write(artifacts.receipt_bytes)
+    if _inject_failure_after == "receipt_write":
+        raise RuntimeError("Injected failure after receipt write")
+
+    # Reread and audit receipt
+    receipt_disk_bytes = receipt_file.read_bytes()
+    if sha256_bytes(receipt_disk_bytes) != artifacts.receipt_byte_sha256:
+        raise ValueError("Receipt disk bytes SHA mismatch")
+    strict_json_loads(receipt_disk_bytes)
+    verified_receipt = PacketFreezeReceipt.model_validate_json(receipt_disk_bytes)
+    if verified_receipt.manifest_byte_sha256 != artifacts.manifest_byte_sha256:
+        raise ValueError("Receipt manifest byte SHA linkage mismatch")
+    if _inject_failure_after == "receipt_audit":
+        raise RuntimeError("Injected failure after receipt audit")
+
+    return {
+        "status": "SEALED",
+        "output_dir": str(output_dir),
+        "implementation_commit": executing_head,
+        "tcm_packet_byte_sha256": artifacts.tcm_packet_byte_sha256,
+        "western_packet_byte_sha256": artifacts.western_packet_byte_sha256,
+        "manifest_byte_sha256": artifacts.manifest_byte_sha256,
+        "receipt_byte_sha256": artifacts.receipt_byte_sha256,
+        "manifest_canonical_sha256": artifacts.manifest_canonical_sha256,
+        "receipt_canonical_sha256": artifacts.receipt_canonical_sha256,
+    }
+
+
 def write_formal_packet_artifacts(
     artifacts: InMemoryFormalPacketArtifacts,
     output_dir: Path,
     request_formal_execution: bool = False,
     authorize_formal: bool = False,
 ) -> dict[str, str]:
-    """Write formal packet artifacts to disk with exclusive creation.
+    """Low-level test sink writer for synthetic unit tests.
     
     SAFETY CONTROLS:
-    - Phase 1F formal authorization remains strictly CLOSED.
-    - Requires BOTH request_formal_execution=True AND authorize_formal=True.
-    - Uses exclusive creation (mode="xb") — never overwrites existing files.
-    - Pre-checks that NONE of the target files exist before writing any file.
-    - Writes to temporary paths or synthetic test output dirs during testing.
+    - Never deletes partial files on failure (preserves forensic evidence).
+    - Blocks writing to the real study packets/ directory.
+    - Requires explicit authorization.
     """
     if not request_formal_execution:
         raise PermissionError(
@@ -390,17 +607,16 @@ def write_formal_packet_artifacts(
 
     if not authorize_formal:
         raise PermissionError(
-            "FORMAL EXECUTION DENIED: Phase 1F authorization remains CLOSED. "
+            "FORMAL EXECUTION DENIED: Phase 1F/1G authorization remains CLOSED. "
             "Formal packet generation is not authorized. Return to SOL."
         )
 
-    # Guard against unauthorized writing to the real study packets/ directory
     real_packets_dir = (
         _REPO_ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
     ).resolve()
     if output_dir.resolve() == real_packets_dir:
         raise PermissionError(
-            "Writing to the real study packets directory is strictly FORBIDDEN in Phase 1F."
+            "Writing to the real study packets directory is strictly FORBIDDEN in Phase 1F-FIX."
         )
 
     target_files = {
@@ -410,7 +626,6 @@ def write_formal_packet_artifacts(
         "packet_freeze_receipt.json": artifacts.receipt_bytes,
     }
 
-    # Pre-check: fail before any write if ANY target file exists
     for filename in target_files:
         target_path = output_dir / filename
         if target_path.exists():
@@ -420,21 +635,11 @@ def write_formal_packet_artifacts(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    written: list[Path] = []
-    try:
-        for filename, data in target_files.items():
-            target_path = output_dir / filename
-            with open(target_path, "xb") as f:
-                f.write(data)
-            written.append(target_path)
-    except Exception:
-        for p in written:
-            if p.exists():
-                try:
-                    p.unlink()
-                except OSError:
-                    pass
-        raise
+    # Write without deleting on failure (Task 10)
+    for filename, data in target_files.items():
+        target_path = output_dir / filename
+        with open(target_path, "xb") as f:
+            f.write(data)
 
     return {
         "status": "WRITTEN",

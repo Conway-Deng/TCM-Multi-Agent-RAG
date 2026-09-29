@@ -73,7 +73,9 @@ try:
     )
     from .packet_writer import (
         PHASE_1F_FORMAL_AUTHORIZATION_GRANTED,
+        PHASE_1G_FORMAL_AUTHORIZATION_GRANTED,
         build_in_memory_formal_packet_artifacts,
+        execute_formal_packet_generation,
         verify_frozen_inputs,
         verify_research_prompts,
         write_formal_packet_artifacts,
@@ -139,7 +141,9 @@ except ImportError:
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer import (
         PHASE_1F_FORMAL_AUTHORIZATION_GRANTED,
+        PHASE_1G_FORMAL_AUTHORIZATION_GRANTED,
         build_in_memory_formal_packet_artifacts,
+        execute_formal_packet_generation,
         verify_frozen_inputs,
         verify_research_prompts,
         write_formal_packet_artifacts,
@@ -178,7 +182,7 @@ def check_formal_packet_generation_authorization(authorized: bool = False) -> No
     """Fail-closed execution guard: formal packet generation is unauthorized in Phase 1E/1F."""
     if authorized:
         raise PermissionError(
-            "FATAL: Formal packet generation is not authorized in Phase 1E (unauthorized in Phase 1F). Return to SOL."
+            "FATAL: Formal packet generation is not authorized in Phase 1E (unauthorized in Phase 1F/1G). Return to SOL."
         )
 
 
@@ -347,9 +351,22 @@ def main() -> None:
         sys.exit(0)
     else:
         try:
-            check_formal_packet_generation_authorization(True)
+            check_formal_packet_generation_authorization(args.execute_formal_packet_generation)
+            result = execute_formal_packet_generation(
+                repo_root=repo_root,
+                request_formal_execution=args.execute_formal_packet_generation,
+            )
+            print("=" * 60)
+            print("PHASE 1G FORMAL PACKET GENERATION: SEALED")
+            print("=" * 60)
+            for k, v in result.items():
+                print(f"  {k}: {v}")
+            sys.exit(0)
         except PermissionError as exc:
             print(f"FATAL: {exc}")
+            sys.exit(1)
+        except Exception as exc:
+            print(f"FATAL FORMAL PACKET FAILURE: {exc}")
             sys.exit(1)
 
 
