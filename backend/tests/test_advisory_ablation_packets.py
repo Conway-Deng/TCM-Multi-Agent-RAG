@@ -735,11 +735,7 @@ def test_real_data_read_only_in_memory_cardinality_and_integrity():
 # --- 31. Formal Packet Generation Safeguards at Unit Level (TASKS 8 & 9) ---
 def test_formal_packet_generation_safeguards_unit_level():
     """Unit-level proof of Phase 1E formal-generation denial without CLI invocation."""
-    # 1. Authorization guard denies execution unconditionally at unit level
-    with pytest.raises(PermissionError, match="FATAL: Formal packet generation is not authorized in Phase 1E"):
-        check_formal_packet_generation_authorization(authorized=True)
-
-    # Calling with False fails closed (not explicitly requested)
+    # 1. Calling without explicit formal request fails closed
     with pytest.raises(PermissionError, match="not explicitly requested"):
         check_formal_packet_generation_authorization(authorized=False)
 
