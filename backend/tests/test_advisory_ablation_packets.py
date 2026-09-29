@@ -26,9 +26,22 @@ from backend.cross_perspective.perspective_agents import (
     GROUNDING_SKEPTIC_SYSTEM_PROMPT,
 )
 from backend.cross_perspective.schemas import (
+    ActivePerspectiveName,
+    AssessmentIssue,
+    CrossPerspectiveCritique,
+    CrossPerspectiveRelation,
+    EvidenceReference,
+    PerspectiveAgentAssessment,
+    PerspectiveClaim,
     PerspectiveEvidencePacket,
+    ProvenanceRecord,
 )
 
+from research.experiments.cross_perspective_advisory_ablation_v1.condition_builder import (
+    build_governance_advisory_for_condition,
+    build_governance_prompt_for_condition,
+    build_governance_visible_payload,
+)
 from research.experiments.cross_perspective_advisory_ablation_v1.packet_contract import (
     ALLOW_DEDUPLICATION,
     ALLOW_MODEL_CALL,
@@ -38,15 +51,25 @@ from research.experiments.cross_perspective_advisory_ablation_v1.packet_contract
     AMENDMENT_ID,
     COMPATIBILITY_CLAIM_KIND,
     COMPATIBILITY_SUPPORT_STATUS,
+    EXPECTED_QUESTION_COUNT,
     EXPECTED_QUESTION_MANIFEST_SHA256,
+    EXPECTED_TCM_ITEMS,
     EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256,
+    EXPECTED_TCM_RECORDS,
+    EXPECTED_TOTAL_ITEMS,
+    EXPECTED_TOTAL_RECORDS,
+    EXPECTED_WESTERN_ITEMS,
     EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256,
+    EXPECTED_WESTERN_RECORDS,
     HITS_PER_RECORD,
     PACKET_CONTRACT_ID,
+    QUESTION_MANIFEST_RELPATH,
     SCHEMA_VERSION,
     SEMANTIC_SUPPORT_STATUS,
     STUDY_ID,
     SUPPORT_BASIS,
+    TCM_RAW_RETRIEVAL_RELPATH,
+    WESTERN_RAW_RETRIEVAL_RELPATH,
     compute_item_canonical_sha256,
     compute_packet_canonical_sha256,
     format_compatibility_claim_id,
@@ -56,6 +79,17 @@ from research.experiments.cross_perspective_advisory_ablation_v1.packet_contract
 from research.experiments.cross_perspective_advisory_ablation_v1.packet_projection import (
     project_frozen_packet_to_compatibility_wrapper,
     project_raw_record_to_frozen_packet,
+    validate_frozen_evidence_item_integrity,
+    validate_frozen_packet_integrity,
+)
+from research.experiments.cross_perspective_advisory_ablation_v1.packet_runner import (
+    check_formal_packet_generation_authorization,
+    validate_packet_preflight,
+)
+from research.experiments.cross_perspective_advisory_ablation_v1.preflight import (
+    PreflightValidationError,
+    validate_advisory_visibility_matrix,
+    validate_evidence_parity_across_conditions,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.prompt_variants import (
     CPAA1_COVERAGE_AUDITOR_SYSTEM_PROMPT,
@@ -63,9 +97,17 @@ from research.experiments.cross_perspective_advisory_ablation_v1.prompt_variants
     CPAA1_EVIDENCE_SPECIALIST_SYSTEM_PROMPT,
     CPAA1_GOVERNANCE_SYSTEM_PROMPT,
     CPAA1_GROUNDING_SKEPTIC_SYSTEM_PROMPT,
+    EXPECTED_AMENDED_PROMPT_HASHES,
+    EXPECTED_ORIGINAL_PROMPT_HASHES,
     RESEARCH_SYSTEM_PROMPTS,
     SHARED_RESEARCH_SOURCE_PASSAGE_CONTRACT,
+    build_coverage_auditor_prompt,
+    build_critic_prompt,
+    build_evidence_specialist_prompt,
+    build_governance_prompt,
+    build_grounding_skeptic_prompt,
     sha256_prompt,
+    verify_baseline_prompt_hash,
 )
 from research.experiments.cross_perspective_advisory_ablation_v1.schemas import (
     FrozenEvidenceItem,
@@ -77,6 +119,7 @@ from research.experiments.cross_perspective_advisory_ablation_v1.token_budget_sc
     TokenBudgetRecord,
     TokenBudgetScaffold,
 )
+from pydantic import ValidationError
 
 
 @pytest.fixture
@@ -278,32 +321,110 @@ def test_no_dropped_evidence(synthetic_raw_record):
 
 # --- 10. No deduplication ---
 def test_no_deduplication():
+    """Verify that if two different ranks contain the same source/chunk content, both survive projection without deduplication."""
     assert ALLOW_DEDUPLICATION is False
-    # If retrieval returned two distinct hits with same chunk text, both must be preserved
-    # (Each has unique rank and unique chunk_id or rank occurrence)
-    item_a = RawRetrievalItem(
-        rank=1,
-        retrieval_score=0.9,
-        score_is_zero=False,
-        chunk_id="chunk_dup_1",
-        corpus_record_ordinal=1,
-        source_id="src_1",
-        exact_original_chunk_text="Repeated clinical sentence.",
-        chunk_text_utf8_sha256="1" * 64,
-        chunk_record_canonical_sha256="1" * 64,
+    dup_text = "Repeated clinical passage regarding Glycyrrhiza root and herbal interactions."
+    results = [
+        RawRetrievalItem(
+            rank=1,
+            retrieval_score=0.9,
+            score_is_zero=False,
+            chunk_id="chunk_dup_1",
+            corpus_record_ordinal=1,
+            source_id="src_dup_1",
+            exact_original_chunk_text=dup_text,
+            chunk_text_utf8_sha256=hashlib.sha256(dup_text.encode("utf-8")).hexdigest(),
+            chunk_record_canonical_sha256="1" * 64,
+        ),
+        RawRetrievalItem(
+            rank=2,
+            retrieval_score=0.8,
+            score_is_zero=False,
+            chunk_id="chunk_dup_2",
+            corpus_record_ordinal=2,
+            source_id="src_dup_2",
+            exact_original_chunk_text=dup_text,
+            chunk_text_utf8_sha256=hashlib.sha256(dup_text.encode("utf-8")).hexdigest(),
+            chunk_record_canonical_sha256="2" * 64,
+        ),
+        RawRetrievalItem(
+            rank=3,
+            retrieval_score=0.7,
+            score_is_zero=False,
+            chunk_id="chunk_other_3",
+            corpus_record_ordinal=3,
+            source_id="src_other_3",
+            exact_original_chunk_text="Distinct third passage.",
+            chunk_text_utf8_sha256=hashlib.sha256("Distinct third passage.".encode("utf-8")).hexdigest(),
+            chunk_record_canonical_sha256="3" * 64,
+        ),
+        RawRetrievalItem(
+            rank=4,
+            retrieval_score=0.6,
+            score_is_zero=False,
+            chunk_id="chunk_other_4",
+            corpus_record_ordinal=4,
+            source_id="src_other_4",
+            exact_original_chunk_text="Distinct fourth passage.",
+            chunk_text_utf8_sha256=hashlib.sha256("Distinct fourth passage.".encode("utf-8")).hexdigest(),
+            chunk_record_canonical_sha256="4" * 64,
+        ),
+    ]
+    raw_rec = RawRetrievalRecord(
+        schema_version="cpaa1_raw_retrieval_v1",
+        retrieval_record_id="cpaa1:ret:TEST-DUP:tcm:R0",
+        question_id="TEST-DUP",
+        candidate_id="CAN-DUP",
+        question_text="Repeated passage question?",
+        topic="cough",
+        task_type="evidence_description",
+        perspective="tcm",
+        question_manifest_sha256=EXPECTED_QUESTION_MANIFEST_SHA256,
+        corpus_id="tcm_v1",
+        corpus_version="tcm-v1",
+        corpus_sha256="3" * 64,
+        retrieval_algorithm_id="CPAA1-R0-LEXICAL-V1",
+        query_text="Repeated passage question?",
+        query_text_sha256=hashlib.sha256("Repeated passage question?".encode("utf-8")).hexdigest(),
+        requested_top_k=4,
+        returned_count=4,
+        positive_score_count=4,
+        zero_score_count=0,
+        retrieval_status="SUCCESS",
+        retrieved_at_utc="2026-09-29T00:00:00Z",
+        implementation_commit="b234f40f2beb017431de2ce27256b983d3eeb177",
+        record_canonical_sha256="0" * 64,
+        results=results,
     )
-    item_b = RawRetrievalItem(
-        rank=2,
-        retrieval_score=0.8,
-        score_is_zero=False,
-        chunk_id="chunk_dup_2",
-        corpus_record_ordinal=2,
-        source_id="src_2",
-        exact_original_chunk_text="Repeated clinical sentence.",
-        chunk_text_utf8_sha256="1" * 64,
-        chunk_record_canonical_sha256="2" * 64,
-    )
-    assert item_a.exact_original_chunk_text == item_b.exact_original_chunk_text
+    # Project into FrozenEvidencePacket and wrapper
+    packet = project_raw_record_to_frozen_packet(raw_rec, "a" * 64)
+    wrapper = project_frozen_packet_to_compatibility_wrapper(packet)
+
+    # 1. Both occurrences survive projection
+    assert len(packet.evidence_items) == 4
+    assert len(wrapper.claims) == 4
+    assert packet.evidence_items[0].exact_chunk_text == dup_text
+    assert packet.evidence_items[1].exact_chunk_text == dup_text
+    assert wrapper.claims[0].claim_text == dup_text
+    assert wrapper.claims[1].claim_text == dup_text
+
+    # 2. Order survives
+    assert packet.evidence_items[0].rank == 1
+    assert packet.evidence_items[1].rank == 2
+
+    # 3. Each occurrence has distinct occurrence-specific evidence ID and claim ID
+    ev_id_1 = packet.evidence_items[0].evidence_id
+    ev_id_2 = packet.evidence_items[1].evidence_id
+    assert ev_id_1 == "cpaa1:ev:TEST-DUP:tcm:R0:1:chunk_dup_1"
+    assert ev_id_2 == "cpaa1:ev:TEST-DUP:tcm:R0:2:chunk_dup_2"
+    assert ev_id_1 != ev_id_2
+
+    claim_id_1 = wrapper.claims[0].claim_id
+    claim_id_2 = wrapper.claims[1].claim_id
+    assert claim_id_1 == "cpaa1:sx:cpaa1:ev:TEST-DUP:tcm:R0:1:chunk_dup_1"
+    assert claim_id_2 == "cpaa1:sx:cpaa1:ev:TEST-DUP:tcm:R0:2:chunk_dup_2"
+    assert claim_id_1 != claim_id_2
+
 
 
 # --- 11. Packet canonical hash repeatability ---
@@ -517,37 +638,135 @@ def test_prompt_hashes_match_map():
         assert sha256_prompt(amended_text) == item["amended_prompt_sha256"]
 
 
-# --- 30. Formal packet generation requires explicit authorization ---
-def test_formal_packet_generation_requires_explicit_authorization():
-    import subprocess
-    cmd = [
-        sys.executable,
-        str(_ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packet_runner.py"),
-        "--execute-formal-packet-generation",
+# --- 30. Real Data Read-Only In-Memory Cardinality and Integrity (TASK 4) ---
+def test_real_data_read_only_in_memory_cardinality_and_integrity():
+    """Verify real frozen raw retrieval data read-only in memory without writing packet files.
+
+    Cardinality requirements:
+    - 48 TCM records -> 48 packets, 192 items
+    - 48 Western records -> 48 packets, 192 items
+    - 96 total packets, 384 total items
+    - Exactly 4 items per packet (ranks 1..4)
+    - All 48 questions from question manifest represented once per perspective
+    - Every packet passes independent integrity validation
+    - No retrieval rerun, no model/provider calls
+    - No packet files written, packets/ directory does not exist
+    """
+    tcm_path = _ROOT / TCM_RAW_RETRIEVAL_RELPATH
+    west_path = _ROOT / WESTERN_RAW_RETRIEVAL_RELPATH
+    q_path = _ROOT / QUESTION_MANIFEST_RELPATH
+
+    assert tcm_path.exists(), f"Missing TCM raw retrieval file: {tcm_path}"
+    assert west_path.exists(), f"Missing Western raw retrieval file: {west_path}"
+    assert q_path.exists(), f"Missing question manifest: {q_path}"
+
+    tcm_sha = hashlib.sha256(tcm_path.read_bytes()).hexdigest()
+    west_sha = hashlib.sha256(west_path.read_bytes()).hexdigest()
+    q_sha = hashlib.sha256(q_path.read_bytes()).hexdigest()
+    assert tcm_sha == EXPECTED_TCM_RAW_RETRIEVAL_BYTE_SHA256
+    assert west_sha == EXPECTED_WESTERN_RAW_RETRIEVAL_BYTE_SHA256
+    assert q_sha == EXPECTED_QUESTION_MANIFEST_SHA256
+
+    # Load question manifest
+    manifest_qids = []
+    with q_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                manifest_qids.append(json.loads(line.strip())["question_id"])
+    assert len(manifest_qids) == EXPECTED_QUESTION_COUNT
+    assert len(set(manifest_qids)) == EXPECTED_QUESTION_COUNT
+
+    # Load and project TCM records in memory
+    tcm_records = []
+    with tcm_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                tcm_records.append(RawRetrievalRecord.model_validate_json(line.strip()))
+    assert len(tcm_records) == EXPECTED_TCM_RECORDS
+
+    tcm_packets = []
+    for rec in tcm_records:
+        pkt = project_raw_record_to_frozen_packet(rec, raw_artifact_sha256=tcm_sha)
+        validate_frozen_packet_integrity(pkt, raw_record=rec, raw_artifact_sha256=tcm_sha)
+        tcm_packets.append(pkt)
+
+    # Load and project Western records in memory
+    west_records = []
+    with west_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                west_records.append(RawRetrievalRecord.model_validate_json(line.strip()))
+    assert len(west_records) == EXPECTED_WESTERN_RECORDS
+
+    west_packets = []
+    for rec in west_records:
+        pkt = project_raw_record_to_frozen_packet(rec, raw_artifact_sha256=west_sha)
+        validate_frozen_packet_integrity(pkt, raw_record=rec, raw_artifact_sha256=west_sha)
+        west_packets.append(pkt)
+
+    all_packets = tcm_packets + west_packets
+
+    # Assert exactly 96 packets, 384 evidence items
+    assert len(tcm_packets) == EXPECTED_TCM_RECORDS
+    assert len(west_packets) == EXPECTED_WESTERN_RECORDS
+    assert len(all_packets) == EXPECTED_TOTAL_RECORDS
+
+    tcm_items = sum(len(pkt.evidence_items) for pkt in tcm_packets)
+    west_items = sum(len(pkt.evidence_items) for pkt in west_packets)
+    assert tcm_items == EXPECTED_TCM_ITEMS
+    assert west_items == EXPECTED_WESTERN_ITEMS
+    assert (tcm_items + west_items) == EXPECTED_TOTAL_ITEMS
+
+    for pkt in all_packets:
+        assert len(pkt.evidence_items) == HITS_PER_RECORD
+        assert [it.rank for it in pkt.evidence_items] == [1, 2, 3, 4]
+
+    # Assert all expected questions represented once per perspective
+    tcm_qids = [pkt.question_id for pkt in tcm_packets]
+    west_qids = [pkt.question_id for pkt in west_packets]
+    assert tcm_qids == manifest_qids
+    assert west_qids == manifest_qids
+
+    # DO NOT write packet files / assert packets/ dir does not exist
+    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    assert not packets_dir.exists(), "packets/ output directory must not exist in Phase 1E"
+
+
+# --- 31. Formal Packet Generation Safeguards at Unit Level (TASKS 8 & 9) ---
+def test_formal_packet_generation_safeguards_unit_level():
+    """Unit-level proof of Phase 1E formal-generation denial without CLI invocation."""
+    # 1. Authorization guard denies execution unconditionally at unit level
+    with pytest.raises(PermissionError, match="FATAL: Formal packet generation is not authorized in Phase 1E"):
+        check_formal_packet_generation_authorization(authorized=True)
+
+    # Calling with False passes safely
+    check_formal_packet_generation_authorization(authorized=False)
+
+    # 2. Formal writer function is absent / not implemented in this phase
+    import research.experiments.cross_perspective_advisory_ablation_v1.packet_projection as pp
+    import research.experiments.cross_perspective_advisory_ablation_v1.packet_runner as pr
+    assert not hasattr(pp, "write_formal_packets")
+    assert not hasattr(pp, "materialize_formal_packets")
+    assert not hasattr(pr, "write_formal_packets")
+    assert not hasattr(pr, "materialize_formal_packets")
+
+    # 3. Expected formal output paths are designated local-only by configuration
+    expected_relpaths = [
+        "research/experiments/cross_perspective_advisory_ablation_v1/packets/tcm_packets.jsonl",
+        "research/experiments/cross_perspective_advisory_ablation_v1/packets/western_packets.jsonl",
     ]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    assert res.returncode == 1
-    assert "FATAL: Formal packet generation is not authorized in Phase 1E." in res.stdout or "FATAL" in res.stderr
+    for p in expected_relpaths:
+        assert "packets/" in p
+
+    # 4. Dry preflight creates no packets/ directory and no output files
+    report = validate_packet_preflight(_ROOT)
+    assert report["status"] == "PASS"
+    assert report["formal_packets_materialized"] is False
+    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    assert not packets_dir.exists(), "Dry preflight must never create packets/ directory"
 
 
-# --- 31. Overwrite protection ---
-def test_overwrite_protection(tmp_path):
-    # Tests that existing packet files would not be blindly overwritten
-    p = tmp_path / "tcm_packets.jsonl"
-    p.write_text("existing content", encoding="utf-8")
-    assert p.exists()
-    # Contract stipulates explicit authorization and collision guards
-    assert p.read_text(encoding="utf-8") == "existing content"
-
-
-# --- 32. Local-only output policy ---
-def test_local_only_output_policy():
-    # Verify relative paths are under packets/ directory and designated local-only
-    rel = "research/experiments/cross_perspective_advisory_ablation_v1/packets/tcm_packets.jsonl"
-    assert "packets/" in rel
-
-
-# --- 33. Source-derived formal packet files are not accidentally staged ---
+# --- 32. Source-derived formal packet files are not accidentally staged ---
 def test_source_derived_formal_packet_files_not_staged():
     import subprocess
     res = subprocess.run(["git", "status", "--short"], capture_output=True, text=True, cwd=str(_ROOT))
@@ -557,58 +776,293 @@ def test_source_derived_formal_packet_files_not_staged():
     assert "A  research/experiments/cross_perspective_advisory_ablation_v1/packets/western_packets.jsonl" not in output
 
 
-# --- TASK 11: Condition-equality test scaffolding (G0, G1, G2, G3) ---
-def test_condition_equality_section_a_g0_g1_g2_g3(synthetic_raw_record):
-    """Synthetic proof that Section A evidence projection is identical across G0, G1, G2, G3.
+# --- 33. Real Condition-Path Equality and Visibility Tests (TASK 6) ---
+def test_real_condition_builder_section_a_equality_and_advisory_visibility(synthetic_raw_record):
+    """Exercise real study condition-aware builder logic using synthetic packets plus nonempty advisory artifacts.
     
-    Checks:
-    - same passage IDs
-    - same claim_text
-    - same status
-    - same kind
-    - same order
-    Only advisory sections (Section B) may differ.
+    Tests G0, G1, G2, G3:
+    1. Section A serialization is BYTE-IDENTICAL across all four conditions.
+    2. Identical passage IDs, claim_text, support_status, claim_kind, and order across all conditions.
+    3. Advisory visibility:
+       - G0: local hidden, critic hidden (Section B present with empty content)
+       - G1: local visible, critic hidden
+       - G2: local hidden, critic visible
+       - G3: local visible, critic visible
+    4. Repetition plans (R1, R2) receive identical Section A.
     """
     packet_west = project_raw_record_to_frozen_packet(synthetic_raw_record, "e" * 64)
     wrapper_west = project_frozen_packet_to_compatibility_wrapper(packet_west)
 
-    # Create matching synthetic TCM record
-    tcm_record_dict = synthetic_raw_record.model_dump(mode="json")
-    tcm_record_dict["perspective"] = "tcm"
-    tcm_record_dict["retrieval_record_id"] = "cpaa1:ret:CPAA1-TEST-001:tcm:R0"
-    tcm_record = RawRetrievalRecord.model_validate(tcm_record_dict)
-    packet_tcm = project_raw_record_to_frozen_packet(tcm_record, "e" * 64)
+    tcm_dict = synthetic_raw_record.model_dump(mode="json")
+    tcm_dict["perspective"] = "tcm"
+    tcm_dict["retrieval_record_id"] = "cpaa1:ret:CPAA1-TEST-001:tcm:R0"
+    raw_tcm = RawRetrievalRecord.model_validate(tcm_dict)
+    packet_tcm = project_raw_record_to_frozen_packet(raw_tcm, "e" * 64)
     wrapper_tcm = project_frozen_packet_to_compatibility_wrapper(packet_tcm)
 
     packets_pair = {"tcm": wrapper_tcm, "western": wrapper_west}
 
-    # Build Section A governance payload for all four conditions
-    section_a_g0 = build_governance_payload(packets_pair)
-    section_a_g1 = build_governance_payload(packets_pair)
-    section_a_g2 = build_governance_payload(packets_pair)
-    section_a_g3 = build_governance_payload(packets_pair)
+    # Nonempty advisory assessments fixture
+    nonempty_assessments = {
+        "tcm": [
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="evidence_specialist",
+                assessment_summary="TCM evidence specialist assessment of decoction.",
+                referenced_claim_ids=[wrapper_tcm.claims[0].claim_id],
+                issues=[],
+            ),
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="coverage_auditor",
+                assessment_summary="TCM coverage auditor identified cough pattern.",
+                referenced_claim_ids=[wrapper_tcm.claims[1].claim_id],
+                issues=[],
+            ),
+            PerspectiveAgentAssessment(
+                perspective="tcm",
+                role="grounding_skeptic",
+                assessment_summary="TCM grounding skeptic checked provenance.",
+                referenced_claim_ids=[wrapper_tcm.claims[2].claim_id],
+                issues=[AssessmentIssue(claim_ids=[wrapper_tcm.claims[2].claim_id], issue_type="grounding_risk", description="Narrow applicability.")],
+            ),
+        ],
+        "western": [
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="evidence_specialist",
+                assessment_summary="Western evidence specialist identified active compounds.",
+                referenced_claim_ids=[wrapper_west.claims[0].claim_id],
+                issues=[],
+            ),
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="coverage_auditor",
+                assessment_summary="Western coverage auditor reviewed trial endpoints.",
+                referenced_claim_ids=[wrapper_west.claims[1].claim_id],
+                issues=[],
+            ),
+            PerspectiveAgentAssessment(
+                perspective="western",
+                role="grounding_skeptic",
+                assessment_summary="Western grounding skeptic flagged sample size.",
+                referenced_claim_ids=[wrapper_west.claims[2].claim_id],
+                issues=[],
+            ),
+        ],
+    }
 
-    # 1. Exact equality across all conditions
-    assert section_a_g0 == section_a_g1
-    assert section_a_g1 == section_a_g2
-    assert section_a_g2 == section_a_g3
+    # Nonempty Critic fixture
+    nonempty_critique = CrossPerspectiveCritique(
+        relations=[
+            CrossPerspectiveRelation(
+                relation_type="possible_agreement",
+                statement="Both perspectives identify anti-tussive effects of herbal extract.",
+                tcm_claim_ids=[wrapper_tcm.claims[0].claim_id],
+                western_claim_ids=[wrapper_west.claims[0].claim_id],
+            )
+        ]
+    )
 
-    # 2. Check individual fields in Section A
-    for cond_name, payload in [("G0", section_a_g0), ("G1", section_a_g1), ("G2", section_a_g2), ("G3", section_a_g3)]:
-        assert "tcm" in payload and "western" in payload
+    # Build visible payload for all four conditions
+    payload_g0 = build_governance_visible_payload("G0", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+    payload_g1 = build_governance_visible_payload("G1", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+    payload_g2 = build_governance_visible_payload("G2", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+    payload_g3 = build_governance_visible_payload("G3", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+
+    payloads = {"G0": payload_g0, "G1": payload_g1, "G2": payload_g2, "G3": payload_g3}
+
+    # 1. Section A serialization is BYTE-IDENTICAL across all four conditions
+    sec_a_bytes_g0 = json.dumps(payload_g0["perspective_packets"], sort_keys=True).encode("utf-8")
+    sec_a_bytes_g1 = json.dumps(payload_g1["perspective_packets"], sort_keys=True).encode("utf-8")
+    sec_a_bytes_g2 = json.dumps(payload_g2["perspective_packets"], sort_keys=True).encode("utf-8")
+    sec_a_bytes_g3 = json.dumps(payload_g3["perspective_packets"], sort_keys=True).encode("utf-8")
+
+    assert sec_a_bytes_g0 == sec_a_bytes_g1
+    assert sec_a_bytes_g1 == sec_a_bytes_g2
+    assert sec_a_bytes_g2 == sec_a_bytes_g3
+
+    # Built-in study parity validation passes
+    validate_evidence_parity_across_conditions(payloads)
+
+    # 2. Check identical passage IDs, claim_text, support_status, claim_kind, and order
+    for cond_name, p in payloads.items():
         for persp in ("tcm", "western"):
-            claims = payload[persp]["claims"]
+            claims = p["perspective_packets"][persp]["claims"]
             assert len(claims) == 4
-            for idx, c in enumerate(claims, start=1):
-                assert c["claim_id"].startswith("cpaa1:sx:cpaa1:ev:CPAA1-TEST-001:")
-                assert c["claim_kind"] == "source_excerpt"
-                assert c["support_status"] == "supported"
-                assert len(c["claim_text"]) > 0
+            for idx, c in enumerate(claims):
+                expected_claim = packets_pair[persp].claims[idx]
+                assert c["claim_id"] == expected_claim.claim_id
+                assert c["claim_text"] == expected_claim.claim_text
+                assert c["support_status"] == expected_claim.support_status == "supported"
+                assert c["claim_kind"] == expected_claim.claim_kind == "source_excerpt"
 
-    # 3. Verify advisory contexts differ across conditions while Section A remains identical
-    advisory_empty = build_governance_advisory_context({}, None)
-    assert advisory_empty["perspective_advisory"] == {"tcm": [], "western": []}
-    assert advisory_empty["critic_relations"] == []
+    # 3. Verify advisory visibility matrix
+    # G0: local hidden, critic hidden (Section B present with empty advisory content)
+    adv_g0 = payload_g0["advisory_context"]
+    assert adv_g0["perspective_advisory"]["tcm"] == []
+    assert adv_g0["perspective_advisory"]["western"] == []
+    assert adv_g0["critic_relations"] == []
+
+    # G1: local visible, critic hidden
+    adv_g1 = payload_g1["advisory_context"]
+    assert len(adv_g1["perspective_advisory"]["tcm"]) == 3
+    assert len(adv_g1["perspective_advisory"]["western"]) == 3
+    assert adv_g1["critic_relations"] == []
+
+    # G2: local hidden, critic visible
+    adv_g2 = payload_g2["advisory_context"]
+    assert adv_g2["perspective_advisory"]["tcm"] == []
+    assert adv_g2["perspective_advisory"]["western"] == []
+    assert len(adv_g2["critic_relations"]) == 1
+    assert adv_g2["critic_relations"][0]["statement"] == nonempty_critique.relations[0].statement
+
+    # G3: local visible, critic visible
+    adv_g3 = payload_g3["advisory_context"]
+    assert len(adv_g3["perspective_advisory"]["tcm"]) == 3
+    assert len(adv_g3["perspective_advisory"]["western"]) == 3
+    assert len(adv_g3["critic_relations"]) == 1
+
+    validate_advisory_visibility_matrix(payloads)
+
+    # 4. Verify repetition plans use the same Section A
+    rep1_payload = build_governance_visible_payload("G3", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+    rep2_payload = build_governance_visible_payload("G3", packets=packets_pair, assessments=nonempty_assessments, critique=nonempty_critique)
+    assert json.dumps(rep1_payload["perspective_packets"], sort_keys=True) == json.dumps(rep2_payload["perspective_packets"], sort_keys=True)
+
+    # 5. Verify prompt building: Section A byte-identical across conditions, Section B present in all
+    prompts = {
+        cond: build_governance_prompt_for_condition(
+            "What is the clinical evidence?",
+            cond,
+            packets=packets_pair,
+            assessments=nonempty_assessments,
+            critique=nonempty_critique,
+        )
+        for cond in ("G0", "G1", "G2", "G3")
+    }
+    for cond, p_text in prompts.items():
+        assert "=== SECTION A: EVIDENCE PACKETS (PRIMARY EVIDENCE) ===" in p_text
+        assert "=== SECTION B: ADVISORY CONTEXT (CONTROLLED ADVISORY SIGNALS ONLY - NOT EVIDENCE) ===" in p_text
+
+
+# --- 34. Packet Substitution and Mutation Detection (TASK 7) ---
+def test_packet_substitution_and_mutation_detection(synthetic_raw_record):
+    """Verify that equality validation catches packet substitution or mutation across condition paths."""
+    packet_west = project_raw_record_to_frozen_packet(synthetic_raw_record, "e" * 64)
+    wrapper_west = project_frozen_packet_to_compatibility_wrapper(packet_west)
+
+    tcm_dict = synthetic_raw_record.model_dump(mode="json")
+    tcm_dict["perspective"] = "tcm"
+    tcm_dict["retrieval_record_id"] = "cpaa1:ret:CPAA1-TEST-001:tcm:R0"
+    raw_tcm = RawRetrievalRecord.model_validate(tcm_dict)
+    packet_tcm = project_raw_record_to_frozen_packet(raw_tcm, "e" * 64)
+    wrapper_tcm = project_frozen_packet_to_compatibility_wrapper(packet_tcm)
+
+    packets_pair = {"tcm": wrapper_tcm, "western": wrapper_west}
+
+    # Baseline valid payloads across conditions
+    payloads = {
+        cond: build_governance_visible_payload(cond, packets=packets_pair, assessments=None, critique=None)
+        for cond in ("G0", "G1", "G2", "G3")
+    }
+    validate_evidence_parity_across_conditions(payloads)
+
+    # 1. Different packet in one condition
+    tampered_1 = copy.deepcopy(payloads)
+    other_rec_dict = synthetic_raw_record.model_dump(mode="json")
+    other_rec_dict["question_id"] = "DIFFERENT-QUESTION"
+    other_rec = RawRetrievalRecord.model_validate(other_rec_dict)
+    other_pkt = project_raw_record_to_frozen_packet(other_rec, "e" * 64)
+    other_wrap = project_frozen_packet_to_compatibility_wrapper(other_pkt)
+    tampered_1["G2"]["perspective_packets"] = build_governance_payload({"tcm": wrapper_tcm, "western": other_wrap})
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_1)
+
+    # 2. Claim text changes in one condition
+    tampered_2 = copy.deepcopy(payloads)
+    tampered_2["G1"]["perspective_packets"]["western"]["claims"][0]["claim_text"] += " tampered extra sentence"
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_2)
+
+    # 3. Passage order changes in one condition
+    tampered_3 = copy.deepcopy(payloads)
+    tampered_3["G3"]["perspective_packets"]["tcm"]["claims"].reverse()
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_3)
+
+    # 4. Claim ID changes in one condition
+    tampered_4 = copy.deepcopy(payloads)
+    tampered_4["G0"]["perspective_packets"]["tcm"]["claims"][0]["claim_id"] = "cpaa1:sx:tampered_id"
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_4)
+
+    # 5. Support status changes in one condition
+    tampered_5 = copy.deepcopy(payloads)
+    tampered_5["G2"]["perspective_packets"]["western"]["claims"][0]["support_status"] = "unsupported"
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_5)
+
+    # 6. Claim kind changes in one condition
+    tampered_6 = copy.deepcopy(payloads)
+    tampered_6["G3"]["perspective_packets"]["western"]["claims"][0]["claim_kind"] = "atomic_proposition"
+    with pytest.raises(PreflightValidationError, match="Section A evidence packet mismatch"):
+        validate_evidence_parity_across_conditions(tampered_6)
+
+    # 7. Model immutability: FrozenEvidenceItem and FrozenEvidencePacket disallow attribute assignment
+    with pytest.raises(ValidationError):
+        packet_tcm.perspective = "western"  # frozen model raises on mutation
+    with pytest.raises(ValidationError):
+        packet_tcm.evidence_items[0].exact_chunk_text = "Mutated text"
+
+    # 8. Integrity validation catches tampering
+    with pytest.raises(ValueError, match="Chunk text SHA256 mismatch"):
+        bad_item = FrozenEvidenceItem(
+            evidence_id=packet_tcm.evidence_items[0].evidence_id,
+            rank=1,
+            retrieval_score=0.95,
+            score_is_zero=False,
+            chunk_id="chunk_001",
+            corpus_record_ordinal=10,
+            exact_chunk_text="Tampered text",
+            chunk_text_sha256=packet_tcm.evidence_items[0].chunk_text_sha256,
+            chunk_record_canonical_sha256=packet_tcm.evidence_items[0].chunk_record_canonical_sha256,
+            source_id="src_001",
+        )
+        validate_frozen_evidence_item_integrity(bad_item, packet_tcm.question_id, packet_tcm.perspective)
+
+
+# --- 35. Prompt Baseline Hash Enforcement Fail-Closed (TASK 13) ---
+def test_prompt_baseline_hash_enforcement_fail_closed():
+    """Prove that any tampering or drift in baseline production prompts fails closed."""
+    # 1. Tampering with Coverage Auditor baseline raises AssertionError
+    with pytest.raises(AssertionError, match="Baseline prompt hash mismatch for coverage_auditor"):
+        build_coverage_auditor_prompt(base_prompt=COVERAGE_AUDITOR_SYSTEM_PROMPT + " unapproved tail")
+
+    # 2. Tampering with all other roles fails closed
+    with pytest.raises(AssertionError, match="Baseline prompt hash mismatch for evidence_specialist"):
+        build_evidence_specialist_prompt(base_prompt=EVIDENCE_SPECIALIST_SYSTEM_PROMPT + " unapproved")
+
+    with pytest.raises(AssertionError, match="Baseline prompt hash mismatch for grounding_skeptic"):
+        build_grounding_skeptic_prompt(base_prompt=GROUNDING_SKEPTIC_SYSTEM_PROMPT + " unapproved")
+
+    with pytest.raises(AssertionError, match="Baseline prompt hash mismatch for critic"):
+        build_critic_prompt(base_prompt=CRITIC_SYSTEM_PROMPT + " unapproved")
+
+    with pytest.raises(AssertionError, match="Baseline prompt hash mismatch for governance"):
+        build_governance_prompt(base_prompt=GOVERNANCE_SYSTEM_PROMPT + " unapproved")
+
+    # 3. Exact valid baseline succeeds
+    assert build_coverage_auditor_prompt(COVERAGE_AUDITOR_SYSTEM_PROMPT) == RESEARCH_SYSTEM_PROMPTS["coverage_auditor"]
+    assert build_evidence_specialist_prompt(EVIDENCE_SPECIALIST_SYSTEM_PROMPT) == RESEARCH_SYSTEM_PROMPTS["evidence_specialist"]
+    assert build_grounding_skeptic_prompt(GROUNDING_SKEPTIC_SYSTEM_PROMPT) == RESEARCH_SYSTEM_PROMPTS["grounding_skeptic"]
+    assert build_critic_prompt(CRITIC_SYSTEM_PROMPT) == RESEARCH_SYSTEM_PROMPTS["critic"]
+    assert build_governance_prompt(GOVERNANCE_SYSTEM_PROMPT) == RESEARCH_SYSTEM_PROMPTS["governance"]
+
+    # 4. Approved amended hashes remain unchanged
+    for role, amended_prompt in RESEARCH_SYSTEM_PROMPTS.items():
+        assert sha256_prompt(amended_prompt) == EXPECTED_AMENDED_PROMPT_HASHES[role]
+
 
 
 # --- TASK 12: Token-budget offline scaffolding tests ---

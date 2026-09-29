@@ -85,10 +85,14 @@ A separate, later robustness study may explore variability arising from upstream
 > Under independent review by Astra (verdict: `APPROVE AMENDMENT AS WRITTEN`, required changes: `NONE`), the study enacts formal amendment [`CPAA1-PACKET-GOVERNANCE-AMENDMENT-V1`](PACKET_GOVERNANCE_AMENDMENT_V1.md) governing the evidence packet layer and research prompt adaptations.
 >
 > **Prospectively Superseded Clauses:**
-> 1. **Section 2.3 (Fixed Evidence Unit):** Supersedes the implicit assumption of atomic claim decomposition. Replaces with native lossless source-passage items under contract `CPAA1-FROZEN-PACKET-LOSSLESS-V1`, projected into `claim_kind="source_excerpt"` compatibility wrappers. The legacy value `support_status="supported"` is defined strictly as a structural indicator of faithful verbatim source extraction, not as certified semantic entailment.
-> 2. **Historical Truncation:** Supersedes legacy Western runtime character slicing at 2,000 characters, requiring full-text lossless preservation across all 384 hit occurrences (including 20 passages >2,000 characters).
+> 1. **§2.3 (Fixed Evidence Content Restriction):**
+>    Historical evidence-content restriction is superseded **ONLY** to allow the approved full frozen source passages through the existing compatible projection fields (`claim_kind="source_excerpt"`, `claim_text = exact full frozen chunk text`, `support_status="supported"`). Interpretation and provenance remain strictly omitted from Governance's existing Section A projection (`build_governance_payload`).
+> 2. **§5.1 (Historical Governance System-Prompt Lock):**
+>    Historical Governance system-prompt lock is superseded **ONLY** by the approved CPAA1 research prompt variant (`CPAA1_GOVERNANCE_SYSTEM_PROMPT`). Upstream role prompts are superseded **ONLY** by the explicitly approved research variants/deltas in `prompt_variants.py`. No other prompt, schema, or objective change is authorized.
+> 3. **Historical Truncation:**
+>    Supersedes legacy Western runtime character slicing at 2,000 characters, requiring full-text lossless preservation across all 384 hit occurrences (including 20 passages >2,000 characters).
 >
-> All other protocol definitions (endpoints, G0–G3 definitions, stratification, blinding architecture, statistical bootstrap analysis) remain unchanged.
+> Historical text is preserved; the protocol is not rewritten as though the amendment existed from study start. All other protocol definitions (endpoints, G0–G3 definitions, stratification, blinding architecture, statistical bootstrap analysis) remain strictly unchanged.
 
 ---
 
@@ -147,17 +151,17 @@ The four experimental conditions manipulate **only** what Governance can see. Al
 
 | Condition | Fixed Evidence Packets | Local Advisory Projection | Critic Critique Projection | Description |
 | :--- | :---: | :---: | :---: | :--- |
-| **G0** | Yes | **None** (`{}`) | **None** (`None`) | Baseline Governance without advisory context |
-| **G1** | Yes | **Frozen Local** | **None** (`None`) | Governance with perspective-local advisory signals only |
-| **G2** | Yes | **None** (`{}`) | **Frozen Critic** | Governance with cross-perspective critic signals only* |
-| **G3** | Yes | **Frozen Local** | **Frozen Critic** | Full advisory pipeline |
+| **G0** | Yes (Section A) | **None** (`{}`) | **None** (`None`) | Baseline Governance without advisory context; Section A = identical frozen evidence; Section B = present with empty/no visible advisory content |
+| **G1** | Yes (Section A) | **Frozen Local** | **None** (`None`) | Governance with perspective-local advisory signals only |
+| **G2** | Yes (Section A) | **None** (`{}`) | **Frozen Critic** | Governance with cross-perspective critic signals only* |
+| **G3** | Yes (Section A) | **Frozen Local** | **Frozen Critic** | Full advisory pipeline |
 
 *\*Important:* In G2, the Critic artifact was still generated upstream using the frozen local advisory assessments. G2 must **not** be described as an architecture developed without local agents; it is an ablation of Governance-visible advisory context.
 
 ### 5.1 Governance Configuration
 - **Model:** `THUDM/GLM-4-9B-0414`
 - **Settings:** `thinking_behavior = "omit"`, `timeout = 90.0s`, `max_tokens = 2400`.
-- **Prompts & Schemas:** Frozen Patch 3 `GOVERNANCE_SYSTEM_PROMPT` and `CrossPerspectiveDraft` schema.
+- **Prompts & Schemas:** Governed by research prompt variant `CPAA1_GOVERNANCE_SYSTEM_PROMPT` (narrowly superseding the historical lock per §2.4) and `CrossPerspectiveDraft` schema.
 - **Zero Leakage:** No condition-specific prompt rewriting or condition indicators may leak into Governance prompts.
 
 ---
@@ -174,7 +178,24 @@ The four experimental conditions manipulate **only** what Governance can see. Al
 ## 7. Endpoints & Metrics
 
 ### 7.1 Primary Confirmatory Endpoint: Usable, Fully Grounded Coverage Yield
-For each question $q$, a set of $M_q \ge 1$ reference units is defined prospectively.
+
+The exact approved operational study lifecycle order is:
+1. Formal packet generation
+2. Packet freeze
+3. Human reference-unit freeze (frozen BEFORE ANY downstream generated output)
+4. Local-agent generation
+5. Critic generation
+6. Governance generation
+7. Blinded human semantic evaluation
+
+For each question $q$, a set of $M_q \ge 1$ reference units is defined prospectively:
+- Frozen strictly **BEFORE ANY downstream generated output** (prior to running local agents, Critic, or Governance).
+- Human evaluation artifacts designed for blinded ground-truth assessment.
+- Strictly **condition-independent** across G0, G1, G2, and G3.
+- Completely **inaccessible to all research models** at all times.
+- Bound to native evidence IDs and source spans where appropriate.
+- **NOT** retrieval hits.
+- **NOT** packet claims.
 
 For a generated Governance output $Y_{q, c, r}$:
 $$\text{Yield}(Y_{q, c, r}) = \begin{cases} \frac{\text{Fully Conveyed Reference Units}}{M_q} & \text{if Output passes Full-Grounding Gate} \\ 0 & \text{otherwise} \end{cases}$$

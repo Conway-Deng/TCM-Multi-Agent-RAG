@@ -19,6 +19,14 @@ for p in (str(_CURRENT_DIR), str(_BACKEND_DIR), str(_REPO_ROOT)):
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(_BACKEND_DIR))
 
+from backend.cross_perspective.cross_perspective_critic import CRITIC_SYSTEM_PROMPT
+from backend.cross_perspective.governance import GOVERNANCE_SYSTEM_PROMPT
+from backend.cross_perspective.perspective_agents import (
+    COVERAGE_AUDITOR_SYSTEM_PROMPT,
+    EVIDENCE_SPECIALIST_SYSTEM_PROMPT,
+    GROUNDING_SKEPTIC_SYSTEM_PROMPT,
+)
+
 try:
     from .packet_contract import (
         AMENDMENT_ID,
@@ -42,12 +50,17 @@ try:
     from .packet_projection import (
         project_frozen_packet_to_compatibility_wrapper,
         project_raw_record_to_frozen_packet,
+        validate_frozen_packet_integrity,
     )
     from .prompt_variants import (
+        EXPECTED_AMENDED_PROMPT_HASHES,
+        EXPECTED_ORIGINAL_PROMPT_HASHES,
         RESEARCH_SYSTEM_PROMPTS,
         sha256_prompt,
+        verify_baseline_prompt_hash,
     )
     from .schemas import (
+        FrozenEvidencePacket,
         RawRetrievalItem,
         RawRetrievalRecord,
     )
@@ -75,12 +88,17 @@ except ImportError:
     from research.experiments.cross_perspective_advisory_ablation_v1.packet_projection import (
         project_frozen_packet_to_compatibility_wrapper,
         project_raw_record_to_frozen_packet,
+        validate_frozen_packet_integrity,
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.prompt_variants import (
+        EXPECTED_AMENDED_PROMPT_HASHES,
+        EXPECTED_ORIGINAL_PROMPT_HASHES,
         RESEARCH_SYSTEM_PROMPTS,
         sha256_prompt,
+        verify_baseline_prompt_hash,
     )
     from research.experiments.cross_perspective_advisory_ablation_v1.schemas import (
+        FrozenEvidencePacket,
         RawRetrievalItem,
         RawRetrievalRecord,
     )
@@ -89,16 +107,22 @@ except ImportError:
     )
 
 
+def check_formal_packet_generation_authorization(authorized: bool = False) -> None:
+    """Fail-closed execution guard: formal packet generation is unauthorized in Phase 1E."""
+    if authorized:
+        raise PermissionError("FATAL: Formal packet generation is not authorized in Phase 1E.")
+
+
 def validate_packet_preflight(repo_root: Path) -> dict[str, Any]:
     """Run non-formal dry preflight validation for Phase 1E.
     
     Verifies:
     1. Parent hashes (question manifest, TCM raw retrieval, Western raw retrieval).
     2. Parsed frozen retrieval records (48 TCM, 48 Western, exactly 4 hits each).
-    3. Research prompt variants and amendment map consistency.
-    4. In-memory transformation logic using synthetic fixtures.
+    3. Production baseline prompt hashes and amended research prompt variants.
+    4. Real-data read-only / in-memory full projection and integrity validation (96 packets, 384 items).
     5. Token budget offline status (reports NOT_YET_CLEARABLE).
-    6. Confirmation that no formal packet output files exist.
+    6. Confirmation that no formal packet output files exist and no packets/ directory is created.
     """
     # 1. Verify parent artifact byte hashes
     q_path = repo_root / QUESTION_MANIFEST_RELPATH
@@ -152,7 +176,17 @@ def validate_packet_preflight(repo_root: Path) -> dict[str, Any]:
         if len(rec.results) != HITS_PER_RECORD:
             raise ValueError(f"Record {rec.retrieval_record_id} has {len(rec.results)} hits, expected {HITS_PER_RECORD}")
 
-    # 3. Verify prompt amendment map
+    # 3. Verify production baseline prompt hashes and amended prompt map
+    production_baselines = {
+        "evidence_specialist": EVIDENCE_SPECIALIST_SYSTEM_PROMPT,
+        "coverage_auditor": COVERAGE_AUDITOR_SYSTEM_PROMPT,
+        "grounding_skeptic": GROUNDING_SKEPTIC_SYSTEM_PROMPT,
+        "critic": CRITIC_SYSTEM_PROMPT,
+        "governance": GOVERNANCE_SYSTEM_PROMPT,
+    }
+    for role, base_prompt in production_baselines.items():
+        verify_baseline_prompt_hash(role, base_prompt)
+
     map_path = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/prompt_amendment_map_v1.json"
     if not map_path.exists():
         raise FileNotFoundError(f"Prompt amendment map not found at {map_path}")
@@ -167,8 +201,46 @@ def validate_packet_preflight(repo_root: Path) -> dict[str, Any]:
             raise ValueError(
                 f"Amended prompt SHA mismatch for role {role}: actual {actual_amended_sha} != map {entry['amended_prompt_sha256']}"
             )
+        if actual_amended_sha != EXPECTED_AMENDED_PROMPT_HASHES[role]:
+            raise ValueError(
+                f"Amended prompt SHA mismatch against constant for {role}: {actual_amended_sha} != {EXPECTED_AMENDED_PROMPT_HASHES[role]}"
+            )
 
-    # 4. In-memory transformation validation using a synthetic fixture
+    # 4. Real-data read-only / in-memory full projection and integrity validation
+    tcm_packets: list[FrozenEvidencePacket] = []
+    for rec in tcm_records:
+        pkt = project_raw_record_to_frozen_packet(rec, raw_artifact_sha256=tcm_sha)
+        validate_frozen_packet_integrity(pkt, raw_record=rec, raw_artifact_sha256=tcm_sha)
+        tcm_packets.append(pkt)
+
+    west_packets: list[FrozenEvidencePacket] = []
+    for rec in west_records:
+        pkt = project_raw_record_to_frozen_packet(rec, raw_artifact_sha256=west_sha)
+        validate_frozen_packet_integrity(pkt, raw_record=rec, raw_artifact_sha256=west_sha)
+        west_packets.append(pkt)
+
+    all_packets = tcm_packets + west_packets
+    if len(tcm_packets) != EXPECTED_TCM_RECORDS:
+        raise ValueError(f"Expected {EXPECTED_TCM_RECORDS} TCM packets, got {len(tcm_packets)}")
+    if len(west_packets) != EXPECTED_WESTERN_RECORDS:
+        raise ValueError(f"Expected {EXPECTED_WESTERN_RECORDS} Western packets, got {len(west_packets)}")
+    if len(all_packets) != EXPECTED_TOTAL_RECORDS:
+        raise ValueError(f"Expected {EXPECTED_TOTAL_RECORDS} total packets, got {len(all_packets)}")
+
+    total_items = sum(len(pkt.evidence_items) for pkt in all_packets)
+    if total_items != EXPECTED_TOTAL_ITEMS:
+        raise ValueError(f"Expected {EXPECTED_TOTAL_ITEMS} total evidence items, got {total_items}")
+
+    tcm_qids = {pkt.question_id for pkt in tcm_packets}
+    west_qids = {pkt.question_id for pkt in west_packets}
+    if len(tcm_qids) != EXPECTED_QUESTION_COUNT:
+        raise ValueError(f"Expected {EXPECTED_QUESTION_COUNT} unique TCM question IDs, got {len(tcm_qids)}")
+    if len(west_qids) != EXPECTED_QUESTION_COUNT:
+        raise ValueError(f"Expected {EXPECTED_QUESTION_COUNT} unique Western question IDs, got {len(west_qids)}")
+    if tcm_qids != west_qids:
+        raise ValueError("Mismatch between TCM question IDs and Western question IDs")
+
+    # Fast synthetic sanity check
     synthetic_record = RawRetrievalRecord(
         schema_version="cpaa1_raw_retrieval_v1",
         retrieval_record_id="cpaa1:ret:TEST-001:tcm:R0",
@@ -231,6 +303,7 @@ def validate_packet_preflight(repo_root: Path) -> dict[str, Any]:
         packets_dir / "tcm_packets.jsonl",
         packets_dir / "western_packets.jsonl",
         packets_dir / "packet_manifest.json",
+        packets_dir / "packet_freeze_receipt.json",
     ]
     for p in forbidden_files:
         if p.exists():
@@ -248,6 +321,11 @@ def validate_packet_preflight(repo_root: Path) -> dict[str, Any]:
         "parsed_western_records": len(west_records),
         "total_parsed_records": len(tcm_records) + len(west_records),
         "total_parsed_hits": (len(tcm_records) + len(west_records)) * HITS_PER_RECORD,
+        "in_memory_tcm_packets": len(tcm_packets),
+        "in_memory_western_packets": len(west_packets),
+        "in_memory_total_packets": len(all_packets),
+        "in_memory_total_items": total_items,
+        "all_packets_validated": True,
         "expected_tcm_packets": EXPECTED_TCM_RECORDS,
         "expected_western_packets": EXPECTED_WESTERN_RECORDS,
         "expected_total_packets": EXPECTED_TOTAL_RECORDS,
@@ -293,8 +371,11 @@ def main() -> None:
         print("=" * 60)
         sys.exit(0)
     else:
-        print("FATAL: Formal packet generation is not authorized in Phase 1E.")
-        sys.exit(1)
+        try:
+            check_formal_packet_generation_authorization(True)
+        except PermissionError as exc:
+            print(f"FATAL: {exc}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

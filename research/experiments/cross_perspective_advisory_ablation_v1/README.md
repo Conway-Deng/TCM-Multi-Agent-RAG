@@ -11,8 +11,8 @@
 This study investigates whether exposing structured perspective-local advisory signals and cross-perspective relational criticism to the Governance synthesis agent improves the yield of usable, fully grounded medical information in cross-perspective health consultation.
 
 The experiment tests four conditions:
-- **G0 (Baseline):** Governance receives fixed evidence packets only (no advisory signals, no critic relations).
-- **G1 (Local Advisory Only):** Governance receives fixed evidence packets and frozen local advisory signals (Evidence Specialist, Coverage Auditor, Grounding Skeptic) from both TCM and Western perspectives.
+- **G0 (Baseline):** Section A = identical frozen evidence; Section B = present with empty/no visible advisory content (`perspective_advisory: {"tcm": [], "western": []}`, `critic_relations: []`).
+- **G1 (Local Advisory Only):** Governance receives fixed evidence packets and frozen local advisory signals (Evidence Specialist, Coverage Auditor, Grounding Skeptic) from both TCM and Western perspectives; Critic omitted.
 - **G2 (Critic Only):** Governance receives fixed evidence packets and frozen Cross-Perspective Critic relational statements (without local advisory context visible to Governance). *Note: The Critic itself was produced upstream using the frozen local assessments.*
 - **G3 (Full Pipeline):** Governance receives fixed evidence packets, frozen local advisory signals, and frozen Cross-Perspective Critic relational statements.
 
@@ -22,22 +22,27 @@ The primary confirmatory comparison is **G3 minus G0** on the **usable, fully gr
 
 ## 2. Experimental Phase Order
 
+The exact approved operational study lifecycle order is:
 1. **Question Population Selection (Pre-Retrieval):**
    - 48 questions selected across 4 topic domains (cough, dyspepsia, headache, constipation; 12 per topic).
    - Stratified across 3 task types (evidence description, cross-perspective synthesis, boundary/uncertainty; 4 per topic).
    - Prospective lock: No question may be substituted after retrieval.
-2. **Prospective Reference Unit Definition:**
-   - Define reference units ($M_q \ge 1$) for each question before output generation.
-3. **Formal Evidence Retrieval & Freeze (`CPAA1-R0-LEXICAL-V1`):**
+2. **Formal Evidence Retrieval & Freeze (`CPAA1-R0-LEXICAL-V1`):**
    - Run R0 BM25 lexical retrieval once per perspective on complete, verified research corpora (`top_k = 4`).
    - Query text: EXACT frozen question text (no rewriting, no topic filtering, no synonym expansion).
    - Candidate universes: Complete TCM Research Corpus v1 (4,461 chunks) and complete Western PMC Pilot Corpus v0.1 (271 chunks).
    - Zero-score retention: zero-score chunks are retained up to `top_k=4`; ties broken by ascending corpus-record ordinal.
    - Weak retrieval remains observed benchmark output; questions must not be replaced or rewritten after retrieval.
    - Raw retrieval records archived before downstream evidence packet construction.
-4. **Evidence Packet Pair Materialization & Freeze:**
-   - Construct immutable $\langle \text{TCM Packet}, \text{Western Packet} \rangle$ pairs.
-   - Compute canonical SHA256 hashes.
+3. **Formal Packet Generation & Packet Freeze:**
+   - Deterministically project raw retrieval hits into immutable native `FrozenEvidencePacket` pairs and compatibility wrappers.
+   - Validate integrity and canonical SHA256 hashes.
+4. **Human Reference-Unit Freeze:**
+   - Prospectively define reference units ($M_q \ge 1$) for each question.
+   - Frozen strictly **BEFORE ANY downstream generated output** (prior to running local agents, Critic, or Governance).
+   - Human evaluation artifacts designed for blinded ground-truth assessment.
+   - Strictly condition-independent, inaccessible to all research models, bound to evidence IDs/source spans where appropriate.
+   - **NOT** retrieval hits, **NOT** packet claims.
 5. **Perspective-Local Advisory Freeze:**
    - Execute Evidence Specialist (`Qwen3-8B`), Coverage Auditor (`GLM-4-9B-0414`), and Grounding Skeptic (`GLM-Z1-9B-0414`) once per perspective.
    - Freeze all assessments and failure states.

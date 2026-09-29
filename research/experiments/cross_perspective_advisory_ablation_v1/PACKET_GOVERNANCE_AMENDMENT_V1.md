@@ -130,9 +130,9 @@ These three roles receive **only** the shared research source-passage clarificat
   - Identical `claim_kind` ("source_excerpt")
   - Identical presentation order
 - **Advisory Modulation (Section B):**
-  - **G0:** Section B omitted (no local advisory flags, no Critic relations).
-  - **G1:** Local advisory signals included; Critic omitted.
-  - **G2:** Critic relational statements included; local advisory omitted.
+  - **G0:** Section A = identical frozen evidence; Section B = present with empty/no visible advisory content (`perspective_advisory: {"tcm": [], "western": []}`, `critic_relations: []`).
+  - **G1:** Local advisory signals included; Critic omitted (empty).
+  - **G2:** Critic relational statements included; local advisory omitted (empty).
   - **G3:** Full advisory context (local advisory signals + Critic).
 
 ---
@@ -146,19 +146,42 @@ Given untruncated full-text passages (including 20 passages >2,000 characters), 
 
 ---
 
-## 9. Prospective Reference Units Timing
+## 9. Prospective Reference Units Timing & Lifecycle
 
-Reference units ($M_q \ge 1$) for evaluating the primary endpoint (fully grounded coverage yield) will be constructed prospectively and blinded from model outputs, prior to formal evaluation scoring.
+The exact approved operational study lifecycle order is:
+1. Formal packet generation
+2. Packet freeze
+3. Human reference-unit freeze (frozen BEFORE ANY downstream generated output)
+4. Local-agent generation
+5. Critic generation
+6. Governance generation
+7. Blinded human semantic evaluation
+
+Reference units ($M_q \ge 1$) for evaluating the primary endpoint (usable, fully grounded coverage yield) are:
+- Frozen strictly **BEFORE ANY downstream generated output** (prior to running local agents, Critic, or Governance).
+- Human evaluation artifacts designed for blinded ground-truth assessment.
+- Strictly **condition-independent** across G0, G1, G2, and G3.
+- Completely **inaccessible to all research models** at all times.
+- Bound to native evidence IDs and source spans where appropriate.
+- **NOT** retrieval hits.
+- **NOT** packet claims.
 
 ---
 
 ## 10. Narrowly Superseded Protocol Clauses
 
-This amendment narrowly supersedes:
-1. **PROTOCOL.md Section 2.3 (Fixed Evidence Unit):** Supersedes the implicit assumption of atomic claim decomposition. Replaces with native lossless source-passage items projected into `claim_kind="source_excerpt"` compatibility wrappers.
-2. **Historical Truncation:** Supersedes any legacy runtime text slicing at 2,000 characters.
+This amendment prospectively and narrowly supersedes relevant historical locks as follows:
+1. **PROTOCOL.md §2.3 (Fixed Evidence Content Restriction):**
+   - Historical evidence-content restriction is superseded **ONLY** to allow the approved full frozen source passages through the existing compatible projection fields (`claim_kind="source_excerpt"`, `claim_text = exact full frozen chunk text`, `support_status="supported"`).
+   - Interpretation and provenance remain strictly omitted from Governance's existing Section A projection (`build_governance_payload`).
+2. **PROTOCOL.md §5.1 (Historical Governance System-Prompt Lock):**
+   - Historical Governance system-prompt lock is superseded **ONLY** by the approved CPAA1 research prompt variant (`CPAA1_GOVERNANCE_SYSTEM_PROMPT`).
+   - Upstream role prompts are superseded **ONLY** by the explicitly approved research variants/deltas in `prompt_variants.py`.
+   - No other prompt, schema, or objective change is authorized.
+3. **Historical Truncation:**
+   - Supersedes legacy Western runtime character slicing at 2,000 characters, requiring full-text lossless preservation across all 384 hit occurrences.
 
-All other components of PROTOCOL.md (endpoints, G0–G3 definitions, stratification, blinding architecture, statistical bootstrap analysis) remain strictly unchanged.
+Historical text is preserved; the protocol is not rewritten as though the amendment existed from study start. All other components of PROTOCOL.md (endpoints, G0–G3 definitions, stratification, blinding architecture, statistical bootstrap analysis) remain strictly unchanged.
 
 ---
 
@@ -167,6 +190,6 @@ All other components of PROTOCOL.md (endpoints, G0–G3 definitions, stratificat
 Prior to executing formal packet generation, the following preflight requirements must be met:
 1. Pure deterministic projection module implemented and unit tested.
 2. Research prompt variants constructed and verified by exact UTF-8 hash map.
-3. Test suite verifying all 33 contract assertions passes.
+3. Test suite verifying all contract assertions passes.
 4. Absence of formal packet files verified.
 5. All raw retrieval artifacts remain local-only and uncommitted.

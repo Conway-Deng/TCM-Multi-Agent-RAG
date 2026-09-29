@@ -32,6 +32,7 @@ except ModuleNotFoundError:
     )
 
 try:
+    from .manifest import sha256_text
     from .packet_contract import (
         COMPATIBILITY_CLAIM_KIND,
         COMPATIBILITY_SUPPORT_STATUS,
@@ -52,6 +53,7 @@ try:
         RawRetrievalRecord,
     )
 except ImportError:
+    from research.experiments.cross_perspective_advisory_ablation_v1.manifest import sha256_text
     from research.experiments.cross_perspective_advisory_ablation_v1.packet_contract import (
         COMPATIBILITY_CLAIM_KIND,
         COMPATIBILITY_SUPPORT_STATUS,
@@ -210,3 +212,135 @@ def project_frozen_packet_to_compatibility_wrapper(
         failure=None,
     )
     return wrapper
+
+
+def validate_frozen_evidence_item_integrity(
+    item: FrozenEvidenceItem,
+    expected_question_id: str,
+    expected_perspective: str,
+    raw_item: RawRetrievalItem | None = None,
+) -> None:
+    """Independently recompute and verify the integrity of a FrozenEvidenceItem."""
+    expected_id = format_evidence_id(
+        question_id=expected_question_id,
+        perspective=expected_perspective,
+        rank=item.rank,
+        chunk_id=item.chunk_id,
+    )
+    if item.evidence_id != expected_id:
+        raise ValueError(
+            f"Evidence ID mismatch: actual {item.evidence_id} != expected {expected_id}"
+        )
+    if item.rank < 1 or item.rank > HITS_PER_RECORD:
+        raise ValueError(f"Rank out of bounds: {item.rank}")
+
+    recomputed_sha = sha256_text(item.exact_chunk_text)
+    if item.chunk_text_sha256 != recomputed_sha:
+        raise ValueError(
+            f"Chunk text SHA256 mismatch on {item.evidence_id}: recorded {item.chunk_text_sha256} != recomputed {recomputed_sha}"
+        )
+
+    if raw_item is not None:
+        if item.rank != raw_item.rank:
+            raise ValueError(f"Rank mismatch with raw hit: {item.rank} != {raw_item.rank}")
+        if item.retrieval_score != raw_item.retrieval_score:
+            raise ValueError(f"Score mismatch with raw hit: {item.retrieval_score} != {raw_item.retrieval_score}")
+        if item.score_is_zero != raw_item.score_is_zero:
+            raise ValueError(f"score_is_zero mismatch: {item.score_is_zero} != {raw_item.score_is_zero}")
+        if item.chunk_id != raw_item.chunk_id:
+            raise ValueError(f"chunk_id mismatch: {item.chunk_id} != {raw_item.chunk_id}")
+        if item.corpus_record_ordinal != raw_item.corpus_record_ordinal:
+            raise ValueError(f"corpus_record_ordinal mismatch: {item.corpus_record_ordinal} != {raw_item.corpus_record_ordinal}")
+        if item.exact_chunk_text != raw_item.exact_original_chunk_text:
+            raise ValueError(f"exact text mismatch with raw hit on {item.evidence_id}")
+        if item.chunk_text_sha256 != raw_item.chunk_text_utf8_sha256:
+            raise ValueError(f"text SHA mismatch with raw hit on {item.evidence_id}")
+        if item.chunk_record_canonical_sha256 != raw_item.chunk_record_canonical_sha256:
+            raise ValueError(f"record canonical SHA mismatch with raw hit on {item.evidence_id}")
+        if item.source_id != raw_item.source_id:
+            raise ValueError(f"source_id mismatch: {item.source_id} != {raw_item.source_id}")
+
+    if item.support_basis != SUPPORT_BASIS:
+        raise ValueError(f"Invalid support_basis: {item.support_basis}")
+    if item.semantic_support_status != SEMANTIC_SUPPORT_STATUS:
+        raise ValueError(f"Invalid semantic_support_status: {item.semantic_support_status}")
+
+
+def validate_frozen_packet_integrity(
+    packet: FrozenEvidencePacket,
+    raw_record: RawRetrievalRecord | None = None,
+    raw_artifact_sha256: str | None = None,
+) -> None:
+    """Independently recompute and verify the integrity of a FrozenEvidencePacket."""
+    expected_pkt_id = format_packet_id(packet.question_id, packet.perspective)
+    if packet.packet_id != expected_pkt_id:
+        raise ValueError(
+            f"Packet ID mismatch: actual {packet.packet_id} != expected {expected_pkt_id}"
+        )
+
+    if packet.schema_version != SCHEMA_VERSION:
+        raise ValueError(f"Schema version mismatch: {packet.schema_version} != {SCHEMA_VERSION}")
+    if packet.transformation_contract_id != PACKET_CONTRACT_ID:
+        raise ValueError(f"Contract ID mismatch: {packet.transformation_contract_id} != {PACKET_CONTRACT_ID}")
+
+    if len(packet.evidence_items) != HITS_PER_RECORD:
+        raise ValueError(f"Expected {HITS_PER_RECORD} items, found {len(packet.evidence_items)}")
+    ranks = [item.rank for item in packet.evidence_items]
+    if ranks != list(range(1, HITS_PER_RECORD + 1)):
+        raise ValueError(f"Items ranks must be 1..{HITS_PER_RECORD}, got {ranks}")
+    chunk_ids = [item.chunk_id for item in packet.evidence_items]
+    if len(set(chunk_ids)) != HITS_PER_RECORD:
+        raise ValueError(f"Duplicate chunk IDs found in packet: {chunk_ids}")
+
+    for idx, item in enumerate(packet.evidence_items):
+        raw_hit = None
+        if raw_record is not None and len(raw_record.results) > idx:
+            raw_hit = raw_record.results[idx]
+        validate_frozen_evidence_item_integrity(
+            item,
+            expected_question_id=packet.question_id,
+            expected_perspective=packet.perspective,
+            raw_item=raw_hit,
+        )
+
+    if raw_record is not None:
+        if packet.question_id != raw_record.question_id:
+            raise ValueError(f"question_id mismatch: {packet.question_id} != {raw_record.question_id}")
+        if packet.candidate_id != raw_record.candidate_id:
+            raise ValueError(f"candidate_id mismatch: {packet.candidate_id} != {raw_record.candidate_id}")
+        if packet.question_text != raw_record.question_text:
+            raise ValueError("question_text mismatch with raw record")
+        if packet.topic != raw_record.topic:
+            raise ValueError(f"topic mismatch: {packet.topic} != {raw_record.topic}")
+        if packet.task_type != raw_record.task_type:
+            raise ValueError(f"task_type mismatch: {packet.task_type} != {raw_record.task_type}")
+        if packet.perspective != raw_record.perspective:
+            raise ValueError(f"perspective mismatch: {packet.perspective} != {raw_record.perspective}")
+        if packet.question_manifest_sha256 != raw_record.question_manifest_sha256:
+            raise ValueError("question_manifest_sha256 mismatch with raw record")
+        if packet.retrieval_algorithm_id != raw_record.retrieval_algorithm_id:
+            raise ValueError("retrieval_algorithm_id mismatch with raw record")
+        if packet.retrieval_record_id != raw_record.retrieval_record_id:
+            raise ValueError("retrieval_record_id mismatch with raw record")
+        if packet.retrieval_record_canonical_sha256 != raw_record.record_canonical_sha256:
+            raise ValueError("retrieval_record_canonical_sha256 mismatch with raw record")
+        if packet.corpus_id != raw_record.corpus_id:
+            raise ValueError("corpus_id mismatch with raw record")
+        if packet.corpus_version != raw_record.corpus_version:
+            raise ValueError("corpus_version mismatch with raw record")
+        if packet.corpus_sha256 != raw_record.corpus_sha256:
+            raise ValueError("corpus_sha256 mismatch with raw record")
+
+    if raw_artifact_sha256 is not None:
+        if packet.retrieval_artifact_sha256 != raw_artifact_sha256:
+            raise ValueError(
+                f"raw_artifact_sha256 mismatch: {packet.retrieval_artifact_sha256} != {raw_artifact_sha256}"
+            )
+
+    # Independent canonical hash recomputation
+    raw_dump = packet.model_dump(mode="json")
+    recomputed_hash = compute_packet_canonical_sha256(raw_dump)
+    if packet.packet_canonical_sha256 != recomputed_hash:
+        raise ValueError(
+            f"Packet canonical SHA256 mismatch! Stored {packet.packet_canonical_sha256} != recomputed {recomputed_hash}"
+        )

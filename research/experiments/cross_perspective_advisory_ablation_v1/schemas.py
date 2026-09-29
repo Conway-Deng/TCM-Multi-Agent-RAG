@@ -436,6 +436,8 @@ class RetrievalRunManifest(StrictResearchModel):
 
 
 class FrozenEvidenceItem(StrictResearchModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
     evidence_id: str = Field(min_length=1)
     rank: int = Field(ge=1, le=4)
     retrieval_score: float
@@ -478,6 +480,8 @@ class FrozenEvidenceItem(StrictResearchModel):
 
 
 class FrozenEvidencePacket(StrictResearchModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
     schema_version: str = "cpaa1_frozen_packet_v1"
     transformation_contract_id: str = "CPAA1-FROZEN-PACKET-LOSSLESS-V1"
     packet_id: str = Field(min_length=1)
