@@ -237,16 +237,25 @@ class CompletenessAttestation:
     human_attestor: str = ""
     attestation_notes: str = ""
 
-    def __post_init__(self) -> None:
+    def validate_current_state(self) -> None:
+        """Strictly validate current values of mutable completeness attestation fields."""
         _require_bool(self.considered_both_submissions, "considered_both_submissions")
         _require_bool(self.all_8_passages_checked, "all_8_passages_checked")
         _require_bool(self.omitted_targets_examined, "omitted_targets_examined")
         _require_bool(self.new_target_additions_checked_and_logged, "new_target_additions_checked_and_logged")
         _require_bool(self.methodological_issues_checked, "methodological_issues_checked")
         _require_bool(self.unresolved_methodological_issue_present, "unresolved_methodological_issue_present")
+        if not isinstance(self.human_attestor, str):
+            raise TypeError(f"Field 'human_attestor' must be of type str, got {type(self.human_attestor).__name__}")
+        if not isinstance(self.attestation_notes, str):
+            raise TypeError(f"Field 'attestation_notes' must be of type str, got {type(self.attestation_notes).__name__}")
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
 
     def is_complete(self) -> bool:
         """Return True if all required process attestations are confirmed and no unresolved issue exists."""
+        self.validate_current_state()
         return (
             self.considered_both_submissions
             and self.all_8_passages_checked
@@ -257,6 +266,7 @@ class CompletenessAttestation:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
         return {
             "considered_both_submissions": self.considered_both_submissions,
             "all_8_passages_checked": self.all_8_passages_checked,
@@ -320,7 +330,8 @@ class NewTargetAuditEntry:
     audit_status: NewTargetStatus = "pending"
     audit_notes: str = ""
 
-    def __post_init__(self) -> None:
+    def validate_current_state(self) -> None:
+        """Strictly validate current values of mutable new-target audit entry fields."""
         _require_non_empty_str(self.question_id, "question_id")
         _require_non_empty_str(self.human_authored_reason, "human_authored_reason")
         _require_bool(self.reviewer_a_acknowledged, "reviewer_a_acknowledged")
@@ -329,6 +340,10 @@ class NewTargetAuditEntry:
             raise ValueError(
                 f"Invalid audit_status '{self.audit_status}': must be one of {ALLOWED_NEW_TARGET_STATUSES}"
             )
+        if not isinstance(self.audit_notes, str):
+            raise TypeError(f"Field 'audit_notes' must be of type str, got {type(self.audit_notes).__name__}")
+        if not isinstance(self.supporting_refs, list):
+            raise TypeError(f"Field 'supporting_refs' must be a list, got {type(self.supporting_refs).__name__}")
         for ref in self.supporting_refs:
             if not isinstance(ref, ReviewerRecordRef):
                 raise TypeError(f"Expected ReviewerRecordRef in supporting_refs, got {type(ref).__name__}")
@@ -337,7 +352,11 @@ class NewTargetAuditEntry:
                     f"Supporting ref question_id '{ref.question_id}' does not match entry question_id '{self.question_id}'"
                 )
 
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+
     def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
         return {
             "question_id": self.question_id,
             "human_authored_reason": self.human_authored_reason,
@@ -399,15 +418,22 @@ class UnresolvedDisagreementAuditEntry:
     third_adjudicator_required: bool = False
     adjudicator_notes: str = ""
 
-    def __post_init__(self) -> None:
+    def validate_current_state(self) -> None:
+        """Strictly validate current values of mutable disagreement audit entry fields."""
         _require_non_empty_str(self.question_id, "question_id")
         if not isinstance(self.human_authored_disagreement_note, str):
-            raise TypeError("human_authored_disagreement_note must be a string")
+            raise TypeError(
+                f"human_authored_disagreement_note must be a string, got {type(self.human_authored_disagreement_note).__name__}"
+            )
         if self.status not in ALLOWED_DISAGREEMENT_STATUSES:
             raise ValueError(
                 f"Invalid disagreement status '{self.status}': must be one of {ALLOWED_DISAGREEMENT_STATUSES}"
             )
         _require_bool(self.third_adjudicator_required, "third_adjudicator_required")
+        if not isinstance(self.adjudicator_notes, str):
+            raise TypeError(f"adjudicator_notes must be a string, got {type(self.adjudicator_notes).__name__}")
+        if not isinstance(self.involved_refs, list):
+            raise TypeError(f"involved_refs must be a list, got {type(self.involved_refs).__name__}")
         for ref in self.involved_refs:
             if not isinstance(ref, ReviewerRecordRef):
                 raise TypeError(f"Expected ReviewerRecordRef in involved_refs, got {type(ref).__name__}")
@@ -416,7 +442,11 @@ class UnresolvedDisagreementAuditEntry:
                     f"Involved ref question_id '{ref.question_id}' does not match entry question_id '{self.question_id}'"
                 )
 
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+
     def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
         return {
             "question_id": self.question_id,
             "involved_refs": [
@@ -478,14 +508,49 @@ class QuestionReconciliationAudit:
     adjudication_required: bool = False
     exact_duplicate_pairs: list[tuple[ReviewerRecordRef, ReviewerRecordRef]] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
+    def validate_current_state(self) -> None:
+        """Strictly validate current values of mutable question reconciliation audit fields."""
         _require_non_empty_str(self.question_id, "question_id")
-        _require_bool(self.adjudication_required, "adjudication_required")
         if self.reconciliation_state not in ALLOWED_RECONCILIATION_STATES:
             raise ReconciliationStateError(
                 f"Invalid reconciliation_state '{self.reconciliation_state}': must be one of {ALLOWED_RECONCILIATION_STATES}"
             )
+        _require_bool(self.adjudication_required, "adjudication_required")
+        if not isinstance(self.human_notes, str):
+            raise TypeError(f"human_notes must be a string, got {type(self.human_notes).__name__}")
+        if not isinstance(self.completeness_attestation, CompletenessAttestation):
+            raise TypeError(
+                f"completeness_attestation must be CompletenessAttestation, got {type(self.completeness_attestation).__name__}"
+            )
+        self.completeness_attestation.validate_current_state()
+
+        if not isinstance(self.reviewer_a_refs, list):
+            raise TypeError(f"reviewer_a_refs must be a list, got {type(self.reviewer_a_refs).__name__}")
+        if not isinstance(self.reviewer_b_refs, list):
+            raise TypeError(f"reviewer_b_refs must be a list, got {type(self.reviewer_b_refs).__name__}")
+        if not isinstance(self.addition_log, list):
+            raise TypeError(f"addition_log must be a list, got {type(self.addition_log).__name__}")
+        if not isinstance(self.unresolved_items, list):
+            raise TypeError(f"unresolved_items must be a list, got {type(self.unresolved_items).__name__}")
+        if not isinstance(self.exact_duplicate_pairs, list):
+            raise TypeError(f"exact_duplicate_pairs must be a list, got {type(self.exact_duplicate_pairs).__name__}")
+
+        for entry in self.addition_log:
+            if not isinstance(entry, NewTargetAuditEntry):
+                raise TypeError(f"Expected NewTargetAuditEntry in addition_log, got {type(entry).__name__}")
+            entry.validate_current_state()
+
+        for item in self.unresolved_items:
+            if not isinstance(item, UnresolvedDisagreementAuditEntry):
+                raise TypeError(f"Expected UnresolvedDisagreementAuditEntry in unresolved_items, got {type(item).__name__}")
+            item.validate_current_state()
+
         self._validate_provenance()
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+        if self.reconciliation_state == "human_review_complete":
+            self.validate_ready_for_human_review_complete()
 
     def _validate_provenance(self) -> None:
         """Validate parent/child question_id and reviewer role provenance consistency."""
@@ -554,13 +619,22 @@ class QuestionReconciliationAudit:
         """Master fail-closed validator for human_review_complete transition.
 
         Validates:
-        1. Process completeness attestations are all True
-        2. unresolved_methodological_issue_present == False
-        3. adjudication_required == False
-        4. No unresolved or referred_to_adjudication items
-        5. Every addition entry has A and B acks, final status (accepted/rejected), and non-empty reason
-        6. Provenance and cross-question consistency across all references
+        1. Current-state structural validation
+        2. Process completeness attestations are all True
+        3. unresolved_methodological_issue_present == False
+        4. adjudication_required == False
+        5. No unresolved or referred_to_adjudication items
+        6. Every addition entry has A and B acks, final status (accepted/rejected), and non-empty reason
+        7. Provenance and cross-question consistency across all references
         """
+        # Task 6: At START of validate_ready_for_human_review_complete: run current-state validation
+        try:
+            self.validate_current_state()
+        except (ValueError, TypeError) as e:
+            raise ReconciliationStateError(
+                f"Cannot mark question '{self.question_id}' as 'human_review_complete': {e}"
+            ) from e
+
         # 1 & 2. Completeness attestations
         if not self.completeness_attestation.is_complete():
             raise ReconciliationStateError(
@@ -640,6 +714,9 @@ class QuestionReconciliationAudit:
         self.reconciliation_state = state
 
     def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        if self.reconciliation_state == "human_review_complete":
+            self.validate_ready_for_human_review_complete()
         return {
             "question_id": self.question_id,
             "reviewer_a_refs": [
@@ -844,7 +921,8 @@ class ReconciliationAuditWorkspace:
     question_audits: dict[str, QuestionReconciliationAudit] = field(default_factory=dict)
     local_only_notice: str = LOCAL_ONLY_NOTICE
 
-    def __post_init__(self) -> None:
+    def validate_current_state(self) -> None:
+        """Strictly validate current values of mutable workspace fields."""
         # Part G.1: Formal gate on direct dataclass construction
         if self.workspace_kind == "formal":
             raise FormalReconciliationGateError(
@@ -874,12 +952,18 @@ class ReconciliationAuditWorkspace:
             raise ValueError(f"Invalid local_only_notice '{self.local_only_notice}': expected '{LOCAL_ONLY_NOTICE}'")
 
         # Part I: Question map consistency
+        if not isinstance(self.question_audits, dict):
+            raise TypeError(f"question_audits must be a dictionary, got {type(self.question_audits).__name__}")
         for qid, audit in self.question_audits.items():
             _require_non_empty_str(qid, "question_audits key")
             if not isinstance(audit, QuestionReconciliationAudit):
                 raise TypeError(f"Expected QuestionReconciliationAudit for key '{qid}', got {type(audit).__name__}")
             if qid != audit.question_id:
                 raise ValueError(f"question_audits key '{qid}' does not match audit.question_id '{audit.question_id}'")
+            audit.validate_current_state()
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
 
     @property
     def questions(self) -> list[str]:
@@ -971,6 +1055,10 @@ class ReconciliationAuditWorkspace:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        for audit in self.question_audits.values():
+            if audit.reconciliation_state == "human_review_complete":
+                audit.validate_ready_for_human_review_complete()
         return {
             "study_id": self.study_id,
             "protocol_id": self.protocol_id,

@@ -1184,3 +1184,204 @@ def test_k56_malformed_bool_status_metadata_cannot_enter_through_json_load(tmp_p
     out_file.write_text(json.dumps(payload4), encoding="utf-8")
     with pytest.raises(ReconciliationStateError):
         ReconciliationAuditWorkspace.load_synthetic_local(out_file)
+
+
+# ==============================================================================
+# CATEGORY L: PHASE 2C-B2B CURRENT-STATE INVARIANTS SEAL (Tests 57 to 68)
+# ==============================================================================
+
+
+def test_l57_attestation_mutated_truthy_string_fails_is_complete():
+    """Test 57: attestation mutated to truthy string ('false') fails is_complete with TypeError."""
+    att = CompletenessAttestation(
+        considered_both_submissions=True,
+        all_8_passages_checked=True,
+        omitted_targets_examined=True,
+        new_target_additions_checked_and_logged=True,
+        methodological_issues_checked=True,
+        unresolved_methodological_issue_present=False,
+    )
+    assert att.is_complete() is True
+    att.considered_both_submissions = "false"  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="must be of type bool"):
+        att.is_complete()
+
+
+def test_l58_attestation_numeric_bool_mutation_fails():
+    """Test 58: numeric bool mutation (e.g. 1) fails completion and serialization."""
+    att = CompletenessAttestation(
+        considered_both_submissions=True,
+        all_8_passages_checked=True,
+        omitted_targets_examined=True,
+        new_target_additions_checked_and_logged=True,
+        methodological_issues_checked=True,
+        unresolved_methodological_issue_present=False,
+    )
+    att.methodological_issues_checked = 1  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="must be of type bool"):
+        att.is_complete()
+    with pytest.raises(TypeError, match="must be of type bool"):
+        att.to_dict()
+    with pytest.raises(TypeError, match="must be of type bool"):
+        att.validate_current_state()
+
+
+def test_l59_new_target_audit_entry_string_bool_fails_validation():
+    """Test 59: NewTargetAuditEntry mutated with string bool fails current-state/completion validation."""
+    entry = NewTargetAuditEntry(
+        question_id="syn_q_01",
+        human_authored_reason="Valid reason",
+        reviewer_a_acknowledged=True,
+        reviewer_b_acknowledged=True,
+        audit_status="accepted",
+    )
+    entry.reviewer_a_acknowledged = "true"  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="must be of type bool"):
+        entry.validate_current_state()
+    with pytest.raises(TypeError, match="must be of type bool"):
+        entry.to_dict()
+
+    q_audit = _make_fully_attested_audit("syn_q_01")
+    q_audit.addition_log.append(entry)
+    with pytest.raises(ReconciliationStateError, match="must be of type bool"):
+        q_audit.set_reconciliation_state("human_review_complete")
+
+
+def test_l60_new_target_audit_entry_bogus_status_fails_validation():
+    """Test 60: NewTargetAuditEntry mutated with bogus status fails current-state validation."""
+    entry = NewTargetAuditEntry(
+        question_id="syn_q_01",
+        human_authored_reason="Valid reason",
+        reviewer_a_acknowledged=True,
+        reviewer_b_acknowledged=True,
+        audit_status="accepted",
+    )
+    entry.audit_status = "bogus"  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="Invalid audit_status 'bogus'"):
+        entry.validate_current_state()
+    with pytest.raises(ValueError, match="Invalid audit_status 'bogus'"):
+        entry.to_dict()
+
+
+def test_l61_unresolved_disagreement_entry_bogus_status_fails_validation():
+    """Test 61: UnresolvedDisagreementAuditEntry mutated with bogus status fails current-state/completion validation."""
+    item = UnresolvedDisagreementAuditEntry(
+        question_id="syn_q_01",
+        human_authored_disagreement_note="Dispute note",
+        status="adjudicated",
+    )
+    item.status = "bogus"  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="Invalid disagreement status 'bogus'"):
+        item.validate_current_state()
+    with pytest.raises(ValueError, match="Invalid disagreement status 'bogus'"):
+        item.to_dict()
+
+    q_audit = _make_fully_attested_audit("syn_q_01")
+    q_audit.unresolved_items.append(item)
+    with pytest.raises(ReconciliationStateError, match="Invalid disagreement status 'bogus'"):
+        q_audit.set_reconciliation_state("human_review_complete")
+
+
+def test_l62_unresolved_disagreement_entry_string_bool_fails_validation():
+    """Test 62: UnresolvedDisagreementAuditEntry mutated with string bool fails validation."""
+    item = UnresolvedDisagreementAuditEntry(
+        question_id="syn_q_01",
+        human_authored_disagreement_note="Dispute note",
+        status="adjudicated",
+        third_adjudicator_required=True,
+    )
+    item.third_adjudicator_required = "false"  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="must be of type bool"):
+        item.validate_current_state()
+    with pytest.raises(TypeError, match="must be of type bool"):
+        item.to_dict()
+
+
+def test_l63_direct_human_review_complete_construction_with_default_attestations_fails():
+    """Test 63: QuestionReconciliationAudit with default attestations fails direct human_review_complete construction."""
+    with pytest.raises(ReconciliationStateError, match="human completeness attestations are incomplete"):
+        QuestionReconciliationAudit(
+            question_id="syn_q_01",
+            reconciliation_state="human_review_complete",
+        )
+
+
+def test_l64_directly_constructed_fully_valid_complete_audit_passes():
+    """Test 64: Directly constructed fully valid human_review_complete audit succeeds."""
+    att = CompletenessAttestation(
+        considered_both_submissions=True,
+        all_8_passages_checked=True,
+        omitted_targets_examined=True,
+        new_target_additions_checked_and_logged=True,
+        methodological_issues_checked=True,
+        unresolved_methodological_issue_present=False,
+    )
+    audit = QuestionReconciliationAudit(
+        question_id="syn_q_01",
+        reconciliation_state="human_review_complete",
+        completeness_attestation=att,
+    )
+    assert audit.reconciliation_state == "human_review_complete"
+    assert audit.completeness_attestation.is_complete() is True
+
+
+def test_l65_valid_complete_audit_mutated_to_invalid_attestation_cannot_serialize():
+    """Test 65: Valid complete audit mutated afterward to invalid attestation cannot be serialized by to_dict()."""
+    audit = _make_fully_attested_audit("syn_q_01")
+    audit.set_reconciliation_state("human_review_complete")
+    assert audit.to_dict()["reconciliation_state"] == "human_review_complete"
+
+    # Mutate attestation after completion
+    audit.completeness_attestation.considered_both_submissions = "false"  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="must be of type bool"):
+        audit.to_dict()
+
+
+def test_l66_valid_complete_audit_mutated_to_invalid_disagreement_status_cannot_serialize():
+    """Test 66: Valid complete audit mutated afterward to invalid disagreement status cannot be serialized."""
+    audit = _make_fully_attested_audit("syn_q_01")
+    item = UnresolvedDisagreementAuditEntry(
+        question_id="syn_q_01",
+        human_authored_disagreement_note="Resolved note",
+        status="adjudicated",
+    )
+    audit.unresolved_items.append(item)
+    audit.set_reconciliation_state("human_review_complete")
+    assert audit.to_dict()["reconciliation_state"] == "human_review_complete"
+
+    # Mutate disagreement status after completion
+    item.status = "bogus"  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="Invalid disagreement status 'bogus'"):
+        audit.to_dict()
+
+
+def test_l67_workspace_mutated_protocol_hash_cannot_serialize():
+    """Test 67: ReconciliationAuditWorkspace whose protocol_hash is mutated cannot be serialized."""
+    ws = ReconciliationAuditWorkspace.create_synthetic_blank(["syn_q_01"])
+    assert ws.to_dict()["protocol_hash"] == FROZEN_PROTOCOL_BYTE_SHA256
+
+    ws.protocol_hash = "corrupted_hash"
+    with pytest.raises(ValueError, match="Invalid protocol_hash 'corrupted_hash'"):
+        ws.to_dict()
+
+
+def test_l68_workspace_child_audit_mutated_to_invalid_complete_state_cannot_serialize():
+    """Test 68: Workspace child audit mutated to invalid complete state cannot be serialized."""
+    ws = ReconciliationAuditWorkspace.create_synthetic_blank(["syn_q_01"])
+    child = ws.get_question_audit("syn_q_01")
+    att = CompletenessAttestation(
+        considered_both_submissions=True,
+        all_8_passages_checked=True,
+        omitted_targets_examined=True,
+        new_target_additions_checked_and_logged=True,
+        methodological_issues_checked=True,
+        unresolved_methodological_issue_present=False,
+    )
+    child.completeness_attestation = att
+    child.set_reconciliation_state("human_review_complete")
+    assert ws.to_dict()["question_audits"]["syn_q_01"]["reconciliation_state"] == "human_review_complete"
+
+    # Mutate child to incomplete attestation while still claiming human_review_complete
+    child.completeness_attestation.considered_both_submissions = False
+    with pytest.raises(ReconciliationStateError, match="human completeness attestations are incomplete"):
+        ws.to_dict()
