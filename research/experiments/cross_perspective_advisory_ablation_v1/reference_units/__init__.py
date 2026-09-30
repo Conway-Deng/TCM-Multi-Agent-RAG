@@ -100,6 +100,7 @@ from .calibration_support import (
     CalibrationReviewerWorkspace,
     CalibrationStateError,
     check_formal_material_separation,
+    load_verified_locked_submission,
 )
 
 __all__ = [
@@ -183,6 +184,7 @@ __all__ = [
     "check_formal_material_separation",
     "find_exact_duplicate_records",
     "format_final_reference_unit_id",
+    "load_verified_locked_submission",
     "locate_exact_substring",
     "parse_final_reference_unit_id",
     "resolve_unique_span_coordinates",

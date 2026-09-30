@@ -19,6 +19,8 @@ This module implements only:
 - disagreement log with strict Type-A / Type-B ambiguity handling
 - fail-closed completion checklist and stop conditions
 - strict current-state revalidation across all mutable objects
+- one-way lock and freeze semantics
+- sealed authority types and verified loaders
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -45,7 +48,7 @@ from .reference_unit_validation import (
 )
 
 # ==============================================================================
-# CALIBRATION CONSTANTS / IDENTIFIERS (Task 2)
+# CALIBRATION CONSTANTS / IDENTIFIERS (Task 2 & Phase 2C-C1 Seal)
 # ==============================================================================
 
 CALIBRATION_DESIGN_ID: Final[str] = "CPAA1-REFERENCE-UNIT-CALIBRATION-DESIGN-V1"
@@ -75,6 +78,13 @@ CALIBRATION_CASE_COVERAGE: Final[dict[str, tuple[str, ...]]] = {
 CALIBRATION_PACKET_ID_PREFIX: Final[str] = "cal2cc:packet:"
 CALIBRATION_EVIDENCE_ID_PREFIX: Final[str] = "cal2cc:ev:"
 
+CALIBRATION_PACKET_ID_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^cal2cc:packet:(CAL-2CC-0[1-8]):(tcm|western)$"
+)
+CALIBRATION_EVIDENCE_ID_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^cal2cc:ev:(CAL-2CC-0[1-8]):(tcm|western):([1-4])$"
+)
+
 ALLOWED_REVIEWER_ROLES: Final[set[str]] = {"reviewer_a", "reviewer_b"}
 ALLOWED_PERSPECTIVES: Final[set[str]] = {"tcm", "western"}
 ALLOWED_AMBIGUITY_CLASSIFICATIONS: Final[set[str]] = {
@@ -86,6 +96,9 @@ ALLOWED_DISAGREEMENT_STATUSES: Final[set[str]] = {"open", "resolved"}
 LOCAL_ONLY_NOTICE: Final[str] = (
     "LOCAL-ONLY CALIBRATION ARTIFACT — NOT FOR MODEL ACCESS OR PRODUCTION PACKET EMBEDDING"
 )
+
+# Private seal token for authoritative locked submission construction
+_CALIBRATION_LOCKED_SUBMISSION_SEAL_TOKEN: Final[object] = object()
 
 
 # ==============================================================================
@@ -159,31 +172,31 @@ def _require_non_empty_str(value: Any, field_name: str) -> str:
 
 
 # ==============================================================================
-# FORMAL-MATERIAL SEPARATION CHECK (Task 5)
+# FORMAL-MATERIAL SEPARATION CHECK (Task 5 & Part O)
 # ==============================================================================
 
 def check_formal_material_separation(
-    case_ids: Sequence[str],
-    packet_ids: Sequence[str],
-    evidence_ids: Sequence[str],
+    case_ids: Sequence[str] = (),
+    packet_ids: Sequence[str] = (),
+    evidence_ids: Sequence[str] = (),
     question_texts: Sequence[str] = (),
 ) -> None:
     """Mechanically verify that calibration items do not reuse formal study identifiers or text."""
     for pid in packet_ids:
-        if pid.startswith("cpaa1:packet:") or pid.startswith("packet:tcm:") or pid.startswith("packet:western:"):
-            raise CalibrationGateError(f"Calibration packet_id '{pid}' reuses formal packet prefix")
-        if not pid.startswith(CALIBRATION_PACKET_ID_PREFIX):
-            raise CalibrationGateError(
-                f"Calibration packet_id '{pid}' must start with '{CALIBRATION_PACKET_ID_PREFIX}'"
-            )
+        if (
+            pid.startswith("cpaa1:packet:")
+            or pid.startswith("packet:tcm:")
+            or pid.startswith("packet:western:")
+        ):
+            raise CalibrationGateError(f"Packet ID '{pid}' reuses formal packet prefix")
 
     for eid in evidence_ids:
-        if eid.startswith("cpaa1:ev:") or eid.startswith("ev:tcm:") or eid.startswith("ev:western:"):
-            raise CalibrationGateError(f"Calibration evidence_id '{eid}' reuses formal evidence prefix")
-        if not eid.startswith(CALIBRATION_EVIDENCE_ID_PREFIX):
-            raise CalibrationGateError(
-                f"Calibration evidence_id '{eid}' must start with '{CALIBRATION_EVIDENCE_ID_PREFIX}'"
-            )
+        if (
+            eid.startswith("cpaa1:ev:")
+            or eid.startswith("ev:tcm:")
+            or eid.startswith("ev:western:")
+        ):
+            raise CalibrationGateError(f"Evidence ID '{eid}' reuses formal evidence prefix")
 
     for cid in case_ids:
         if cid not in CALIBRATION_CASE_IDS:
@@ -191,29 +204,48 @@ def check_formal_material_separation(
         if cid.startswith("syn_") or cid.startswith("cpaa1:"):
             raise CalibrationGateError(f"Case ID '{cid}' reuses formal/synthetic study prefix")
 
-    manifest_path = Path(__file__).resolve().parent.parent / "packets" / "packet_manifest.json"
-    if manifest_path.exists():
+    # Formal question manifest check
+    q_manifest_path = Path(__file__).resolve().parent.parent / "question_manifest.jsonl"
+    if q_manifest_path.exists():
         try:
-            m_data = json.loads(manifest_path.read_text(encoding="utf-8"))
-            if isinstance(m_data, list):
-                formal_q_texts = {
-                    item.get("question_text")
-                    for item in m_data
-                    if isinstance(item, dict) and "question_text" in item
-                }
-                for qt in question_texts:
-                    if qt in formal_q_texts:
-                        raise CalibrationGateError(
-                            "Calibration question text matches formal study question text exactly"
-                        )
+            lines = [l.strip() for l in q_manifest_path.read_text(encoding="utf-8").splitlines() if l.strip()]
+            formal_q_texts = set()
+            formal_q_ids = set()
+            for line in lines:
+                obj = json.loads(line)
+                if isinstance(obj, dict):
+                    if "question_text" in obj and isinstance(obj["question_text"], str):
+                        formal_q_texts.add(obj["question_text"])
+                    if "question_id" in obj and isinstance(obj["question_id"], str):
+                        formal_q_ids.add(obj["question_id"])
+            for cid in case_ids:
+                if cid in formal_q_ids:
+                    raise CalibrationGateError(f"Calibration case_id '{cid}' matches formal study question ID")
+            for qt in question_texts:
+                if qt in formal_q_texts:
+                    raise CalibrationGateError(
+                        "Calibration question text matches formal study question text exactly"
+                    )
         except CalibrationGateError:
             raise
-        except Exception:
-            pass
+        except Exception as e:
+            raise CalibrationGateError(f"Failed to read/parse formal question manifest at {q_manifest_path}: {e}") from e
+
+    # Formal packet manifest check
+    p_manifest_path = Path(__file__).resolve().parent.parent / "packets" / "packet_manifest.json"
+    if p_manifest_path.exists():
+        try:
+            p_data = json.loads(p_manifest_path.read_text(encoding="utf-8"))
+            if not isinstance(p_data, dict):
+                raise CalibrationGateError(f"Formal packet manifest at {p_manifest_path} must be a JSON dict")
+        except CalibrationGateError:
+            raise
+        except Exception as e:
+            raise CalibrationGateError(f"Failed to read/parse formal packet manifest at {p_manifest_path}: {e}") from e
 
 
 # ==============================================================================
-# HUMAN-AUTHORED FIXTURE PACK SCHEMA (Task 3, 4, 6)
+# HUMAN-AUTHORED FIXTURE PACK SCHEMA (Task 3, 4, 6 & Part B)
 # ==============================================================================
 
 @dataclass
@@ -232,6 +264,8 @@ class CalibrationEvidenceItem:
     pmcid: str = ""
 
     def validate_current_state(self) -> None:
+        if type(self.rank) is not int or self.rank < 1 or self.rank > 4:
+            raise ValueError(f"rank must be an integer between 1 and 4, got {self.rank!r}")
         _require_non_empty_str(self.evidence_id, "evidence_id")
         if (
             self.evidence_id.startswith("cpaa1:ev:")
@@ -239,12 +273,19 @@ class CalibrationEvidenceItem:
             or self.evidence_id.startswith("ev:western:")
         ):
             raise CalibrationGateError(f"Calibration evidence_id '{self.evidence_id}' reuses formal evidence prefix")
-        if not self.evidence_id.startswith(CALIBRATION_EVIDENCE_ID_PREFIX):
+
+        m = CALIBRATION_EVIDENCE_ID_PATTERN.match(self.evidence_id)
+        if not m:
             raise CalibrationGateError(
-                f"evidence_id '{self.evidence_id}' must start with '{CALIBRATION_EVIDENCE_ID_PREFIX}'"
+                f"evidence_id '{self.evidence_id}' does not match required format 'cal2cc:ev:CAL-2CC-XX:<perspective>:<rank>' "
+                f"(must start with '{CALIBRATION_EVIDENCE_ID_PREFIX}')"
             )
-        if type(self.rank) is not int or self.rank < 1 or self.rank > 4:
-            raise ValueError(f"rank must be an integer between 1 and 4, got {self.rank!r}")
+        cid_part, persp_part, rank_part = m.group(1), m.group(2), int(m.group(3))
+        if self.rank != rank_part:
+            raise CalibrationGateError(
+                f"evidence_id rank '{rank_part}' does not match item.rank '{self.rank}'"
+            )
+
         _require_non_empty_str(self.exact_chunk_text, "exact_chunk_text")
         expected_sha = hashlib.sha256(self.exact_chunk_text.encode("utf-8")).hexdigest()
         if self.chunk_text_sha256 != expected_sha:
@@ -306,25 +347,40 @@ class CalibrationPacket:
             or self.packet_id.startswith("packet:western:")
         ):
             raise CalibrationGateError(f"Calibration packet_id '{self.packet_id}' reuses formal packet prefix")
-        if not self.packet_id.startswith(CALIBRATION_PACKET_ID_PREFIX):
-            raise CalibrationGateError(
-                f"packet_id '{self.packet_id}' must start with '{CALIBRATION_PACKET_ID_PREFIX}'"
-            )
         if self.perspective not in ALLOWED_PERSPECTIVES:
             raise ValueError(f"Invalid perspective '{self.perspective}': must be 'tcm' or 'western'")
         if self.case_id not in CALIBRATION_CASE_IDS:
             raise ValueError(f"Invalid case_id '{self.case_id}': must be one of {CALIBRATION_CASE_IDS}")
+
+        expected_pkt_id = f"cal2cc:packet:{self.case_id}:{self.perspective}"
+        if self.packet_id != expected_pkt_id:
+            raise CalibrationGateError(
+                f"packet_id '{self.packet_id}' does not match expected exact format '{expected_pkt_id}' "
+                f"(must start with '{CALIBRATION_PACKET_ID_PREFIX}')"
+            )
+
         if not isinstance(self.evidence_items, list):
             raise TypeError("evidence_items must be a list")
         if len(self.evidence_items) != 4:
             raise ValueError(f"Packet must contain exactly 4 evidence items, got {len(self.evidence_items)}")
 
         ranks: list[int] = []
+        eids: set[str] = set()
         for item in self.evidence_items:
             if not isinstance(item, CalibrationEvidenceItem):
                 raise TypeError(f"Expected CalibrationEvidenceItem, got {type(item).__name__}")
             item.validate_current_state()
+            if item.rank in ranks:
+                raise ValueError(f"Duplicate rank {item.rank} in packet {self.packet_id}")
             ranks.append(item.rank)
+            expected_eid = f"cal2cc:ev:{self.case_id}:{self.perspective}:{item.rank}"
+            if item.evidence_id != expected_eid:
+                raise CalibrationGateError(
+                    f"packet '{self.packet_id}' evidence_id '{item.evidence_id}' does not match expected exact format '{expected_eid}'"
+                )
+            if item.evidence_id in eids:
+                raise CalibrationGateError(f"Duplicate evidence_id '{item.evidence_id}' in packet '{self.packet_id}'")
+            eids.add(item.evidence_id)
 
         if sorted(ranks) != [1, 2, 3, 4]:
             raise ValueError(f"evidence_items ranks must be [1, 2, 3, 4] with no duplicates, got {sorted(ranks)}")
@@ -502,7 +558,13 @@ class CalibrationFixturePack:
         if len(evidence_ids) != 64:
             raise ValueError(f"Expected 64 evidence items, got {len(evidence_ids)}")
 
-        # Formal material separation check (Task 5)
+        # Uniqueness checks across the full fixture pack
+        if len(set(packet_ids)) != 16:
+            raise CalibrationGateError("Duplicate packet_id detected in fixture pack")
+        if len(set(evidence_ids)) != 64:
+            raise CalibrationGateError("Duplicate evidence_id detected across fixture pack")
+
+        # Formal material separation check (Task 5 & Part O)
         check_formal_material_separation(
             case_ids=list(self.cases.keys()),
             packet_ids=packet_ids,
@@ -540,7 +602,15 @@ class CalibrationFixturePack:
         return compute_canonical_sha256(data)
 
     def freeze(self) -> None:
-        """Freeze and compute deterministic fixture-pack hash."""
+        """Freeze and compute deterministic fixture-pack hash.
+
+        One-way operation (Part A): once frozen, calling freeze() again is forbidden
+        and fails closed.
+        """
+        if self.fixture_pack_canonical_sha256 is not None:
+            raise CalibrationStateError(
+                "CalibrationFixturePack is already frozen; fixture freeze is strictly one-way"
+            )
         _require_non_empty_str(self.fixture_author, "fixture_author")
         if not self.human_authorship_attested:
             raise CalibrationGateError("human_authorship_attested must be True for calibration fixture freeze")
@@ -550,9 +620,8 @@ class CalibrationFixturePack:
             raise CalibrationGateError(
                 "model_generated_final_fixture_text must be False; model text cannot be frozen as calibration material"
             )
-        self.fixture_pack_canonical_sha256 = None
-        self.validate_current_state()
         self.fixture_pack_canonical_sha256 = self.compute_canonical_sha256()
+        self.validate_current_state()
 
     def to_dict(self) -> dict[str, Any]:
         self.validate_current_state()
@@ -616,12 +685,12 @@ class CalibrationFixturePack:
 
 
 # ==============================================================================
-# CALIBRATION REVIEWER WORKSPACE & LOCKED SUBMISSION (Tasks 7, 8, 9)
+# CALIBRATION CASE REVIEW STATE
 # ==============================================================================
 
 @dataclass
 class CalibrationCaseReviewState:
-    """Per-case calibration review state inside a reviewer workspace."""
+    """Annotation state for a single calibration case within a reviewer workspace."""
 
     case_id: str
     annotation_complete: bool = False
@@ -632,12 +701,20 @@ class CalibrationCaseReviewState:
         if self.case_id not in CALIBRATION_CASE_IDS:
             raise ValueError(f"Invalid case_id '{self.case_id}': must be one of {CALIBRATION_CASE_IDS}")
         _require_bool(self.annotation_complete, "annotation_complete")
-        if not isinstance(self.no_supportable_unit_reason, str):
-            raise TypeError(
-                f"no_supportable_unit_reason must be a str, got {type(self.no_supportable_unit_reason).__name__}"
-            )
         if not isinstance(self.records, list):
-            raise TypeError(f"records must be a list, got {type(self.records).__name__}")
+            raise TypeError("records must be a list")
+        if not isinstance(self.no_supportable_unit_reason, str):
+            raise TypeError("no_supportable_unit_reason must be a str")
+
+        # Validate that each record is dict and matches case_id
+        for rec in self.records:
+            if not isinstance(rec, dict):
+                raise TypeError("Record in CalibrationCaseReviewState must be a dict")
+            rec_qid = rec.get("question_id")
+            if rec_qid != self.case_id:
+                raise ValueError(
+                    f"Record question_id '{rec_qid}' does not match case_id '{self.case_id}'"
+                )
 
     def __post_init__(self) -> None:
         self.validate_current_state()
@@ -655,30 +732,69 @@ class CalibrationCaseReviewState:
     def from_dict(cls, data: dict[str, Any]) -> CalibrationCaseReviewState:
         if not isinstance(data, dict):
             raise TypeError("Expected dict for CalibrationCaseReviewState")
+        recs_raw = data.get("records", [])
+        if not isinstance(recs_raw, list):
+            raise TypeError("records must be a list")
         return cls(
             case_id=data.get("case_id", ""),
             annotation_complete=data.get("annotation_complete", False),
-            records=data.get("records", []),
+            records=copy.deepcopy(recs_raw),
             no_supportable_unit_reason=data.get("no_supportable_unit_reason", ""),
         )
 
 
-@dataclass(frozen=True)
-class CalibrationLockedSubmission:
-    """Immutable cryptographic snapshot of a locked calibration reviewer submission."""
+# ==============================================================================
+# CALIBRATION SUBMISSION LOCK + HASH (Task 8 & 9, Part E, F, G)
+# ==============================================================================
 
-    calibration_design_id: str
-    fixture_pack_hash: str
-    reviewer_role: Literal["reviewer_a", "reviewer_b"]
-    case_ids: tuple[str, ...]
-    records_by_case: dict[str, list[dict[str, Any]]]
-    case_completion_states: dict[str, bool]
-    no_supportable_unit_reasons: dict[str, str]
-    submission_version: int
-    lock_timestamp: str
-    submission_hash: str
+class CalibrationLockedSubmission:
+    """Immutable, mechanically sealed snapshot of a locked calibration reviewer submission.
+
+    This is an AUTHORITY object. Direct public instantiation and subclassing are forbidden.
+    Instances must be created via CalibrationReviewerWorkspace.lock_submission() or
+    load_verified_locked_submission().
+    """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        raise TypeError("CalibrationLockedSubmission is final and cannot be subclassed")
+
+    def __init__(
+        self,
+        *,
+        calibration_design_id: str,
+        fixture_pack_hash: str,
+        reviewer_role: Literal["reviewer_a", "reviewer_b"],
+        case_ids: tuple[str, ...],
+        records_by_case: dict[str, list[dict[str, Any]]],
+        case_completion_states: dict[str, bool],
+        no_supportable_unit_reasons: dict[str, str],
+        submission_version: int,
+        lock_timestamp: str,
+        submission_hash: str,
+        _seal_token: object = None,
+    ) -> None:
+        if _seal_token is not _CALIBRATION_LOCKED_SUBMISSION_SEAL_TOKEN:
+            raise TypeError(
+                "Direct public construction of CalibrationLockedSubmission is forbidden. "
+                "Instances must be created via CalibrationReviewerWorkspace.lock_submission() "
+                "or load_verified_locked_submission()."
+            )
+        self.calibration_design_id = calibration_design_id
+        self.fixture_pack_hash = fixture_pack_hash
+        self.reviewer_role = reviewer_role
+        self.case_ids = tuple(case_ids)
+        self.records_by_case = records_by_case
+        self.case_completion_states = case_completion_states
+        self.no_supportable_unit_reasons = no_supportable_unit_reasons
+        self.submission_version = submission_version
+        self.lock_timestamp = lock_timestamp
+        self.submission_hash = submission_hash
+        self.validate_current_state()
 
     def validate_current_state(self) -> None:
+        if type(self) is not CalibrationLockedSubmission:
+            raise TypeError("Object must be an exact CalibrationLockedSubmission")
+
         if self.calibration_design_id != CALIBRATION_DESIGN_ID:
             raise ValueError(
                 f"calibration_design_id mismatch: '{self.calibration_design_id}' != '{CALIBRATION_DESIGN_ID}'"
@@ -686,38 +802,61 @@ class CalibrationLockedSubmission:
         _require_non_empty_str(self.fixture_pack_hash, "fixture_pack_hash")
         if self.reviewer_role not in ALLOWED_REVIEWER_ROLES:
             raise ValueError(f"reviewer_role must be 'reviewer_a' or 'reviewer_b', got '{self.reviewer_role}'")
-        if self.case_ids != CALIBRATION_CASE_IDS:
+        if tuple(self.case_ids) != CALIBRATION_CASE_IDS:
             raise ValueError(f"case_ids must exactly match {CALIBRATION_CASE_IDS}, got {self.case_ids}")
         if type(self.submission_version) is not int or self.submission_version < 1:
             raise ValueError(f"submission_version must be an integer >= 1, got {self.submission_version!r}")
         _require_non_empty_str(self.lock_timestamp, "lock_timestamp")
+        _require_non_empty_str(self.submission_hash, "submission_hash")
 
-        # Mechanical gate requirements (Task 9)
-        for cid in CALIBRATION_CASE_IDS:
-            comp = self.case_completion_states.get(cid)
-            _require_bool(comp, f"case_completion_states[{cid}]")
-            if not comp:
-                raise CalibrationLockError(f"Case '{cid}' is not marked annotation_complete in locked submission")
-            recs = self.records_by_case.get(cid, [])
-            if not isinstance(recs, list):
-                raise TypeError(f"records_by_case[{cid}] must be a list")
-            reason = self.no_supportable_unit_reasons.get(cid, "")
-            if not isinstance(reason, str):
-                raise TypeError(f"no_supportable_unit_reasons[{cid}] must be a str")
-            if not (len(recs) > 0 or bool(reason.strip())):
-                raise CalibrationLockError(
-                    f"Case '{cid}' has neither reference units nor no_supportable_unit_reason in locked submission"
-                )
+        if not isinstance(self.records_by_case, dict):
+            raise TypeError("records_by_case must be a dictionary")
+        if tuple(sorted(self.records_by_case.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+            raise ValueError(f"records_by_case keys must exactly match {CALIBRATION_CASE_IDS}")
 
-        # Verify hash
+        if not isinstance(self.case_completion_states, dict):
+            raise TypeError("case_completion_states must be a dictionary")
+        if tuple(sorted(self.case_completion_states.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+            raise ValueError(f"case_completion_states keys must exactly match {CALIBRATION_CASE_IDS}")
+
+        if not isinstance(self.no_supportable_unit_reasons, dict):
+            raise TypeError("no_supportable_unit_reasons must be a dictionary")
+        if tuple(sorted(self.no_supportable_unit_reasons.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+            raise ValueError(f"no_supportable_unit_reasons keys must exactly match {CALIBRATION_CASE_IDS}")
+
+        # Deep hash verification (Part G)
         expected_hash = compute_canonical_sha256(self._to_dict_unhashed())
         if self.submission_hash != expected_hash:
             raise CalibrationLockError(
                 f"submission_hash mismatch: recorded '{self.submission_hash}' != computed '{expected_hash}'"
             )
 
-    def __post_init__(self) -> None:
-        self.validate_current_state()
+        # Deep mechanical gate requirements (Task 9 & Part D, G)
+        for cid in CALIBRATION_CASE_IDS:
+            comp = self.case_completion_states.get(cid)
+            _require_bool(comp, f"case_completion_states[{cid}]")
+            if comp is not True:
+                raise CalibrationLockError(f"Case '{cid}' is not marked annotation_complete in locked submission")
+            recs = self.records_by_case.get(cid)
+            if not isinstance(recs, list):
+                raise TypeError(f"records_by_case[{cid}] must be a list")
+            for r in recs:
+                if not isinstance(r, dict):
+                    raise TypeError(f"Record in case '{cid}' must be a dict")
+                if r.get("question_id") != cid:
+                    raise ValueError(f"Record question_id '{r.get('question_id')}' does not match case '{cid}'")
+            reason = self.no_supportable_unit_reasons.get(cid)
+            if not isinstance(reason, str):
+                raise TypeError(f"no_supportable_unit_reasons[{cid}] must be a str")
+
+            has_records = len(recs) > 0
+            has_reason = bool(reason.strip())
+            # XOR requirement (Part D)
+            if (has_records and has_reason) or (not has_records and not has_reason):
+                raise CalibrationLockError(
+                    f"Case '{cid}' in locked submission has neither reference units nor no_supportable_unit_reason "
+                    f"(or has both); violates XOR requirement."
+                )
 
     def _to_dict_unhashed(self) -> dict[str, Any]:
         return {
@@ -725,7 +864,7 @@ class CalibrationLockedSubmission:
             "fixture_pack_hash": self.fixture_pack_hash,
             "reviewer_role": self.reviewer_role,
             "case_ids": list(self.case_ids),
-            "records_by_case": {k: copy.deepcopy(v) for k, v in sorted(self.records_by_case.items())},
+            "records_by_case": {k: copy.deepcopy(self.records_by_case[k]) for k in sorted(self.records_by_case.keys())},
             "case_completion_states": {
                 k: self.case_completion_states[k] for k in sorted(self.case_completion_states.keys())
             },
@@ -743,37 +882,208 @@ class CalibrationLockedSubmission:
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> CalibrationLockedSubmission:
-        if not isinstance(data, dict):
-            raise TypeError("Expected dict for CalibrationLockedSubmission")
-        case_ids_raw = data.get("case_ids", [])
-        return cls(
-            calibration_design_id=data.get("calibration_design_id", CALIBRATION_DESIGN_ID),
-            fixture_pack_hash=data.get("fixture_pack_hash", ""),
-            reviewer_role=data.get("reviewer_role", "reviewer_a"),
-            case_ids=tuple(case_ids_raw),
-            records_by_case=data.get("records_by_case", {}),
-            case_completion_states=data.get("case_completion_states", {}),
-            no_supportable_unit_reasons=data.get("no_supportable_unit_reasons", {}),
-            submission_version=data.get("submission_version", 1),
-            lock_timestamp=data.get("lock_timestamp", ""),
-            submission_hash=data.get("submission_hash", ""),
+    def load_verified(
+        cls,
+        data: dict[str, Any],
+        fixture_pack: CalibrationFixturePack,
+    ) -> CalibrationLockedSubmission:
+        return load_verified_locked_submission(data, fixture_pack)
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+        fixture_pack: CalibrationFixturePack | None = None,
+    ) -> CalibrationLockedSubmission:
+        if fixture_pack is None:
+            raise CalibrationGateError(
+                "CalibrationLockedSubmission.from_dict requires a verified frozen fixture_pack; "
+                "use load_verified_locked_submission(data, fixture_pack) or pass fixture_pack"
+            )
+        return load_verified_locked_submission(data, fixture_pack)
+
+
+def load_verified_locked_submission(
+    data: dict[str, Any],
+    fixture_pack: CalibrationFixturePack,
+) -> CalibrationLockedSubmission:
+    """Verify serialized locked submission against exact frozen fixture pack authority (Part F)."""
+    if not isinstance(fixture_pack, CalibrationFixturePack):
+        raise TypeError(f"fixture_pack must be CalibrationFixturePack, got {type(fixture_pack).__name__}")
+    fixture_pack.validate_current_state()
+    if fixture_pack.fixture_pack_canonical_sha256 is None:
+        raise CalibrationGateError("fixture_pack must be frozen with a canonical SHA256")
+    if not isinstance(data, dict):
+        raise TypeError("Expected dict for locked submission data")
+
+    design_id = data.get("calibration_design_id")
+    if design_id != CALIBRATION_DESIGN_ID:
+        raise CalibrationGateError(f"calibration_design_id mismatch: '{design_id}' != '{CALIBRATION_DESIGN_ID}'")
+
+    f_hash = data.get("fixture_pack_hash")
+    if f_hash != fixture_pack.fixture_pack_canonical_sha256:
+        raise CalibrationGateError(
+            f"fixture_pack_hash mismatch: submission recorded '{f_hash}' != fixture pack '{fixture_pack.fixture_pack_canonical_sha256}'"
         )
 
+    role = data.get("reviewer_role")
+    if role not in ALLOWED_REVIEWER_ROLES:
+        raise ValueError(f"Invalid reviewer_role: {role!r}")
 
-@dataclass
+    case_ids = data.get("case_ids")
+    if not isinstance(case_ids, (list, tuple)) or tuple(case_ids) != CALIBRATION_CASE_IDS:
+        raise ValueError(f"case_ids must exactly match {CALIBRATION_CASE_IDS}, got {case_ids}")
+
+    records_by_case = data.get("records_by_case")
+    if not isinstance(records_by_case, dict):
+        raise TypeError("records_by_case must be a dictionary")
+    if tuple(sorted(records_by_case.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+        raise ValueError(f"records_by_case keys must exactly match {CALIBRATION_CASE_IDS}")
+
+    case_comp = data.get("case_completion_states")
+    if not isinstance(case_comp, dict):
+        raise TypeError("case_completion_states must be a dictionary")
+    if tuple(sorted(case_comp.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+        raise ValueError(f"case_completion_states keys must exactly match {CALIBRATION_CASE_IDS}")
+
+    no_reasons = data.get("no_supportable_unit_reasons")
+    if not isinstance(no_reasons, dict):
+        raise TypeError("no_supportable_unit_reasons must be a dictionary")
+    if tuple(sorted(no_reasons.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+        raise ValueError(f"no_supportable_unit_reasons keys must exactly match {CALIBRATION_CASE_IDS}")
+
+    sub_version = data.get("submission_version")
+    if type(sub_version) is not int or sub_version < 1:
+        raise ValueError(f"submission_version must be int >= 1, got {sub_version!r}")
+
+    lock_ts = data.get("lock_timestamp")
+    _require_non_empty_str(lock_ts, "lock_timestamp")
+
+    anchor_index = fixture_pack.to_packet_anchor_index()
+    for cid in CALIBRATION_CASE_IDS:
+        comp = case_comp[cid]
+        _require_bool(comp, f"case_completion_states[{cid}]")
+        if comp is not True:
+            raise CalibrationLockError(f"Case '{cid}' is not marked complete in locked submission")
+
+        recs = records_by_case[cid]
+        if not isinstance(recs, list):
+            raise TypeError(f"records_by_case[{cid}] must be a list")
+        reason = no_reasons[cid]
+        if not isinstance(reason, str):
+            raise TypeError(f"no_supportable_unit_reasons[{cid}] must be a str")
+
+        has_records = len(recs) > 0
+        has_reason = bool(reason.strip())
+        if (has_records and has_reason) or (not has_records and not has_reason):
+            raise CalibrationLockError(
+                f"Case '{cid}' has neither reference units nor no_supportable_unit_reason "
+                f"(or has both); violates XOR requirement."
+            )
+
+        for rec in recs:
+            if not isinstance(rec, dict):
+                raise TypeError(f"Record in case '{cid}' must be a dict")
+            rec_qid = rec.get("question_id")
+            if rec_qid != cid:
+                raise ValueError(f"Record question_id '{rec_qid}' does not match case '{cid}'")
+            errors = validate_reference_unit_record(rec, mode="draft", packet_index=anchor_index)
+            if errors:
+                raise CalibrationLockError(
+                    f"Locked record validation failed for case '{cid}': {'; '.join(errors)}"
+                )
+            anchors = rec.get("evidence_anchors", [])
+            check_formal_material_separation(
+                case_ids=[cid],
+                packet_ids=[a.get("packet_id", "") for a in anchors if isinstance(a, dict)],
+                evidence_ids=[a.get("evidence_id", "") for a in anchors if isinstance(a, dict)],
+            )
+
+    sub_hash = data.get("submission_hash")
+    _require_non_empty_str(sub_hash, "submission_hash")
+    unhashed = {
+        "calibration_design_id": design_id,
+        "fixture_pack_hash": f_hash,
+        "reviewer_role": role,
+        "case_ids": list(CALIBRATION_CASE_IDS),
+        "records_by_case": {k: copy.deepcopy(records_by_case[k]) for k in sorted(records_by_case.keys())},
+        "case_completion_states": {k: case_comp[k] for k in sorted(case_comp.keys())},
+        "no_supportable_unit_reasons": {k: no_reasons[k] for k in sorted(no_reasons.keys())},
+        "submission_version": sub_version,
+        "lock_timestamp": lock_ts,
+    }
+    expected_hash = compute_canonical_sha256(unhashed)
+    if sub_hash != expected_hash:
+        raise CalibrationLockError(
+            f"submission_hash mismatch: recorded '{sub_hash}' != computed '{expected_hash}'"
+        )
+
+    return CalibrationLockedSubmission(
+        calibration_design_id=design_id,
+        fixture_pack_hash=f_hash,
+        reviewer_role=role,
+        case_ids=tuple(CALIBRATION_CASE_IDS),
+        records_by_case=records_by_case,
+        case_completion_states=case_comp,
+        no_supportable_unit_reasons=no_reasons,
+        submission_version=sub_version,
+        lock_timestamp=lock_ts,
+        submission_hash=sub_hash,
+        _seal_token=_CALIBRATION_LOCKED_SUBMISSION_SEAL_TOKEN,
+    )
+
+
+# ==============================================================================
+# CALIBRATION REVIEWER WORKSPACES (Task 7, 8, 9 & Part C, H, I)
+# ==============================================================================
+
 class CalibrationReviewerWorkspace:
-    """Isolated working environment for a single calibration reviewer."""
+    """Isolated working environment for a single calibration reviewer.
 
-    reviewer_role: Literal["reviewer_a", "reviewer_b"]
-    fixture_pack_hash: str
-    cases: dict[str, CalibrationCaseReviewState] = field(default_factory=dict)
-    calibration_design_id: str = CALIBRATION_DESIGN_ID
-    workspace_kind: str = "calibration"
-    submission_version: int = 1
-    is_locked: bool = False
-    locked_snapshot: CalibrationLockedSubmission | None = None
-    _anchor_index: FrozenPacketAnchorIndex | None = field(default=None, repr=False)
+    Carries private runtime fixture authority derived from a valid frozen CalibrationFixturePack.
+    """
+
+    def __init__(
+        self,
+        reviewer_role: Literal["reviewer_a", "reviewer_b"],
+        fixture_pack_hash: str,
+        cases: dict[str, CalibrationCaseReviewState],
+        calibration_design_id: str = CALIBRATION_DESIGN_ID,
+        workspace_kind: str = "calibration",
+        submission_version: int = 1,
+        locked_snapshot: CalibrationLockedSubmission | None = None,
+        _fixture_pack: CalibrationFixturePack | None = None,
+        _anchor_index: FrozenPacketAnchorIndex | None = None,
+    ) -> None:
+        if _fixture_pack is None or _anchor_index is None:
+            raise CalibrationGateError(
+                "CalibrationReviewerWorkspace requires private fixture authority; "
+                "create via CalibrationReviewerWorkspace.create_blank() or from_dict(data, fixture_pack)"
+            )
+        self.reviewer_role = reviewer_role
+        self.fixture_pack_hash = fixture_pack_hash
+        self.cases = cases
+        self.calibration_design_id = calibration_design_id
+        self.workspace_kind = workspace_kind
+        self.submission_version = submission_version
+        self.locked_snapshot = locked_snapshot
+        self._fixture_pack = _fixture_pack
+        self._anchor_index = _anchor_index
+        self.validate_current_state()
+
+    @property
+    def is_locked(self) -> bool:
+        """Lock state is derived from presence of an authoritative locked snapshot (Part H)."""
+        return self.locked_snapshot is not None
+
+    @is_locked.setter
+    def is_locked(self, val: Any) -> None:
+        if self.locked_snapshot is not None and not val:
+            raise CalibrationLockError("Cannot unlock a locked workspace; workspace lock state is strictly one-way")
+        if self.locked_snapshot is None and val:
+            raise CalibrationLockError(
+                "Cannot mark workspace locked without an authoritative locked snapshot; use lock_submission()"
+            )
 
     def validate_current_state(self) -> None:
         if self.calibration_design_id != CALIBRATION_DESIGN_ID:
@@ -783,9 +1093,8 @@ class CalibrationReviewerWorkspace:
         if self.workspace_kind != "calibration":
             raise ValueError(f"workspace_kind must be 'calibration', got '{self.workspace_kind}'")
         if self.reviewer_role not in ALLOWED_REVIEWER_ROLES:
-            raise ValueError(f"reviewer_role must be 'reviewer_a' or 'reviewer_b', got '{self.reviewer_role}'")
+            raise ValueError(f"Invalid reviewer_role '{self.reviewer_role}': must be 'reviewer_a' or 'reviewer_b'")
         _require_non_empty_str(self.fixture_pack_hash, "fixture_pack_hash")
-        _require_bool(self.is_locked, "is_locked")
         if type(self.submission_version) is not int or self.submission_version < 1:
             raise ValueError(f"submission_version must be int >= 1, got {self.submission_version!r}")
 
@@ -801,11 +1110,9 @@ class CalibrationReviewerWorkspace:
                 raise ValueError(f"Key '{cid}' does not match state.case_id '{state.case_id}'")
             state.validate_current_state()
 
-        if self.is_locked:
-            if self.locked_snapshot is None:
-                raise CalibrationLockError("Workspace is marked is_locked=True but locked_snapshot is None")
-            if not isinstance(self.locked_snapshot, CalibrationLockedSubmission):
-                raise TypeError("locked_snapshot must be CalibrationLockedSubmission")
+        if self.locked_snapshot is not None:
+            if type(self.locked_snapshot) is not CalibrationLockedSubmission:
+                raise TypeError("locked_snapshot must be exact CalibrationLockedSubmission")
             self.locked_snapshot.validate_current_state()
             if self.locked_snapshot.fixture_pack_hash != self.fixture_pack_hash:
                 raise CalibrationLockError("locked_snapshot fixture_pack_hash does not match workspace")
@@ -814,13 +1121,24 @@ class CalibrationReviewerWorkspace:
             if self.locked_snapshot.submission_version != self.submission_version:
                 raise CalibrationLockError("locked_snapshot submission_version does not match workspace")
 
-    def __post_init__(self) -> None:
-        if not self.cases:
-            self.cases = {
-                cid: CalibrationCaseReviewState(case_id=cid)
-                for cid in CALIBRATION_CASE_IDS
-            }
-        self.validate_current_state()
+            # Check that live workspace cases are mechanically consistent with locked snapshot (Part H)
+            for cid in CALIBRATION_CASE_IDS:
+                c_state = self.cases[cid]
+                snap_recs = self.locked_snapshot.records_by_case[cid]
+                snap_reason = self.locked_snapshot.no_supportable_unit_reasons[cid]
+                snap_comp = self.locked_snapshot.case_completion_states[cid]
+                if canonical_json_dumps(c_state.records) != canonical_json_dumps(snap_recs):
+                    raise CalibrationStateError(
+                        f"Workspace case '{cid}' records have drifted from locked snapshot"
+                    )
+                if c_state.no_supportable_unit_reason != snap_reason:
+                    raise CalibrationStateError(
+                        f"Workspace case '{cid}' reason has drifted from locked snapshot"
+                    )
+                if c_state.annotation_complete != snap_comp:
+                    raise CalibrationStateError(
+                        f"Workspace case '{cid}' completion state has drifted from locked snapshot"
+                    )
 
     @classmethod
     def create_blank(
@@ -843,13 +1161,10 @@ class CalibrationReviewerWorkspace:
             calibration_design_id=CALIBRATION_DESIGN_ID,
             workspace_kind="calibration",
             submission_version=1,
-            is_locked=False,
             locked_snapshot=None,
+            _fixture_pack=fixture_pack,
             _anchor_index=index,
         )
-
-    def bind_anchor_index(self, index: FrozenPacketAnchorIndex) -> None:
-        self._anchor_index = index
 
     def add_record(self, case_id: str, record: dict[str, Any] | ReferenceUnitRecord) -> None:
         if self.is_locked:
@@ -867,10 +1182,17 @@ class CalibrationReviewerWorkspace:
         if rec_qid != case_id:
             raise ValueError(f"Record question_id '{rec_qid}' does not match case_id '{case_id}'")
 
-        if self._anchor_index is not None:
-            errors = validate_reference_unit_record(rec_dict, mode="draft", packet_index=self._anchor_index)
-            if errors:
-                raise ValueError(f"Record validation failed: {'; '.join(errors)}")
+        # Mandatory validation against verified anchor index derived from fixture authority (Part C)
+        errors = validate_reference_unit_record(rec_dict, mode="draft", packet_index=self._anchor_index)
+        if errors:
+            raise ValueError(f"Record validation failed: {'; '.join(errors)}")
+
+        anchors = rec_dict.get("evidence_anchors", [])
+        check_formal_material_separation(
+            case_ids=[case_id],
+            packet_ids=[a.get("packet_id", "") for a in anchors if isinstance(a, dict)],
+            evidence_ids=[a.get("evidence_id", "") for a in anchors if isinstance(a, dict)],
+        )
 
         self.cases[case_id].records.append(rec_dict)
 
@@ -897,24 +1219,33 @@ class CalibrationReviewerWorkspace:
 
         self.validate_current_state()
 
-        # Gate requirements (Task 9)
+        # Gate requirements (Task 9 & Part D)
         for cid in CALIBRATION_CASE_IDS:
             c_state = self.cases[cid]
             if not c_state.annotation_complete:
                 raise CalibrationLockError(f"Cannot lock: case '{cid}' is not marked annotation_complete")
             has_records = len(c_state.records) > 0
             has_reason = bool(c_state.no_supportable_unit_reason.strip())
-            if not (has_records or has_reason):
+            # XOR requirement (Part D)
+            if (has_records and has_reason) or (not has_records and not has_reason):
                 raise CalibrationLockError(
-                    f"Cannot lock: case '{cid}' has neither reference units nor no_supportable_unit_reason"
+                    f"Cannot lock: case '{cid}' has neither reference units nor no_supportable_unit_reason "
+                    f"(or has both); violates XOR requirement."
                 )
-            if self._anchor_index is not None:
-                for rec in c_state.records:
-                    errors = validate_reference_unit_record(rec, mode="draft", packet_index=self._anchor_index)
-                    if errors:
-                        raise CalibrationLockError(
-                            f"Cannot lock: record validation failed for case '{cid}': {'; '.join(errors)}"
-                        )
+
+            # Mandatory validation of all records against verified anchor index (Part C)
+            for rec in c_state.records:
+                errors = validate_reference_unit_record(rec, mode="draft", packet_index=self._anchor_index)
+                if errors:
+                    raise CalibrationLockError(
+                        f"Cannot lock: record validation failed for case '{cid}': {'; '.join(errors)}"
+                    )
+                anchors = rec.get("evidence_anchors", [])
+                check_formal_material_separation(
+                    case_ids=[cid],
+                    packet_ids=[a.get("packet_id", "") for a in anchors if isinstance(a, dict)],
+                    evidence_ids=[a.get("evidence_id", "") for a in anchors if isinstance(a, dict)],
+                )
 
         records_by_case = {cid: copy.deepcopy(self.cases[cid].records) for cid in CALIBRATION_CASE_IDS}
         completion_states = {cid: self.cases[cid].annotation_complete for cid in CALIBRATION_CASE_IDS}
@@ -945,21 +1276,24 @@ class CalibrationReviewerWorkspace:
             submission_version=self.submission_version,
             lock_timestamp=now_iso,
             submission_hash=sub_hash,
+            _seal_token=_CALIBRATION_LOCKED_SUBMISSION_SEAL_TOKEN,
         )
 
         self.locked_snapshot = snapshot
-        self.is_locked = True
         return snapshot
 
     def create_amended_version(self) -> CalibrationReviewerWorkspace:
-        if not self.is_locked:
+        """Derive an amendment from the authoritative locked snapshot (Part I)."""
+        if not self.is_locked or self.locked_snapshot is None:
             raise CalibrationLockError("Cannot create amended version from an unlocked workspace")
+        self.validate_current_state()
+
         new_cases = {
             cid: CalibrationCaseReviewState(
                 case_id=cid,
                 annotation_complete=False,
-                records=copy.deepcopy(self.cases[cid].records),
-                no_supportable_unit_reason=self.cases[cid].no_supportable_unit_reason,
+                records=copy.deepcopy(self.locked_snapshot.records_by_case[cid]),
+                no_supportable_unit_reason=self.locked_snapshot.no_supportable_unit_reasons[cid],
             )
             for cid in CALIBRATION_CASE_IDS
         }
@@ -970,8 +1304,8 @@ class CalibrationReviewerWorkspace:
             calibration_design_id=self.calibration_design_id,
             workspace_kind="calibration",
             submission_version=self.submission_version + 1,
-            is_locked=False,
             locked_snapshot=None,
+            _fixture_pack=self._fixture_pack,
             _anchor_index=self._anchor_index,
         )
 
@@ -989,29 +1323,55 @@ class CalibrationReviewerWorkspace:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> CalibrationReviewerWorkspace:
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+        fixture_pack: CalibrationFixturePack | None = None,
+    ) -> CalibrationReviewerWorkspace:
+        if fixture_pack is None:
+            raise CalibrationGateError(
+                "Deserializing CalibrationReviewerWorkspace requires supplying the matching frozen CalibrationFixturePack"
+            )
+        if not isinstance(fixture_pack, CalibrationFixturePack):
+            raise TypeError(f"fixture_pack must be CalibrationFixturePack, got {type(fixture_pack).__name__}")
+        fixture_pack.validate_current_state()
+        if fixture_pack.fixture_pack_canonical_sha256 is None:
+            raise CalibrationGateError("Cannot deserialize reviewer workspace against unfrozen fixture pack")
+
         if not isinstance(data, dict):
             raise TypeError("Expected dict for CalibrationReviewerWorkspace")
+
+        f_hash = data.get("fixture_pack_hash")
+        if f_hash != fixture_pack.fixture_pack_canonical_sha256:
+            raise CalibrationGateError(
+                f"fixture_pack_hash in data '{f_hash}' does not match fixture pack '{fixture_pack.fixture_pack_canonical_sha256}'"
+            )
+
         cases_raw = data.get("cases", {})
         if not isinstance(cases_raw, dict):
             raise TypeError("cases must be a dictionary")
         cases = {cid: CalibrationCaseReviewState.from_dict(c_data) for cid, c_data in cases_raw.items()}
+
         snap_raw = data.get("locked_snapshot")
-        snap = CalibrationLockedSubmission.from_dict(snap_raw) if snap_raw is not None else None
+        snap = None
+        if snap_raw is not None:
+            snap = load_verified_locked_submission(snap_raw, fixture_pack)
+
         return cls(
+            reviewer_role=data.get("reviewer_role", "reviewer_a"),
+            fixture_pack_hash=f_hash,
+            cases=cases,
             calibration_design_id=data.get("calibration_design_id", CALIBRATION_DESIGN_ID),
             workspace_kind=data.get("workspace_kind", "calibration"),
-            reviewer_role=data.get("reviewer_role", "reviewer_a"),
-            fixture_pack_hash=data.get("fixture_pack_hash", ""),
             submission_version=data.get("submission_version", 1),
-            is_locked=data.get("is_locked", False),
             locked_snapshot=snap,
-            cases=cases,
+            _fixture_pack=fixture_pack,
+            _anchor_index=fixture_pack.to_packet_anchor_index(),
         )
 
 
 # ==============================================================================
-# A/B COMPARISON GATE (Task 10)
+# A/B COMPARISON GATE (Task 10 & Part J)
 # ==============================================================================
 
 class CalibrationComparisonView:
@@ -1031,13 +1391,13 @@ class CalibrationComparisonView:
         self.validate_current_state()
 
     def validate_current_state(self) -> None:
-        if not isinstance(self.reviewer_a_submission, CalibrationLockedSubmission):
+        if type(self.reviewer_a_submission) is not CalibrationLockedSubmission:
             raise CalibrationComparisonGateError(
-                f"reviewer_a_submission must be CalibrationLockedSubmission, got {type(self.reviewer_a_submission).__name__}"
+                f"reviewer_a_submission must be exact CalibrationLockedSubmission, got {type(self.reviewer_a_submission).__name__}"
             )
-        if not isinstance(self.reviewer_b_submission, CalibrationLockedSubmission):
+        if type(self.reviewer_b_submission) is not CalibrationLockedSubmission:
             raise CalibrationComparisonGateError(
-                f"reviewer_b_submission must be CalibrationLockedSubmission, got {type(self.reviewer_b_submission).__name__}"
+                f"reviewer_b_submission must be exact CalibrationLockedSubmission, got {type(self.reviewer_b_submission).__name__}"
             )
 
         self.reviewer_a_submission.validate_current_state()
@@ -1113,19 +1473,12 @@ class CalibrationComparisonView:
 
     @staticmethod
     def _is_exact_record_duplicate(rec_a: dict[str, Any], rec_b: dict[str, Any]) -> bool:
-        keys_to_compare = ("unit_type", "perspective_scope", "unit_text", "support_scope")
-        for k in keys_to_compare:
-            if rec_a.get(k) != rec_b.get(k):
-                return False
-        anchors_a = rec_a.get("evidence_anchors", [])
-        anchors_b = rec_b.get("evidence_anchors", [])
-        if len(anchors_a) != len(anchors_b):
-            return False
-        return canonical_json_dumps(anchors_a) == canonical_json_dumps(anchors_b)
+        """True exact duplicate check over complete stored record representations (Part J)."""
+        return canonical_json_dumps(rec_a) == canonical_json_dumps(rec_b)
 
 
 # ==============================================================================
-# CALIBRATION DISAGREEMENT LOG (Task 11 & 12)
+# CALIBRATION DISAGREEMENT LOG (Task 11 & 12, Part K, L)
 # ==============================================================================
 
 @dataclass
@@ -1170,10 +1523,25 @@ class CalibrationDisagreementEntry:
 
         if not isinstance(self.evidence_ids_considered, list):
             raise TypeError("evidence_ids_considered must be a list")
+        expected_ev_prefix = f"cal2cc:ev:{self.calibration_case_id}:"
+        for eid in self.evidence_ids_considered:
+            _require_non_empty_str(eid, "evidence_id in evidence_ids_considered")
+            if not eid.startswith(expected_ev_prefix):
+                raise CalibrationGateError(
+                    f"evidence_id '{eid}' does not belong to case '{self.calibration_case_id}' (expected prefix '{expected_ev_prefix}')"
+                )
+            if not CALIBRATION_EVIDENCE_ID_PATTERN.match(eid):
+                raise CalibrationGateError(f"evidence_id '{eid}' does not match required synthetic pattern")
+
         if not isinstance(self.protocol_sections_considered, list):
             raise TypeError("protocol_sections_considered must be a list")
+        for sec in self.protocol_sections_considered:
+            _require_non_empty_str(sec, "protocol_section in protocol_sections_considered")
+
         if not isinstance(self.participants, list):
             raise TypeError("participants must be a list")
+        for p in self.participants:
+            _require_non_empty_str(p, "participant in participants")
 
         if not isinstance(self.human_resolution, str):
             raise TypeError("human_resolution must be a str")
@@ -1211,14 +1579,24 @@ class CalibrationDisagreementEntry:
         clarification_refreeze_id: str = "",
         clarification_refreeze_attested: bool = False,
     ) -> None:
-        self.human_resolution = human_resolution
-        self.resolution_rationale = resolution_rationale
-        self.participants = participants
-        self.resolution_date = resolution_date
-        self.clarification_refreeze_id = clarification_refreeze_id
-        self.clarification_refreeze_attested = clarification_refreeze_attested
+        """Atomic resolution transition (Part L). Pre-validates candidate before updating self."""
+        candidate = copy.deepcopy(self)
+        candidate.human_resolution = human_resolution
+        candidate.resolution_rationale = resolution_rationale
+        candidate.participants = copy.deepcopy(participants)
+        candidate.resolution_date = resolution_date
+        candidate.clarification_refreeze_id = clarification_refreeze_id
+        candidate.clarification_refreeze_attested = clarification_refreeze_attested
+        candidate.status = "resolved"
+        candidate.validate_current_state()
+
+        self.human_resolution = candidate.human_resolution
+        self.resolution_rationale = candidate.resolution_rationale
+        self.participants = candidate.participants
+        self.resolution_date = candidate.resolution_date
+        self.clarification_refreeze_id = candidate.clarification_refreeze_id
+        self.clarification_refreeze_attested = candidate.clarification_refreeze_attested
         self.status = "resolved"
-        self.validate_current_state()
 
     def to_dict(self) -> dict[str, Any]:
         self.validate_current_state()
@@ -1265,9 +1643,11 @@ class CalibrationDisagreementEntry:
 
 @dataclass
 class CalibrationDisagreementLog:
-    """Container for human-entered calibration disagreements."""
+    """Container for human-entered calibration disagreements bound to exact reviewer submissions (Part K)."""
 
     fixture_pack_hash: str
+    reviewer_a_submission_hash: str = ""
+    reviewer_b_submission_hash: str = ""
     entries: list[CalibrationDisagreementEntry] = field(default_factory=list)
     calibration_design_id: str = CALIBRATION_DESIGN_ID
 
@@ -1277,6 +1657,10 @@ class CalibrationDisagreementLog:
                 f"calibration_design_id mismatch: '{self.calibration_design_id}' != '{CALIBRATION_DESIGN_ID}'"
             )
         _require_non_empty_str(self.fixture_pack_hash, "fixture_pack_hash")
+        if not isinstance(self.reviewer_a_submission_hash, str):
+            raise TypeError("reviewer_a_submission_hash must be a str")
+        if not isinstance(self.reviewer_b_submission_hash, str):
+            raise TypeError("reviewer_b_submission_hash must be a str")
         if not isinstance(self.entries, list):
             raise TypeError("entries must be a list")
         seen_ids: set[str] = set()
@@ -1290,6 +1674,18 @@ class CalibrationDisagreementLog:
 
     def __post_init__(self) -> None:
         self.validate_current_state()
+
+    @classmethod
+    def create_for_comparison(cls, comparison_view: CalibrationComparisonView) -> CalibrationDisagreementLog:
+        """Create a new disagreement log bound to exact Reviewer A & B locked submission hashes."""
+        comparison_view.validate_current_state()
+        return cls(
+            fixture_pack_hash=comparison_view.fixture_pack_hash,
+            reviewer_a_submission_hash=comparison_view.reviewer_a_submission.submission_hash,
+            reviewer_b_submission_hash=comparison_view.reviewer_b_submission.submission_hash,
+            entries=[],
+            calibration_design_id=comparison_view.reviewer_a_submission.calibration_design_id,
+        )
 
     def add_entry(self, entry: CalibrationDisagreementEntry) -> None:
         entry.validate_current_state()
@@ -1305,6 +1701,8 @@ class CalibrationDisagreementLog:
         return {
             "calibration_design_id": self.calibration_design_id,
             "fixture_pack_hash": self.fixture_pack_hash,
+            "reviewer_a_submission_hash": self.reviewer_a_submission_hash,
+            "reviewer_b_submission_hash": self.reviewer_b_submission_hash,
             "entries": [e.to_dict() for e in self.entries],
         }
 
@@ -1318,32 +1716,71 @@ class CalibrationDisagreementLog:
         return cls(
             calibration_design_id=data.get("calibration_design_id", CALIBRATION_DESIGN_ID),
             fixture_pack_hash=data.get("fixture_pack_hash", ""),
+            reviewer_a_submission_hash=data.get("reviewer_a_submission_hash", ""),
+            reviewer_b_submission_hash=data.get("reviewer_b_submission_hash", ""),
             entries=[CalibrationDisagreementEntry.from_dict(e) for e in entries_raw],
         )
 
 
 # ==============================================================================
-# CALIBRATION COMPLETION CHECKLIST & STOP CONDITIONS (Tasks 13 & 14)
+# CALIBRATION COMPLETION CHECKLIST & STOP CONDITIONS (Tasks 13 & 14, Part M, N)
 # ==============================================================================
 
-@dataclass
 class CalibrationCompletionChecklist:
     """Human-attested completion structure governing formal annotation readiness."""
 
-    fixture_pack: CalibrationFixturePack
-    reviewer_a_submission: CalibrationLockedSubmission
-    reviewer_b_submission: CalibrationLockedSubmission
-    disagreement_log: CalibrationDisagreementLog
-    all_eight_boundaries_reviewed: bool = False
-    boundary_05_07_08_distinction_reviewed: bool = False
-    reviewers_agree_rules_applicable: bool = False
-    no_calibration_artifact_model_exposed: bool = False
-    no_numerical_agreement_threshold_used: bool = False
-    attestor_a: str = ""
-    attestor_b: str = ""
-    attestation_notes: str = ""
-    calibration_design_id: str = CALIBRATION_DESIGN_ID
-    calibration_ready_for_formal_annotation: bool = False
+    def __init__(
+        self,
+        fixture_pack: CalibrationFixturePack,
+        reviewer_a_submission: CalibrationLockedSubmission,
+        reviewer_b_submission: CalibrationLockedSubmission,
+        disagreement_log: CalibrationDisagreementLog,
+        all_eight_boundaries_reviewed: bool = False,
+        boundary_05_07_08_distinction_reviewed: bool = False,
+        reviewers_agree_rules_applicable: bool = False,
+        no_calibration_artifact_model_exposed: bool = False,
+        no_numerical_agreement_threshold_used: bool = False,
+        attestor_a: str = "",
+        attestor_b: str = "",
+        attestation_notes: str = "",
+        calibration_design_id: str = CALIBRATION_DESIGN_ID,
+        calibration_ready_for_formal_annotation: bool = False,
+    ) -> None:
+        self.fixture_pack = fixture_pack
+        self.reviewer_a_submission = reviewer_a_submission
+        self.reviewer_b_submission = reviewer_b_submission
+        self.disagreement_log = disagreement_log
+        self.all_eight_boundaries_reviewed = all_eight_boundaries_reviewed
+        self.boundary_05_07_08_distinction_reviewed = boundary_05_07_08_distinction_reviewed
+        self.reviewers_agree_rules_applicable = reviewers_agree_rules_applicable
+        self.no_calibration_artifact_model_exposed = no_calibration_artifact_model_exposed
+        self.no_numerical_agreement_threshold_used = no_numerical_agreement_threshold_used
+        self.attestor_a = attestor_a
+        self.attestor_b = attestor_b
+        self.attestation_notes = attestation_notes
+        self.calibration_design_id = calibration_design_id
+        self._calibration_ready_for_formal_annotation: bool = False
+
+        self.validate_current_state()
+
+        if calibration_ready_for_formal_annotation:
+            self.validate_ready_for_completion()
+            self._calibration_ready_for_formal_annotation = True
+
+    @property
+    def calibration_ready_for_formal_annotation(self) -> bool:
+        """Non-forgeable readiness property (Part N). Revalidates completion gates if True."""
+        if not self._calibration_ready_for_formal_annotation:
+            return False
+        self.validate_ready_for_completion()
+        return True
+
+    @calibration_ready_for_formal_annotation.setter
+    def calibration_ready_for_formal_annotation(self, val: Any) -> None:
+        _require_bool(val, "calibration_ready_for_formal_annotation")
+        if val:
+            self.validate_ready_for_completion()
+        self._calibration_ready_for_formal_annotation = val
 
     def validate_current_state(self) -> None:
         if self.calibration_design_id != CALIBRATION_DESIGN_ID:
@@ -1356,7 +1793,6 @@ class CalibrationCompletionChecklist:
         _require_bool(self.reviewers_agree_rules_applicable, "reviewers_agree_rules_applicable")
         _require_bool(self.no_calibration_artifact_model_exposed, "no_calibration_artifact_model_exposed")
         _require_bool(self.no_numerical_agreement_threshold_used, "no_numerical_agreement_threshold_used")
-        _require_bool(self.calibration_ready_for_formal_annotation, "calibration_ready_for_formal_annotation")
 
         if not isinstance(self.attestor_a, str):
             raise TypeError(f"attestor_a must be str, got {type(self.attestor_a).__name__}")
@@ -1371,12 +1807,12 @@ class CalibrationCompletionChecklist:
         if self.fixture_pack.fixture_pack_canonical_sha256 is None:
             raise CalibrationGateError("fixture_pack must be frozen with a canonical SHA256")
 
-        if not isinstance(self.reviewer_a_submission, CalibrationLockedSubmission):
-            raise TypeError("reviewer_a_submission must be CalibrationLockedSubmission")
+        if type(self.reviewer_a_submission) is not CalibrationLockedSubmission:
+            raise TypeError("reviewer_a_submission must be exact CalibrationLockedSubmission")
         self.reviewer_a_submission.validate_current_state()
 
-        if not isinstance(self.reviewer_b_submission, CalibrationLockedSubmission):
-            raise TypeError("reviewer_b_submission must be CalibrationLockedSubmission")
+        if type(self.reviewer_b_submission) is not CalibrationLockedSubmission:
+            raise TypeError("reviewer_b_submission must be exact CalibrationLockedSubmission")
         self.reviewer_b_submission.validate_current_state()
 
         if not isinstance(self.disagreement_log, CalibrationDisagreementLog):
@@ -1396,15 +1832,41 @@ class CalibrationCompletionChecklist:
         if self.disagreement_log.fixture_pack_hash != f_hash:
             raise CalibrationGateError("disagreement_log fixture_pack_hash does not match fixture pack")
 
-        # Direct construction bypass prevention (Task 14 & 15)
-        if self.calibration_ready_for_formal_annotation:
+        # Disagreement log submission hash binding (Part K)
+        if self.disagreement_log.reviewer_a_submission_hash != self.reviewer_a_submission.submission_hash:
+            raise CalibrationGateError(
+                "disagreement_log reviewer_a_submission_hash does not match Reviewer A submission hash"
+            )
+        if self.disagreement_log.reviewer_b_submission_hash != self.reviewer_b_submission.submission_hash:
+            raise CalibrationGateError(
+                "disagreement_log reviewer_b_submission_hash does not match Reviewer B submission hash"
+            )
+
+        if self._calibration_ready_for_formal_annotation:
             self.validate_ready_for_completion()
 
-    def __post_init__(self) -> None:
-        self.validate_current_state()
-
     def validate_ready_for_completion(self) -> None:
-        """Master fail-closed validator for marking calibration complete."""
+        """Master fail-closed validator for marking calibration complete (Part M)."""
+        # Revalidate nested authority structures
+        self.fixture_pack.validate_current_state()
+        self.reviewer_a_submission.validate_current_state()
+        self.reviewer_b_submission.validate_current_state()
+        self.disagreement_log.validate_current_state()
+
+        f_hash = self.fixture_pack.fixture_pack_canonical_sha256
+        if f_hash is None:
+            raise CalibrationCompletionError("fixture_pack must be frozen")
+        if self.reviewer_a_submission.fixture_pack_hash != f_hash:
+            raise CalibrationCompletionError("Reviewer A fixture hash mismatch")
+        if self.reviewer_b_submission.fixture_pack_hash != f_hash:
+            raise CalibrationCompletionError("Reviewer B fixture hash mismatch")
+        if self.disagreement_log.fixture_pack_hash != f_hash:
+            raise CalibrationCompletionError("Disagreement log fixture hash mismatch")
+        if self.disagreement_log.reviewer_a_submission_hash != self.reviewer_a_submission.submission_hash:
+            raise CalibrationCompletionError("Disagreement log Reviewer A submission hash mismatch")
+        if self.disagreement_log.reviewer_b_submission_hash != self.reviewer_b_submission.submission_hash:
+            raise CalibrationCompletionError("Disagreement log Reviewer B submission hash mismatch")
+
         # 1. Human process attestations
         if not self.all_eight_boundaries_reviewed:
             raise CalibrationCompletionError("all_eight_boundaries_reviewed must be True")
@@ -1442,15 +1904,15 @@ class CalibrationCompletionChecklist:
     def mark_calibration_complete(self) -> None:
         """Mark calibration complete and ready for formal annotation transition."""
         self.validate_ready_for_completion()
-        self.calibration_ready_for_formal_annotation = True
+        self._calibration_ready_for_formal_annotation = True
 
     def to_dict(self) -> dict[str, Any]:
         self.validate_current_state()
-        if self.calibration_ready_for_formal_annotation:
+        if self._calibration_ready_for_formal_annotation:
             self.validate_ready_for_completion()
         return {
             "calibration_design_id": self.calibration_design_id,
-            "calibration_ready_for_formal_annotation": self.calibration_ready_for_formal_annotation,
+            "calibration_ready_for_formal_annotation": self._calibration_ready_for_formal_annotation,
             "all_eight_boundaries_reviewed": self.all_eight_boundaries_reviewed,
             "boundary_05_07_08_distinction_reviewed": self.boundary_05_07_08_distinction_reviewed,
             "reviewers_agree_rules_applicable": self.reviewers_agree_rules_applicable,
@@ -1470,8 +1932,8 @@ class CalibrationCompletionChecklist:
         if not isinstance(data, dict):
             raise TypeError("Expected dict for CalibrationCompletionChecklist")
         fp = CalibrationFixturePack.from_dict(data.get("fixture_pack", {}))
-        sub_a = CalibrationLockedSubmission.from_dict(data.get("reviewer_a_submission", {}))
-        sub_b = CalibrationLockedSubmission.from_dict(data.get("reviewer_b_submission", {}))
+        sub_a = load_verified_locked_submission(data.get("reviewer_a_submission", {}), fp)
+        sub_b = load_verified_locked_submission(data.get("reviewer_b_submission", {}), fp)
         d_log = CalibrationDisagreementLog.from_dict(data.get("disagreement_log", {}))
         return cls(
             calibration_design_id=data.get("calibration_design_id", CALIBRATION_DESIGN_ID),

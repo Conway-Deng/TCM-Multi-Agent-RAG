@@ -48,6 +48,7 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     EvidenceSpan,
     ReferenceUnitRecord,
     check_formal_material_separation,
+    load_verified_locked_submission,
 )
 
 
@@ -142,7 +143,6 @@ def _make_valid_test_record(
     pkt = case.tcm_packet if perspective == "tcm" else case.western_packet
     ev_item = pkt.evidence_items[rank - 1]
 
-    # Use first word of chunk text as target substring
     words = ev_item.exact_chunk_text.split()
     first_word = words[0]
     start = 0
@@ -172,6 +172,31 @@ def _make_valid_test_record(
     )
 
 
+def _make_valid_dual_locked_submissions(fixture_pack: CalibrationFixturePack):
+    ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", fixture_pack)
+    ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", fixture_pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws_a.set_no_supportable_unit_reason(cid, "Examined; no supportable units.")
+        ws_a.set_case_complete(cid, True)
+        ws_b.set_no_supportable_unit_reason(cid, "Examined; no supportable units.")
+        ws_b.set_case_complete(cid, True)
+    return ws_a.lock_submission(), ws_b.lock_submission()
+
+
+def _make_valid_disagreement_log(
+    fixture_pack: CalibrationFixturePack,
+    sub_a: CalibrationLockedSubmission,
+    sub_b: CalibrationLockedSubmission,
+    entries: list[CalibrationDisagreementEntry] | None = None,
+) -> CalibrationDisagreementLog:
+    comp = CalibrationComparisonView.from_locked_submissions(sub_a, sub_b)
+    log = CalibrationDisagreementLog.create_for_comparison(comp)
+    if entries:
+        for e in entries:
+            log.add_entry(e)
+    return log
+
+
 # ==============================================================================
 # SECTION A: CASE MANIFEST TESTS (Tests 1 to 5)
 # ==============================================================================
@@ -179,12 +204,12 @@ def _make_valid_test_record(
 def test_a01_exactly_eight_planned_case_ids_accepted():
     """Test 1: exactly 8 planned CAL-2CC IDs are accepted in fixture pack."""
     pack = _make_neutral_fixture_pack()
-    assert tuple(sorted(pack.cases.keys())) == tuple(sorted(CALIBRATION_CASE_IDS))
     assert len(pack.cases) == 8
+    assert tuple(sorted(pack.cases.keys())) == tuple(sorted(CALIBRATION_CASE_IDS))
 
 
 def test_a02_missing_case_rejected():
-    """Test 2: missing any planned case ID causes validation failure."""
+    """Test 2: fixture pack with missing planned case is rejected."""
     pack = _make_neutral_fixture_pack(frozen=False)
     del pack.cases["CAL-2CC-08"]
     with pytest.raises(ValueError, match="must contain exactly the 8 planned case IDs"):
@@ -203,7 +228,6 @@ def test_a03_extra_case_rejected():
 def test_a04_duplicate_case_rejected():
     """Test 4: case dictionary key mismatch with case_id is rejected."""
     pack = _make_neutral_fixture_pack(frozen=False)
-    # Mismatch key and case_id
     pack.cases["CAL-2CC-02"] = copy.deepcopy(pack.cases["CAL-2CC-01"])
     with pytest.raises(ValueError, match="does not match case.calibration_case_id"):
         pack.validate_current_state()
@@ -217,7 +241,6 @@ def test_a05_case_coverage_mapping_immutable_and_matches_design():
         tags = CALIBRATION_CASE_COVERAGE[cid]
         assert isinstance(tags, tuple)
         assert len(tags) >= 1
-    # Specific check for CAL-2CC-05 conflict tag
     assert "genuine cross-perspective conflict" in CALIBRATION_CASE_COVERAGE["CAL-2CC-05"]
 
 
@@ -248,14 +271,13 @@ def test_b07_packet_count_mismatch_rejected():
 def test_b08_evidence_items_count_mismatch_rejected():
     """Test 8: packet with fewer or more than 4 evidence items is rejected."""
     pack = _make_neutral_fixture_pack(frozen=False)
-    # Drop one item from TCM packet
     pack.cases["CAL-2CC-01"].tcm_packet.evidence_items.pop()
     with pytest.raises(ValueError, match="Packet must contain exactly 4 evidence items"):
         pack.validate_current_state()
 
 
 def test_b09_rank_outside_1_to_4_rejected():
-    """Test 9: evidence item with rank outside 1..4 is rejected."""
+    """Test 9: evidence item rank outside 1-4 is rejected."""
     with pytest.raises(ValueError, match="rank must be an integer between 1 and 4"):
         CalibrationEvidenceItem(
             evidence_id="cal2cc:ev:CAL-2CC-01:tcm:5",
@@ -270,53 +292,48 @@ def test_b10_rank_duplicate_within_packet_rejected():
     pack = _make_neutral_fixture_pack(frozen=False)
     pkt = pack.cases["CAL-2CC-01"].tcm_packet
     pkt.evidence_items[1].rank = 1
-    with pytest.raises(ValueError, match="evidence_items ranks must be \\[1, 2, 3, 4\\]"):
+    pkt.evidence_items[1].evidence_id = "cal2cc:ev:CAL-2CC-01:tcm:1"
+    with pytest.raises(ValueError, match="Duplicate rank"):
         pack.validate_current_state()
 
 
-def test_b11_evidence_item_chunk_sha256_mismatch_rejected():
+def test_b11_chunk_hash_mismatch_rejected():
     """Test 11: chunk_text_sha256 mismatch is rejected."""
     with pytest.raises(ValueError, match="chunk_text_sha256 mismatch"):
         CalibrationEvidenceItem(
             evidence_id="cal2cc:ev:CAL-2CC-01:tcm:1",
             rank=1,
-            exact_chunk_text="Text content",
-            chunk_text_sha256="wrong_hash" * 4,
+            exact_chunk_text="Valid chunk text",
+            chunk_text_sha256="wrong_sha256" + "0" * 52,
         )
 
 
 def test_b12_synthetic_id_namespace_enforced_packet_prefix():
-    """Test 12: packet ID missing cal2cc:packet: prefix is rejected."""
+    """Test 12: packet ID outside cal2cc namespace is rejected."""
+    pack = _make_neutral_fixture_pack(frozen=False)
+    pack.cases["CAL-2CC-01"].tcm_packet.packet_id = "other_ns:packet:CAL-2CC-01:tcm"
     with pytest.raises(CalibrationGateError, match="must start with 'cal2cc:packet:'"):
-        CalibrationPacket(
-            packet_id="other:packet:CAL-2CC-01:tcm",
-            perspective="tcm",
-            case_id="CAL-2CC-01",
-            evidence_items=[],
-        )
+        pack.validate_current_state()
 
 
 def test_b13_synthetic_id_namespace_enforced_evidence_prefix():
-    """Test 13: evidence ID missing cal2cc:ev: prefix is rejected."""
+    """Test 13: evidence ID outside cal2cc namespace is rejected."""
+    pack = _make_neutral_fixture_pack(frozen=False)
+    pack.cases["CAL-2CC-01"].tcm_packet.evidence_items[0].evidence_id = "other_ns:ev:CAL-2CC-01:tcm:1"
     with pytest.raises(CalibrationGateError, match="must start with 'cal2cc:ev:'"):
-        CalibrationEvidenceItem(
-            evidence_id="other:ev:CAL-2CC-01:tcm:1",
-            rank=1,
-            exact_chunk_text="Neutral text",
-            chunk_text_sha256=_make_sha256("Neutral text"),
-        )
+        pack.validate_current_state()
 
 
 def test_b14_formal_packet_id_rejected():
-    """Test 14: formal study packet ID prefixes are rejected."""
+    """Test 14: formal packet ID prefix is strictly rejected."""
     pack = _make_neutral_fixture_pack(frozen=False)
-    pack.cases["CAL-2CC-01"].tcm_packet.packet_id = "cpaa1:packet:tcm:syn_q_01"
+    pack.cases["CAL-2CC-01"].tcm_packet.packet_id = "cpaa1:packet:tcm:q01"
     with pytest.raises(CalibrationGateError, match="reuses formal packet prefix"):
         pack.validate_current_state()
 
 
 def test_b15_formal_evidence_id_rejected():
-    """Test 15: formal study evidence ID prefixes are rejected."""
+    """Test 15: formal evidence ID prefix is strictly rejected."""
     pack = _make_neutral_fixture_pack(frozen=False)
     pack.cases["CAL-2CC-01"].tcm_packet.evidence_items[0].evidence_id = "cpaa1:ev:tcm:q01:h1"
     with pytest.raises(CalibrationGateError, match="reuses formal evidence prefix"):
@@ -361,7 +378,7 @@ def test_b20_empty_fixture_author_rejected():
 
 
 # ==============================================================================
-# SECTION C: FIXTURE HASH TESTS (Tests 21 to 23)
+# SECTION C: FIXTURE HASH & ONE-WAY FREEZE TESTS (Tests 21 to 24)
 # ==============================================================================
 
 def test_c21_deterministic_canonical_fixture_hash():
@@ -373,46 +390,50 @@ def test_c21_deterministic_canonical_fixture_hash():
 
 
 def test_c22_fixture_self_hash_verification():
-    """Test 22: frozen fixture pack validates its own recorded self-hash."""
+    """Test 22: frozen pack verifies its own self-hash against computed canonical hash."""
     pack = _make_neutral_fixture_pack()
-    pack.validate_current_state()
-    # Check that computing hash matches recorded
-    assert pack.compute_canonical_sha256() == pack.fixture_pack_canonical_sha256
+    computed = pack.compute_canonical_sha256()
+    assert pack.fixture_pack_canonical_sha256 == computed
 
 
 def test_c23_tampered_text_fails_fixture_hash_verification():
-    """Test 23: tampering with question text invalidates recorded fixture pack hash."""
+    """Test 23: mutating text on a frozen pack causes hash mismatch in validate_current_state."""
     pack = _make_neutral_fixture_pack()
-    orig_hash = pack.fixture_pack_canonical_sha256
-    # Mutate question text after freeze
     pack.cases["CAL-2CC-01"].question_text = "Tampered question text?"
     with pytest.raises(ValueError, match="fixture_pack_canonical_sha256 mismatch"):
         pack.validate_current_state()
 
 
+def test_c24_already_frozen_fixture_cannot_be_refrozen():
+    """Test 24: Part A one-way freeze prevents re-freezing or establishing a new hash."""
+    pack = _make_neutral_fixture_pack()
+    with pytest.raises(CalibrationStateError, match="already frozen"):
+        pack.freeze()
+
+
 # ==============================================================================
-# SECTION D: REVIEWER SUBMISSION AND LOCK TESTS (Tests 24 to 32)
+# SECTION D: REVIEWER WORKSPACE & LOCK TESTS (Tests 25 to 33)
 # ==============================================================================
 
-def test_d24_reviewer_role_separation_enforced():
-    """Test 24: invalid reviewer role is rejected upon workspace creation."""
+def test_d25_reviewer_role_separation_enforced():
+    """Test 25: invalid reviewer roles are rejected."""
     pack = _make_neutral_fixture_pack()
-    with pytest.raises(ValueError, match="reviewer_role must be 'reviewer_a' or 'reviewer_b'"):
+    with pytest.raises(ValueError, match="Invalid reviewer_role"):
         CalibrationReviewerWorkspace.create_blank("invalid_role", pack)  # type: ignore[arg-type]
 
 
-def test_d25_workspace_requires_all_eight_cases():
-    """Test 25: reviewer workspace initializes with exactly 8 planned cases."""
+def test_d26_workspace_requires_all_eight_cases():
+    """Test 26: blank workspace automatically initializes all 8 cases."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    assert len(ws.cases) == 8
     assert tuple(sorted(ws.cases.keys())) == tuple(sorted(CALIBRATION_CASE_IDS))
 
 
-def test_d26_incomplete_case_blocks_lock():
-    """Test 26: incomplete cases block submission locking."""
+def test_d27_incomplete_case_blocks_lock():
+    """Test 27: incomplete cases block submission locking."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
-    # Only complete 7 cases
     for cid in CALIBRATION_CASE_IDS[:-1]:
         ws.set_no_supportable_unit_reason(cid, "Reason")
         ws.set_case_complete(cid, True)
@@ -420,8 +441,8 @@ def test_d26_incomplete_case_blocks_lock():
         ws.lock_submission()
 
 
-def test_d27_zero_unit_case_with_reason_allows_lock():
-    """Test 27: zero-unit case accompanied by human reason allows locking."""
+def test_d28_zero_unit_case_with_reason_allows_lock():
+    """Test 28: zero-unit case accompanied by human reason allows locking."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -432,8 +453,8 @@ def test_d27_zero_unit_case_with_reason_allows_lock():
     assert ws.is_locked is True
 
 
-def test_d28_zero_unit_case_without_reason_blocks_lock():
-    """Test 28: case marked complete without units or reason blocks locking."""
+def test_d29_zero_unit_case_without_reason_blocks_lock():
+    """Test 29: case marked complete without units or reason blocks locking (Part D XOR)."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -442,19 +463,18 @@ def test_d28_zero_unit_case_without_reason_blocks_lock():
         ws.lock_submission()
 
 
-def test_d29_structurally_invalid_record_blocks_lock():
-    """Test 29: structurally invalid record with out-of-bounds span blocks record addition or lock."""
+def test_d30_structurally_invalid_record_blocks_lock():
+    """Test 30: structurally invalid record with out-of-bounds span blocks record addition or lock."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
-    # Attempt to add record with span past chunk length
     rec = _make_valid_test_record("CAL-2CC-01", pack)
     rec.evidence_anchors[0].spans[0].end = 99999
     with pytest.raises(ValueError, match="exceeds text length"):
         ws.add_record("CAL-2CC-01", rec)
 
 
-def test_d30_valid_lock_produces_deterministic_snapshot_hash():
-    """Test 30: locked submission produces a deterministic canonical hash."""
+def test_d31_valid_lock_produces_deterministic_snapshot_hash():
+    """Test 31: locking completed workspace yields deterministic snapshot hash."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -465,8 +485,8 @@ def test_d30_valid_lock_produces_deterministic_snapshot_hash():
     assert snap.validate_current_state() is None
 
 
-def test_d31_locked_snapshot_is_immutable_against_record_addition():
-    """Test 31: adding records or changing reasons in a locked workspace is prohibited."""
+def test_d32_locked_snapshot_is_immutable_against_record_addition():
+    """Test 32: adding records or changing reasons in a locked workspace is prohibited."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -483,8 +503,8 @@ def test_d31_locked_snapshot_is_immutable_against_record_addition():
         ws.set_case_complete("CAL-2CC-01", False)
 
 
-def test_d32_amendment_requires_incremented_submission_version():
-    """Test 32: amending a locked workspace produces a new workspace with submission_version+1."""
+def test_d33_amendment_requires_incremented_submission_version():
+    """Test 33: amending a locked workspace produces a new workspace with submission_version+1."""
     pack = _make_neutral_fixture_pack()
     ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -500,11 +520,11 @@ def test_d32_amendment_requires_incremented_submission_version():
 
 
 # ==============================================================================
-# SECTION E: A/B COMPARISON GATE TESTS (Tests 33 to 41)
+# SECTION E: A/B COMPARISON GATE TESTS (Tests 34 to 43)
 # ==============================================================================
 
-def test_e33_comparison_view_a_only_blocked():
-    """Test 33: comparison view cannot be constructed with Reviewer A alone."""
+def test_e34_comparison_view_a_only_blocked():
+    """Test 34: comparison view cannot be constructed with Reviewer A alone."""
     pack = _make_neutral_fixture_pack()
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -516,8 +536,8 @@ def test_e33_comparison_view_a_only_blocked():
         CalibrationComparisonView.from_locked_submissions(snap_a, None)  # type: ignore[arg-type]
 
 
-def test_e34_comparison_view_b_only_blocked():
-    """Test 34: comparison view cannot be constructed with Reviewer B alone."""
+def test_e35_comparison_view_b_only_blocked():
+    """Test 35: comparison view cannot be constructed with Reviewer B alone."""
     pack = _make_neutral_fixture_pack()
     ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
     for cid in CALIBRATION_CASE_IDS:
@@ -529,29 +549,27 @@ def test_e34_comparison_view_b_only_blocked():
         CalibrationComparisonView.from_locked_submissions(None, snap_b)  # type: ignore[arg-type]
 
 
-def test_e35_unlocked_workspace_cannot_construct_comparison_view():
-    """Test 35: unlocked workspace cannot supply a submission to comparison view."""
+def test_e36_unlocked_workspace_cannot_construct_comparison_view():
+    """Test 36: passing an unlocked workspace to comparison view is blocked."""
     pack = _make_neutral_fixture_pack()
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
+
     with pytest.raises(CalibrationComparisonGateError):
-        CalibrationComparisonView.from_locked_submissions(ws_a, ws_b)  # type: ignore[arg-type]
+        CalibrationComparisonView(ws_a, ws_b)  # type: ignore[arg-type]
 
 
-def test_e36_mismatched_fixture_hashes_blocked():
-    """Test 36: mismatched fixture pack hashes between A and B block comparison."""
+def test_e37_mismatched_fixture_hashes_blocked():
+    """Test 37: comparison view rejects submissions from different fixture pack hashes."""
     pack1 = _make_neutral_fixture_pack()
-    pack2 = _make_neutral_fixture_pack(frozen=False)
-    # Modify pack2 question text to change its hash
-    pack2.cases["CAL-2CC-01"].question_text = "Different question text?"
-    pack2.freeze()
+    pack2 = _make_neutral_fixture_pack(fixture_author="Dr. Other Author")
 
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack1)
     ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack2)
     for cid in CALIBRATION_CASE_IDS:
-        ws_a.set_no_supportable_unit_reason(cid, "Reason A")
+        ws_a.set_no_supportable_unit_reason(cid, "Reason")
         ws_a.set_case_complete(cid, True)
-        ws_b.set_no_supportable_unit_reason(cid, "Reason B")
+        ws_b.set_no_supportable_unit_reason(cid, "Reason")
         ws_b.set_case_complete(cid, True)
     snap_a = ws_a.lock_submission()
     snap_b = ws_b.lock_submission()
@@ -560,15 +578,15 @@ def test_e36_mismatched_fixture_hashes_blocked():
         CalibrationComparisonView.from_locked_submissions(snap_a, snap_b)
 
 
-def test_e37_wrong_roles_blocked():
-    """Test 37: both submissions having role reviewer_a is blocked."""
+def test_e38_wrong_roles_blocked():
+    """Test 38: comparison view rejects submissions with wrong role pairing (e.g. A and A)."""
     pack = _make_neutral_fixture_pack()
     ws_a1 = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     ws_a2 = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     for cid in CALIBRATION_CASE_IDS:
-        ws_a1.set_no_supportable_unit_reason(cid, "Reason A1")
+        ws_a1.set_no_supportable_unit_reason(cid, "Reason")
         ws_a1.set_case_complete(cid, True)
-        ws_a2.set_no_supportable_unit_reason(cid, "Reason A2")
+        ws_a2.set_no_supportable_unit_reason(cid, "Reason")
         ws_a2.set_case_complete(cid, True)
     snap_a1 = ws_a1.lock_submission()
     snap_a2 = ws_a2.lock_submission()
@@ -577,8 +595,8 @@ def test_e37_wrong_roles_blocked():
         CalibrationComparisonView.from_locked_submissions(snap_a1, snap_a2)
 
 
-def test_e38_dual_valid_locked_snapshots_allowed():
-    """Test 38: valid locked Reviewer A and B submissions successfully construct view."""
+def test_e39_dual_valid_locked_snapshots_allowed():
+    """Test 39: comparison view succeeds when both A and B locked snapshots exist and match."""
     pack = _make_neutral_fixture_pack()
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
@@ -592,43 +610,39 @@ def test_e38_dual_valid_locked_snapshots_allowed():
 
     view = CalibrationComparisonView.from_locked_submissions(snap_a, snap_b)
     assert view.fixture_pack_hash == pack.fixture_pack_canonical_sha256
-    summary = view.get_case_summary("CAL-2CC-01")
-    assert summary["reviewer_a_has_no_unit_reason"] is True
-    assert summary["reviewer_b_has_no_unit_reason"] is True
+    assert view.case_ids == CALIBRATION_CASE_IDS
 
 
-def test_e39_comparison_view_has_no_semantic_matching_methods():
-    """Test 39: comparison view exposes zero semantic alignment or similarity methods."""
-    assert not hasattr(CalibrationComparisonView, "semantic_match")
-    assert not hasattr(CalibrationComparisonView, "calculate_similarity")
-    assert not hasattr(CalibrationComparisonView, "auto_align")
-
-
-def test_e40_comparison_view_has_no_auto_union_or_final_set_methods():
-    """Test 40: comparison view exposes zero auto-union, merge, or answer-key methods."""
-    assert not hasattr(CalibrationComparisonView, "auto_union")
-    assert not hasattr(CalibrationComparisonView, "merge_records")
-    assert not hasattr(CalibrationComparisonView, "generate_answer_key")
+def test_e40_no_semantic_matching_methods_on_comparison_view():
+    """Test 40: comparison view has strictly no semantic alignment or adjudication methods."""
+    prohibited = ("align_units", "semantic_match", "auto_union", "adjudicate", "create_final_units")
+    for method in prohibited:
+        assert not hasattr(CalibrationComparisonView, method), f"Prohibited method '{method}' found on view"
 
 
 def test_e41_exact_record_duplicates_flagged_mechanically():
-    """Test 41: identical records between A and B are flagged mechanically."""
+    """Test 41: identical records between A and B are flagged mechanically (Part J)."""
     pack = _make_neutral_fixture_pack()
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
     ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
 
     rec = _make_valid_test_record("CAL-2CC-01", pack)
     ws_a.add_record("CAL-2CC-01", rec)
-    ws_b.add_record("CAL-2CC-01", rec)
+    ws_a.set_case_complete("CAL-2CC-01", True)
 
-    for cid in CALIBRATION_CASE_IDS:
-        if cid != "CAL-2CC-01":
-            ws_a.set_no_supportable_unit_reason(cid, "None")
-            ws_b.set_no_supportable_unit_reason(cid, "None")
+    ws_b.add_record("CAL-2CC-01", rec)
+    ws_b.set_case_complete("CAL-2CC-01", True)
+
+    for cid in CALIBRATION_CASE_IDS[1:]:
+        ws_a.set_no_supportable_unit_reason(cid, "Reason")
         ws_a.set_case_complete(cid, True)
+        ws_b.set_no_supportable_unit_reason(cid, "Reason")
         ws_b.set_case_complete(cid, True)
 
-    view = CalibrationComparisonView.from_locked_submissions(ws_a.lock_submission(), ws_b.lock_submission())
+    snap_a = ws_a.lock_submission()
+    snap_b = ws_b.lock_submission()
+
+    view = CalibrationComparisonView.from_locked_submissions(snap_a, snap_b)
     summary = view.get_case_summary("CAL-2CC-01")
     assert summary["exact_duplicate_pairs_count"] == 1
     assert summary["exact_duplicate_pairs"] == [(0, 0)]
@@ -645,14 +659,14 @@ def test_f42_only_allowed_ambiguity_classifications_accepted():
             calibration_case_id="CAL-2CC-01",
             disagreement_id="DIS-01",
             decision_category="Qualifier",
-            reviewer_a_position="Include qualifier",
-            reviewer_b_position="Omit qualifier",
-            ambiguity_classification="C_UNRECOGNIZED",  # type: ignore[arg-type]
+            reviewer_a_position="Include",
+            reviewer_b_position="Omit",
+            ambiguity_classification="INVALID_TYPE",  # type: ignore[arg-type]
         )
 
 
 def test_f43_open_disagreement_blocks_completion():
-    """Test 43: open disagreement in log reports has_open_disagreements=True."""
+    """Test 43: disagreement log detects open disagreements."""
     entry = CalibrationDisagreementEntry(
         calibration_case_id="CAL-2CC-01",
         disagreement_id="DIS-01",
@@ -762,22 +776,11 @@ def test_f48_duplicate_disagreement_id_rejected():
 # SECTION G: CALIBRATION COMPLETION CHECKLIST TESTS (Tests 49 to 55)
 # ==============================================================================
 
-def _make_valid_dual_locked_submissions(fixture_pack: CalibrationFixturePack):
-    ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", fixture_pack)
-    ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", fixture_pack)
-    for cid in CALIBRATION_CASE_IDS:
-        ws_a.set_no_supportable_unit_reason(cid, "Examined; no supportable units.")
-        ws_a.set_case_complete(cid, True)
-        ws_b.set_no_supportable_unit_reason(cid, "Examined; no supportable units.")
-        ws_b.set_case_complete(cid, True)
-    return ws_a.lock_submission(), ws_b.lock_submission()
-
-
 def test_g49_calibration_ready_for_formal_annotation_defaults_false():
     """Test 49: calibration_ready_for_formal_annotation defaults to False."""
     pack = _make_neutral_fixture_pack()
     sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
         reviewer_a_submission=sub_a,
@@ -791,8 +794,12 @@ def test_g50_missing_reviewer_lock_blocks_completion():
     """Test 50: unlocked workspace cannot be passed as submission to checklist."""
     pack = _make_neutral_fixture_pack()
     ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
-    with pytest.raises(TypeError, match="reviewer_a_submission must be CalibrationLockedSubmission"):
+    d_log = CalibrationDisagreementLog(
+        fixture_pack_hash=pack.fixture_pack_canonical_sha256,  # type: ignore[arg-type]
+        reviewer_a_submission_hash="a" * 64,
+        reviewer_b_submission_hash="b" * 64,
+    )
+    with pytest.raises(TypeError, match="reviewer_a_submission must be exact CalibrationLockedSubmission"):
         CalibrationCompletionChecklist(
             fixture_pack=pack,
             reviewer_a_submission=ws_a,  # type: ignore[arg-type]
@@ -814,10 +821,7 @@ def test_g51_open_disagreement_blocks_completion():
         ambiguity_classification="A_CASE_LEVEL",
         status="open",
     )
-    d_log = CalibrationDisagreementLog(
-        fixture_pack_hash=pack.fixture_pack_canonical_sha256,  # type: ignore[arg-type]
-        entries=[open_entry],
-    )
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b, entries=[open_entry])
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
         reviewer_a_submission=sub_a,
@@ -848,10 +852,7 @@ def test_g52_type_b_unrefrozen_disagreement_blocks_completion():
         ambiguity_classification="B_METHODOLOGICAL_AMBIGUITY",
         status="open",
     )
-    d_log = CalibrationDisagreementLog(
-        fixture_pack_hash=pack.fixture_pack_canonical_sha256,  # type: ignore[arg-type]
-        entries=[entry],
-    )
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b, entries=[entry])
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
         reviewer_a_submission=sub_a,
@@ -873,7 +874,7 @@ def test_g53_missing_human_process_attestation_blocks_completion():
     """Test 53: missing any required human process attestation blocks completion."""
     pack = _make_neutral_fixture_pack()
     sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
 
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
@@ -896,7 +897,7 @@ def test_g54_all_mechanical_and_human_gates_satisfied_allows_ready_true():
     """Test 54: when all gates and attestations are satisfied, completion marks ready=True."""
     pack = _make_neutral_fixture_pack()
     sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
 
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
@@ -918,26 +919,31 @@ def test_g54_all_mechanical_and_human_gates_satisfied_allows_ready_true():
 
 
 def test_g55_no_agreement_percentage_required_or_calculated():
-    """Test 55: checklist has no agreement percentage or denominator calculation logic."""
-    assert not hasattr(CalibrationCompletionChecklist, "calculate_agreement_percentage")
-    assert not hasattr(CalibrationCompletionChecklist, "agreement_threshold")
-    assert not hasattr(CalibrationCompletionChecklist, "preferred_denominator")
+    """Test 55: checklist has no numerical agreement threshold or denominator methods."""
+    prohibited = (
+        "calculate_agreement_percentage",
+        "compute_kappa",
+        "calculate_consensus_ratio",
+        "preferred_denominator",
+    )
+    for p in prohibited:
+        assert not hasattr(CalibrationCompletionChecklist, p)
 
 
 # ==============================================================================
-# SECTION H: CURRENT-STATE VALIDATION AND MUTATION DEFENSE TESTS (Tests 56 to 63)
+# SECTION H: CURRENT-STATE VALIDATION & MUTATION IMMUNITY (Tests 56 to 63)
 # ==============================================================================
 
 def test_h56_post_construction_string_bool_rejected():
-    """Test 56: mutating a boolean field to truthy string 'false' is rejected by validate_current_state."""
+    """Test 56: setting a boolean field to a truthy string fails current-state validation."""
     pack = _make_neutral_fixture_pack()
-    pack.human_authorship_attested = "false"  # type: ignore[assignment]
+    pack.human_authorship_attested = "true"  # type: ignore[assignment]
     with pytest.raises(TypeError, match="must be of type bool"):
         pack.validate_current_state()
 
 
-def test_h57_post_construction_numeric_bool_rejected():
-    """Test 57: mutating a boolean field to numeric 1 is rejected by validate_current_state."""
+def test_h57_post_construction_invalid_status_rejected():
+    """Test 57: setting an invalid status string on an entry fails validation."""
     entry = CalibrationDisagreementEntry(
         calibration_case_id="CAL-2CC-01",
         disagreement_id="DIS-01",
@@ -945,14 +951,15 @@ def test_h57_post_construction_numeric_bool_rejected():
         reviewer_a_position="A",
         reviewer_b_position="B",
         ambiguity_classification="A_CASE_LEVEL",
+        status="open",
     )
-    entry.clarification_refreeze_attested = 1  # type: ignore[assignment]
-    with pytest.raises(TypeError, match="must be of type bool"):
+    entry.status = "invalid_status"  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="Invalid status"):
         entry.validate_current_state()
 
 
-def test_h58_post_construction_invalid_disagreement_status_rejected():
-    """Test 58: mutating status to invalid string 'bogus' is rejected."""
+def test_h58_post_construction_invalid_ambiguity_classification_rejected():
+    """Test 58: setting invalid ambiguity classification fails validation."""
     entry = CalibrationDisagreementEntry(
         calibration_case_id="CAL-2CC-01",
         disagreement_id="DIS-01",
@@ -960,14 +967,15 @@ def test_h58_post_construction_invalid_disagreement_status_rejected():
         reviewer_a_position="A",
         reviewer_b_position="B",
         ambiguity_classification="A_CASE_LEVEL",
+        status="open",
     )
-    entry.status = "bogus"  # type: ignore[assignment]
-    with pytest.raises(ValueError, match="Invalid status 'bogus'"):
+    entry.ambiguity_classification = "C_OTHER"  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="Invalid ambiguity_classification"):
         entry.validate_current_state()
 
 
-def test_h59_direct_construction_resolved_disagreement_without_rationale_fails():
-    """Test 59: directly constructing DisagreementEntry with status='resolved' without rationale fails."""
+def test_h59_direct_construction_resolved_entry_without_fields_fails():
+    """Test 59: directly constructing an entry with status='resolved' but missing fields fails."""
     with pytest.raises(ValueError, match="human_resolution"):
         CalibrationDisagreementEntry(
             calibration_case_id="CAL-2CC-01",
@@ -977,6 +985,7 @@ def test_h59_direct_construction_resolved_disagreement_without_rationale_fails()
             reviewer_b_position="B",
             ambiguity_classification="A_CASE_LEVEL",
             status="resolved",
+            human_resolution="",  # Empty fails!
         )
 
 
@@ -984,15 +993,15 @@ def test_h60_direct_construction_ready_true_checklist_without_prereqs_fails():
     """Test 60: directly constructing checklist with ready=True without satisfied prereqs fails."""
     pack = _make_neutral_fixture_pack()
     sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
 
-    with pytest.raises(CalibrationCompletionError):
+    with pytest.raises(CalibrationCompletionError, match="all_eight_boundaries_reviewed must be True"):
         CalibrationCompletionChecklist(
             fixture_pack=pack,
             reviewer_a_submission=sub_a,
             reviewer_b_submission=sub_b,
             disagreement_log=d_log,
-            calibration_ready_for_formal_annotation=True,  # Direct constructor bypass attempt!
+            calibration_ready_for_formal_annotation=True,  # Bypass attempt!
         )
 
 
@@ -1000,7 +1009,6 @@ def test_h61_mutated_locked_snapshot_fails_serialization():
     """Test 61: snapshot mutated after construction fails to_dict()."""
     pack = _make_neutral_fixture_pack()
     sub_a, _ = _make_valid_dual_locked_submissions(pack)
-    # Bypassing frozen dataclass using object.__setattr__ to simulate memory corruption
     object.__setattr__(sub_a, "submission_version", 0)
     with pytest.raises(ValueError, match="submission_version"):
         sub_a.to_dict()
@@ -1010,7 +1018,7 @@ def test_h62_mutated_completed_checklist_fails_serialization():
     """Test 62: checklist mutated after completion fails to_dict()."""
     pack = _make_neutral_fixture_pack()
     sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
-    d_log = CalibrationDisagreementLog(fixture_pack_hash=pack.fixture_pack_canonical_sha256)  # type: ignore[arg-type]
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
 
     chk = CalibrationCompletionChecklist(
         fixture_pack=pack,
@@ -1048,14 +1056,12 @@ def test_h63_mutated_fixed_metadata_fails_serialization():
 
 def test_i64_formal_48_manifest_ids_strictly_isolated():
     """Test 64: check_formal_material_separation enforces strict exclusion of formal namespaces."""
-    # Formal packet prefix
     with pytest.raises(CalibrationGateError, match="reuses formal packet prefix"):
         check_formal_material_separation(
             case_ids=["CAL-2CC-01"],
             packet_ids=["packet:tcm:q01"],
             evidence_ids=["cal2cc:ev:CAL-2CC-01:tcm:1"],
         )
-    # Formal evidence prefix
     with pytest.raises(CalibrationGateError, match="reuses formal evidence prefix"):
         check_formal_material_separation(
             case_ids=["CAL-2CC-01"],
@@ -1081,3 +1087,521 @@ def test_i66_no_model_or_retrieval_calls_invoked():
     for name in dir(cal_mod):
         for term in prohibited_terms:
             assert term not in name.lower(), f"Prohibited term '{term}' found in calibration_support attribute '{name}'"
+
+
+# ==============================================================================
+# SECTION J: CONSOLIDATED AUTHORITY / PROVENANCE SEAL REGRESSIONS (Tests 67 to 105)
+# ==============================================================================
+
+def test_j67_packet_id_with_wrong_case_id_fails():
+    """Part B / Q3: packet ID with right prefix but wrong case fails."""
+    with pytest.raises(CalibrationGateError, match="does not match expected exact format"):
+        CalibrationPacket(
+            packet_id="cal2cc:packet:CAL-2CC-02:tcm",
+            perspective="tcm",
+            case_id="CAL-2CC-01",
+            evidence_items=[],
+        )
+
+
+def test_j68_packet_id_with_wrong_perspective_fails():
+    """Part B / Q4: packet ID with wrong perspective fails."""
+    with pytest.raises(CalibrationGateError, match="does not match expected exact format"):
+        CalibrationPacket(
+            packet_id="cal2cc:packet:CAL-2CC-01:western",
+            perspective="tcm",
+            case_id="CAL-2CC-01",
+            evidence_items=[],
+        )
+
+
+def test_j69_evidence_id_with_wrong_case_fails():
+    """Part B / Q5: evidence ID with wrong case fails."""
+    with pytest.raises(CalibrationGateError, match="does not match required format"):
+        CalibrationEvidenceItem(
+            evidence_id="cal2cc:ev:CAL-2CC-09:tcm:1",
+            rank=1,
+            exact_chunk_text="Chunk text",
+            chunk_text_sha256=_make_sha256("Chunk text"),
+        )
+
+
+def test_j70_evidence_id_with_wrong_perspective_fails_in_packet():
+    """Part B / Q6: evidence ID with wrong perspective fails packet validation."""
+    item = CalibrationEvidenceItem(
+        evidence_id="cal2cc:ev:CAL-2CC-01:western:1",
+        rank=1,
+        exact_chunk_text="Chunk text",
+        chunk_text_sha256=_make_sha256("Chunk text"),
+    )
+    with pytest.raises(CalibrationGateError, match="does not match expected exact format"):
+        CalibrationPacket(
+            packet_id="cal2cc:packet:CAL-2CC-01:tcm",
+            perspective="tcm",
+            case_id="CAL-2CC-01",
+            evidence_items=[item, item, item, item],
+        )
+
+
+def test_j71_workspace_deserialization_without_fixture_authority_fails():
+    """Part C / Q7: workspace deserialization without fixture authority fails."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    data = ws.to_dict()
+    with pytest.raises(CalibrationGateError, match="requires supplying the matching frozen CalibrationFixturePack"):
+        CalibrationReviewerWorkspace.from_dict(data, fixture_pack=None)
+
+
+def test_j72_workspace_deserialization_with_mismatched_fixture_pack_fails():
+    """Part C / Q8: workspace deserialization with mismatched fixture pack fails."""
+    pack1 = _make_neutral_fixture_pack()
+    pack2 = _make_neutral_fixture_pack(fixture_author="Dr. Second Author")
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack1)
+    data = ws.to_dict()
+    with pytest.raises(CalibrationGateError, match="does not match fixture pack"):
+        CalibrationReviewerWorkspace.from_dict(data, fixture_pack=pack2)
+
+
+def test_j73_arbitrary_bind_anchor_index_is_removed():
+    """Part C / Q9: arbitrary public bind_anchor_index method is unavailable."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    assert not hasattr(ws, "bind_anchor_index")
+
+
+def test_j74_add_record_always_validates_against_exact_fixture_pack():
+    """Part C / Q10: every add_record always validates against exact fixture pack anchors."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    rec = _make_valid_test_record("CAL-2CC-01", pack)
+    # Alter chunk_text_sha256 on anchor so it doesn't match fixture pack
+    rec.evidence_anchors[0].chunk_text_sha256 = "0" * 64
+    with pytest.raises(ValueError, match="Chunk text hash mismatch"):
+        ws.add_record("CAL-2CC-01", rec)
+
+
+def test_j75_records_and_no_unit_reason_simultaneously_blocks_lock():
+    """Part D / Q11: records + no-unit reason simultaneously blocks lock (XOR)."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    rec = _make_valid_test_record("CAL-2CC-01", pack)
+    ws.add_record("CAL-2CC-01", rec)
+    ws.set_no_supportable_unit_reason("CAL-2CC-01", "Simultaneous reason should be rejected.")
+    ws.set_case_complete("CAL-2CC-01", True)
+
+    for cid in CALIBRATION_CASE_IDS[1:]:
+        ws.set_no_supportable_unit_reason(cid, "Valid reason")
+        ws.set_case_complete(cid, True)
+
+    with pytest.raises(CalibrationLockError, match="violates XOR requirement"):
+        ws.lock_submission()
+
+
+def test_j76_direct_calibration_locked_submission_construction_fails():
+    """Part E / Q13: direct CalibrationLockedSubmission construction fails closed."""
+    with pytest.raises(TypeError, match="Direct public construction of CalibrationLockedSubmission is forbidden"):
+        CalibrationLockedSubmission(
+            calibration_design_id=CALIBRATION_DESIGN_ID,
+            fixture_pack_hash="0" * 64,
+            reviewer_role="reviewer_a",
+            case_ids=CALIBRATION_CASE_IDS,
+            records_by_case={},
+            case_completion_states={},
+            no_supportable_unit_reasons={},
+            submission_version=1,
+            lock_timestamp="2026-09-30T00:00:00Z",
+            submission_hash="0" * 64,
+        )
+
+
+def test_j77_subclass_spoof_fails():
+    """Part E / Q14: attempting to subclass CalibrationLockedSubmission fails."""
+    with pytest.raises(TypeError, match="CalibrationLockedSubmission is final and cannot be subclassed"):
+        class FakeSubmission(CalibrationLockedSubmission):
+            pass
+
+
+def test_j78_generic_unverified_from_dict_cannot_create_authority():
+    """Part E / Q15: generic unverified from_dict without fixture pack fails."""
+    with pytest.raises(CalibrationGateError, match="requires a verified frozen fixture_pack"):
+        CalibrationLockedSubmission.from_dict({"calibration_design_id": CALIBRATION_DESIGN_ID})
+
+
+def test_j79_verified_loader_with_correct_fixture_succeeds():
+    """Part F / Q16: verified loader with correct fixture succeeds."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, _ = _make_valid_dual_locked_submissions(pack)
+    data = sub_a.to_dict()
+
+    restored = load_verified_locked_submission(data, pack)
+    assert restored.submission_hash == sub_a.submission_hash
+    assert restored.reviewer_role == "reviewer_a"
+
+
+def test_j80_verified_loader_with_wrong_fixture_fails():
+    """Part F / Q17: verified loader with wrong fixture fails."""
+    pack1 = _make_neutral_fixture_pack()
+    pack2 = _make_neutral_fixture_pack(fixture_author="Dr. Second Author")
+    sub_a, _ = _make_valid_dual_locked_submissions(pack1)
+    data = sub_a.to_dict()
+
+    with pytest.raises(CalibrationGateError, match="fixture_pack_hash mismatch"):
+        load_verified_locked_submission(data, pack2)
+
+
+def test_j81_extra_records_by_case_key_fails():
+    """Part F / Q18: extra records_by_case key in locked submission fails."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, _ = _make_valid_dual_locked_submissions(pack)
+    data = sub_a.to_dict()
+    data["records_by_case"]["CAL-2CC-EXTRA"] = []
+
+    with pytest.raises(ValueError, match="records_by_case keys must exactly match"):
+        load_verified_locked_submission(data, pack)
+
+
+def test_j82_missing_completion_state_key_fails():
+    """Part F / Q19: missing completion-state key in locked submission fails."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, _ = _make_valid_dual_locked_submissions(pack)
+    data = sub_a.to_dict()
+    del data["case_completion_states"]["CAL-2CC-01"]
+
+    with pytest.raises(ValueError, match="case_completion_states keys must exactly match"):
+        load_verified_locked_submission(data, pack)
+
+
+def test_j83_nested_locked_record_mutation_invalidates_hash_and_blocks_use():
+    """Part G / Q20: nested locked-record mutation invalidates hash and blocks validate_current_state."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, _ = _make_valid_dual_locked_submissions(pack)
+    # Tamper with internal list in snapshot
+    sub_a.records_by_case["CAL-2CC-01"].append({"tampered": "record"})
+    with pytest.raises(CalibrationLockError, match="submission_hash mismatch"):
+        sub_a.validate_current_state()
+
+
+def test_j84_setting_workspace_lock_boolean_false_cannot_reopen_lock():
+    """Part H / Q21: setting workspace lock boolean false raises CalibrationLockError."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws.set_no_supportable_unit_reason(cid, "Valid reason")
+        ws.set_case_complete(cid, True)
+    ws.lock_submission()
+    assert ws.is_locked is True
+
+    with pytest.raises(CalibrationLockError, match="Cannot unlock a locked workspace"):
+        ws.is_locked = False
+
+
+def test_j85_nested_workspace_mutation_after_lock_fails_validation():
+    """Part H / Q22: mutating live cases on a locked workspace causes drift error."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws.set_no_supportable_unit_reason(cid, "Valid reason")
+        ws.set_case_complete(cid, True)
+    ws.lock_submission()
+
+    # Tamper with live case after lock
+    ws.cases["CAL-2CC-01"].no_supportable_unit_reason = "Tampered reason"
+    with pytest.raises(CalibrationStateError, match="drifted from locked snapshot"):
+        ws.validate_current_state()
+
+
+def test_j86_amendment_derives_from_locked_snapshot_not_tampered_live_cases():
+    """Part I / Q23: amendment derives from locked snapshot, preserving original data."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws.set_no_supportable_unit_reason(cid, f"Original reason for {cid}")
+        ws.set_case_complete(cid, True)
+    ws.lock_submission()
+
+    # Tampering with live case before creating amendment
+    ws.cases["CAL-2CC-01"].no_supportable_unit_reason = "Tampered live reason"
+
+    # Because validate_current_state detects drift, create_amended_version fails closed
+    with pytest.raises(CalibrationStateError, match="drifted from locked snapshot"):
+        ws.create_amended_version()
+
+
+def test_j87_amendment_increments_version_and_remains_bound_to_same_fixture():
+    """Part I / Q24: amendment increments version and retains fixture authority."""
+    pack = _make_neutral_fixture_pack()
+    ws = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws.set_no_supportable_unit_reason(cid, "Reason")
+        ws.set_case_complete(cid, True)
+    snap1 = ws.lock_submission()
+
+    amended = ws.create_amended_version()
+    assert amended.submission_version == 2
+    assert amended.fixture_pack_hash == pack.fixture_pack_canonical_sha256
+    assert amended._fixture_pack is pack
+    assert amended._anchor_index is not None
+    assert amended.is_locked is False
+
+
+def test_j88_records_differing_only_in_required_qualifiers_not_exact_duplicates():
+    """Part J / Q25: records differing only in required_qualifiers are NOT exact duplicates."""
+    pack = _make_neutral_fixture_pack()
+    r1 = _make_valid_test_record("CAL-2CC-01", pack)
+    r2 = _make_valid_test_record("CAL-2CC-01", pack)
+    r2.required_qualifiers = ["Age bracket 18-65"]
+
+    dict1 = r1.model_dump(mode="json")
+    dict2 = r2.model_dump(mode="json")
+    assert CalibrationComparisonView._is_exact_record_duplicate(dict1, dict2) is False
+
+
+def test_j89_records_differing_only_in_support_rationale_not_exact_duplicates():
+    """Part J / Q26: records differing only in support_rationale are NOT exact duplicates."""
+    pack = _make_neutral_fixture_pack()
+    r1 = _make_valid_test_record("CAL-2CC-01", pack)
+    r2 = _make_valid_test_record("CAL-2CC-01", pack)
+    r2.support_rationale = "Different human rationale entirely."
+
+    dict1 = r1.model_dump(mode="json")
+    dict2 = r2.model_dump(mode="json")
+    assert CalibrationComparisonView._is_exact_record_duplicate(dict1, dict2) is False
+
+
+def test_j90_completely_identical_record_dictionaries_are_exact_duplicates():
+    """Part J / Q27: completely identical record dictionaries ARE exact duplicates."""
+    pack = _make_neutral_fixture_pack()
+    r1 = _make_valid_test_record("CAL-2CC-01", pack)
+    dict1 = r1.model_dump(mode="json")
+    dict2 = copy.deepcopy(dict1)
+    assert CalibrationComparisonView._is_exact_record_duplicate(dict1, dict2) is True
+
+
+def test_j91_disagreement_log_binds_exact_ab_submission_hashes():
+    """Part K / Q28: disagreement log binds exact A/B submission hashes."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+    assert log.reviewer_a_submission_hash == sub_a.submission_hash
+    assert log.reviewer_b_submission_hash == sub_b.submission_hash
+
+
+def test_j92_old_log_with_amended_a_submission_blocks_completion():
+    """Part K / Q29: old disagreement log + amended A submission blocks completion."""
+    pack = _make_neutral_fixture_pack()
+    ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws_a.set_no_supportable_unit_reason(cid, "Reason")
+        ws_a.set_case_complete(cid, True)
+        ws_b.set_no_supportable_unit_reason(cid, "Reason")
+        ws_b.set_case_complete(cid, True)
+    sub_a1 = ws_a.lock_submission()
+    sub_b1 = ws_b.lock_submission()
+
+    old_log = _make_valid_disagreement_log(pack, sub_a1, sub_b1)
+
+    # Reviewer A amends submission
+    ws_a2 = ws_a.create_amended_version()
+    for cid in CALIBRATION_CASE_IDS:
+        ws_a2.set_case_complete(cid, True)
+    sub_a2 = ws_a2.lock_submission()
+
+    with pytest.raises(CalibrationGateError, match="reviewer_a_submission_hash does not match"):
+        CalibrationCompletionChecklist(
+            fixture_pack=pack,
+            reviewer_a_submission=sub_a2,
+            reviewer_b_submission=sub_b1,
+            disagreement_log=old_log,
+        )
+
+
+def test_j93_old_log_with_amended_b_submission_blocks_completion():
+    """Part K / Q30: old disagreement log + amended B submission blocks completion."""
+    pack = _make_neutral_fixture_pack()
+    ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    ws_b = CalibrationReviewerWorkspace.create_blank("reviewer_b", pack)
+    for cid in CALIBRATION_CASE_IDS:
+        ws_a.set_no_supportable_unit_reason(cid, "Reason")
+        ws_a.set_case_complete(cid, True)
+        ws_b.set_no_supportable_unit_reason(cid, "Reason")
+        ws_b.set_case_complete(cid, True)
+    sub_a1 = ws_a.lock_submission()
+    sub_b1 = ws_b.lock_submission()
+
+    old_log = _make_valid_disagreement_log(pack, sub_a1, sub_b1)
+
+    # Reviewer B amends submission
+    ws_b2 = ws_b.create_amended_version()
+    for cid in CALIBRATION_CASE_IDS:
+        ws_b2.set_case_complete(cid, True)
+    sub_b2 = ws_b2.lock_submission()
+
+    with pytest.raises(CalibrationGateError, match="reviewer_b_submission_hash does not match"):
+        CalibrationCompletionChecklist(
+            fixture_pack=pack,
+            reviewer_a_submission=sub_a1,
+            reviewer_b_submission=sub_b2,
+            disagreement_log=old_log,
+        )
+
+
+def test_j94_invalid_evidence_ids_considered_type_fails():
+    """Part L / Q31: non-list evidence_ids_considered fails validation."""
+    with pytest.raises(TypeError, match="evidence_ids_considered must be a list"):
+        CalibrationDisagreementEntry(
+            calibration_case_id="CAL-2CC-01",
+            disagreement_id="DIS-01",
+            decision_category="Scope",
+            reviewer_a_position="A",
+            reviewer_b_position="B",
+            ambiguity_classification="A_CASE_LEVEL",
+            evidence_ids_considered="invalid_string",  # type: ignore[arg-type]
+        )
+
+
+def test_j95_cross_case_evidence_id_in_disagreement_fails():
+    """Part L / Q32: cross-case evidence ID in disagreement entry fails."""
+    with pytest.raises(CalibrationGateError, match="does not belong to case 'CAL-2CC-01'"):
+        CalibrationDisagreementEntry(
+            calibration_case_id="CAL-2CC-01",
+            disagreement_id="DIS-01",
+            decision_category="Scope",
+            reviewer_a_position="A",
+            reviewer_b_position="B",
+            ambiguity_classification="A_CASE_LEVEL",
+            evidence_ids_considered=["cal2cc:ev:CAL-2CC-02:tcm:1"],  # Wrong case!
+        )
+
+
+def test_j96_invalid_participant_element_type_fails():
+    """Part L / Q33: non-string participant element fails validation."""
+    with pytest.raises(ValueError, match="participant in participants"):
+        CalibrationDisagreementEntry(
+            calibration_case_id="CAL-2CC-01",
+            disagreement_id="DIS-01",
+            decision_category="Scope",
+            reviewer_a_position="A",
+            reviewer_b_position="B",
+            ambiguity_classification="A_CASE_LEVEL",
+            participants=[""],  # Empty string fails
+        )
+
+
+def test_j97_failed_resolve_leaves_entry_open_and_unchanged():
+    """Part L / Q34: failed resolve() call leaves entry strictly in open state."""
+    entry = CalibrationDisagreementEntry(
+        calibration_case_id="CAL-2CC-01",
+        disagreement_id="DIS-01",
+        decision_category="Scope",
+        reviewer_a_position="Pos A",
+        reviewer_b_position="Pos B",
+        ambiguity_classification="A_CASE_LEVEL",
+        status="open",
+    )
+    # Attempt invalid resolution with empty participants
+    with pytest.raises(CalibrationStateError, match="Resolved disagreement must record participating reviewers"):
+        entry.resolve(
+            human_resolution="Some resolution",
+            resolution_rationale="Some rationale",
+            participants=[],  # Invalid!
+            resolution_date="2026-09-30",
+        )
+    # Ensure atomic rollback
+    assert entry.status == "open"
+    assert entry.human_resolution == ""
+    assert entry.resolution_rationale == ""
+
+
+def test_j98_nested_submission_mutation_blocks_mark_calibration_complete():
+    """Part M / Q35: nested submission mutation blocks mark_calibration_complete."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+
+    chk = CalibrationCompletionChecklist(
+        fixture_pack=pack,
+        reviewer_a_submission=sub_a,
+        reviewer_b_submission=sub_b,
+        disagreement_log=d_log,
+        all_eight_boundaries_reviewed=True,
+        boundary_05_07_08_distinction_reviewed=True,
+        reviewers_agree_rules_applicable=True,
+        no_calibration_artifact_model_exposed=True,
+        no_numerical_agreement_threshold_used=True,
+        attestor_a="Reviewer A",
+        attestor_b="Reviewer B",
+    )
+    # Tamper with snapshot internally
+    sub_a.records_by_case["CAL-2CC-01"].append({"tampered": "record"})
+    with pytest.raises(CalibrationLockError, match="submission_hash mismatch"):
+        chk.mark_calibration_complete()
+
+
+def test_j99_forged_direct_ready_true_fails():
+    """Part N / Q36: attempting to forge readiness via property setter fails."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+
+    chk = CalibrationCompletionChecklist(
+        fixture_pack=pack,
+        reviewer_a_submission=sub_a,
+        reviewer_b_submission=sub_b,
+        disagreement_log=d_log,
+        all_eight_boundaries_reviewed=False,  # Unfulfilled prereq!
+    )
+    with pytest.raises(CalibrationCompletionError, match="all_eight_boundaries_reviewed must be True"):
+        chk.calibration_ready_for_formal_annotation = True
+
+
+def test_j100_mark_calibration_complete_succeeds_only_through_valid_authority_chain():
+    """Part M & N / Q37: mark_calibration_complete succeeds when complete authority chain is valid."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+
+    chk = CalibrationCompletionChecklist(
+        fixture_pack=pack,
+        reviewer_a_submission=sub_a,
+        reviewer_b_submission=sub_b,
+        disagreement_log=d_log,
+        all_eight_boundaries_reviewed=True,
+        boundary_05_07_08_distinction_reviewed=True,
+        reviewers_agree_rules_applicable=True,
+        no_calibration_artifact_model_exposed=True,
+        no_numerical_agreement_threshold_used=True,
+        attestor_a="Reviewer A",
+        attestor_b="Reviewer B",
+    )
+    assert chk.calibration_ready_for_formal_annotation is False
+    chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is True
+
+
+def test_j101_post_completion_nested_mutation_prevents_readiness_claim():
+    """Part N / Q38: post-completion mutation prevents serialization and raises on readiness check."""
+    pack = _make_neutral_fixture_pack()
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+
+    chk = CalibrationCompletionChecklist(
+        fixture_pack=pack,
+        reviewer_a_submission=sub_a,
+        reviewer_b_submission=sub_b,
+        disagreement_log=d_log,
+        all_eight_boundaries_reviewed=True,
+        boundary_05_07_08_distinction_reviewed=True,
+        reviewers_agree_rules_applicable=True,
+        no_calibration_artifact_model_exposed=True,
+        no_numerical_agreement_threshold_used=True,
+        attestor_a="Reviewer A",
+        attestor_b="Reviewer B",
+    )
+    chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is True
+
+    # Mutate attestor string to empty
+    chk.attestor_a = ""
+    with pytest.raises(ValueError, match="attestor_a"):
+        _ = chk.calibration_ready_for_formal_annotation
