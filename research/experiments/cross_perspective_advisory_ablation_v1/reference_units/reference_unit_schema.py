@@ -40,6 +40,7 @@ AnchorPerspective = Literal["tcm", "western"]
 AnchorRole = Literal["supporting_span", "contrasting_span", "scope_audit"]
 SupportScope = Literal["source_explicit", "cross_span_synthesis", "packet_bounded_absence"]
 ReviewStatus = Literal["draft", "disputed", "reconciled"]
+ValidationMode = Literal["draft", "final_candidate"]
 
 ALLOWED_UNIT_TYPES: Final[set[str]] = {"content", "relationship", "limitation", "evidence_gap"}
 ALLOWED_PERSPECTIVE_SCOPES: Final[set[str]] = {"tcm", "western", "both"}
@@ -51,6 +52,7 @@ ALLOWED_SUPPORT_SCOPES: Final[set[str]] = {
     "packet_bounded_absence",
 }
 ALLOWED_REVIEW_STATUSES: Final[set[str]] = {"draft", "disputed", "reconciled"}
+ALLOWED_VALIDATION_MODES: Final[set[str]] = {"draft", "final_candidate"}
 
 
 class EvidenceSpan(BaseModel):

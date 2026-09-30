@@ -36,8 +36,12 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     ALLOWED_REVIEW_STATUSES,
     ALLOWED_SUPPORT_SCOPES,
     ALLOWED_UNIT_TYPES,
+    ALLOWED_VALIDATION_MODES,
     FINAL_REFERENCE_UNIT_ID_PATTERN,
     FROZEN_PROTOCOL_BYTE_SHA256,
+    FROZEN_TCM_PACKET_BYTE_SHA256,
+    FROZEN_WESTERN_PACKET_BYTE_SHA256,
+    FormalPacketAuthorityError,
     PROTOCOL_ID,
     SCHEMA_VERSION,
     STUDY_ID,
@@ -51,6 +55,7 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     parse_final_reference_unit_id,
     validate_evidence_anchor,
     validate_reference_unit_record,
+    verify_packet_records_integrity,
 )
 
 
@@ -943,3 +948,203 @@ def test_unknown_question_id_and_cross_span_synthesis(synthetic_index: FrozenPac
         rec_cross, mode="final_candidate", packet_index=synthetic_index
     )
     assert any("requires a non-empty support_rationale" in e for e in errs_cross)
+
+
+# ==============================================================================
+# 18. Formal Packet Authority and Verification (Task 5 Tests A, B, C, D)
+# ==============================================================================
+
+def test_formal_authority_rejects_altered_packet_bytes(tmp_path: Path):
+    """Test A: Formal authority rejects altered packet bytes even if embedded stored hash fields are unchanged."""
+    # Use synthetic path-double files for destructive testing without touching real packets
+    tcm_double = tmp_path / "tampered_tcm_packets.jsonl"
+    western_double = tmp_path / "western_packets.jsonl"
+
+    # Write synthetic content
+    tcm_double.write_bytes(b'{"tampered": "bytes"}\n')
+    western_double.write_bytes(b'{"western": "bytes"}\n')
+
+    # Calling formal verified loader must reject altered bytes fail-closed
+    with pytest.raises(FormalPacketAuthorityError, match="TCM packet file byte SHA256 mismatch"):
+        FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_double, western_double)
+
+
+def test_formal_verified_loader_accepts_real_frozen_packets():
+    """Test B: Formal verified loader accepts the real frozen packet files."""
+    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    tcm_file = packets_dir / "tcm_packets.jsonl"
+    western_file = packets_dir / "western_packets.jsonl"
+
+    index = FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_file, western_file)
+    assert index.packet_count == 96
+    assert index.evidence_item_count == 384
+    assert len(index.questions) == 48
+
+    # Also test from_repo_root routes to verified formal loader
+    repo_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+    assert repo_index.packet_count == 96
+
+
+def test_packet_canonical_hash_mismatch_rejected():
+    """Test C: Packet canonical hash mismatch is rejected."""
+    tcm_records, western_records = _make_synthetic_packet_records()
+    # Corrupt packet_canonical_sha256 on a record
+    tcm_records[0]["packet_canonical_sha256"] = "0" * 64
+
+    with pytest.raises(FormalPacketAuthorityError, match="Packet canonical self-hash mismatch"):
+        verify_packet_records_integrity(tcm_records, western_records)
+
+
+def test_exact_chunk_text_chunk_hash_mismatch_rejected():
+    """Test D: exact_chunk_text / chunk_text_sha256 mismatch is rejected."""
+    from research.experiments.cross_perspective_advisory_ablation_v1.packet_serialization import (
+        packet_canonical_sha256,
+    )
+
+    tcm_records, western_records = _make_synthetic_packet_records()
+    # Tamper exact_chunk_text without updating chunk_text_sha256
+    tcm_records[0]["evidence_items"][0]["exact_chunk_text"] = "Tampered text that no longer matches hash"
+    # Update packet self-hash so step 5 passes and step 6 (chunk text check) is specifically tested
+    tcm_records[0]["packet_canonical_sha256"] = packet_canonical_sha256(tcm_records[0])
+
+    with pytest.raises(FormalPacketAuthorityError, match="Chunk text SHA256 mismatch"):
+        verify_packet_records_integrity(tcm_records, western_records)
+
+
+# ==============================================================================
+# 19. Relationship Dual-Stream Pertinent Anchor Requirement (Task 5 Tests E, F, G)
+# ==============================================================================
+
+def test_relationship_tcm_only_pertinent_anchor_fails(synthetic_index: FrozenPacketAnchorIndex):
+    """Test E: relationship + TCM-only pertinent anchor fails."""
+    tcm_pkt = synthetic_index.get_packet("packet:tcm:syn_q_01")
+    tcm_item = synthetic_index.get_evidence("packet:tcm:syn_q_01", "ev:tcm:syn_q_01:h1")
+    assert tcm_pkt and tcm_item
+
+    tcm_anchor = EvidenceAnchor(
+        packet_id="packet:tcm:syn_q_01",
+        packet_canonical_sha256=tcm_pkt.packet_canonical_sha256,
+        perspective="tcm",
+        evidence_id="ev:tcm:syn_q_01:h1",
+        chunk_text_sha256=tcm_item.chunk_text_sha256,
+        anchor_role="supporting_span",
+        spans=[EvidenceSpan(start=0, end=5)],
+    )
+
+    rec = ReferenceUnitRecord(
+        schema_version="cpaa1_reference_unit_v1",
+        study_id="cross-perspective-advisory-ablation-v1",
+        question_id="syn_q_01",
+        reference_unit_id="cpaa1:ru:syn_q_01:001",
+        unit_text="Synthetic relational proposition across streams.",
+        unit_type="relationship",
+        perspective_scope="both",
+        evidence_anchors=[tcm_anchor],
+        support_scope="source_explicit",
+        required_qualifiers=[],
+        support_rationale="Synthetic rationale for relationship.",
+        review_status="reconciled",
+    )
+
+    errs = validate_reference_unit_record(rec, mode="final_candidate", packet_index=synthetic_index)
+    assert any("unit_type='relationship' requires at least one pertinent supporting/contrasting anchor from Western" in e for e in errs)
+
+
+def test_relationship_western_only_pertinent_anchor_fails(synthetic_index: FrozenPacketAnchorIndex):
+    """Test F: relationship + Western-only pertinent anchor fails."""
+    west_pkt = synthetic_index.get_packet("packet:western:syn_q_01")
+    west_item = synthetic_index.get_evidence("packet:western:syn_q_01", "ev:western:syn_q_01:h1")
+    assert west_pkt and west_item
+
+    west_anchor = EvidenceAnchor(
+        packet_id="packet:western:syn_q_01",
+        packet_canonical_sha256=west_pkt.packet_canonical_sha256,
+        perspective="western",
+        evidence_id="ev:western:syn_q_01:h1",
+        chunk_text_sha256=west_item.chunk_text_sha256,
+        anchor_role="supporting_span",
+        spans=[EvidenceSpan(start=0, end=5)],
+    )
+
+    rec = ReferenceUnitRecord(
+        schema_version="cpaa1_reference_unit_v1",
+        study_id="cross-perspective-advisory-ablation-v1",
+        question_id="syn_q_01",
+        reference_unit_id="cpaa1:ru:syn_q_01:001",
+        unit_text="Synthetic relational proposition across streams.",
+        unit_type="relationship",
+        perspective_scope="both",
+        evidence_anchors=[west_anchor],
+        support_scope="source_explicit",
+        required_qualifiers=[],
+        support_rationale="Synthetic rationale for relationship.",
+        review_status="reconciled",
+    )
+
+    errs = validate_reference_unit_record(rec, mode="final_candidate", packet_index=synthetic_index)
+    assert any("unit_type='relationship' requires at least one pertinent supporting/contrasting anchor from TCM" in e for e in errs)
+
+
+def test_relationship_with_dual_stream_pertinent_anchors_passes(synthetic_index: FrozenPacketAnchorIndex):
+    """Test G: relationship with pertinent anchors from both streams passes when all other rules satisfied."""
+    tcm_pkt = synthetic_index.get_packet("packet:tcm:syn_q_01")
+    tcm_item = synthetic_index.get_evidence("packet:tcm:syn_q_01", "ev:tcm:syn_q_01:h1")
+    west_pkt = synthetic_index.get_packet("packet:western:syn_q_01")
+    west_item = synthetic_index.get_evidence("packet:western:syn_q_01", "ev:western:syn_q_01:h1")
+    assert tcm_pkt and tcm_item and west_pkt and west_item
+
+    tcm_anchor = EvidenceAnchor(
+        packet_id="packet:tcm:syn_q_01",
+        packet_canonical_sha256=tcm_pkt.packet_canonical_sha256,
+        perspective="tcm",
+        evidence_id="ev:tcm:syn_q_01:h1",
+        chunk_text_sha256=tcm_item.chunk_text_sha256,
+        anchor_role="supporting_span",
+        spans=[EvidenceSpan(start=0, end=5)],
+    )
+    west_anchor = EvidenceAnchor(
+        packet_id="packet:western:syn_q_01",
+        packet_canonical_sha256=west_pkt.packet_canonical_sha256,
+        perspective="western",
+        evidence_id="ev:western:syn_q_01:h1",
+        chunk_text_sha256=west_item.chunk_text_sha256,
+        anchor_role="contrasting_span",
+        spans=[EvidenceSpan(start=0, end=5)],
+    )
+
+    rec = ReferenceUnitRecord(
+        schema_version="cpaa1_reference_unit_v1",
+        study_id="cross-perspective-advisory-ablation-v1",
+        question_id="syn_q_01",
+        reference_unit_id="cpaa1:ru:syn_q_01:001",
+        unit_text="Synthetic relational proposition contrasting TCM and Western findings.",
+        unit_type="relationship",
+        perspective_scope="both",
+        evidence_anchors=[tcm_anchor, west_anchor],
+        support_scope="source_explicit",
+        required_qualifiers=[],
+        support_rationale="Valid synthetic comparison rationale.",
+        review_status="reconciled",
+    )
+
+    errs = validate_reference_unit_record(rec, mode="final_candidate", packet_index=synthetic_index)
+    assert errs == []
+
+
+# ==============================================================================
+# 20. Validation Mode Fail-Closed Dispatch (Task 5 Tests H, I)
+# ==============================================================================
+
+def test_validation_mode_invalid_mode_fails():
+    """Test H: mode='invalid_mode' fails immediately."""
+    rec_dict = {"dummy": "record"}
+    with pytest.raises(ValueError, match="Unsupported validation mode: 'invalid_mode'"):
+        validate_reference_unit_record(rec_dict, mode="invalid_mode")  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("bad_mode", ["final", "production", "", None, "draft_candidate", "reconciled"])
+def test_validation_mode_other_unsupported_modes_fail_closed(bad_mode: Any):
+    """Test I: any other unsupported mode fails closed immediately."""
+    rec_dict = {"dummy": "record"}
+    with pytest.raises(ValueError, match="Unsupported validation mode"):
+        validate_reference_unit_record(rec_dict, mode=bad_mode)  # type: ignore[arg-type]

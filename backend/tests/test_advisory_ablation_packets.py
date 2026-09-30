@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import shutil
 import sys
 from pathlib import Path
 import pytest
@@ -13,6 +14,29 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
+
+FROZEN_TCM_PACKET_BYTE_SHA256 = (
+    "7ce35d0d8ea42ebc1b61cf87de858fed5c9b993a6e032435bab88a30e25eef3f"
+)
+FROZEN_WESTERN_PACKET_BYTE_SHA256 = (
+    "b5c48507de5467c2c8a5ee031d5d790b1e5ceccd53cf84ca2cd8b70f227555de"
+)
+FROZEN_MANIFEST_BYTE_SHA256 = (
+    "c934db63ec6d0cb811b7716b18ac62e7a38f9d848cbafbd3993505d8c6721ecf"
+)
+FROZEN_RECEIPT_BYTE_SHA256 = (
+    "87952c77980f5f81388921e619586f920d3f199b8695c58bc1d6520345bfe9bc"
+)
+
+
+def _snapshot_sealed_packets(packets_dir: Path) -> dict[str, str]:
+    if not packets_dir.exists():
+        return {}
+    return {
+        f.name: hashlib.sha256(f.read_bytes()).hexdigest()
+        for f in sorted(packets_dir.iterdir())
+        if f.is_file()
+    }
 
 from backend.cross_perspective.cross_perspective_critic import CRITIC_SYSTEM_PROMPT
 from backend.cross_perspective.governance import (
@@ -727,13 +751,22 @@ def test_real_data_read_only_in_memory_cardinality_and_integrity():
     assert tcm_qids == manifest_qids
     assert west_qids == manifest_qids
 
-    # DO NOT write packet files / assert packets/ dir does not exist
+    # Capture sealed packet artifact state before in-memory projection
     packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
-    assert not packets_dir.exists(), "packets/ output directory must not exist in Phase 1E"
+    pre_snapshot = _snapshot_sealed_packets(packets_dir)
+    assert packets_dir.exists(), "Formal packets directory must exist post-freeze"
+    assert pre_snapshot.get("tcm_packets.jsonl") == FROZEN_TCM_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("western_packets.jsonl") == FROZEN_WESTERN_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("packet_manifest.json") == FROZEN_MANIFEST_BYTE_SHA256
+    assert pre_snapshot.get("packet_freeze_receipt.json") == FROZEN_RECEIPT_BYTE_SHA256
+
+    # Verify post-freeze invariant: in-memory projection does not mutate sealed packet files
+    post_snapshot = _snapshot_sealed_packets(packets_dir)
+    assert post_snapshot == pre_snapshot, "Post-freeze invariant violated: sealed packet files altered!"
 
 
 # --- 31. Formal Packet Generation Safeguards at Unit Level (TASKS 8 & 9) ---
-def test_formal_packet_generation_safeguards_unit_level():
+def test_formal_packet_generation_safeguards_unit_level(tmp_path):
     """Unit-level proof of Phase 1E formal-generation denial without CLI invocation."""
     # 1. Calling without explicit formal request fails closed
     with pytest.raises(PermissionError, match="not explicitly requested"):
@@ -755,12 +788,43 @@ def test_formal_packet_generation_safeguards_unit_level():
     for p in expected_relpaths:
         assert "packets/" in p
 
-    # 4. Dry preflight creates no packets/ directory and no output files
-    report = validate_packet_preflight(_ROOT)
+    # Capture sealed formal repository packet state before dry preflight
+    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    pre_snapshot = _snapshot_sealed_packets(packets_dir)
+    assert pre_snapshot.get("tcm_packets.jsonl") == FROZEN_TCM_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("western_packets.jsonl") == FROZEN_WESTERN_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("packet_manifest.json") == FROZEN_MANIFEST_BYTE_SHA256
+    assert pre_snapshot.get("packet_freeze_receipt.json") == FROZEN_RECEIPT_BYTE_SHA256
+
+    # 4. Dry preflight in a clean sandbox creates no packets/ directory and no output files
+    sandbox_root = tmp_path / "preflight_sandbox"
+    sub_dir = sandbox_root / "research/experiments/cross_perspective_advisory_ablation_v1"
+    (sub_dir / "retrieval").mkdir(parents=True)
+    shutil.copy(
+        _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/question_manifest.jsonl",
+        sub_dir / "question_manifest.jsonl",
+    )
+    shutil.copy(
+        _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/prompt_amendment_map_v1.json",
+        sub_dir / "prompt_amendment_map_v1.json",
+    )
+    shutil.copy(
+        _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/retrieval/retrieval_tcm_r0_top4.jsonl",
+        sub_dir / "retrieval/retrieval_tcm_r0_top4.jsonl",
+    )
+    shutil.copy(
+        _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/retrieval/retrieval_western_r0_top4.jsonl",
+        sub_dir / "retrieval/retrieval_western_r0_top4.jsonl",
+    )
+
+    report = validate_packet_preflight(sandbox_root)
     assert report["status"] == "PASS"
     assert report["formal_packets_materialized"] is False
-    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
-    assert not packets_dir.exists(), "Dry preflight must never create packets/ directory"
+    assert not (sub_dir / "packets").exists(), "Dry preflight must never create packets/ directory"
+
+    # Verify post-freeze invariant: pre-existing sealed state in _ROOT remains bitwise unchanged
+    post_snapshot = _snapshot_sealed_packets(packets_dir)
+    assert post_snapshot == pre_snapshot, "Post-freeze invariant violated: sealed packet files altered!"
 
 
 # --- 32. Source-derived formal packet files are not accidentally staged ---

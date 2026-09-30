@@ -20,12 +20,17 @@ Mechanical validators verify only:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 from pydantic import ValidationError
+
+from research.experiments.cross_perspective_advisory_ablation_v1.packet_serialization import (
+    packet_canonical_sha256,
+)
 
 from .reference_unit_schema import (
     ALLOWED_ANCHOR_PERSPECTIVES,
@@ -34,13 +39,79 @@ from .reference_unit_schema import (
     ALLOWED_REVIEW_STATUSES,
     ALLOWED_SUPPORT_SCOPES,
     ALLOWED_UNIT_TYPES,
+    ALLOWED_VALIDATION_MODES,
     FINAL_REFERENCE_UNIT_ID_PATTERN,
     SCHEMA_VERSION,
     STUDY_ID,
     EvidenceAnchor,
     ReferenceUnitRecord,
+    ValidationMode,
     parse_final_reference_unit_id,
 )
+
+FROZEN_TCM_PACKET_BYTE_SHA256: Final[str] = (
+    "7ce35d0d8ea42ebc1b61cf87de858fed5c9b993a6e032435bab88a30e25eef3f"
+)
+FROZEN_WESTERN_PACKET_BYTE_SHA256: Final[str] = (
+    "b5c48507de5467c2c8a5ee031d5d790b1e5ceccd53cf84ca2cd8b70f227555de"
+)
+
+
+class FormalPacketAuthorityError(ValueError):
+    """Raised when formal packet file bytes or contents fail frozen authority verification."""
+
+
+def verify_packet_records_integrity(
+    tcm_records: list[dict[str, Any]],
+    western_records: list[dict[str, Any]],
+) -> None:
+    """Verify canonical self-hashes, chunk text hashes, and cardinality for packet records.
+
+    Fail-closed: raises FormalPacketAuthorityError if any integrity check fails.
+    """
+    all_records = [("tcm", r) for r in tcm_records] + [("western", r) for r in western_records]
+    for stream_name, pkt in all_records:
+        packet_id = pkt.get("packet_id", "<unknown>")
+        # 1. Packet canonical self-hash
+        stored_pkt_hash = pkt.get("packet_canonical_sha256")
+        if not stored_pkt_hash:
+            raise FormalPacketAuthorityError(
+                f"Packet {packet_id} missing packet_canonical_sha256"
+            )
+        recomputed_pkt_hash = packet_canonical_sha256(pkt)
+        if recomputed_pkt_hash != stored_pkt_hash:
+            raise FormalPacketAuthorityError(
+                f"Packet canonical self-hash mismatch for {packet_id}: "
+                f"stored '{stored_pkt_hash}' != recomputed '{recomputed_pkt_hash}'"
+            )
+
+        # 2. Evidence items cardinality and rank sequence
+        items = pkt.get("evidence_items", [])
+        if len(items) != 4:
+            raise FormalPacketAuthorityError(
+                f"Packet {packet_id} expected exactly 4 evidence items, got {len(items)}"
+            )
+        ranks = [it.get("rank") for it in items]
+        if ranks != [1, 2, 3, 4]:
+            raise FormalPacketAuthorityError(
+                f"Packet {packet_id} invalid rank sequence: {ranks}, expected [1, 2, 3, 4]"
+            )
+
+        # 3. Chunk text hash recomputation
+        for it in items:
+            ev_id = it.get("evidence_id", "<unknown>")
+            stored_chunk_hash = it.get("chunk_text_sha256")
+            if not stored_chunk_hash:
+                raise FormalPacketAuthorityError(
+                    f"Evidence {ev_id} in packet {packet_id} missing chunk_text_sha256"
+                )
+            chunk_text = it.get("exact_chunk_text", "")
+            recomputed_chunk_hash = hashlib.sha256(chunk_text.encode("utf-8")).hexdigest()
+            if recomputed_chunk_hash != stored_chunk_hash:
+                raise FormalPacketAuthorityError(
+                    f"Chunk text SHA256 mismatch for evidence {ev_id} in {packet_id}: "
+                    f"stored '{stored_chunk_hash}' != recomputed '{recomputed_chunk_hash}'"
+                )
 
 
 @dataclass(frozen=True)
@@ -159,32 +230,88 @@ class FrozenPacketAnchorIndex:
         )
 
     @classmethod
-    def from_packet_files(
+    def from_verified_formal_packets(
         cls,
         tcm_packet_file: Path,
         western_packet_file: Path,
+        *,
+        expected_tcm_byte_sha256: str = FROZEN_TCM_PACKET_BYTE_SHA256,
+        expected_western_byte_sha256: str = FROZEN_WESTERN_PACKET_BYTE_SHA256,
     ) -> FrozenPacketAnchorIndex:
-        """Load and mechanically index actual frozen local packet JSONL files."""
+        """Load and mechanically verify actual frozen local packet JSONL files.
+
+        FAIL-CLOSED:
+        1. Reads exact file bytes.
+        2. Verifies exact byte SHA256 against frozen anchors before parsing.
+        3. If either byte hash mismatches: stops / raises FormalPacketAuthorityError.
+        4. Parses only after byte verification.
+        5. Recomputes packet canonical self-hash for every packet.
+        6. Recomputes SHA256 of exact_chunk_text for every evidence item.
+        7. Verifies cardinality (48 packets per stream, 4 items per packet, ranks 1-4).
+        """
         if not tcm_packet_file.is_file():
             raise FileNotFoundError(f"TCM packet file not found at {tcm_packet_file}")
         if not western_packet_file.is_file():
             raise FileNotFoundError(f"Western packet file not found at {western_packet_file}")
 
+        # 1. Read exact file bytes first
+        tcm_bytes = tcm_packet_file.read_bytes()
+        western_bytes = western_packet_file.read_bytes()
+
+        # 2. Before parsing/indexing, verify exact file byte SHA256 against frozen anchors
+        tcm_byte_sha = hashlib.sha256(tcm_bytes).hexdigest()
+        if tcm_byte_sha != expected_tcm_byte_sha256:
+            raise FormalPacketAuthorityError(
+                f"TCM packet file byte SHA256 mismatch: {tcm_byte_sha} != {expected_tcm_byte_sha256}"
+            )
+
+        western_byte_sha = hashlib.sha256(western_bytes).hexdigest()
+        if western_byte_sha != expected_western_byte_sha256:
+            raise FormalPacketAuthorityError(
+                f"Western packet file byte SHA256 mismatch: {western_byte_sha} != {expected_western_byte_sha256}"
+            )
+
+        # 4. Parse only AFTER byte-anchor verification
         tcm_lines = [
             json.loads(line)
-            for line in tcm_packet_file.read_text(encoding="utf-8").splitlines()
+            for line in tcm_bytes.decode("utf-8").splitlines()
             if line.strip()
         ]
         western_lines = [
             json.loads(line)
-            for line in western_packet_file.read_text(encoding="utf-8").splitlines()
+            for line in western_bytes.decode("utf-8").splitlines()
             if line.strip()
         ]
+
+        # 7. Cardinality check (48 packets per stream when evaluating formal anchors)
+        if expected_tcm_byte_sha256 == FROZEN_TCM_PACKET_BYTE_SHA256:
+            if len(tcm_lines) != 48:
+                raise FormalPacketAuthorityError(
+                    f"Expected exactly 48 TCM packets, got {len(tcm_lines)}"
+                )
+        if expected_western_byte_sha256 == FROZEN_WESTERN_PACKET_BYTE_SHA256:
+            if len(western_lines) != 48:
+                raise FormalPacketAuthorityError(
+                    f"Expected exactly 48 Western packets, got {len(western_lines)}"
+                )
+
+        # 5 & 6. Verify packet canonical self-hashes and chunk text hashes
+        verify_packet_records_integrity(tcm_lines, western_lines)
+
         return cls.from_packet_records(tcm_lines, western_lines)
 
     @classmethod
+    def from_packet_files(
+        cls,
+        tcm_packet_file: Path,
+        western_packet_file: Path,
+    ) -> FrozenPacketAnchorIndex:
+        """Load formal packet JSONL files using verified formal authority."""
+        return cls.from_verified_formal_packets(tcm_packet_file, western_packet_file)
+
+    @classmethod
     def from_repo_root(cls, repo_root: Path) -> FrozenPacketAnchorIndex:
-        """Load index from default study packet paths under repo root."""
+        """Load verified formal index from default study packet paths under repo root."""
         packets_dir = (
             repo_root
             / "research"
@@ -194,7 +321,7 @@ class FrozenPacketAnchorIndex:
         )
         tcm_file = packets_dir / "tcm_packets.jsonl"
         western_file = packets_dir / "western_packets.jsonl"
-        return cls.from_packet_files(tcm_file, western_file)
+        return cls.from_verified_formal_packets(tcm_file, western_file)
 
     @property
     def packet_count(self) -> int:
@@ -317,7 +444,7 @@ def validate_evidence_anchor(
 
 def validate_reference_unit_record(
     record: ReferenceUnitRecord | dict[str, Any],
-    mode: Literal["draft", "final_candidate"] = "final_candidate",
+    mode: ValidationMode = "final_candidate",
     packet_index: FrozenPacketAnchorIndex | None = None,
     question_manifest_ids: set[str] | None = None,
 ) -> list[str]:
@@ -330,7 +457,13 @@ def validate_reference_unit_record(
       substantive unit text, non-empty support rationale, and complete structural anchors.
 
     Returns a list of structural error strings (empty list indicates valid record).
+    Raises ValueError immediately if mode is not in ('draft', 'final_candidate').
     """
+    if mode not in ALLOWED_VALIDATION_MODES:
+        raise ValueError(
+            f"Unsupported validation mode: {mode!r}. Allowed modes are: {sorted(ALLOWED_VALIDATION_MODES)}"
+        )
+
     errors: list[str] = []
 
     if isinstance(record, dict):
@@ -430,11 +563,24 @@ def validate_reference_unit_record(
                     f"not record question_id '{rec_obj.question_id}'"
                 )
 
-    # Perspective Scope Structural Rules (Task 10)
+    # Perspective Scope and Relational Structural Rules (Task 10 & Section G line 154)
     pertinent_anchors = [
         a for a in rec_obj.evidence_anchors
         if a.anchor_role in ("supporting_span", "contrasting_span") and len(a.spans) > 0
     ]
+
+    # Relational targets require pertinent evidence from BOTH streams (Section G line 154)
+    if rec_obj.unit_type == "relationship":
+        tcm_pertinent = [a for a in pertinent_anchors if a.perspective == "tcm"]
+        western_pertinent = [a for a in pertinent_anchors if a.perspective == "western"]
+        if not tcm_pertinent:
+            errors.append(
+                "unit_type='relationship' requires at least one pertinent supporting/contrasting anchor from TCM"
+            )
+        if not western_pertinent:
+            errors.append(
+                "unit_type='relationship' requires at least one pertinent supporting/contrasting anchor from Western"
+            )
 
     if rec_obj.perspective_scope == "both":
         if rec_obj.support_scope == "packet_bounded_absence":

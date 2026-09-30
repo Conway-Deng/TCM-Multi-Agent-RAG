@@ -11,6 +11,7 @@ from .reference_unit_schema import (
     ALLOWED_REVIEW_STATUSES,
     ALLOWED_SUPPORT_SCOPES,
     ALLOWED_UNIT_TYPES,
+    ALLOWED_VALIDATION_MODES,
     FINAL_REFERENCE_UNIT_ID_PATTERN,
     FROZEN_PROTOCOL_BYTE_SHA256,
     PROTOCOL_ID,
@@ -25,15 +26,20 @@ from .reference_unit_schema import (
     ReviewStatus,
     SupportScope,
     UnitType,
+    ValidationMode,
     format_final_reference_unit_id,
     parse_final_reference_unit_id,
 )
 from .reference_unit_validation import (
+    FROZEN_TCM_PACKET_BYTE_SHA256,
+    FROZEN_WESTERN_PACKET_BYTE_SHA256,
     EvidenceItemMetadata,
+    FormalPacketAuthorityError,
     FrozenPacketAnchorIndex,
     PacketMetadata,
     validate_evidence_anchor,
     validate_reference_unit_record,
+    verify_packet_records_integrity,
 )
 
 __all__ = [
@@ -43,6 +49,7 @@ __all__ = [
     "ALLOWED_REVIEW_STATUSES",
     "ALLOWED_SUPPORT_SCOPES",
     "ALLOWED_UNIT_TYPES",
+    "ALLOWED_VALIDATION_MODES",
     "AnchorPerspective",
     "AnchorRole",
     "EvidenceAnchor",
@@ -50,6 +57,9 @@ __all__ = [
     "EvidenceSpan",
     "FINAL_REFERENCE_UNIT_ID_PATTERN",
     "FROZEN_PROTOCOL_BYTE_SHA256",
+    "FROZEN_TCM_PACKET_BYTE_SHA256",
+    "FROZEN_WESTERN_PACKET_BYTE_SHA256",
+    "FormalPacketAuthorityError",
     "FrozenPacketAnchorIndex",
     "PacketMetadata",
     "PerspectiveScope",
@@ -60,8 +70,10 @@ __all__ = [
     "STUDY_ID",
     "SupportScope",
     "UnitType",
+    "ValidationMode",
     "format_final_reference_unit_id",
     "parse_final_reference_unit_id",
     "validate_evidence_anchor",
     "validate_reference_unit_record",
+    "verify_packet_records_integrity",
 ]

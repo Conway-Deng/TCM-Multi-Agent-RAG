@@ -78,6 +78,29 @@ from research.experiments.cross_perspective_advisory_ablation_v1.packet_writer i
     verify_research_prompts,
     write_formal_packet_artifacts,
 )
+
+FROZEN_TCM_PACKET_BYTE_SHA256 = (
+    "7ce35d0d8ea42ebc1b61cf87de858fed5c9b993a6e032435bab88a30e25eef3f"
+)
+FROZEN_WESTERN_PACKET_BYTE_SHA256 = (
+    "b5c48507de5467c2c8a5ee031d5d790b1e5ceccd53cf84ca2cd8b70f227555de"
+)
+FROZEN_MANIFEST_BYTE_SHA256 = (
+    "c934db63ec6d0cb811b7716b18ac62e7a38f9d848cbafbd3993505d8c6721ecf"
+)
+FROZEN_RECEIPT_BYTE_SHA256 = (
+    "87952c77980f5f81388921e619586f920d3f199b8695c58bc1d6520345bfe9bc"
+)
+
+
+def _snapshot_sealed_packets(packets_dir: Path) -> dict[str, str]:
+    if not packets_dir.exists():
+        return {}
+    return {
+        f.name: hashlib.sha256(f.read_bytes()).hexdigest()
+        for f in sorted(packets_dir.iterdir())
+        if f.is_file()
+    }
 from research.experiments.cross_perspective_advisory_ablation_v1.schemas import (
     FrozenEvidenceItem,
     FrozenEvidencePacket,
@@ -767,6 +790,14 @@ def test_writer_successful_synthetic_sink(repo_root: Path, tmp_path: Path):
 # ==============================================================================
 
 def test_real_data_read_only_in_memory_preflight(repo_root: Path):
+    real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    pre_snapshot = _snapshot_sealed_packets(real_packets_dir)
+    assert real_packets_dir.exists(), "Formal packets directory must exist post-freeze"
+    assert pre_snapshot.get("tcm_packets.jsonl") == FROZEN_TCM_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("western_packets.jsonl") == FROZEN_WESTERN_PACKET_BYTE_SHA256
+    assert pre_snapshot.get("packet_manifest.json") == FROZEN_MANIFEST_BYTE_SHA256
+    assert pre_snapshot.get("packet_freeze_receipt.json") == FROZEN_RECEIPT_BYTE_SHA256
+
     dummy_commit = "0" * 40
     arts = build_in_memory_formal_packet_artifacts(repo_root, dummy_commit)
 
@@ -784,9 +815,9 @@ def test_real_data_read_only_in_memory_preflight(repo_root: Path):
     assert arts.manifest_bytes == arts2.manifest_bytes
     assert arts.receipt_bytes == arts2.receipt_bytes
 
-    # Verify real packets/ does NOT exist
-    real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
-    assert not real_packets_dir.exists()
+    # Verify post-freeze invariant: in-memory preflight does not alter sealed packet artifacts
+    post_snapshot = _snapshot_sealed_packets(real_packets_dir)
+    assert post_snapshot == pre_snapshot, "Post-freeze invariant violated: sealed packet files altered!"
 
 
 # ==============================================================================
@@ -1254,6 +1285,13 @@ def test_formal_authorization_matrix(
         # 1. Runner guard must permit (no exception)
         check_formal_packet_generation_authorization(request_formal_execution=formal_requested)
 
+        real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+        pre_snapshot = _snapshot_sealed_packets(real_packets_dir)
+        assert pre_snapshot.get("tcm_packets.jsonl") == FROZEN_TCM_PACKET_BYTE_SHA256
+        assert pre_snapshot.get("western_packets.jsonl") == FROZEN_WESTERN_PACKET_BYTE_SHA256
+        assert pre_snapshot.get("packet_manifest.json") == FROZEN_MANIFEST_BYTE_SHA256
+        assert pre_snapshot.get("packet_freeze_receipt.json") == FROZEN_RECEIPT_BYTE_SHA256
+
         # 2. Mock high-level executor to verify dispatch reaches executor without writing to real formal path
         dispatched_calls = []
         monkeypatch.setattr(
@@ -1271,9 +1309,10 @@ def test_formal_authorization_matrix(
         assert len(dispatched_calls) == 1
         assert dispatched_calls[0]["request_formal_execution"] is True
         assert dispatch_result["status"] == "MOCKED_SEALED"
-        # Verify real packets/ directory was NEVER created or touched
-        real_packets_dir = repo_root / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
-        assert not real_packets_dir.exists()
+
+        # Verify post-freeze invariant: mocked dispatch never created or touched real artifacts
+        post_snapshot = _snapshot_sealed_packets(real_packets_dir)
+        assert post_snapshot == pre_snapshot, "Post-freeze invariant violated: sealed packet files altered!"
 
 
 # ==============================================================================
