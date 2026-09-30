@@ -234,20 +234,20 @@ class FrozenPacketAnchorIndex:
         cls,
         tcm_packet_file: Path,
         western_packet_file: Path,
-        *,
-        expected_tcm_byte_sha256: str = FROZEN_TCM_PACKET_BYTE_SHA256,
-        expected_western_byte_sha256: str = FROZEN_WESTERN_PACKET_BYTE_SHA256,
     ) -> FrozenPacketAnchorIndex:
         """Load and mechanically verify actual frozen local packet JSONL files.
 
-        FAIL-CLOSED:
+        FAIL-CLOSED FORMAL AUTHORITY:
         1. Reads exact file bytes.
-        2. Verifies exact byte SHA256 against frozen anchors before parsing.
+        2. Verifies exact byte SHA256 against immutable frozen anchors:
+           - TCM: FROZEN_TCM_PACKET_BYTE_SHA256
+           - Western: FROZEN_WESTERN_PACKET_BYTE_SHA256
+           Caller override or substitution is strictly forbidden.
         3. If either byte hash mismatches: stops / raises FormalPacketAuthorityError.
         4. Parses only after byte verification.
         5. Recomputes packet canonical self-hash for every packet.
         6. Recomputes SHA256 of exact_chunk_text for every evidence item.
-        7. Verifies cardinality (48 packets per stream, 4 items per packet, ranks 1-4).
+        7. Verifies cardinality (exactly 48 packets per stream, 4 items per packet, ranks 1-4).
         """
         if not tcm_packet_file.is_file():
             raise FileNotFoundError(f"TCM packet file not found at {tcm_packet_file}")
@@ -258,17 +258,17 @@ class FrozenPacketAnchorIndex:
         tcm_bytes = tcm_packet_file.read_bytes()
         western_bytes = western_packet_file.read_bytes()
 
-        # 2. Before parsing/indexing, verify exact file byte SHA256 against frozen anchors
+        # 2. Before parsing/indexing, verify exact file byte SHA256 against fixed frozen anchors
         tcm_byte_sha = hashlib.sha256(tcm_bytes).hexdigest()
-        if tcm_byte_sha != expected_tcm_byte_sha256:
+        if tcm_byte_sha != FROZEN_TCM_PACKET_BYTE_SHA256:
             raise FormalPacketAuthorityError(
-                f"TCM packet file byte SHA256 mismatch: {tcm_byte_sha} != {expected_tcm_byte_sha256}"
+                f"TCM packet file byte SHA256 mismatch: {tcm_byte_sha} != {FROZEN_TCM_PACKET_BYTE_SHA256}"
             )
 
         western_byte_sha = hashlib.sha256(western_bytes).hexdigest()
-        if western_byte_sha != expected_western_byte_sha256:
+        if western_byte_sha != FROZEN_WESTERN_PACKET_BYTE_SHA256:
             raise FormalPacketAuthorityError(
-                f"Western packet file byte SHA256 mismatch: {western_byte_sha} != {expected_western_byte_sha256}"
+                f"Western packet file byte SHA256 mismatch: {western_byte_sha} != {FROZEN_WESTERN_PACKET_BYTE_SHA256}"
             )
 
         # 4. Parse only AFTER byte-anchor verification
@@ -283,17 +283,15 @@ class FrozenPacketAnchorIndex:
             if line.strip()
         ]
 
-        # 7. Cardinality check (48 packets per stream when evaluating formal anchors)
-        if expected_tcm_byte_sha256 == FROZEN_TCM_PACKET_BYTE_SHA256:
-            if len(tcm_lines) != 48:
-                raise FormalPacketAuthorityError(
-                    f"Expected exactly 48 TCM packets, got {len(tcm_lines)}"
-                )
-        if expected_western_byte_sha256 == FROZEN_WESTERN_PACKET_BYTE_SHA256:
-            if len(western_lines) != 48:
-                raise FormalPacketAuthorityError(
-                    f"Expected exactly 48 Western packets, got {len(western_lines)}"
-                )
+        # 7. Cardinality check (exactly 48 packets per stream)
+        if len(tcm_lines) != 48:
+            raise FormalPacketAuthorityError(
+                f"Expected exactly 48 TCM packets, got {len(tcm_lines)}"
+            )
+        if len(western_lines) != 48:
+            raise FormalPacketAuthorityError(
+                f"Expected exactly 48 Western packets, got {len(western_lines)}"
+            )
 
         # 5 & 6. Verify packet canonical self-hashes and chunk text hashes
         verify_packet_records_integrity(tcm_lines, western_lines)

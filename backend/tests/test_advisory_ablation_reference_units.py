@@ -969,6 +969,66 @@ def test_formal_authority_rejects_altered_packet_bytes(tmp_path: Path):
         FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_double, western_double)
 
 
+def test_formal_authority_exploit_rejection_internal_consistency_insufficient(tmp_path: Path):
+    """TASK 4 Exploit Regression: Internal consistency is not sufficient for formal authority.
+
+    Proves that even when an attacker creates a completely internally-consistent packet file
+    (where chunk hashes, packet canonical self-hashes, and line formats all match perfectly)
+    and attempts to supply the altered file SHA or load it via the formal loader:
+    1. The formal loader API exposes NO parameter allowing the caller to supply/override expected hashes.
+    2. The formal loader rejects the altered files because their byte hashes do not equal
+       the fixed frozen anchors (FROZEN_TCM_PACKET_BYTE_SHA256 / FROZEN_WESTERN_PACKET_BYTE_SHA256).
+    """
+    import inspect
+    from research.experiments.cross_perspective_advisory_ablation_v1.packet_serialization import (
+        packet_canonical_sha256,
+    )
+
+    # 1. Verify that formal loader signature exposes ZERO override parameters
+    sig = inspect.signature(FrozenPacketAnchorIndex.from_verified_formal_packets)
+    assert list(sig.parameters.keys()) == ["tcm_packet_file", "western_packet_file"]
+
+    # 2. Build internally-consistent altered packet files
+    tcm_records, western_records = _make_synthetic_packet_records()
+    for pkt in tcm_records + western_records:
+        for it in pkt["evidence_items"]:
+            it["chunk_text_sha256"] = _make_sha256(it["exact_chunk_text"])
+        pkt["packet_canonical_sha256"] = packet_canonical_sha256(pkt)
+
+    tcm_path_double = tmp_path / "altered_tcm_packets.jsonl"
+    western_path_double = tmp_path / "altered_western_packets.jsonl"
+
+    tcm_path_double.write_text(
+        "\n".join(json.dumps(r) for r in tcm_records) + "\n", encoding="utf-8"
+    )
+    western_path_double.write_text(
+        "\n".join(json.dumps(r) for r in western_records) + "\n", encoding="utf-8"
+    )
+
+    altered_tcm_byte_sha = hashlib.sha256(tcm_path_double.read_bytes()).hexdigest()
+
+    # Verify files are internally consistent (generic record integrity check passes)
+    verify_packet_records_integrity(tcm_records, western_records)
+
+    # 3. Attempting to pass expected hashes to the formal loader fails at Python call level
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        FrozenPacketAnchorIndex.from_verified_formal_packets(
+            tcm_path_double,
+            western_path_double,
+            expected_tcm_byte_sha256=altered_tcm_byte_sha,  # type: ignore[call-arg]
+        )
+
+    # 4. Attempting to use the formal loader rejects altered files fail-closed
+    with pytest.raises(FormalPacketAuthorityError, match="TCM packet file byte SHA256 mismatch"):
+        FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_path_double, western_path_double)
+
+    # Also confirm Western mismatch if TCM were real
+    packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
+    real_tcm = packets_dir / "tcm_packets.jsonl"
+    with pytest.raises(FormalPacketAuthorityError, match="Western packet file byte SHA256 mismatch"):
+        FrozenPacketAnchorIndex.from_verified_formal_packets(real_tcm, western_path_double)
+
+
 def test_formal_verified_loader_accepts_real_frozen_packets():
     """Test B: Formal verified loader accepts the real frozen packet files."""
     packets_dir = _ROOT / "research/experiments/cross_perspective_advisory_ablation_v1/packets"
