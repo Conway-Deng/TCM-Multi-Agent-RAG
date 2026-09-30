@@ -38,7 +38,7 @@ CRITICAL SCIENTIFIC AND ARCHITECTURAL BOUNDARIES:
    units independently. Formal reconciliation cannot begin until both submissions
    are cryptographically locked and receipt-hashed (Phase B3+).
    Administrative B2A workspace locks alone do NOT authorize formal reconciliation.
-   All formal reconciliation constructors fail closed in Phase B2B.
+   All formal reconciliation constructors and combination helpers fail closed in Phase B2B.
 
 4. EXACT DUPLICATE != SEMANTIC EQUIVALENCE:
    Exact duplicate flagging is advisory and mechanical only. It only flags records
@@ -87,6 +87,28 @@ ReconciliationState = Literal[
     "adjudication_required",
 ]
 
+ALLOWED_NEW_TARGET_STATUSES: Final[tuple[str, ...]] = (
+    "pending",
+    "accepted",
+    "rejected",
+)
+
+NewTargetStatus = Literal["pending", "accepted", "rejected"]
+
+ALLOWED_DISAGREEMENT_STATUSES: Final[tuple[str, ...]] = (
+    "unresolved",
+    "referred_to_adjudication",
+    "adjudicated",
+    "closed",
+)
+
+DisagreementStatus = Literal[
+    "unresolved",
+    "referred_to_adjudication",
+    "adjudicated",
+    "closed",
+]
+
 
 class ReconciliationAuditError(Exception):
     """Base error for reconciliation audit failures."""
@@ -102,6 +124,24 @@ class FormalReconciliationGateError(ReconciliationAuditError):
 
 class ReconciliationStateError(ReconciliationAuditError):
     """Raised when an invalid state transition or missing attestation is encountered."""
+
+
+def _require_bool(value: Any, field_name: str) -> bool:
+    """Fail-closed validator enforcing that value is an actual bool instance."""
+    if type(value) is not bool:
+        raise TypeError(
+            f"Field '{field_name}' must be of type bool, got {type(value).__name__} ({value!r})"
+        )
+    return value
+
+
+def _require_non_empty_str(value: Any, field_name: str) -> str:
+    """Fail-closed validator enforcing that value is a non-empty string."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(
+            f"Field '{field_name}' must be a non-empty string, got {value!r}"
+        )
+    return value
 
 
 @dataclass(frozen=True)
@@ -121,12 +161,16 @@ class ReviewerRecordRef:
             raise ValueError(
                 f"Invalid reviewer_role '{self.reviewer_role}': must be 'reviewer_a' or 'reviewer_b'"
             )
+        # Part C.5: Reject bool explicitly since bool is a subclass of int
+        if isinstance(self.record_index, bool) or type(self.record_index) is not int:
+            raise TypeError(
+                f"record_index must be an int, not bool or {type(self.record_index).__name__}"
+            )
         if self.record_index < 0:
             raise ValueError(
-                f"record_index must be non-negative integer, got {self.record_index}"
+                f"record_index must be a non-negative int, got {self.record_index}"
             )
-        if not self.question_id:
-            raise ValueError("question_id must be a non-empty string")
+        _require_non_empty_str(self.question_id, "question_id")
 
     def validate_against_workspace(self, workspace: ReviewerWorkspace) -> ReferenceUnitRecord:
         """Mechanically validate this reference against a supplied ReviewerWorkspace.
@@ -159,6 +203,19 @@ class ReviewerRecordRef:
             return raw_record
         return ReferenceUnitRecord.model_validate(raw_record)
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ReviewerRecordRef:
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dict for ReviewerRecordRef, got {type(data).__name__}")
+        role = data.get("reviewer_role")
+        idx = data.get("record_index")
+        qid = data.get("question_id")
+        return cls(
+            reviewer_role=role,  # type: ignore[arg-type]
+            record_index=idx,  # type: ignore[arg-type]
+            question_id=qid,  # type: ignore[arg-type]
+        )
+
 
 @dataclass
 class CompletenessAttestation:
@@ -174,19 +231,29 @@ class CompletenessAttestation:
     considered_both_submissions: bool = False
     all_8_passages_checked: bool = False
     omitted_targets_examined: bool = False
-    new_targets_logged: bool = False
-    methodological_issues_identified: bool = False
+    new_target_additions_checked_and_logged: bool = False
+    methodological_issues_checked: bool = False
+    unresolved_methodological_issue_present: bool = False
     human_attestor: str = ""
     attestation_notes: str = ""
 
+    def __post_init__(self) -> None:
+        _require_bool(self.considered_both_submissions, "considered_both_submissions")
+        _require_bool(self.all_8_passages_checked, "all_8_passages_checked")
+        _require_bool(self.omitted_targets_examined, "omitted_targets_examined")
+        _require_bool(self.new_target_additions_checked_and_logged, "new_target_additions_checked_and_logged")
+        _require_bool(self.methodological_issues_checked, "methodological_issues_checked")
+        _require_bool(self.unresolved_methodological_issue_present, "unresolved_methodological_issue_present")
+
     def is_complete(self) -> bool:
-        """Return True if all 5 required human completeness attestations have been confirmed."""
+        """Return True if all required process attestations are confirmed and no unresolved issue exists."""
         return (
             self.considered_both_submissions
             and self.all_8_passages_checked
             and self.omitted_targets_examined
-            and self.new_targets_logged
-            and self.methodological_issues_identified
+            and self.new_target_additions_checked_and_logged
+            and self.methodological_issues_checked
+            and not self.unresolved_methodological_issue_present
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -194,8 +261,9 @@ class CompletenessAttestation:
             "considered_both_submissions": self.considered_both_submissions,
             "all_8_passages_checked": self.all_8_passages_checked,
             "omitted_targets_examined": self.omitted_targets_examined,
-            "new_targets_logged": self.new_targets_logged,
-            "methodological_issues_identified": self.methodological_issues_identified,
+            "new_target_additions_checked_and_logged": self.new_target_additions_checked_and_logged,
+            "methodological_issues_checked": self.methodological_issues_checked,
+            "unresolved_methodological_issue_present": self.unresolved_methodological_issue_present,
             "human_attestor": self.human_attestor,
             "attestation_notes": self.attestation_notes,
             "is_complete": self.is_complete(),
@@ -203,12 +271,29 @@ class CompletenessAttestation:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> CompletenessAttestation:
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dict for CompletenessAttestation, got {type(data).__name__}")
         return cls(
-            considered_both_submissions=bool(data.get("considered_both_submissions", False)),
-            all_8_passages_checked=bool(data.get("all_8_passages_checked", False)),
-            omitted_targets_examined=bool(data.get("omitted_targets_examined", False)),
-            new_targets_logged=bool(data.get("new_targets_logged", False)),
-            methodological_issues_identified=bool(data.get("methodological_issues_identified", False)),
+            considered_both_submissions=_require_bool(
+                data.get("considered_both_submissions", False), "considered_both_submissions"
+            ),
+            all_8_passages_checked=_require_bool(
+                data.get("all_8_passages_checked", False), "all_8_passages_checked"
+            ),
+            omitted_targets_examined=_require_bool(
+                data.get("omitted_targets_examined", False), "omitted_targets_examined"
+            ),
+            new_target_additions_checked_and_logged=_require_bool(
+                data.get("new_target_additions_checked_and_logged", False),
+                "new_target_additions_checked_and_logged",
+            ),
+            methodological_issues_checked=_require_bool(
+                data.get("methodological_issues_checked", False), "methodological_issues_checked"
+            ),
+            unresolved_methodological_issue_present=_require_bool(
+                data.get("unresolved_methodological_issue_present", False),
+                "unresolved_methodological_issue_present",
+            ),
             human_attestor=str(data.get("human_attestor", "")),
             attestation_notes=str(data.get("attestation_notes", "")),
         )
@@ -232,8 +317,25 @@ class NewTargetAuditEntry:
     reviewer_a_acknowledged: bool = False
     reviewer_b_acknowledged: bool = False
     supporting_refs: list[ReviewerRecordRef] = field(default_factory=list)
-    audit_status: Literal["pending", "accepted", "rejected"] = "pending"
+    audit_status: NewTargetStatus = "pending"
     audit_notes: str = ""
+
+    def __post_init__(self) -> None:
+        _require_non_empty_str(self.question_id, "question_id")
+        _require_non_empty_str(self.human_authored_reason, "human_authored_reason")
+        _require_bool(self.reviewer_a_acknowledged, "reviewer_a_acknowledged")
+        _require_bool(self.reviewer_b_acknowledged, "reviewer_b_acknowledged")
+        if self.audit_status not in ALLOWED_NEW_TARGET_STATUSES:
+            raise ValueError(
+                f"Invalid audit_status '{self.audit_status}': must be one of {ALLOWED_NEW_TARGET_STATUSES}"
+            )
+        for ref in self.supporting_refs:
+            if not isinstance(ref, ReviewerRecordRef):
+                raise TypeError(f"Expected ReviewerRecordRef in supporting_refs, got {type(ref).__name__}")
+            if ref.question_id != self.question_id:
+                raise ValueError(
+                    f"Supporting ref question_id '{ref.question_id}' does not match entry question_id '{self.question_id}'"
+                )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -255,21 +357,28 @@ class NewTargetAuditEntry:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> NewTargetAuditEntry:
-        refs = [
-            ReviewerRecordRef(
-                reviewer_role=r["reviewer_role"],
-                record_index=r["record_index"],
-                question_id=r["question_id"],
-            )
-            for r in data.get("supporting_refs", [])
-        ]
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dict for NewTargetAuditEntry, got {type(data).__name__}")
+        qid = _require_non_empty_str(data.get("question_id"), "question_id")
+        reason = data.get("human_authored_reason")
+        if not isinstance(reason, str):
+            raise TypeError("human_authored_reason must be a string")
+        ack_a = _require_bool(data.get("reviewer_a_acknowledged", False), "reviewer_a_acknowledged")
+        ack_b = _require_bool(data.get("reviewer_b_acknowledged", False), "reviewer_b_acknowledged")
+        status = data.get("audit_status", "pending")
+        if status not in ALLOWED_NEW_TARGET_STATUSES:
+            raise ValueError(f"Invalid audit_status '{status}': must be one of {ALLOWED_NEW_TARGET_STATUSES}")
+        refs_raw = data.get("supporting_refs", [])
+        if not isinstance(refs_raw, list):
+            raise TypeError("supporting_refs must be a list")
+        refs = [ReviewerRecordRef.from_dict(r) for r in refs_raw]
         return cls(
-            question_id=str(data["question_id"]),
-            human_authored_reason=str(data.get("human_authored_reason", "")),
-            reviewer_a_acknowledged=bool(data.get("reviewer_a_acknowledged", False)),
-            reviewer_b_acknowledged=bool(data.get("reviewer_b_acknowledged", False)),
+            question_id=qid,
+            human_authored_reason=reason,
+            reviewer_a_acknowledged=ack_a,
+            reviewer_b_acknowledged=ack_b,
             supporting_refs=refs,
-            audit_status=data.get("audit_status", "pending"),
+            audit_status=status,
             audit_notes=str(data.get("audit_notes", "")),
         )
 
@@ -286,9 +395,26 @@ class UnresolvedDisagreementAuditEntry:
     question_id: str
     involved_refs: list[ReviewerRecordRef] = field(default_factory=list)
     human_authored_disagreement_note: str = ""
-    status: Literal["unresolved", "referred_to_adjudication", "adjudicated", "closed"] = "unresolved"
+    status: DisagreementStatus = "unresolved"
     third_adjudicator_required: bool = False
     adjudicator_notes: str = ""
+
+    def __post_init__(self) -> None:
+        _require_non_empty_str(self.question_id, "question_id")
+        if not isinstance(self.human_authored_disagreement_note, str):
+            raise TypeError("human_authored_disagreement_note must be a string")
+        if self.status not in ALLOWED_DISAGREEMENT_STATUSES:
+            raise ValueError(
+                f"Invalid disagreement status '{self.status}': must be one of {ALLOWED_DISAGREEMENT_STATUSES}"
+            )
+        _require_bool(self.third_adjudicator_required, "third_adjudicator_required")
+        for ref in self.involved_refs:
+            if not isinstance(ref, ReviewerRecordRef):
+                raise TypeError(f"Expected ReviewerRecordRef in involved_refs, got {type(ref).__name__}")
+            if ref.question_id != self.question_id:
+                raise ValueError(
+                    f"Involved ref question_id '{ref.question_id}' does not match entry question_id '{self.question_id}'"
+                )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -309,20 +435,26 @@ class UnresolvedDisagreementAuditEntry:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> UnresolvedDisagreementAuditEntry:
-        refs = [
-            ReviewerRecordRef(
-                reviewer_role=r["reviewer_role"],
-                record_index=r["record_index"],
-                question_id=r["question_id"],
-            )
-            for r in data.get("involved_refs", [])
-        ]
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dict for UnresolvedDisagreementAuditEntry, got {type(data).__name__}")
+        qid = _require_non_empty_str(data.get("question_id"), "question_id")
+        note = data.get("human_authored_disagreement_note", "")
+        if not isinstance(note, str):
+            raise TypeError("human_authored_disagreement_note must be a string")
+        status = data.get("status", "unresolved")
+        if status not in ALLOWED_DISAGREEMENT_STATUSES:
+            raise ValueError(f"Invalid disagreement status '{status}': must be one of {ALLOWED_DISAGREEMENT_STATUSES}")
+        third_adj = _require_bool(data.get("third_adjudicator_required", False), "third_adjudicator_required")
+        refs_raw = data.get("involved_refs", [])
+        if not isinstance(refs_raw, list):
+            raise TypeError("involved_refs must be a list")
+        refs = [ReviewerRecordRef.from_dict(r) for r in refs_raw]
         return cls(
-            question_id=str(data["question_id"]),
+            question_id=qid,
             involved_refs=refs,
-            human_authored_disagreement_note=str(data.get("human_authored_disagreement_note", "")),
-            status=data.get("status", "unresolved"),
-            third_adjudicator_required=bool(data.get("third_adjudicator_required", False)),
+            human_authored_disagreement_note=note,
+            status=status,
+            third_adjudicator_required=third_adj,
             adjudicator_notes=str(data.get("adjudicator_notes", "")),
         )
 
@@ -346,6 +478,157 @@ class QuestionReconciliationAudit:
     adjudication_required: bool = False
     exact_duplicate_pairs: list[tuple[ReviewerRecordRef, ReviewerRecordRef]] = field(default_factory=list)
 
+    def __post_init__(self) -> None:
+        _require_non_empty_str(self.question_id, "question_id")
+        _require_bool(self.adjudication_required, "adjudication_required")
+        if self.reconciliation_state not in ALLOWED_RECONCILIATION_STATES:
+            raise ReconciliationStateError(
+                f"Invalid reconciliation_state '{self.reconciliation_state}': must be one of {ALLOWED_RECONCILIATION_STATES}"
+            )
+        self._validate_provenance()
+
+    def _validate_provenance(self) -> None:
+        """Validate parent/child question_id and reviewer role provenance consistency."""
+        for ref in self.reviewer_a_refs:
+            if not isinstance(ref, ReviewerRecordRef):
+                raise TypeError(f"Expected ReviewerRecordRef in reviewer_a_refs, got {type(ref).__name__}")
+            if ref.reviewer_role != "reviewer_a":
+                raise ValueError(f"Ref in reviewer_a_refs has role '{ref.reviewer_role}', must have role 'reviewer_a' (reviewer_role='reviewer_a')")
+            if ref.question_id != self.question_id:
+                raise ValueError(
+                    f"Ref in reviewer_a_refs has question_id '{ref.question_id}', does not match parent question_id '{self.question_id}'"
+                )
+
+        for ref in self.reviewer_b_refs:
+            if not isinstance(ref, ReviewerRecordRef):
+                raise TypeError(f"Expected ReviewerRecordRef in reviewer_b_refs, got {type(ref).__name__}")
+            if ref.reviewer_role != "reviewer_b":
+                raise ValueError(f"Ref in reviewer_b_refs has role '{ref.reviewer_role}', must have role 'reviewer_b' (reviewer_role='reviewer_b')")
+            if ref.question_id != self.question_id:
+                raise ValueError(
+                    f"Ref in reviewer_b_refs has question_id '{ref.question_id}', does not match parent question_id '{self.question_id}'"
+                )
+
+        for entry in self.addition_log:
+            if not isinstance(entry, NewTargetAuditEntry):
+                raise TypeError(f"Expected NewTargetAuditEntry in addition_log, got {type(entry).__name__}")
+            if entry.question_id != self.question_id:
+                raise ValueError(
+                    f"addition_log entry has question_id '{entry.question_id}', does not match parent question_id '{self.question_id}'"
+                )
+            for ref in entry.supporting_refs:
+                if ref.question_id != self.question_id:
+                    raise ValueError(
+                        f"supporting_ref has question_id '{ref.question_id}', does not match parent question_id '{self.question_id}'"
+                    )
+
+        for entry in self.unresolved_items:
+            if not isinstance(entry, UnresolvedDisagreementAuditEntry):
+                raise TypeError(f"Expected UnresolvedDisagreementAuditEntry in unresolved_items, got {type(entry).__name__}")
+            if entry.question_id != self.question_id:
+                raise ValueError(
+                    f"unresolved_item has question_id '{entry.question_id}', does not match parent question_id '{self.question_id}'"
+                )
+            for ref in entry.involved_refs:
+                if ref.question_id != self.question_id:
+                    raise ValueError(
+                        f"involved_ref has question_id '{ref.question_id}', does not match parent question_id '{self.question_id}'"
+                    )
+
+        for p in self.exact_duplicate_pairs:
+            if not isinstance(p, (tuple, list)) or len(p) != 2:
+                raise ValueError("exact_duplicate_pairs entries must be pairs (tuple of 2 refs)")
+            ref_a, ref_b = p
+            if not isinstance(ref_a, ReviewerRecordRef) or not isinstance(ref_b, ReviewerRecordRef):
+                raise TypeError("exact_duplicate_pairs must contain ReviewerRecordRef objects")
+            if ref_a.reviewer_role != "reviewer_a":
+                raise ValueError(f"first ref must have role 'reviewer_a', got '{ref_a.reviewer_role}'")
+            if ref_b.reviewer_role != "reviewer_b":
+                raise ValueError(f"second ref must have role 'reviewer_b', got '{ref_b.reviewer_role}'")
+            if ref_a.question_id != self.question_id:
+                raise ValueError(f"first ref in duplicate pair has question_id '{ref_a.question_id}', does not match parent question_id '{self.question_id}'")
+            if ref_b.question_id != self.question_id:
+                raise ValueError(f"second ref in duplicate pair has question_id '{ref_b.question_id}', does not match parent question_id '{self.question_id}'")
+
+    def validate_ready_for_human_review_complete(self) -> None:
+        """Master fail-closed validator for human_review_complete transition.
+
+        Validates:
+        1. Process completeness attestations are all True
+        2. unresolved_methodological_issue_present == False
+        3. adjudication_required == False
+        4. No unresolved or referred_to_adjudication items
+        5. Every addition entry has A and B acks, final status (accepted/rejected), and non-empty reason
+        6. Provenance and cross-question consistency across all references
+        """
+        # 1 & 2. Completeness attestations
+        if not self.completeness_attestation.is_complete():
+            raise ReconciliationStateError(
+                f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                "human completeness attestations are incomplete or unresolved methodological issue is present"
+            )
+        if self.completeness_attestation.unresolved_methodological_issue_present:
+            raise ReconciliationStateError(
+                f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                "unresolved methodological issue is present (reported present)"
+            )
+
+        # 3. Top-level adjudication flag
+        if self.adjudication_required:
+            raise ReconciliationStateError(
+                f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                "adjudication_required flag is True (adjudication is marked as required)"
+            )
+
+        # 4. Disagreement items
+        for item in self.unresolved_items:
+            if item.status in ("unresolved", "referred_to_adjudication"):
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    f"unresolved disagreements present: item has non-final status '{item.status}'"
+                )
+            if item.third_adjudicator_required and item.status != "adjudicated":
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    f"third adjudicator required for disagreement but status is '{item.status}'"
+                )
+
+        # 5. Addition log items
+        for entry in self.addition_log:
+            if not entry.human_authored_reason or not entry.human_authored_reason.strip():
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    "addition entry requires non-empty human_authored_reason"
+                )
+            if not entry.reviewer_a_acknowledged:
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    "addition entry missing Reviewer A acknowledgement (must be acknowledged by Reviewer A)"
+                )
+            if not entry.reviewer_b_acknowledged:
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    "addition entry missing Reviewer B acknowledgement (must be acknowledged by Reviewer B)"
+                )
+            if entry.audit_status == "pending":
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    "addition log entries must have final status (accepted/rejected), pending addition blocks"
+                )
+            if entry.audit_status not in ("accepted", "rejected"):
+                raise ReconciliationStateError(
+                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
+                    f"addition entry has invalid status '{entry.audit_status}'"
+                )
+
+        # 6. Revalidate provenance fail-closed
+        try:
+            self._validate_provenance()
+        except (ValueError, TypeError) as e:
+            raise ReconciliationStateError(
+                f"Cannot mark question '{self.question_id}' as 'human_review_complete': {e}"
+            ) from e
+
     def set_reconciliation_state(self, state: ReconciliationState) -> None:
         """Update reconciliation administrative state with fail-closed validation."""
         if state not in ALLOWED_RECONCILIATION_STATES:
@@ -353,16 +636,7 @@ class QuestionReconciliationAudit:
                 f"Invalid reconciliation_state '{state}': must be one of {ALLOWED_RECONCILIATION_STATES}"
             )
         if state == "human_review_complete":
-            if not self.completeness_attestation.is_complete():
-                raise ReconciliationStateError(
-                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
-                    "human completeness attestations are incomplete"
-                )
-            if self.adjudication_required or any(item.status == "unresolved" for item in self.unresolved_items):
-                raise ReconciliationStateError(
-                    f"Cannot mark question '{self.question_id}' as 'human_review_complete': "
-                    "unresolved disagreements or adjudication requirements remain"
-                )
+            self.validate_ready_for_human_review_complete()
         self.reconciliation_state = state
 
     def to_dict(self) -> dict[str, Any]:
@@ -409,57 +683,72 @@ class QuestionReconciliationAudit:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> QuestionReconciliationAudit:
-        a_refs = [
-            ReviewerRecordRef(
-                reviewer_role=r["reviewer_role"],
-                record_index=r["record_index"],
-                question_id=r["question_id"],
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dict for QuestionReconciliationAudit, got {type(data).__name__}")
+        qid = _require_non_empty_str(data.get("question_id"), "question_id")
+        state = data.get("reconciliation_state", "unreviewed")
+        if state not in ALLOWED_RECONCILIATION_STATES:
+            raise ReconciliationStateError(
+                f"Invalid reconciliation_state '{state}': must be one of {ALLOWED_RECONCILIATION_STATES}"
             )
-            for r in data.get("reviewer_a_refs", [])
-        ]
-        b_refs = [
-            ReviewerRecordRef(
-                reviewer_role=r["reviewer_role"],
-                record_index=r["record_index"],
-                question_id=r["question_id"],
-            )
-            for r in data.get("reviewer_b_refs", [])
-        ]
+        adj_req = _require_bool(data.get("adjudication_required", False), "adjudication_required")
+
+        a_refs_raw = data.get("reviewer_a_refs", [])
+        if not isinstance(a_refs_raw, list):
+            raise TypeError("reviewer_a_refs must be a list")
+        a_refs = [ReviewerRecordRef.from_dict(r) for r in a_refs_raw]
+
+        b_refs_raw = data.get("reviewer_b_refs", [])
+        if not isinstance(b_refs_raw, list):
+            raise TypeError("reviewer_b_refs must be a list")
+        b_refs = [ReviewerRecordRef.from_dict(r) for r in b_refs_raw]
+
+        dup_pairs_raw = data.get("exact_duplicate_pairs", [])
+        if not isinstance(dup_pairs_raw, list):
+            raise TypeError("exact_duplicate_pairs must be a list")
         dup_pairs = [
             (
-                ReviewerRecordRef(
-                    reviewer_role=p[0]["reviewer_role"],
-                    record_index=p[0]["record_index"],
-                    question_id=p[0]["question_id"],
-                ),
-                ReviewerRecordRef(
-                    reviewer_role=p[1]["reviewer_role"],
-                    record_index=p[1]["record_index"],
-                    question_id=p[1]["question_id"],
-                ),
+                ReviewerRecordRef.from_dict(p[0]),
+                ReviewerRecordRef.from_dict(p[1]),
             )
-            for p in data.get("exact_duplicate_pairs", [])
+            for p in dup_pairs_raw
         ]
-        return cls(
-            question_id=str(data["question_id"]),
+
+        unresolved_raw = data.get("unresolved_items", [])
+        if not isinstance(unresolved_raw, list):
+            raise TypeError("unresolved_items must be a list")
+        unresolved = [
+            UnresolvedDisagreementAuditEntry.from_dict(item)
+            for item in unresolved_raw
+        ]
+
+        addition_raw = data.get("addition_log", [])
+        if not isinstance(addition_raw, list):
+            raise TypeError("addition_log must be a list")
+        addition = [
+            NewTargetAuditEntry.from_dict(entry)
+            for entry in addition_raw
+        ]
+
+        instance = cls(
+            question_id=qid,
             reviewer_a_refs=a_refs,
             reviewer_b_refs=b_refs,
             human_notes=str(data.get("human_notes", "")),
-            reconciliation_state=data.get("reconciliation_state", "unreviewed"),
+            reconciliation_state=state,
             completeness_attestation=CompletenessAttestation.from_dict(
                 data.get("completeness_attestation", {})
             ),
-            unresolved_items=[
-                UnresolvedDisagreementAuditEntry.from_dict(item)
-                for item in data.get("unresolved_items", [])
-            ],
-            addition_log=[
-                NewTargetAuditEntry.from_dict(entry)
-                for entry in data.get("addition_log", [])
-            ],
-            adjudication_required=bool(data.get("adjudication_required", False)),
+            unresolved_items=unresolved,
+            addition_log=addition,
+            adjudication_required=adj_req,
             exact_duplicate_pairs=dup_pairs,
         )
+
+        if state == "human_review_complete":
+            instance.validate_ready_for_human_review_complete()
+
+        return instance
 
 
 def find_exact_duplicate_records(
@@ -479,7 +768,17 @@ def find_exact_duplicate_records(
     - DOES NOT perform fuzzy matching, whitespace normalization, case-folding,
       or semantic comparison.
     - NEVER merges, edits, or deletes records.
+
+    FORMAL GATE:
+    In Phase B2B, this helper is strictly SYNTHETIC-ONLY. Comparing formal reviewer
+    workspaces before cryptographic submission receipts (Phase B3+) is forbidden.
     """
+    if getattr(workspace_a, "workspace_kind", None) != "synthetic" or getattr(workspace_b, "workspace_kind", None) != "synthetic":
+        raise FormalReconciliationGateError(
+            "find_exact_duplicate_records cannot consume formal administrative workspaces or compare formal reviewer workspaces in Phase B2B. "
+            "Formal submissions must be cryptographically locked and receipt-hashed before reconciliation comparison."
+        )
+
     if workspace_a.reviewer_role != "reviewer_a":
         raise ReviewerRoleMismatchError("workspace_a must have reviewer_role 'reviewer_a'")
     if workspace_b.reviewer_role != "reviewer_b":
@@ -545,6 +844,43 @@ class ReconciliationAuditWorkspace:
     question_audits: dict[str, QuestionReconciliationAudit] = field(default_factory=dict)
     local_only_notice: str = LOCAL_ONLY_NOTICE
 
+    def __post_init__(self) -> None:
+        # Part G.1: Formal gate on direct dataclass construction
+        if self.workspace_kind == "formal":
+            raise FormalReconciliationGateError(
+                "Formal reconciliation cannot be constructed in Phase B2B. "
+                "Formal reconciliation workspace creation is prohibited. "
+                "Under frozen protocol Section J, both Reviewer A and Reviewer B submissions "
+                "must be cryptographically locked and receipt-hashed (Phase B3+) before "
+                "formal reconciliation may be initialized."
+            )
+        if self.workspace_kind != "synthetic":
+            raise ValueError(
+                f"Invalid workspace_kind '{self.workspace_kind}': only 'synthetic' is permitted in Phase B2B"
+            )
+
+        # Part H: Fixed metadata invariants
+        if self.study_id != STUDY_ID:
+            raise ValueError(f"Invalid study_id '{self.study_id}': expected '{STUDY_ID}'")
+        if self.protocol_id != PROTOCOL_ID:
+            raise ValueError(f"Invalid protocol_id '{self.protocol_id}': expected '{PROTOCOL_ID}'")
+        if self.protocol_hash != FROZEN_PROTOCOL_BYTE_SHA256:
+            raise ValueError(f"Invalid protocol_hash '{self.protocol_hash}': expected '{FROZEN_PROTOCOL_BYTE_SHA256}'")
+        if self.reviewer_a_role != "reviewer_a":
+            raise ValueError(f"Invalid reviewer_a_role '{self.reviewer_a_role}': expected 'reviewer_a'")
+        if self.reviewer_b_role != "reviewer_b":
+            raise ValueError(f"Invalid reviewer_b_role '{self.reviewer_b_role}': expected 'reviewer_b'")
+        if self.local_only_notice != LOCAL_ONLY_NOTICE:
+            raise ValueError(f"Invalid local_only_notice '{self.local_only_notice}': expected '{LOCAL_ONLY_NOTICE}'")
+
+        # Part I: Question map consistency
+        for qid, audit in self.question_audits.items():
+            _require_non_empty_str(qid, "question_audits key")
+            if not isinstance(audit, QuestionReconciliationAudit):
+                raise TypeError(f"Expected QuestionReconciliationAudit for key '{qid}', got {type(audit).__name__}")
+            if qid != audit.question_id:
+                raise ValueError(f"question_audits key '{qid}' does not match audit.question_id '{audit.question_id}'")
+
     @property
     def questions(self) -> list[str]:
         return list(self.question_audits.keys())
@@ -585,9 +921,19 @@ class ReconciliationAuditWorkspace:
 
         Strictly marked workspace_kind = 'synthetic'. Never claims formal authority.
         """
-        if workspace_a is not None and workspace_a.workspace_kind != "synthetic":
+        if not questions:
+            raise ValueError("questions list cannot be empty")
+
+        seen: set[str] = set()
+        for qid in questions:
+            _require_non_empty_str(qid, "question_id")
+            if qid in seen:
+                raise ValueError(f"Duplicate question ID '{qid}' in questions list")
+            seen.add(qid)
+
+        if workspace_a is not None and getattr(workspace_a, "workspace_kind", None) != "synthetic":
             raise TypeError("Cannot bind non-synthetic workspace_a to synthetic reconciliation workspace")
-        if workspace_b is not None and workspace_b.workspace_kind != "synthetic":
+        if workspace_b is not None and getattr(workspace_b, "workspace_kind", None) != "synthetic":
             raise TypeError("Cannot bind non-synthetic workspace_b to synthetic reconciliation workspace")
         if workspace_a is not None and workspace_a.reviewer_role != "reviewer_a":
             raise ReviewerRoleMismatchError("workspace_a must have reviewer_role 'reviewer_a'")
@@ -642,24 +988,66 @@ class ReconciliationAuditWorkspace:
         file_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
     @classmethod
-    def load_synthetic_local(cls, file_path: Path) -> ReconciliationAuditWorkspace:
-        """Load synthetic reconciliation audit workspace from local disk."""
-        if not file_path.is_file():
-            raise FileNotFoundError(f"File not found: {file_path}")
-        data = json.loads(file_path.read_text(encoding="utf-8"))
-        if data.get("workspace_kind") != "synthetic":
-            raise TypeError("load_synthetic_local only loads workspaces with workspace_kind 'synthetic'")
-        audits = {
-            qid: QuestionReconciliationAudit.from_dict(audit_dict)
-            for qid, audit_dict in data.get("question_audits", {}).items()
-        }
+    def from_dict(cls, data: dict[str, Any]) -> ReconciliationAuditWorkspace:
+        """Deserialize synthetic reconciliation audit workspace with fail-closed validation."""
+        if not isinstance(data, dict):
+            raise TypeError("Expected dictionary for reconciliation workspace")
+
+        # Part H & G.1: Fail-closed on missing or altered fixed metadata
+        if "workspace_kind" not in data:
+            raise ValueError("Missing 'workspace_kind' in persisted workspace")
+        if data["workspace_kind"] == "formal":
+            raise FormalReconciliationGateError(
+                "Formal reconciliation cannot be constructed in Phase B2B. "
+                "Formal reconciliation workspace creation is prohibited."
+            )
+        if data["workspace_kind"] != "synthetic":
+            raise ValueError(
+                f"Invalid workspace_kind '{data['workspace_kind']}': only 'synthetic' is permitted in Phase B2B"
+            )
+
+        if data.get("study_id") != STUDY_ID:
+            raise ValueError(f"study_id mismatch: {data.get('study_id')} != {STUDY_ID}")
+        if data.get("protocol_id") != PROTOCOL_ID:
+            raise ValueError(f"protocol_id mismatch: {data.get('protocol_id')} != {PROTOCOL_ID}")
+        if data.get("protocol_hash") != FROZEN_PROTOCOL_BYTE_SHA256:
+            raise ValueError(f"protocol_hash mismatch: {data.get('protocol_hash')} != {FROZEN_PROTOCOL_BYTE_SHA256}")
+        if data.get("reviewer_a_role") != "reviewer_a":
+            raise ValueError(f"reviewer_a_role mismatch: {data.get('reviewer_a_role')} != 'reviewer_a'")
+        if data.get("reviewer_b_role") != "reviewer_b":
+            raise ValueError(f"reviewer_b_role mismatch: {data.get('reviewer_b_role')} != 'reviewer_b'")
+        if data.get("local_only_notice") != LOCAL_ONLY_NOTICE:
+            raise ValueError("local_only_notice mismatch")
+
+        # Part I & J: Validate question_audits
+        raw_audits = data.get("question_audits", {})
+        if not isinstance(raw_audits, dict):
+            raise TypeError("'question_audits' must be a dictionary")
+
+        audits: dict[str, QuestionReconciliationAudit] = {}
+        for qid, audit_dict in raw_audits.items():
+            _require_non_empty_str(qid, "question_audits key")
+            audit_obj = QuestionReconciliationAudit.from_dict(audit_dict)
+            if qid != audit_obj.question_id:
+                raise ValueError(f"question_audits key '{qid}' does not match audit.question_id '{audit_obj.question_id}'")
+            audits[qid] = audit_obj
+
         return cls(
             study_id=data.get("study_id", STUDY_ID),
             protocol_id=data.get("protocol_id", PROTOCOL_ID),
             protocol_hash=data.get("protocol_hash", FROZEN_PROTOCOL_BYTE_SHA256),
             reviewer_a_role=data.get("reviewer_a_role", "reviewer_a"),
             reviewer_b_role=data.get("reviewer_b_role", "reviewer_b"),
-            workspace_kind="synthetic",
+            workspace_kind=data.get("workspace_kind", "synthetic"),
             question_audits=audits,
             local_only_notice=data.get("local_only_notice", LOCAL_ONLY_NOTICE),
         )
+
+    @classmethod
+    def load_synthetic_local(cls, file_path: Path | str) -> ReconciliationAuditWorkspace:
+        """Load synthetic reconciliation audit workspace from local disk with fail-closed validation."""
+        path = Path(file_path)
+        if not path.is_file():
+            raise FileNotFoundError(f"File not found: {path}")
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return cls.from_dict(data)
