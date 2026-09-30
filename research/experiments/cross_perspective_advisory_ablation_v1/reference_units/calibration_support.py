@@ -85,6 +85,19 @@ CALIBRATION_EVIDENCE_ID_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"^cal2cc:ev:(CAL-2CC-0[1-8]):(tcm|western):([1-4])$"
 )
 
+CALIBRATION_AUTHORSHIP_AMENDMENT_ID: Final[str] = (
+    "CPAA1-CALIBRATION-FIXTURE-AUTHORSHIP-AMENDMENT-V1"
+)
+CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256: Final[str] = (
+    "9de5635eaf62a6346789f7be1f291c0e88d6d8f8b3266daaa45a942a66c98dfa"
+)
+
+TextOrigin = Literal["human_authored", "ai_drafted_human_approved"]
+ALLOWED_TEXT_ORIGINS: Final[set[str]] = {
+    "human_authored",
+    "ai_drafted_human_approved",
+}
+
 ALLOWED_REVIEWER_ROLES: Final[set[str]] = {"reviewer_a", "reviewer_b"}
 ALLOWED_PERSPECTIVES: Final[set[str]] = {"tcm", "western"}
 ALLOWED_AMBIGUITY_CLASSIFICATIONS: Final[set[str]] = {
@@ -167,6 +180,15 @@ def _require_non_empty_str(value: Any, field_name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(
             f"Field '{field_name}' must be a non-empty string, got {value!r}"
+        )
+    return value
+
+
+def _require_sha256_hex(value: Any, field_name: str) -> str:
+    """Fail-closed validator enforcing that value is a 64-character lowercase hex string."""
+    if not isinstance(value, str) or len(value) != 64 or not all(c in "0123456789abcdef" for c in value.lower()):
+        raise ValueError(
+            f"Field '{field_name}' must be a 64-character SHA256 hex string, got {value!r}"
         )
     return value
 
@@ -460,6 +482,24 @@ class CalibrationCase:
     def __post_init__(self) -> None:
         self.validate_current_state()
 
+    def compute_case_content_sha256(self) -> str:
+        d = {
+            "calibration_case_id": self.calibration_case_id,
+            "question_text": self.question_text,
+            "tcm_packet": self.tcm_packet.to_dict(),
+            "western_packet": self.western_packet.to_dict(),
+        }
+        return compute_canonical_sha256(d)
+
+    def to_reviewer_facing_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        return {
+            "case_id": self.calibration_case_id,
+            "question_text": self.question_text,
+            "tcm_packet": self.tcm_packet.to_dict(),
+            "western_packet": self.western_packet.to_dict(),
+        }
+
     def to_dict(self) -> dict[str, Any]:
         self.validate_current_state()
         return {
@@ -486,19 +526,374 @@ class CalibrationCase:
 
 
 @dataclass
+class CalibrationAiDraftProvenance:
+    """Provenance record for AI-drafted calibration case candidate text."""
+
+    amendment_id: str
+    amendment_byte_sha256: str
+    model_provider: str
+    model_identifier: str
+    drafting_date: str
+    drafting_prompt_sha256: str
+    raw_draft_sha256: str
+    human_edited_after_ai_draft: bool
+    human_editor: str
+    fixture_content_canonical_sha256: str
+
+    def validate_current_state(self) -> None:
+        if self.amendment_id != CALIBRATION_AUTHORSHIP_AMENDMENT_ID:
+            raise CalibrationGateError(
+                f"amendment_id mismatch: '{self.amendment_id}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_ID}'"
+            )
+        if self.amendment_byte_sha256 != CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256:
+            raise CalibrationGateError(
+                f"amendment_byte_sha256 mismatch: '{self.amendment_byte_sha256}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256}'"
+            )
+        _require_non_empty_str(self.model_provider, "model_provider")
+        _require_non_empty_str(self.model_identifier, "model_identifier")
+        _require_non_empty_str(self.drafting_date, "drafting_date")
+        _require_sha256_hex(self.drafting_prompt_sha256, "drafting_prompt_sha256")
+        _require_sha256_hex(self.raw_draft_sha256, "raw_draft_sha256")
+        _require_bool(self.human_edited_after_ai_draft, "human_edited_after_ai_draft")
+        _require_non_empty_str(self.human_editor, "human_editor")
+        _require_sha256_hex(self.fixture_content_canonical_sha256, "fixture_content_canonical_sha256")
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        return {
+            "amendment_id": self.amendment_id,
+            "amendment_byte_sha256": self.amendment_byte_sha256,
+            "model_provider": self.model_provider,
+            "model_identifier": self.model_identifier,
+            "drafting_date": self.drafting_date,
+            "drafting_prompt_sha256": self.drafting_prompt_sha256,
+            "raw_draft_sha256": self.raw_draft_sha256,
+            "human_edited_after_ai_draft": self.human_edited_after_ai_draft,
+            "human_editor": self.human_editor,
+            "fixture_content_canonical_sha256": self.fixture_content_canonical_sha256,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CalibrationAiDraftProvenance:
+        if not isinstance(data, dict):
+            raise TypeError("Expected dict for CalibrationAiDraftProvenance")
+        return cls(
+            amendment_id=data.get("amendment_id", ""),
+            amendment_byte_sha256=data.get("amendment_byte_sha256", ""),
+            model_provider=data.get("model_provider", ""),
+            model_identifier=data.get("model_identifier", ""),
+            drafting_date=data.get("drafting_date", ""),
+            drafting_prompt_sha256=data.get("drafting_prompt_sha256", ""),
+            raw_draft_sha256=data.get("raw_draft_sha256", ""),
+            human_edited_after_ai_draft=data.get("human_edited_after_ai_draft", False),
+            human_editor=data.get("human_editor", ""),
+            fixture_content_canonical_sha256=data.get("fixture_content_canonical_sha256", ""),
+        )
+
+
+@dataclass
+class CalibrationCaseApproval:
+    """Human review and approval record for an individual calibration challenge case."""
+
+    amendment_id: str
+    amendment_byte_sha256: str
+    case_id: str
+    case_content_sha256: str
+    approver_identity: str
+    approver_role: str
+    review_date: str
+    decision: Literal["approved", "rejected"]
+    human_edited_after_ai_draft: bool
+    wording_acceptable_attested: bool
+    assigned_boundary_present_attested: bool
+    fictional_nonmedical_attested: bool
+    formal_material_not_used_attested: bool
+    no_answer_key_attested: bool
+    no_proposed_reference_units_attested: bool
+    no_semantic_labels_attested: bool
+    no_expected_unit_count_attested: bool
+    approval_notes: str = ""
+
+    def validate_current_state(self) -> None:
+        if self.amendment_id != CALIBRATION_AUTHORSHIP_AMENDMENT_ID:
+            raise CalibrationGateError(
+                f"amendment_id mismatch: '{self.amendment_id}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_ID}'"
+            )
+        if self.amendment_byte_sha256 != CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256:
+            raise CalibrationGateError(
+                f"amendment_byte_sha256 mismatch: '{self.amendment_byte_sha256}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256}'"
+            )
+        if self.case_id not in CALIBRATION_CASE_IDS:
+            raise ValueError(f"case_id '{self.case_id}' must be one of {CALIBRATION_CASE_IDS}")
+        _require_sha256_hex(self.case_content_sha256, "case_content_sha256")
+        _require_non_empty_str(self.approver_identity, "approver_identity")
+        _require_non_empty_str(self.approver_role, "approver_role")
+        _require_non_empty_str(self.review_date, "review_date")
+        if self.decision not in ("approved", "rejected"):
+            raise ValueError(f"decision must be 'approved' or 'rejected', got '{self.decision}'")
+        _require_bool(self.human_edited_after_ai_draft, "human_edited_after_ai_draft")
+        _require_bool(self.wording_acceptable_attested, "wording_acceptable_attested")
+        _require_bool(self.assigned_boundary_present_attested, "assigned_boundary_present_attested")
+        _require_bool(self.fictional_nonmedical_attested, "fictional_nonmedical_attested")
+        _require_bool(self.formal_material_not_used_attested, "formal_material_not_used_attested")
+        _require_bool(self.no_answer_key_attested, "no_answer_key_attested")
+        _require_bool(self.no_proposed_reference_units_attested, "no_proposed_reference_units_attested")
+        _require_bool(self.no_semantic_labels_attested, "no_semantic_labels_attested")
+        _require_bool(self.no_expected_unit_count_attested, "no_expected_unit_count_attested")
+
+        if self.decision == "approved":
+            attestation_map = {
+                "wording_acceptable_attested": self.wording_acceptable_attested,
+                "assigned_boundary_present_attested": self.assigned_boundary_present_attested,
+                "fictional_nonmedical_attested": self.fictional_nonmedical_attested,
+                "formal_material_not_used_attested": self.formal_material_not_used_attested,
+                "no_answer_key_attested": self.no_answer_key_attested,
+                "no_proposed_reference_units_attested": self.no_proposed_reference_units_attested,
+                "no_semantic_labels_attested": self.no_semantic_labels_attested,
+                "no_expected_unit_count_attested": self.no_expected_unit_count_attested,
+            }
+            for att_name, att_val in attestation_map.items():
+                if att_val is not True:
+                    raise CalibrationGateError(
+                        f"Case '{self.case_id}' approval decision is 'approved' but '{att_name}' is False"
+                    )
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        return {
+            "amendment_id": self.amendment_id,
+            "amendment_byte_sha256": self.amendment_byte_sha256,
+            "case_id": self.case_id,
+            "case_content_sha256": self.case_content_sha256,
+            "approver_identity": self.approver_identity,
+            "approver_role": self.approver_role,
+            "review_date": self.review_date,
+            "decision": self.decision,
+            "human_edited_after_ai_draft": self.human_edited_after_ai_draft,
+            "wording_acceptable_attested": self.wording_acceptable_attested,
+            "assigned_boundary_present_attested": self.assigned_boundary_present_attested,
+            "fictional_nonmedical_attested": self.fictional_nonmedical_attested,
+            "formal_material_not_used_attested": self.formal_material_not_used_attested,
+            "no_answer_key_attested": self.no_answer_key_attested,
+            "no_proposed_reference_units_attested": self.no_proposed_reference_units_attested,
+            "no_semantic_labels_attested": self.no_semantic_labels_attested,
+            "no_expected_unit_count_attested": self.no_expected_unit_count_attested,
+            "approval_notes": self.approval_notes,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CalibrationCaseApproval:
+        if not isinstance(data, dict):
+            raise TypeError("Expected dict for CalibrationCaseApproval")
+        return cls(
+            amendment_id=data.get("amendment_id", ""),
+            amendment_byte_sha256=data.get("amendment_byte_sha256", ""),
+            case_id=data.get("case_id", ""),
+            case_content_sha256=data.get("case_content_sha256", ""),
+            approver_identity=data.get("approver_identity", ""),
+            approver_role=data.get("approver_role", ""),
+            review_date=data.get("review_date", ""),
+            decision=data.get("decision", "rejected"),
+            human_edited_after_ai_draft=data.get("human_edited_after_ai_draft", False),
+            wording_acceptable_attested=data.get("wording_acceptable_attested", False),
+            assigned_boundary_present_attested=data.get("assigned_boundary_present_attested", False),
+            fictional_nonmedical_attested=data.get("fictional_nonmedical_attested", False),
+            formal_material_not_used_attested=data.get("formal_material_not_used_attested", False),
+            no_answer_key_attested=data.get("no_answer_key_attested", False),
+            no_proposed_reference_units_attested=data.get("no_proposed_reference_units_attested", False),
+            no_semantic_labels_attested=data.get("no_semantic_labels_attested", False),
+            no_expected_unit_count_attested=data.get("no_expected_unit_count_attested", False),
+            approval_notes=data.get("approval_notes", ""),
+        )
+
+
+@dataclass
+class CalibrationPackApproval:
+    """Pack-level human review and approval record for AI-drafted calibration fixture pack."""
+
+    amendment_id: str
+    amendment_byte_sha256: str
+    fixture_content_canonical_sha256: str
+    approver_identity: str
+    approver_role: str
+    review_date: str
+    all_eight_case_approvals_present_and_approved: bool
+    exact_final_wording_reviewed: bool
+    boundary_matrix_covered_attested: bool
+    content_fictional_nonmedical_attested: bool
+    formal_material_not_used_attested: bool
+    no_answer_key_or_expected_units_embedded: bool
+    pack_acceptable_for_reviewer_calibration: bool
+    reviewer_material_blinding_verified: bool
+    pack_approval_notes: str = ""
+
+    def validate_current_state(self) -> None:
+        if self.amendment_id != CALIBRATION_AUTHORSHIP_AMENDMENT_ID:
+            raise CalibrationGateError(
+                f"amendment_id mismatch: '{self.amendment_id}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_ID}'"
+            )
+        if self.amendment_byte_sha256 != CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256:
+            raise CalibrationGateError(
+                f"amendment_byte_sha256 mismatch: '{self.amendment_byte_sha256}' != '{CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256}'"
+            )
+        _require_sha256_hex(self.fixture_content_canonical_sha256, "fixture_content_canonical_sha256")
+        _require_non_empty_str(self.approver_identity, "approver_identity")
+        _require_non_empty_str(self.approver_role, "approver_role")
+        _require_non_empty_str(self.review_date, "review_date")
+
+        _require_bool(
+            self.all_eight_case_approvals_present_and_approved,
+            "all_eight_case_approvals_present_and_approved",
+        )
+        _require_bool(self.exact_final_wording_reviewed, "exact_final_wording_reviewed")
+        _require_bool(
+            self.boundary_matrix_covered_attested,
+            "boundary_matrix_covered_attested",
+        )
+        _require_bool(
+            self.content_fictional_nonmedical_attested,
+            "content_fictional_nonmedical_attested",
+        )
+        _require_bool(
+            self.formal_material_not_used_attested,
+            "formal_material_not_used_attested",
+        )
+        _require_bool(
+            self.no_answer_key_or_expected_units_embedded,
+            "no_answer_key_or_expected_units_embedded",
+        )
+        _require_bool(
+            self.pack_acceptable_for_reviewer_calibration,
+            "pack_acceptable_for_reviewer_calibration",
+        )
+        _require_bool(
+            self.reviewer_material_blinding_verified,
+            "reviewer_material_blinding_verified",
+        )
+
+        attestation_map = {
+            "all_eight_case_approvals_present_and_approved": self.all_eight_case_approvals_present_and_approved,
+            "exact_final_wording_reviewed": self.exact_final_wording_reviewed,
+            "boundary_matrix_covered_attested": self.boundary_matrix_covered_attested,
+            "content_fictional_nonmedical_attested": self.content_fictional_nonmedical_attested,
+            "formal_material_not_used_attested": self.formal_material_not_used_attested,
+            "no_answer_key_or_expected_units_embedded": self.no_answer_key_or_expected_units_embedded,
+            "pack_acceptable_for_reviewer_calibration": self.pack_acceptable_for_reviewer_calibration,
+            "reviewer_material_blinding_verified": self.reviewer_material_blinding_verified,
+        }
+        for att_name, att_val in attestation_map.items():
+            if att_val is not True:
+                raise CalibrationGateError(f"Pack approval attestation '{att_name}' must be True")
+
+    def __post_init__(self) -> None:
+        self.validate_current_state()
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate_current_state()
+        return {
+            "amendment_id": self.amendment_id,
+            "amendment_byte_sha256": self.amendment_byte_sha256,
+            "fixture_content_canonical_sha256": self.fixture_content_canonical_sha256,
+            "approver_identity": self.approver_identity,
+            "approver_role": self.approver_role,
+            "review_date": self.review_date,
+            "all_eight_case_approvals_present_and_approved": self.all_eight_case_approvals_present_and_approved,
+            "exact_final_wording_reviewed": self.exact_final_wording_reviewed,
+            "boundary_matrix_covered_attested": self.boundary_matrix_covered_attested,
+            "content_fictional_nonmedical_attested": self.content_fictional_nonmedical_attested,
+            "formal_material_not_used_attested": self.formal_material_not_used_attested,
+            "no_answer_key_or_expected_units_embedded": self.no_answer_key_or_expected_units_embedded,
+            "pack_acceptable_for_reviewer_calibration": self.pack_acceptable_for_reviewer_calibration,
+            "reviewer_material_blinding_verified": self.reviewer_material_blinding_verified,
+            "pack_approval_notes": self.pack_approval_notes,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CalibrationPackApproval:
+        if not isinstance(data, dict):
+            raise TypeError("Expected dict for CalibrationPackApproval")
+        return cls(
+            amendment_id=data.get("amendment_id", ""),
+            amendment_byte_sha256=data.get("amendment_byte_sha256", ""),
+            fixture_content_canonical_sha256=data.get("fixture_content_canonical_sha256", ""),
+            approver_identity=data.get("approver_identity", ""),
+            approver_role=data.get("approver_role", ""),
+            review_date=data.get("review_date", ""),
+            all_eight_case_approvals_present_and_approved=data.get(
+                "all_eight_case_approvals_present_and_approved", False
+            ),
+            exact_final_wording_reviewed=data.get("exact_final_wording_reviewed", False),
+            boundary_matrix_covered_attested=data.get("boundary_matrix_covered_attested", False),
+            content_fictional_nonmedical_attested=data.get(
+                "content_fictional_nonmedical_attested", False
+            ),
+            formal_material_not_used_attested=data.get("formal_material_not_used_attested", False),
+            no_answer_key_or_expected_units_embedded=data.get(
+                "no_answer_key_or_expected_units_embedded", False
+            ),
+            pack_acceptable_for_reviewer_calibration=data.get(
+                "pack_acceptable_for_reviewer_calibration", False
+            ),
+            reviewer_material_blinding_verified=data.get(
+                "reviewer_material_blinding_verified", False
+            ),
+            pack_approval_notes=data.get("pack_approval_notes", ""),
+        )
+
+
+@dataclass
 class CalibrationFixturePack:
-    """Human-authored fixture pack containing exactly 8 calibration challenge cases."""
+    """Fixture pack containing exactly 8 calibration challenge cases."""
 
     fixture_author: str
     human_authorship_attested: bool
     formal_material_not_used_attested: bool
     model_generated_final_fixture_text: bool
     cases: dict[str, CalibrationCase]
+    text_origin: TextOrigin = "human_authored"
+    ai_draft_provenance: CalibrationAiDraftProvenance | None = None
+    case_approvals: dict[str, CalibrationCaseApproval] | None = None
+    pack_approval: CalibrationPackApproval | None = None
     calibration_design_id: str = CALIBRATION_DESIGN_ID
     study_id: str = STUDY_ID
     protocol_id: str = PROTOCOL_ID
     protocol_hash: str = FROZEN_PROTOCOL_BYTE_SHA256
+    fixture_content_canonical_sha256: str | None = None
     fixture_pack_canonical_sha256: str | None = None
+
+    def compute_fixture_content_sha256(self) -> str:
+        d = {
+            "study_id": self.study_id,
+            "calibration_design_id": self.calibration_design_id,
+            "cases": {
+                cid: {
+                    "calibration_case_id": case.calibration_case_id,
+                    "question_text": case.question_text,
+                    "tcm_packet": case.tcm_packet.to_dict(),
+                    "western_packet": case.western_packet.to_dict(),
+                }
+                for cid, case in sorted(self.cases.items())
+            },
+        }
+        return compute_canonical_sha256(d)
+
+    def to_reviewer_facing_dict(self) -> dict[str, Any]:
+        """Reviewer-facing representation containing only case ID, question, and evidence."""
+        self.validate_current_state()
+        return {
+            "calibration_design_id": self.calibration_design_id,
+            "fixture_pack_canonical_sha256": self.fixture_pack_canonical_sha256,
+            "cases": {
+                cid: case.to_reviewer_facing_dict()
+                for cid, case in sorted(self.cases.items())
+            },
+        }
 
     def validate_current_state(self) -> None:
         if self.calibration_design_id != CALIBRATION_DESIGN_ID:
@@ -519,15 +914,8 @@ class CalibrationFixturePack:
         _require_bool(self.formal_material_not_used_attested, "formal_material_not_used_attested")
         _require_bool(self.model_generated_final_fixture_text, "model_generated_final_fixture_text")
 
-        if self.fixture_pack_canonical_sha256 is not None:
-            if not self.human_authorship_attested:
-                raise CalibrationGateError("human_authorship_attested must be True for calibration fixture freeze")
-            if not self.formal_material_not_used_attested:
-                raise CalibrationGateError("formal_material_not_used_attested must be True for calibration fixture freeze")
-            if self.model_generated_final_fixture_text is not False:
-                raise CalibrationGateError(
-                    "model_generated_final_fixture_text must be False; model text cannot be frozen as calibration material"
-                )
+        if self.text_origin not in ALLOWED_TEXT_ORIGINS:
+            raise ValueError(f"Invalid text_origin '{self.text_origin}': must be one of {ALLOWED_TEXT_ORIGINS}")
 
         if not isinstance(self.cases, dict):
             raise TypeError("cases must be a dictionary")
@@ -572,8 +960,64 @@ class CalibrationFixturePack:
             question_texts=question_texts,
         )
 
-        # Self-hash verification if frozen (Task 6)
+        # Integrity checks when frozen or content hash is populated
+        expected_content_hash = self.compute_fixture_content_sha256()
+        if self.fixture_content_canonical_sha256 is not None:
+            if self.fixture_content_canonical_sha256 != expected_content_hash:
+                raise ValueError(
+                    f"fixture_content_canonical_sha256 mismatch: recorded '{self.fixture_content_canonical_sha256}' "
+                    f"!= computed '{expected_content_hash}'"
+                )
+
         if self.fixture_pack_canonical_sha256 is not None:
+            if self.fixture_content_canonical_sha256 is None:
+                raise CalibrationGateError("Frozen fixture pack must have fixture_content_canonical_sha256")
+            if not self.formal_material_not_used_attested:
+                raise CalibrationGateError("formal_material_not_used_attested must be True for calibration fixture freeze")
+
+            if self.text_origin == "human_authored":
+                if not self.human_authorship_attested:
+                    raise CalibrationGateError("human_authorship_attested must be True for human-authored fixture freeze")
+                if self.model_generated_final_fixture_text is not False:
+                    raise CalibrationGateError(
+                        "model_generated_final_fixture_text must be False; model text cannot be frozen as human-authored"
+                    )
+            elif self.text_origin == "ai_drafted_human_approved":
+                if self.human_authorship_attested is not False:
+                    raise CalibrationGateError(
+                        "human_authorship_attested must be False for AI-drafted fixture pack; cannot falsely claim human authorship"
+                    )
+                if self.model_generated_final_fixture_text is not True:
+                    raise CalibrationGateError(
+                        "model_generated_final_fixture_text must be True for AI-drafted fixture pack"
+                    )
+
+                if self.ai_draft_provenance is None:
+                    raise CalibrationGateError("ai_draft_provenance is required for frozen ai_drafted_human_approved pack")
+                self.ai_draft_provenance.validate_current_state()
+                if self.ai_draft_provenance.fixture_content_canonical_sha256 != expected_content_hash:
+                    raise CalibrationGateError("ai_draft_provenance fixture_content_canonical_sha256 mismatch")
+
+                if not isinstance(self.case_approvals, dict):
+                    raise CalibrationGateError("case_approvals required for frozen ai_drafted_human_approved pack")
+                if tuple(sorted(self.case_approvals.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+                    raise CalibrationGateError("case_approvals must contain all 8 cases")
+                for cid in CALIBRATION_CASE_IDS:
+                    app = self.case_approvals.get(cid)
+                    if not isinstance(app, CalibrationCaseApproval):
+                        raise CalibrationGateError(f"case_approvals['{cid}'] must be CalibrationCaseApproval")
+                    app.validate_current_state()
+                    if app.decision != "approved":
+                        raise CalibrationGateError(f"Case '{cid}' approval decision must be 'approved'")
+                    if app.case_content_sha256 != self.cases[cid].compute_case_content_sha256():
+                        raise CalibrationGateError(f"Case '{cid}' approval case_content_sha256 mismatch")
+
+                if self.pack_approval is None:
+                    raise CalibrationGateError("pack_approval is required for frozen ai_drafted_human_approved pack")
+                self.pack_approval.validate_current_state()
+                if self.pack_approval.fixture_content_canonical_sha256 != expected_content_hash:
+                    raise CalibrationGateError("pack_approval fixture_content_canonical_sha256 mismatch")
+
             expected_hash = self.compute_canonical_sha256()
             if self.fixture_pack_canonical_sha256 != expected_hash:
                 raise ValueError(
@@ -585,41 +1029,152 @@ class CalibrationFixturePack:
         self.validate_current_state()
 
     def _to_dict_unhashed(self) -> dict[str, Any]:
-        return {
+        data: dict[str, Any] = {
             "calibration_design_id": self.calibration_design_id,
             "study_id": self.study_id,
             "protocol_id": self.protocol_id,
             "protocol_hash": self.protocol_hash,
             "fixture_author": self.fixture_author,
+            "text_origin": self.text_origin,
             "human_authorship_attested": self.human_authorship_attested,
             "formal_material_not_used_attested": self.formal_material_not_used_attested,
             "model_generated_final_fixture_text": self.model_generated_final_fixture_text,
+            "fixture_content_canonical_sha256": self.fixture_content_canonical_sha256,
             "cases": {cid: case.to_dict() for cid, case in sorted(self.cases.items())},
         }
+        if self.ai_draft_provenance is not None:
+            data["ai_draft_provenance"] = self.ai_draft_provenance.to_dict()
+        else:
+            data["ai_draft_provenance"] = None
+
+        if self.case_approvals is not None:
+            data["case_approvals"] = {
+                cid: app.to_dict() for cid, app in sorted(self.case_approvals.items())
+            }
+        else:
+            data["case_approvals"] = None
+
+        if self.pack_approval is not None:
+            data["pack_approval"] = self.pack_approval.to_dict()
+        else:
+            data["pack_approval"] = None
+
+        return data
 
     def compute_canonical_sha256(self) -> str:
         data = self._to_dict_unhashed()
         return compute_canonical_sha256(data)
 
     def freeze(self) -> None:
-        """Freeze and compute deterministic fixture-pack hash.
+        """Freeze and compute deterministic fixture-content and fixture-pack hashes.
 
-        One-way operation (Part A): once frozen, calling freeze() again is forbidden
-        and fails closed.
+        One-way operation: once frozen, calling freeze() again is forbidden
+        and fails closed with CalibrationStateError.
         """
         if self.fixture_pack_canonical_sha256 is not None:
             raise CalibrationStateError(
                 "CalibrationFixturePack is already frozen; fixture freeze is strictly one-way"
             )
+
+        if self.text_origin not in ALLOWED_TEXT_ORIGINS:
+            raise ValueError(f"Invalid text_origin '{self.text_origin}': must be one of {ALLOWED_TEXT_ORIGINS}")
+
         _require_non_empty_str(self.fixture_author, "fixture_author")
-        if not self.human_authorship_attested:
-            raise CalibrationGateError("human_authorship_attested must be True for calibration fixture freeze")
+        _require_bool(self.human_authorship_attested, "human_authorship_attested")
+        _require_bool(self.formal_material_not_used_attested, "formal_material_not_used_attested")
+        _require_bool(self.model_generated_final_fixture_text, "model_generated_final_fixture_text")
+
         if not self.formal_material_not_used_attested:
             raise CalibrationGateError("formal_material_not_used_attested must be True for calibration fixture freeze")
-        if self.model_generated_final_fixture_text is not False:
-            raise CalibrationGateError(
-                "model_generated_final_fixture_text must be False; model text cannot be frozen as calibration material"
-            )
+
+        content_hash = self.compute_fixture_content_sha256()
+        self.fixture_content_canonical_sha256 = content_hash
+
+        if self.text_origin == "human_authored":
+            if not self.human_authorship_attested:
+                raise CalibrationGateError("human_authorship_attested must be True for human-authored fixture freeze")
+            if self.model_generated_final_fixture_text is not False:
+                raise CalibrationGateError(
+                    "model_generated_final_fixture_text must be False; model text cannot be frozen as human-authored"
+                )
+        elif self.text_origin == "ai_drafted_human_approved":
+            if self.human_authorship_attested is not False:
+                raise CalibrationGateError(
+                    "human_authorship_attested must be False for AI-drafted fixture pack; cannot falsely claim human authorship"
+                )
+            if self.model_generated_final_fixture_text is not True:
+                raise CalibrationGateError(
+                    "model_generated_final_fixture_text must be True for AI-drafted fixture pack"
+                )
+
+            if self.ai_draft_provenance is None:
+                raise CalibrationGateError("ai_draft_provenance is required for ai_drafted_human_approved fixture freeze")
+            self.ai_draft_provenance.validate_current_state()
+            if self.ai_draft_provenance.fixture_content_canonical_sha256 != content_hash:
+                raise CalibrationGateError(
+                    f"ai_draft_provenance fixture_content_canonical_sha256 mismatch: "
+                    f"'{self.ai_draft_provenance.fixture_content_canonical_sha256}' != '{content_hash}'"
+                )
+
+            if not isinstance(self.case_approvals, dict):
+                raise CalibrationGateError("case_approvals must be a dictionary of all 8 case approvals")
+            if tuple(sorted(self.case_approvals.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+                raise CalibrationGateError(
+                    f"case_approvals must contain exactly all 8 case IDs {CALIBRATION_CASE_IDS}, "
+                    f"got {tuple(sorted(self.case_approvals.keys()))}"
+                )
+            for cid in CALIBRATION_CASE_IDS:
+                app = self.case_approvals.get(cid)
+                if not isinstance(app, CalibrationCaseApproval):
+                    raise CalibrationGateError(f"case_approvals['{cid}'] must be a CalibrationCaseApproval")
+                app.validate_current_state()
+                if app.decision != "approved":
+                    raise CalibrationGateError(
+                        f"Case '{cid}' approval decision is '{app.decision}'; all 8 cases must be 'approved' to freeze"
+                    )
+                case_content_hash = self.cases[cid].compute_case_content_sha256()
+                if app.case_content_sha256 != case_content_hash:
+                    raise CalibrationGateError(
+                        f"Case '{cid}' approval case_content_sha256 mismatch: "
+                        f"'{app.case_content_sha256}' != '{case_content_hash}'"
+                    )
+
+            if self.pack_approval is None:
+                raise CalibrationGateError("pack_approval is required for ai_drafted_human_approved fixture freeze")
+            self.pack_approval.validate_current_state()
+            if self.pack_approval.fixture_content_canonical_sha256 != content_hash:
+                raise CalibrationGateError(
+                    f"pack_approval fixture_content_canonical_sha256 mismatch: "
+                    f"'{self.pack_approval.fixture_content_canonical_sha256}' != '{content_hash}'"
+                )
+
+        if not isinstance(self.cases, dict):
+            raise TypeError("cases must be a dictionary")
+        if tuple(sorted(self.cases.keys())) != tuple(sorted(CALIBRATION_CASE_IDS)):
+            raise ValueError(f"CalibrationFixturePack must contain all 8 case IDs, got {tuple(sorted(self.cases.keys()))}")
+
+        packet_ids: list[str] = []
+        evidence_ids: list[str] = []
+        question_texts: list[str] = []
+        for cid, case in self.cases.items():
+            case.validate_current_state()
+            question_texts.append(case.question_text)
+            packet_ids.extend([case.tcm_packet.packet_id, case.western_packet.packet_id])
+            for ev in case.tcm_packet.evidence_items + case.western_packet.evidence_items:
+                evidence_ids.append(ev.evidence_id)
+
+        if len(set(packet_ids)) != 16:
+            raise CalibrationGateError("Duplicate packet_id detected in fixture pack")
+        if len(set(evidence_ids)) != 64:
+            raise CalibrationGateError("Duplicate evidence_id detected across fixture pack")
+
+        check_formal_material_separation(
+            case_ids=list(self.cases.keys()),
+            packet_ids=packet_ids,
+            evidence_ids=evidence_ids,
+            question_texts=question_texts,
+        )
+
         self.fixture_pack_canonical_sha256 = self.compute_canonical_sha256()
         self.validate_current_state()
 
@@ -637,16 +1192,35 @@ class CalibrationFixturePack:
         if not isinstance(cases_raw, dict):
             raise TypeError("cases must be a dictionary")
         cases = {cid: CalibrationCase.from_dict(c_data) for cid, c_data in cases_raw.items()}
+
+        prov_raw = data.get("ai_draft_provenance")
+        prov = CalibrationAiDraftProvenance.from_dict(prov_raw) if prov_raw is not None else None
+
+        case_apps_raw = data.get("case_approvals")
+        case_apps = (
+            {cid: CalibrationCaseApproval.from_dict(ca_data) for cid, ca_data in case_apps_raw.items()}
+            if case_apps_raw is not None
+            else None
+        )
+
+        pack_app_raw = data.get("pack_approval")
+        pack_app = CalibrationPackApproval.from_dict(pack_app_raw) if pack_app_raw is not None else None
+
         return cls(
             calibration_design_id=data.get("calibration_design_id", CALIBRATION_DESIGN_ID),
             study_id=data.get("study_id", STUDY_ID),
             protocol_id=data.get("protocol_id", PROTOCOL_ID),
             protocol_hash=data.get("protocol_hash", FROZEN_PROTOCOL_BYTE_SHA256),
             fixture_author=data.get("fixture_author", ""),
+            text_origin=data.get("text_origin", "human_authored"),
             human_authorship_attested=data.get("human_authorship_attested", False),
             formal_material_not_used_attested=data.get("formal_material_not_used_attested", False),
-            model_generated_final_fixture_text=data.get("model_generated_final_fixture_text", True),
+            model_generated_final_fixture_text=data.get("model_generated_final_fixture_text", False),
             cases=cases,
+            ai_draft_provenance=prov,
+            case_approvals=case_apps,
+            pack_approval=pack_app,
+            fixture_content_canonical_sha256=data.get("fixture_content_canonical_sha256"),
             fixture_pack_canonical_sha256=data.get("fixture_pack_canonical_sha256"),
         )
 
@@ -1165,6 +1739,16 @@ class CalibrationReviewerWorkspace:
             _fixture_pack=fixture_pack,
             _anchor_index=index,
         )
+
+    def get_reviewer_facing_case(self, case_id: str) -> dict[str, Any]:
+        """Retrieve reviewer-facing material for a specific case (blinds purpose/metadata)."""
+        if case_id not in self.cases:
+            raise KeyError(f"Case '{case_id}' not found in workspace")
+        return self._fixture_pack.cases[case_id].to_reviewer_facing_dict()
+
+    def get_reviewer_facing_fixture_pack(self) -> dict[str, Any]:
+        """Retrieve reviewer-facing representation of the entire fixture pack."""
+        return self._fixture_pack.to_reviewer_facing_dict()
 
     def add_record(self, case_id: str, record: dict[str, Any] | ReferenceUnitRecord) -> None:
         if self.is_locked:

@@ -5,19 +5,21 @@ Protocol ID: `CPAA1-REFERENCE-UNIT-PROTOCOL-V1`
 Protocol Hash: `5ab2f681e605f3bc75ef6e91fa8d864a102aa60e6b14efdda132448845dcb46b`
 Study ID: `cross-perspective-advisory-ablation-v1`
 Namespace: `cal2cc:`
-Status: DESIGN ONLY (INFRASTRUCTURE APPROVED; HUMAN FIXTURE AUTHORING PENDING)
+Status: DESIGN ONLY (INFRASTRUCTURE APPROVED; FIXTURE AUTHORSHIP AMENDMENT APPROVED)
+Amendment ID: `CPAA1-CALIBRATION-FIXTURE-AUTHORSHIP-AMENDMENT-V1`
 
 ---
 
-## CRITICAL NOTICE: HUMAN AUTHORSHIP REQUIREMENT
+## CRITICAL NOTICE: CALIBRATION FIXTURE AUTHORSHIP AND BOUNDARIES
 
-> **MODEL-DRAFTED CASE WORDING IS NOT CALIBRATION MATERIAL.**
+> **AUTHORSHIP AMENDMENT NOTICE**:
+> Pursuant to approved prospective amendment `CPAA1-CALIBRATION-FIXTURE-AUTHORSHIP-AMENDMENT-V1`, the earlier requirement that the non-study calibration fixture wording itself must be human-authored is prospectively superseded.
 >
-> All preliminary or synthetic case prose in earlier planning documents (including SOL exploration text) was AI-generated planning material. It MUST NOT be copied into tracked files, fixtures, tests, templates, or calibration JSON.
+> For the eight fictional NON-STUDY Phase 2C-C calibration cases ONLY, candidate question wording and synthetic evidence passages MAY be AI-drafted under strict provenance tracking (`text_origin="ai_drafted_human_approved"`). Prior to freeze, all eight cases require explicit per-case and pack-level HUMAN review, validation, and approval. Human approval does NOT permit describing the text as human-authored.
 >
-> Final calibration question wording and evidence passages MUST be authored by a HUMAN reviewer after this infrastructure is accepted.
+> AI systems MUST NOT generate, annotate, suggest, or reconcile reference units, answer keys, or expected unit counts. Reviewer A and Reviewer B remain strictly HUMAN annotators, and formal 48-question study reference-unit authoring remains strictly HUMAN-ONLY.
 >
-> The software verifies human authorship attestations and enforces mechanical constraints; it does NOT generate, rewrite, or infer calibration text.
+> All preliminary or synthetic case prose in earlier planning documents (including SOL exploration text) was unverified planning material and MUST NOT be copied into tracked files without passing formal drafting and human approval.
 
 ---
 

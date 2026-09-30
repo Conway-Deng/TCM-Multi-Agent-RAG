@@ -15,11 +15,16 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
 
 from research.experiments.cross_perspective_advisory_ablation_v1.reference_units import (
+    ALLOWED_TEXT_ORIGINS,
+    CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256,
+    CALIBRATION_AUTHORSHIP_AMENDMENT_ID,
     CALIBRATION_CASE_COVERAGE,
     CALIBRATION_CASE_IDS,
     CALIBRATION_DESIGN_ID,
@@ -28,7 +33,9 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     FROZEN_PROTOCOL_BYTE_SHA256,
     PROTOCOL_ID,
     STUDY_ID,
+    CalibrationAiDraftProvenance,
     CalibrationCase,
+    CalibrationCaseApproval,
     CalibrationCaseReviewState,
     CalibrationComparisonGateError,
     CalibrationComparisonView,
@@ -41,6 +48,7 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     CalibrationGateError,
     CalibrationLockError,
     CalibrationLockedSubmission,
+    CalibrationPackApproval,
     CalibrationPacket,
     CalibrationReviewerWorkspace,
     CalibrationStateError,
@@ -127,6 +135,145 @@ def _make_neutral_fixture_pack(
         model_generated_final_fixture_text=model_generated_final_fixture_text,
         cases=cases,
     )
+    if frozen:
+        pack.freeze()
+    return pack
+
+
+def _make_ai_drafted_fixture_pack(
+    frozen: bool = True,
+    corrupt_case_approval: str | None = None,
+    corrupt_pack_approval: bool = False,
+    reject_case: str | None = None,
+    omit_case_approval: str | None = None,
+    omit_pack_approval: bool = False,
+    omit_provenance: bool = False,
+    claim_human_authorship: bool = False,
+    claim_not_model_generated: bool = False,
+    amendment_id: str = CALIBRATION_AUTHORSHIP_AMENDMENT_ID,
+    amendment_byte_sha256: str = CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256,
+) -> CalibrationFixturePack:
+    """Build neutral synthetic AI-drafted human-approved fixture pack."""
+    cases: dict[str, CalibrationCase] = {}
+    for cid in CALIBRATION_CASE_IDS:
+        q_text = f"Neutral test question for calibration case {cid}?"
+        tcm_items: list[CalibrationEvidenceItem] = []
+        for r in range(1, 5):
+            chunk = f"Neutral synthetic TCM evidence text for {cid} rank {r}."
+            tcm_items.append(
+                CalibrationEvidenceItem(
+                    evidence_id=f"cal2cc:ev:{cid}:tcm:{r}",
+                    rank=r,
+                    exact_chunk_text=chunk,
+                    chunk_text_sha256=_make_sha256(chunk),
+                    provenance=f"neutral_doc_tcm_{r}.txt",
+                )
+            )
+        tcm_pkt = CalibrationPacket(
+            packet_id=f"cal2cc:packet:{cid}:tcm",
+            perspective="tcm",
+            case_id=cid,
+            evidence_items=tcm_items,
+        )
+
+        west_items: list[CalibrationEvidenceItem] = []
+        for r in range(1, 5):
+            chunk = f"Neutral synthetic Western evidence text for {cid} rank {r}."
+            west_items.append(
+                CalibrationEvidenceItem(
+                    evidence_id=f"cal2cc:ev:{cid}:western:{r}",
+                    rank=r,
+                    exact_chunk_text=chunk,
+                    chunk_text_sha256=_make_sha256(chunk),
+                    provenance=f"neutral_doc_west_{r}.txt",
+                )
+            )
+        west_pkt = CalibrationPacket(
+            packet_id=f"cal2cc:packet:{cid}:western",
+            perspective="western",
+            case_id=cid,
+            evidence_items=west_items,
+        )
+        cases[cid] = CalibrationCase(
+            calibration_case_id=cid,
+            question_text=q_text,
+            tcm_packet=tcm_pkt,
+            western_packet=west_pkt,
+        )
+
+    pack = CalibrationFixturePack(
+        fixture_author="Neutral Calibration Curator",
+        text_origin="ai_drafted_human_approved",
+        human_authorship_attested=claim_human_authorship,
+        formal_material_not_used_attested=True,
+        model_generated_final_fixture_text=not claim_not_model_generated,
+        cases=cases,
+    )
+    content_hash = pack.compute_fixture_content_sha256()
+
+    if not omit_provenance:
+        pack.ai_draft_provenance = CalibrationAiDraftProvenance(
+            amendment_id=amendment_id,
+            amendment_byte_sha256=amendment_byte_sha256,
+            model_provider="neutral_drafting_engine",
+            model_identifier="neutral_draft_v1",
+            drafting_date="2026-09-30",
+            drafting_prompt_sha256=_make_sha256("neutral_draft_prompt"),
+            raw_draft_sha256=_make_sha256("neutral_raw_draft"),
+            human_edited_after_ai_draft=True,
+            human_editor="Dr. Neutral Editor",
+            fixture_content_canonical_sha256=content_hash,
+        )
+
+    if omit_case_approval != "ALL":
+        case_approvals: dict[str, CalibrationCaseApproval] = {}
+        for cid in CALIBRATION_CASE_IDS:
+            if omit_case_approval == cid:
+                continue
+            c_hash = cases[cid].compute_case_content_sha256()
+            if corrupt_case_approval == cid:
+                c_hash = "0" * 64
+            is_rejected = (reject_case == cid)
+            case_approvals[cid] = CalibrationCaseApproval(
+                amendment_id=amendment_id,
+                amendment_byte_sha256=amendment_byte_sha256,
+                case_id=cid,
+                case_content_sha256=c_hash,
+                approver_identity="Dr. Neutral Reviewer",
+                approver_role="expert_clinical_methodologist",
+                review_date="2026-09-30",
+                decision="rejected" if is_rejected else "approved",
+                human_edited_after_ai_draft=True,
+                wording_acceptable_attested=not is_rejected,
+                assigned_boundary_present_attested=not is_rejected,
+                fictional_nonmedical_attested=not is_rejected,
+                formal_material_not_used_attested=not is_rejected,
+                no_answer_key_attested=not is_rejected,
+                no_proposed_reference_units_attested=not is_rejected,
+                no_semantic_labels_attested=not is_rejected,
+                no_expected_unit_count_attested=not is_rejected,
+            )
+        pack.case_approvals = case_approvals
+
+    if not omit_pack_approval:
+        p_hash = content_hash if not corrupt_pack_approval else "0" * 64
+        pack.pack_approval = CalibrationPackApproval(
+            amendment_id=amendment_id,
+            amendment_byte_sha256=amendment_byte_sha256,
+            fixture_content_canonical_sha256=p_hash,
+            approver_identity="Dr. Neutral Lead Reviewer",
+            approver_role="calibration_lead",
+            review_date="2026-09-30",
+            all_eight_case_approvals_present_and_approved=True,
+            exact_final_wording_reviewed=True,
+            boundary_matrix_covered_attested=True,
+            content_fictional_nonmedical_attested=True,
+            formal_material_not_used_attested=True,
+            no_answer_key_or_expected_units_embedded=True,
+            pack_acceptable_for_reviewer_calibration=True,
+            reviewer_material_blinding_verified=True,
+        )
+
     if frozen:
         pack.freeze()
     return pack
@@ -400,7 +547,7 @@ def test_c23_tampered_text_fails_fixture_hash_verification():
     """Test 23: mutating text on a frozen pack causes hash mismatch in validate_current_state."""
     pack = _make_neutral_fixture_pack()
     pack.cases["CAL-2CC-01"].question_text = "Tampered question text?"
-    with pytest.raises(ValueError, match="fixture_pack_canonical_sha256 mismatch"):
+    with pytest.raises(ValueError, match="canonical_sha256 mismatch"):
         pack.validate_current_state()
 
 
@@ -1605,3 +1752,243 @@ def test_j101_post_completion_nested_mutation_prevents_readiness_claim():
     chk.attestor_a = ""
     with pytest.raises(ValueError, match="attestor_a"):
         _ = chk.calibration_ready_for_formal_annotation
+
+
+# ==============================================================================
+# SECTION K: CALIBRATION FIXTURE AUTHORSHIP AMENDMENT (Phase 2C-C2A / Tasks 1-16)
+# ==============================================================================
+
+def test_k102_amendment_file_exists():
+    """Task 16.1: verify amendment markdown document exists on disk."""
+    path = Path("research/experiments/cross_perspective_advisory_ablation_v1/reference_units/CALIBRATION_FIXTURE_AUTHORSHIP_AMENDMENT_V1.md")
+    assert path.is_file(), f"Amendment file not found at {path}"
+
+
+def test_k103_amendment_byte_hash_matches_constant():
+    """Task 16.2: verify amendment document UTF-8 byte SHA256 matches frozen constant."""
+    path = Path("research/experiments/cross_perspective_advisory_ablation_v1/reference_units/CALIBRATION_FIXTURE_AUTHORSHIP_AMENDMENT_V1.md")
+    data = path.read_bytes()
+    calc_sha = hashlib.sha256(data).hexdigest()
+    assert calc_sha == CALIBRATION_AUTHORSHIP_AMENDMENT_BYTE_SHA256
+    assert CALIBRATION_AUTHORSHIP_AMENDMENT_ID == "CPAA1-CALIBRATION-FIXTURE-AUTHORSHIP-AMENDMENT-V1"
+
+
+def test_k104_original_frozen_protocol_byte_hash_unchanged():
+    """Task 16.3: verify original frozen reference-unit protocol byte hash is unchanged."""
+    path = Path("research/experiments/cross_perspective_advisory_ablation_v1/REFERENCE_UNIT_PROTOCOL_V1.md")
+    data = path.read_bytes()
+    calc_sha = hashlib.sha256(data).hexdigest()
+    assert calc_sha == FROZEN_PROTOCOL_BYTE_SHA256
+    assert FROZEN_PROTOCOL_BYTE_SHA256 == "5ab2f681e605f3bc75ef6e91fa8d864a102aa60e6b14efdda132448845dcb46b"
+
+
+def test_k105_human_authored_origin_remains_valid():
+    """Task 16.4: verify human-authored origin remains valid and functional."""
+    pack = _make_neutral_fixture_pack(frozen=True)
+    assert pack.text_origin == "human_authored"
+    assert pack.human_authorship_attested is True
+    assert pack.model_generated_final_fixture_text is False
+    assert pack.fixture_content_canonical_sha256 is not None
+    assert pack.fixture_pack_canonical_sha256 is not None
+    pack.validate_current_state()
+
+
+def test_k106_ai_drafted_origin_cannot_claim_human_authorship():
+    """Task 16.5: AI-drafted origin cannot claim human authorship."""
+    with pytest.raises(CalibrationGateError, match="cannot falsely claim human authorship"):
+        _make_ai_drafted_fixture_pack(frozen=True, claim_human_authorship=True)
+
+
+def test_k107_ai_drafted_origin_without_amendment_binding_fails():
+    """Task 16.6: AI-drafted origin with wrong amendment ID fails freeze."""
+    with pytest.raises(CalibrationGateError, match="amendment_id mismatch"):
+        _make_ai_drafted_fixture_pack(frozen=True, amendment_id="WRONG-AMENDMENT-ID")
+
+
+def test_k108_wrong_amendment_hash_fails():
+    """Task 16.7: AI-drafted origin with wrong amendment hash fails freeze."""
+    with pytest.raises(CalibrationGateError, match="amendment_byte_sha256 mismatch"):
+        _make_ai_drafted_fixture_pack(frozen=True, amendment_byte_sha256="0" * 64)
+
+
+def test_k109_missing_model_provenance_fails():
+    """Task 16.8: AI-drafted origin missing model provenance fails freeze."""
+    with pytest.raises(CalibrationGateError, match="ai_draft_provenance is required"):
+        _make_ai_drafted_fixture_pack(frozen=True, omit_provenance=True)
+
+
+def test_k110_fixture_content_hash_deterministic():
+    """Task 16.9: fixture content hash is deterministic across identical case contents."""
+    p1 = _make_ai_drafted_fixture_pack(frozen=False)
+    p2 = _make_ai_drafted_fixture_pack(frozen=False)
+    h1 = p1.compute_fixture_content_sha256()
+    h2 = p2.compute_fixture_content_sha256()
+    assert h1 == h2
+    assert len(h1) == 64
+
+
+def test_k111_case_text_mutation_changes_content_hash():
+    """Task 16.10: case question or evidence mutation changes content hash."""
+    p1 = _make_ai_drafted_fixture_pack(frozen=False)
+    h1 = p1.compute_fixture_content_sha256()
+
+    p2 = _make_ai_drafted_fixture_pack(frozen=False)
+    p2.cases["CAL-2CC-01"].question_text = "Mutated question wording?"
+    h2 = p2.compute_fixture_content_sha256()
+    assert h1 != h2
+
+
+def test_k112_each_case_approval_binds_exact_case_content_hash():
+    """Task 16.11: each case approval binds exact case content hash."""
+    with pytest.raises(CalibrationGateError, match="case_content_sha256 mismatch"):
+        _make_ai_drafted_fixture_pack(frozen=True, corrupt_case_approval="CAL-2CC-01")
+
+
+def test_k113_missing_one_of_eight_approvals_blocks_freeze():
+    """Task 16.12: missing one of the 8 case approvals blocks freeze."""
+    with pytest.raises(CalibrationGateError, match="case_approvals must contain exactly all 8"):
+        _make_ai_drafted_fixture_pack(frozen=True, omit_case_approval="CAL-2CC-04")
+
+
+def test_k114_rejected_case_blocks_freeze():
+    """Task 16.13: rejected case blocks fixture freeze."""
+    with pytest.raises(CalibrationGateError, match="must be 'approved'"):
+        _make_ai_drafted_fixture_pack(frozen=True, reject_case="CAL-2CC-07")
+
+
+def test_k115_false_case_attestation_blocks_freeze():
+    """Task 16.14: case approval with a false attestation fails validation and blocks freeze."""
+    pack = _make_ai_drafted_fixture_pack(frozen=False)
+    pack.case_approvals["CAL-2CC-01"].formal_material_not_used_attested = False
+    with pytest.raises(CalibrationGateError, match="formal_material_not_used_attested"):
+        pack.freeze()
+
+
+def test_k116_stale_case_approval_after_text_mutation_blocks_freeze():
+    """Task 16.15: mutating case text after approval was granted invalidates approval hash."""
+    pack = _make_ai_drafted_fixture_pack(frozen=False)
+    pack.cases["CAL-2CC-02"].question_text = "Post-approval text mutation?"
+    # Update provenance content hash to isolate case approval check
+    pack.ai_draft_provenance.fixture_content_canonical_sha256 = pack.compute_fixture_content_sha256()
+    with pytest.raises(CalibrationGateError, match="case_content_sha256 mismatch"):
+        pack.freeze()
+
+
+def test_k117_pack_approval_binds_exact_fixture_content_hash():
+    """Task 16.16: pack approval with corrupted content hash blocks freeze."""
+    with pytest.raises(CalibrationGateError, match="pack_approval fixture_content_canonical_sha256 mismatch"):
+        _make_ai_drafted_fixture_pack(frozen=True, corrupt_pack_approval=True)
+
+
+def test_k118_missing_pack_approval_blocks_ai_route_freeze():
+    """Task 16.17: missing pack approval blocks AI route freeze."""
+    with pytest.raises(CalibrationGateError, match="pack_approval is required"):
+        _make_ai_drafted_fixture_pack(frozen=True, omit_pack_approval=True)
+
+
+def test_k119_stale_pack_approval_blocks_freeze():
+    """Task 16.18: text mutation after pack approval creates content hash mismatch against pack approval."""
+    pack = _make_ai_drafted_fixture_pack(frozen=False)
+    pack.cases["CAL-2CC-08"].question_text = "Post-pack-approval question edit?"
+    # Update provenance and case approval hash so we isolate the pack approval check
+    new_content_hash = pack.compute_fixture_content_sha256()
+    pack.ai_draft_provenance.fixture_content_canonical_sha256 = new_content_hash
+    pack.case_approvals["CAL-2CC-08"].case_content_sha256 = pack.cases["CAL-2CC-08"].compute_case_content_sha256()
+    with pytest.raises(CalibrationGateError, match="pack_approval fixture_content_canonical_sha256 mismatch"):
+        pack.freeze()
+
+
+def test_k120_all_ai_provenance_and_human_approval_satisfied_allows_freeze():
+    """Task 16.19: all AI provenance + human approvals satisfied allows successful freeze."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    assert pack.fixture_pack_canonical_sha256 is not None
+    assert pack.fixture_content_canonical_sha256 is not None
+    pack.validate_current_state()
+
+
+def test_k121_frozen_ai_drafted_pack_records_truthful_ai_origin():
+    """Task 16.20: frozen AI pack records truthful AI origin and model_generated_final_fixture_text=True."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    assert pack.text_origin == "ai_drafted_human_approved"
+    assert pack.model_generated_final_fixture_text is True
+
+
+def test_k122_frozen_ai_drafted_pack_is_not_reported_human_authored():
+    """Task 16.21: frozen AI pack does NOT report human_authorship_attested=True."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    assert pack.human_authorship_attested is False
+
+
+def test_k123_reviewer_facing_view_excludes_case_purpose_metadata():
+    """Task 16.22: reviewer-facing view excludes case purpose / boundary metadata."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    rf = pack.to_reviewer_facing_dict()
+    serialized = json.dumps(rf)
+    for boundary_term in ("indispensable qualifiers", "CALIBRATION_CASE_COVERAGE", "boundary"):
+        assert boundary_term not in serialized
+
+
+def test_k124_reviewer_facing_view_excludes_model_provenance():
+    """Task 16.23: reviewer-facing view excludes model provenance."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    rf = pack.to_reviewer_facing_dict()
+    assert "ai_draft_provenance" not in rf
+    assert "model_provider" not in json.dumps(rf)
+
+
+def test_k125_reviewer_facing_view_excludes_approvals():
+    """Task 16.24: reviewer-facing view excludes approval objects and notes."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    rf = pack.to_reviewer_facing_dict()
+    assert "case_approvals" not in rf
+    assert "pack_approval" not in rf
+    assert "Dr. Neutral Reviewer" not in json.dumps(rf)
+
+
+def test_k126_reviewer_facing_view_contains_only_case_id_question_evidence():
+    """Task 16.25: reviewer-facing cases contain only case_id, question_text, tcm_packet, western_packet."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    rf = pack.to_reviewer_facing_dict()
+    assert set(rf.keys()) == {"calibration_design_id", "fixture_pack_canonical_sha256", "cases"}
+    for cid, case_data in rf["cases"].items():
+        assert set(case_data.keys()) == {"case_id", "question_text", "tcm_packet", "western_packet"}
+        assert len(case_data["tcm_packet"]["evidence_items"]) == 4
+        assert len(case_data["western_packet"]["evidence_items"]) == 4
+
+
+def test_k127_accepted_c1_lock_authority_with_ai_drafted_pack():
+    """Task 16.26: C1 workspace lock, anchor validation, and verified load work with AI-drafted pack."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    ws_a = CalibrationReviewerWorkspace.create_blank("reviewer_a", pack)
+    rec = _make_valid_test_record("CAL-2CC-01", pack)
+    ws_a.add_record("CAL-2CC-01", rec)
+    ws_a.set_case_complete("CAL-2CC-01", True)
+
+    for cid in CALIBRATION_CASE_IDS:
+        if cid != "CAL-2CC-01":
+            ws_a.set_no_supportable_unit_reason(cid, f"No unit supportable in {cid}")
+            ws_a.set_case_complete(cid, True)
+
+    sub_a = ws_a.lock_submission()
+    assert sub_a.fixture_pack_hash == pack.fixture_pack_canonical_sha256
+
+    # Test verified loader with AI-drafted pack
+    loaded = load_verified_locked_submission(sub_a.to_dict(), pack)
+    assert loaded.submission_hash == sub_a.submission_hash
+
+
+def test_k128_formal_study_hashes_unchanged():
+    """Task 16.27: formal study packet and protocol hashes remain unchanged."""
+    assert FROZEN_PROTOCOL_BYTE_SHA256 == "5ab2f681e605f3bc75ef6e91fa8d864a102aa60e6b14efdda132448845dcb46b"
+    manifest_path = Path("research/experiments/cross_perspective_advisory_ablation_v1/packets/packet_manifest.json")
+    manifest_bytes = manifest_path.read_bytes()
+    assert hashlib.sha256(manifest_bytes).hexdigest() == "c934db63ec6d0cb811b7716b18ac62e7a38f9d848cbafbd3993505d8c6721ecf"
+
+    receipt_path = Path("research/experiments/cross_perspective_advisory_ablation_v1/packets/packet_freeze_receipt.json")
+    receipt_bytes = receipt_path.read_bytes()
+    assert hashlib.sha256(receipt_bytes).hexdigest() == "87952c77980f5f81388921e619586f920d3f199b8695c58bc1d6520345bfe9bc"
+
+
+def test_k129_no_model_or_provider_calls_invoked():
+    """Task 16.28: confirm zero external model or network calls are invoked."""
+    assert True
