@@ -122,6 +122,8 @@ class PacketMetadata:
     perspective: str
     packet_canonical_sha256: str
     evidence_ids: tuple[str, ...]
+    question_text: str = ""
+    topic: str = ""
 
 
 @dataclass(frozen=True)
@@ -135,6 +137,12 @@ class EvidenceItemMetadata:
     chunk_text_sha256: str
     text_length: int  # Length in Unicode code points
     exact_chunk_text: str  # In-memory text retained solely for span coordinate boundary validation
+    provenance: str = ""
+    source_title: str = ""
+    source_url: str = ""
+    section_or_category: str = ""
+    doi: str = ""
+    pmcid: str = ""
 
 
 class FrozenPacketAnchorIndex:
@@ -157,12 +165,15 @@ class FrozenPacketAnchorIndex:
         question_to_packets: dict[str, dict[str, str]],
         question_to_evidence_ids: dict[str, set[str]],
         questions: set[str],
+        *,
+        is_formal_verified: bool = False,
     ) -> None:
         self._packets = packets
         self._evidence_items = evidence_items
         self._question_to_packets = question_to_packets
         self._question_to_evidence_ids = question_to_evidence_ids
         self._questions = questions
+        self._is_formal_verified = is_formal_verified
 
     @classmethod
     def from_packet_records(
@@ -182,6 +193,8 @@ class FrozenPacketAnchorIndex:
             question_id = str(rec["question_id"])
             perspective = str(rec["perspective"])
             packet_sha = str(rec["packet_canonical_sha256"])
+            question_text = str(rec.get("question_text", ""))
+            topic = str(rec.get("topic", ""))
             raw_items = rec.get("evidence_items", [])
 
             ev_ids: list[str] = []
@@ -201,6 +214,12 @@ class FrozenPacketAnchorIndex:
                     chunk_text_sha256=chunk_sha,
                     text_length=len(exact_text),
                     exact_chunk_text=exact_text,
+                    provenance=str(item.get("provenance", "")),
+                    source_title=str(item.get("source_title", "")),
+                    source_url=str(item.get("source_url", "")),
+                    section_or_category=str(item.get("section_or_category", "")),
+                    doi=str(item.get("doi", "")),
+                    pmcid=str(item.get("pmcid", "")),
                 )
                 evidence_items[(packet_id, ev_id)] = item_meta
 
@@ -210,6 +229,8 @@ class FrozenPacketAnchorIndex:
                 perspective=perspective,
                 packet_canonical_sha256=packet_sha,
                 evidence_ids=tuple(ev_ids),
+                question_text=question_text,
+                topic=topic,
             )
 
             questions.add(question_id)
@@ -227,6 +248,7 @@ class FrozenPacketAnchorIndex:
             question_to_packets=question_to_packets,
             question_to_evidence_ids=question_to_evidence_ids,
             questions=questions,
+            is_formal_verified=False,
         )
 
     @classmethod
@@ -296,7 +318,9 @@ class FrozenPacketAnchorIndex:
         # 5 & 6. Verify packet canonical self-hashes and chunk text hashes
         verify_packet_records_integrity(tcm_lines, western_lines)
 
-        return cls.from_packet_records(tcm_lines, western_lines)
+        index = cls.from_packet_records(tcm_lines, western_lines)
+        object.__setattr__(index, "_is_formal_verified", True)
+        return index
 
     @classmethod
     def from_packet_files(
@@ -322,6 +346,11 @@ class FrozenPacketAnchorIndex:
         return cls.from_verified_formal_packets(tcm_file, western_file)
 
     @property
+    def is_formal_verified(self) -> bool:
+        """Return True if index was loaded and verified via formal packet files."""
+        return getattr(self, "_is_formal_verified", False)
+
+    @property
     def packet_count(self) -> int:
         return len(self._packets)
 
@@ -332,6 +361,22 @@ class FrozenPacketAnchorIndex:
     @property
     def questions(self) -> set[str]:
         return set(self._questions)
+
+    def get_question_text(self, question_id: str) -> str:
+        """Return question text for a question_id if available."""
+        for pid in self.get_question_packet_ids(question_id).values():
+            pkt = self.get_packet(pid)
+            if pkt and pkt.question_text:
+                return pkt.question_text
+        return ""
+
+    def get_question_topic(self, question_id: str) -> str:
+        """Return topic for a question_id if available."""
+        for pid in self.get_question_packet_ids(question_id).values():
+            pkt = self.get_packet(pid)
+            if pkt and pkt.topic:
+                return pkt.topic
+        return ""
 
     def has_packet(self, packet_id: str) -> bool:
         return packet_id in self._packets
