@@ -24,6 +24,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final, Literal
 
 from pydantic import ValidationError
@@ -171,7 +172,6 @@ class FrozenPacketAnchorIndex:
         self._question_to_packets = question_to_packets
         self._question_to_evidence_ids = question_to_evidence_ids
         self._questions = questions
-        self._is_formal_verified = False
 
     @classmethod
     def from_packet_records(
@@ -179,7 +179,10 @@ class FrozenPacketAnchorIndex:
         tcm_records: list[dict[str, Any]],
         western_records: list[dict[str, Any]],
     ) -> FrozenPacketAnchorIndex:
-        """Construct index from parsed packet dictionaries (real or synthetic)."""
+        """Construct index from parsed packet dictionaries (real or synthetic).
+
+        Always returns an unverified generic FrozenPacketAnchorIndex.
+        """
         packets: dict[str, PacketMetadata] = {}
         evidence_items: dict[tuple[str, str], EvidenceItemMetadata] = {}
         question_to_packets: dict[str, dict[str, str]] = {}
@@ -240,7 +243,7 @@ class FrozenPacketAnchorIndex:
                 question_to_evidence_ids[question_id] = set()
             question_to_evidence_ids[question_id].update(ev_ids)
 
-        return cls(
+        return FrozenPacketAnchorIndex(
             packets=packets,
             evidence_items=evidence_items,
             question_to_packets=question_to_packets,
@@ -253,7 +256,7 @@ class FrozenPacketAnchorIndex:
         cls,
         tcm_packet_file: Path,
         western_packet_file: Path,
-    ) -> FrozenPacketAnchorIndex:
+    ) -> VerifiedFormalPacketAnchorIndex:
         """Load and mechanically verify actual frozen local packet JSONL files.
 
         FAIL-CLOSED FORMAL AUTHORITY:
@@ -267,6 +270,7 @@ class FrozenPacketAnchorIndex:
         5. Recomputes packet canonical self-hash for every packet.
         6. Recomputes SHA256 of exact_chunk_text for every evidence item.
         7. Verifies cardinality (exactly 48 packets per stream, 4 items per packet, ranks 1-4).
+        8. Returns a structurally distinct, sealed VerifiedFormalPacketAnchorIndex instance.
         """
         if not tcm_packet_file.is_file():
             raise FileNotFoundError(f"TCM packet file not found at {tcm_packet_file}")
@@ -315,21 +319,19 @@ class FrozenPacketAnchorIndex:
         # 5 & 6. Verify packet canonical self-hashes and chunk text hashes
         verify_packet_records_integrity(tcm_lines, western_lines)
 
-        index = cls.from_packet_records(tcm_lines, western_lines)
-        object.__setattr__(index, "_is_formal_verified", True)
-        return index
+        return VerifiedFormalPacketAnchorIndex._create_sealed_from_records(tcm_lines, western_lines)
 
     @classmethod
     def from_packet_files(
         cls,
         tcm_packet_file: Path,
         western_packet_file: Path,
-    ) -> FrozenPacketAnchorIndex:
+    ) -> VerifiedFormalPacketAnchorIndex:
         """Load formal packet JSONL files using verified formal authority."""
         return cls.from_verified_formal_packets(tcm_packet_file, western_packet_file)
 
     @classmethod
-    def from_repo_root(cls, repo_root: Path) -> FrozenPacketAnchorIndex:
+    def from_repo_root(cls, repo_root: Path) -> VerifiedFormalPacketAnchorIndex:
         """Load verified formal index from default study packet paths under repo root."""
         packets_dir = (
             repo_root
@@ -344,8 +346,8 @@ class FrozenPacketAnchorIndex:
 
     @property
     def is_formal_verified(self) -> bool:
-        """Return True if index was loaded and verified via formal packet files."""
-        return getattr(self, "_is_formal_verified", False)
+        """Diagnostic check: return True if index is a structurally verified formal index."""
+        return isinstance(self, VerifiedFormalPacketAnchorIndex)
 
     @property
     def packet_count(self) -> int:
@@ -358,6 +360,22 @@ class FrozenPacketAnchorIndex:
     @property
     def questions(self) -> set[str]:
         return set(self._questions)
+
+    @property
+    def packets(self) -> MappingProxyType[str, PacketMetadata]:
+        return MappingProxyType(self._packets)
+
+    @property
+    def evidence_items(self) -> MappingProxyType[tuple[str, str], EvidenceItemMetadata]:
+        return MappingProxyType(self._evidence_items)
+
+    @property
+    def question_to_packets(self) -> MappingProxyType[str, Any]:
+        return MappingProxyType(self._question_to_packets)
+
+    @property
+    def question_to_evidence_ids(self) -> MappingProxyType[str, Any]:
+        return MappingProxyType(self._question_to_evidence_ids)
 
     def get_question_text(self, question_id: str) -> str:
         """Return question text for a question_id if available."""
@@ -392,6 +410,81 @@ class FrozenPacketAnchorIndex:
 
     def get_question_packet_ids(self, question_id: str) -> dict[str, str]:
         return dict(self._question_to_packets.get(question_id, {}))
+
+
+class VerifiedFormalPacketAnchorIndex(FrozenPacketAnchorIndex):
+    """Immutable, mechanically sealed index of formally verified study packets.
+
+    THREAT MODEL:
+    This seal protects against normal supported Python API misuse and ordinary
+    attribute/item mutation in memory.
+    It is NOT intended as a hostile same-process Python security sandbox against
+    deliberate reflection, object.__setattr__, ctypes, debugger memory edits,
+    or source-code modification.
+    This is a reproducibility and formal integrity boundary, not a security boundary.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        raise TypeError(
+            "Direct public construction of VerifiedFormalPacketAnchorIndex is forbidden. "
+            "Verified formal instances must be loaded through FrozenPacketAnchorIndex.from_repo_root() "
+            "or FrozenPacketAnchorIndex.from_verified_formal_packets()."
+        )
+
+    @classmethod
+    def from_packet_records(cls, *args: Any, **kwargs: Any) -> Any:
+        raise TypeError(
+            "VerifiedFormalPacketAnchorIndex cannot be constructed from raw packet records. "
+            "Use FrozenPacketAnchorIndex.from_packet_records() for generic/synthetic fixtures."
+        )
+
+    @classmethod
+    def _create_sealed_from_records(
+        cls,
+        tcm_records: list[dict[str, Any]],
+        western_records: list[dict[str, Any]],
+    ) -> VerifiedFormalPacketAnchorIndex:
+        """Internal factory to construct sealed verified index from verified records.
+
+        Must only be called after byte-hash and integrity verification.
+        """
+        raw_index = FrozenPacketAnchorIndex.from_packet_records(tcm_records, western_records)
+
+        instance = object.__new__(cls)
+
+        sealed_packets: MappingProxyType[str, PacketMetadata] = MappingProxyType(raw_index._packets)
+        sealed_evidence_items: MappingProxyType[tuple[str, str], EvidenceItemMetadata] = MappingProxyType(
+            raw_index._evidence_items
+        )
+
+        sealed_q_to_pkts: dict[str, MappingProxyType[str, str]] = {
+            k: MappingProxyType(dict(v)) for k, v in raw_index._question_to_packets.items()
+        }
+        sealed_q_to_ev: dict[str, frozenset[str]] = {
+            k: frozenset(v) for k, v in raw_index._question_to_evidence_ids.items()
+        }
+
+        object.__setattr__(instance, "_packets", sealed_packets)
+        object.__setattr__(instance, "_evidence_items", sealed_evidence_items)
+        object.__setattr__(instance, "_question_to_packets", MappingProxyType(sealed_q_to_pkts))
+        object.__setattr__(instance, "_question_to_evidence_ids", MappingProxyType(sealed_q_to_ev))
+        object.__setattr__(instance, "_questions", frozenset(raw_index._questions))
+        object.__setattr__(instance, "_is_sealed", True)
+        return instance
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if getattr(self, "_is_sealed", False):
+            raise AttributeError(
+                f"Cannot mutate attribute '{name}' on sealed VerifiedFormalPacketAnchorIndex"
+            )
+        super().__setattr__(name, value)
+
+    def __delattr__(self, name: str) -> None:
+        if getattr(self, "_is_sealed", False):
+            raise AttributeError(
+                f"Cannot delete attribute '{name}' on sealed VerifiedFormalPacketAnchorIndex"
+            )
+        super().__delattr__(name)
 
 
 def validate_evidence_anchor(

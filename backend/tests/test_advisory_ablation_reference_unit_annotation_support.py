@@ -32,6 +32,7 @@ from research.experiments.cross_perspective_advisory_ablation_v1.reference_units
     ReviewerRoleMismatchError,
     ReviewerWorkspace,
     SyntheticAnnotationViewer,
+    VerifiedFormalPacketAnchorIndex,
     WorkspaceKind,
     WorkspaceLockedError,
     locate_exact_substring,
@@ -640,3 +641,168 @@ def test_formal_annotation_viewer_real_frozen_packets_smoke(tmp_path: Path):
     assert len(exported_json["tcm_packet"]["evidence_items"]) == 4
     assert len(exported_json["western_packet"]["evidence_items"]) == 4
     assert "reference_units" not in exported_json
+
+
+# ==============================================================================
+# 8. B2A Formal Authority Seal Exploit Regression Tests (A - K)
+# ==============================================================================
+
+def test_exploit_regression_a_synthetic_index_cannot_be_elevated():
+    """Exploit A: Generic synthetic index cannot become formal authority by setting _is_formal_verified = True."""
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    synthetic_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+
+    # Attempt elevation exploit via attribute assignment
+    synthetic_index._is_formal_verified = True  # type: ignore[attr-defined]
+
+    # Diagnostic property must remain False (not fooled by caller-assigned attribute)
+    assert synthetic_index.is_formal_verified is False
+
+    # FormalAnnotationViewer must reject the generic object
+    with pytest.raises(FormalPacketAuthorityError, match="requires a formally verified packet index"):
+        FormalAnnotationViewer(synthetic_index)
+
+    # Formal ReviewerWorkspace must reject the generic object
+    with pytest.raises(FormalPacketAuthorityError, match="Cannot create formal workspace with unverified"):
+        ReviewerWorkspace.create_formal_blank("reviewer_a", synthetic_index)
+
+
+def test_exploit_regression_b_formal_viewer_rejects_every_generic_index():
+    """Exploit B: FormalAnnotationViewer rejects every generic index instance."""
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    generic_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+
+    with pytest.raises(FormalPacketAuthorityError, match="requires a formally verified packet index"):
+        FormalAnnotationViewer(generic_index)
+
+
+def test_exploit_regression_c_create_formal_blank_rejects_generic_index():
+    """Exploit C: create_formal_blank rejects every generic index instance."""
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    generic_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+
+    with pytest.raises(FormalPacketAuthorityError, match="Cannot create formal workspace with unverified"):
+        ReviewerWorkspace.create_formal_blank("reviewer_a", generic_index)
+
+
+def test_exploit_regression_d_create_synthetic_blank_rejects_verified_formal_index():
+    """Exploit D: create_synthetic_blank rejects the verified formal index type."""
+    formal_viewer = FormalAnnotationViewer.from_repo_root(_ROOT)
+    formal_index = formal_viewer.packet_index
+    assert isinstance(formal_index, VerifiedFormalPacketAnchorIndex)
+
+    with pytest.raises(TypeError, match="Cannot create synthetic workspace with VerifiedFormalPacketAnchorIndex"):
+        ReviewerWorkspace.create_synthetic_blank("reviewer_a", formal_index)
+
+
+def test_exploit_regression_e_load_synthetic_local_rejects_verified_formal_index(tmp_path: Path):
+    """Exploit E: load_synthetic_local rejects the verified formal index type."""
+    formal_viewer = FormalAnnotationViewer.from_repo_root(_ROOT)
+    formal_index = formal_viewer.packet_index
+
+    # Create dummy synthetic workspace file
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    syn_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+    ws_syn = ReviewerWorkspace.create_synthetic_blank("reviewer_a", syn_index)
+    syn_file = tmp_path / "dummy_syn_ws.json"
+    ws_syn.save_local(syn_file)
+
+    with pytest.raises(TypeError, match="load_synthetic_local cannot be called with VerifiedFormalPacketAnchorIndex"):
+        ReviewerWorkspace.load_synthetic_local(syn_file, formal_index)
+
+
+def test_exploit_regression_f_real_formal_loader_returns_verified_formal_index_type():
+    """Exploit F: Real formal loader returns the verified formal index type."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+    assert isinstance(formal_index, VerifiedFormalPacketAnchorIndex)
+    assert isinstance(formal_index, FrozenPacketAnchorIndex)
+    assert formal_index.is_formal_verified is True
+
+
+def test_exploit_regression_g_normal_mutation_of_formal_packet_mapping_fails():
+    """Exploit G: Normal mutation of formal packet mapping fails."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+
+    # Mutation via private mapping proxy
+    with pytest.raises(TypeError):
+        formal_index._packets["forged_packet"] = None  # type: ignore[index]
+
+    # Mutation via public property mapping proxy
+    with pytest.raises(TypeError):
+        formal_index.packets["forged_packet"] = None  # type: ignore[index]
+
+
+def test_exploit_regression_h_normal_mutation_of_formal_evidence_item_mapping_fails():
+    """Exploit H: Normal mutation of formal evidence-item mapping fails."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+
+    # Mutation via private mapping proxy
+    with pytest.raises(TypeError):
+        formal_index._evidence_items[("forged_p", "forged_e")] = None  # type: ignore[index]
+
+    # Mutation via public property mapping proxy
+    with pytest.raises(TypeError):
+        formal_index.evidence_items[("forged_p", "forged_e")] = None  # type: ignore[index]
+
+
+def test_exploit_regression_i_normal_mutation_of_formal_question_set_fails():
+    """Exploit I: Normal mutation of formal question set fails."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+
+    # Underlying set is sealed as frozenset; calling .add must raise AttributeError
+    with pytest.raises(AttributeError):
+        formal_index._questions.add("forged_q")  # type: ignore[attr-defined]
+
+
+def test_exploit_regression_j_attempted_normal_reassignment_fails():
+    """Exploit J: Attempted normal reassignment of sealed formal authority state fails."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+
+    # Reassignment on sealed formal index fails
+    with pytest.raises(AttributeError, match="Cannot mutate attribute '_packets'"):
+        formal_index._packets = {}  # type: ignore[misc]
+
+    with pytest.raises(AttributeError, match="Cannot mutate attribute '_evidence_items'"):
+        formal_index._evidence_items = {}  # type: ignore[misc]
+
+    with pytest.raises(AttributeError, match="Cannot mutate attribute '_questions'"):
+        formal_index._questions = frozenset()  # type: ignore[misc]
+
+    # Reassignment of _index on FormalAnnotationViewer fails
+    viewer = FormalAnnotationViewer(formal_index)
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    syn_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+
+    with pytest.raises(AttributeError, match="Cannot reassign '_index'"):
+        viewer._index = syn_index  # type: ignore[misc]
+
+    # Formal viewer output remains untouched
+    assert len(viewer.list_questions()) == 48
+
+
+def test_exploit_regression_k_formal_viewer_reads_real_48_questions():
+    """Exploit K: Formal viewer reads the real 48-question frozen packet set without leaking prose."""
+    viewer = FormalAnnotationViewer.from_repo_root(_ROOT)
+    questions = viewer.list_questions()
+    assert len(questions) == 48
+    assert questions[0] == "cpaa1-con-bu-001"
+    assert questions[-1] == "cpaa1-hea-sc-006"
+    for qid in questions:
+        view = viewer.get_question_view(qid)
+        assert len(view.tcm_items) == 4
+        assert len(view.western_items) == 4
+
+
+def test_verified_formal_packet_anchor_index_public_constructor_forbidden():
+    """VerifiedFormalPacketAnchorIndex public constructor and from_packet_records are forbidden."""
+    with pytest.raises(TypeError, match="Direct public construction.*is forbidden"):
+        VerifiedFormalPacketAnchorIndex(
+            packets={},
+            evidence_items={},
+            question_to_packets={},
+            question_to_evidence_ids={},
+            questions=set(),
+        )
+
+    with pytest.raises(TypeError, match="cannot be constructed from raw packet records"):
+        VerifiedFormalPacketAnchorIndex.from_packet_records([], [])

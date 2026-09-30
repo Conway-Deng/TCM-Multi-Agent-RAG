@@ -47,6 +47,7 @@ from .reference_unit_validation import (
     FROZEN_WESTERN_PACKET_BYTE_SHA256,
     FormalPacketAuthorityError,
     FrozenPacketAnchorIndex,
+    VerifiedFormalPacketAnchorIndex,
     validate_reference_unit_record,
 )
 
@@ -404,18 +405,29 @@ class BaseAnnotationViewer:
 class FormalAnnotationViewer(BaseAnnotationViewer):
     """Formal study annotation viewer.
 
-    MUST be initialized only with a formally verified FrozenPacketAnchorIndex.
+    MUST be initialized only with a formally verified VerifiedFormalPacketAnchorIndex.
     Guarantees formal packet byte hash authority.
     """
 
-    def __init__(self, packet_index: FrozenPacketAnchorIndex) -> None:
-        if not getattr(packet_index, "is_formal_verified", False):
+    def __init__(self, packet_index: VerifiedFormalPacketAnchorIndex) -> None:
+        if not isinstance(packet_index, VerifiedFormalPacketAnchorIndex):
             raise FormalPacketAuthorityError(
                 "FormalAnnotationViewer requires a formally verified packet index "
-                "loaded via from_repo_root or from_verified_formal_packets. "
-                "Use SyntheticAnnotationViewer for unverified/in-memory test fixtures."
+                "of type VerifiedFormalPacketAnchorIndex loaded via from_repo_root "
+                "or from_verified_formal_packets. Generic FrozenPacketAnchorIndex "
+                "cannot be used as formal authority."
             )
         super().__init__(packet_index)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if hasattr(self, "_index") and name == "_index":
+            raise AttributeError("Cannot reassign '_index' on FormalAnnotationViewer")
+        super().__setattr__(name, value)
+
+    def __delattr__(self, name: str) -> None:
+        if name == "_index":
+            raise AttributeError("Cannot delete '_index' on FormalAnnotationViewer")
+        super().__delattr__(name)
 
     @classmethod
     def from_repo_root(cls, repo_root: Path) -> FormalAnnotationViewer:
@@ -438,6 +450,14 @@ class FormalAnnotationViewer(BaseAnnotationViewer):
 
 class SyntheticAnnotationViewer(BaseAnnotationViewer):
     """Synthetic viewer reserved exclusively for in-memory and synthetic test fixtures."""
+
+    def __init__(self, packet_index: FrozenPacketAnchorIndex) -> None:
+        if isinstance(packet_index, VerifiedFormalPacketAnchorIndex):
+            raise TypeError(
+                "SyntheticAnnotationViewer cannot be initialized with VerifiedFormalPacketAnchorIndex. "
+                "Formal verified packets must be viewed with FormalAnnotationViewer."
+            )
+        super().__init__(packet_index)
 
     @classmethod
     def from_packet_records(
@@ -570,12 +590,12 @@ class ReviewerWorkspace:
     def create_formal_blank(
         cls,
         reviewer_role: ReviewerRole,
-        formal_packet_index: FrozenPacketAnchorIndex,
+        formal_packet_index: VerifiedFormalPacketAnchorIndex,
     ) -> ReviewerWorkspace:
         """Create a blank, unpopulated formal study workspace for Reviewer A or Reviewer B.
 
         Requirements:
-          - formal_packet_index.is_formal_verified MUST be True.
+          - formal_packet_index MUST be a VerifiedFormalPacketAnchorIndex instance.
           - question_ids derived mechanically from formal_packet_index (must equal 48 frozen questions).
           - binds fixed formal frozen byte hashes.
         """
@@ -583,10 +603,11 @@ class ReviewerWorkspace:
             raise ReviewerRoleMismatchError(
                 f"Invalid reviewer_role '{reviewer_role}': must be 'reviewer_a' or 'reviewer_b'"
             )
-        if not getattr(formal_packet_index, "is_formal_verified", False):
+        if not isinstance(formal_packet_index, VerifiedFormalPacketAnchorIndex):
             raise FormalPacketAuthorityError(
-                "Cannot create formal workspace with unverified/synthetic packet index. "
-                "formal_packet_index must be loaded via from_repo_root or from_verified_formal_packets."
+                "Cannot create formal workspace with unverified/generic packet index. "
+                "formal_packet_index must be an instance of VerifiedFormalPacketAnchorIndex "
+                "loaded via from_repo_root or from_verified_formal_packets."
             )
 
         formal_questions = tuple(sorted(formal_packet_index.questions))
@@ -627,6 +648,11 @@ class ReviewerWorkspace:
             raise ReviewerRoleMismatchError(
                 f"Invalid reviewer_role '{reviewer_role}': must be 'reviewer_a' or 'reviewer_b'"
             )
+        if isinstance(synthetic_packet_index, VerifiedFormalPacketAnchorIndex):
+            raise TypeError(
+                "Cannot create synthetic workspace with VerifiedFormalPacketAnchorIndex. "
+                "Synthetic workspaces must use generic/synthetic FrozenPacketAnchorIndex."
+            )
 
         q_ids = (
             tuple(sorted(synthetic_packet_index.questions))
@@ -650,6 +676,20 @@ class ReviewerWorkspace:
             _packet_index=synthetic_packet_index,
         )
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "_packet_index" and hasattr(self, "_packet_index"):
+            if getattr(self, "workspace_kind", None) == "formal":
+                if not isinstance(value, VerifiedFormalPacketAnchorIndex):
+                    raise FormalPacketAuthorityError(
+                        "Cannot assign unverified index to formal ReviewerWorkspace"
+                    )
+            elif getattr(self, "workspace_kind", None) == "synthetic":
+                if isinstance(value, VerifiedFormalPacketAnchorIndex):
+                    raise TypeError(
+                        "Cannot assign VerifiedFormalPacketAnchorIndex to synthetic ReviewerWorkspace"
+                    )
+        super().__setattr__(name, value)
+
     def add_record(
         self,
         record: ReferenceUnitRecord | dict[str, Any],
@@ -671,7 +711,7 @@ class ReviewerWorkspace:
                 f"Cannot add record: {self.workspace_kind} workspace has no bound packet index"
             )
 
-        if self.workspace_kind == "formal" and not getattr(self._packet_index, "is_formal_verified", False):
+        if self.workspace_kind == "formal" and not isinstance(self._packet_index, VerifiedFormalPacketAnchorIndex):
             raise FormalPacketAuthorityError(
                 "Formal workspace requires a verified formal packet index for record validation"
             )
@@ -747,13 +787,13 @@ class ReviewerWorkspace:
     def load_formal_local(
         cls,
         file_path: Path,
-        formal_packet_index: FrozenPacketAnchorIndex,
+        formal_packet_index: VerifiedFormalPacketAnchorIndex,
         expected_reviewer: ReviewerRole | None = None,
     ) -> ReviewerWorkspace:
         """Load a formal reviewer workspace from a local JSON file with authority and record revalidation.
 
         Fail-closed requirements:
-          1. formal_packet_index.is_formal_verified MUST be True.
+          1. formal_packet_index MUST be a VerifiedFormalPacketAnchorIndex instance.
           2. file exists and workspace_kind == 'formal'.
           3. protocol_id and protocol_byte_sha256 match fixed protocol anchors.
           4. tcm_packet_byte_sha256 and western_packet_byte_sha256 match fixed frozen byte hashes.
@@ -766,9 +806,9 @@ class ReviewerWorkspace:
         if not file_path.is_file():
             raise FileNotFoundError(f"Workspace file not found: {file_path}")
 
-        if not getattr(formal_packet_index, "is_formal_verified", False):
+        if not isinstance(formal_packet_index, VerifiedFormalPacketAnchorIndex):
             raise FormalPacketAuthorityError(
-                "load_formal_local requires a verified formal packet index."
+                "load_formal_local requires a verified formal packet index of type VerifiedFormalPacketAnchorIndex."
             )
 
         data = json.loads(file_path.read_text(encoding="utf-8"))
@@ -854,6 +894,12 @@ class ReviewerWorkspace:
         if not file_path.is_file():
             raise FileNotFoundError(f"Workspace file not found: {file_path}")
 
+        if isinstance(synthetic_packet_index, VerifiedFormalPacketAnchorIndex):
+            raise TypeError(
+                "load_synthetic_local cannot be called with VerifiedFormalPacketAnchorIndex. "
+                "Synthetic workspaces must use generic/synthetic FrozenPacketAnchorIndex."
+            )
+
         data = json.loads(file_path.read_text(encoding="utf-8"))
 
         if data.get("workspace_kind") != "synthetic":
@@ -909,10 +955,18 @@ class ReviewerWorkspace:
         data = json.loads(file_path.read_text(encoding="utf-8"))
         kind = data.get("workspace_kind")
         if kind == "formal":
+            if not isinstance(packet_index, VerifiedFormalPacketAnchorIndex):
+                raise FormalPacketAuthorityError(
+                    "load_local for formal workspace requires a VerifiedFormalPacketAnchorIndex."
+                )
             return cls.load_formal_local(
                 file_path, formal_packet_index=packet_index, expected_reviewer=expected_reviewer
             )
         elif kind == "synthetic":
+            if isinstance(packet_index, VerifiedFormalPacketAnchorIndex):
+                raise TypeError(
+                    "load_local for synthetic workspace cannot use VerifiedFormalPacketAnchorIndex."
+                )
             return cls.load_synthetic_local(
                 file_path, synthetic_packet_index=packet_index, expected_reviewer=expected_reviewer
             )
