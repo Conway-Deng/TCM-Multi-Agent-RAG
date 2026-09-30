@@ -901,3 +901,50 @@ def test_real_formal_path_cardinality_and_consumers():
     ws = ReviewerWorkspace.create_formal_blank("reviewer_a", formal_index)
     assert type(ws._packet_index) is VerifiedFormalPacketAnchorIndex
     assert ws.workspace_kind == "formal"
+
+
+def test_exploit_regression_subclass_polymorphic_from_packet_records_override_prevented():
+    """Task 4: Subclass overriding from_packet_records cannot inject arbitrary data into formal loader."""
+    override_called = False
+
+    class EvilGenericIndex(FrozenPacketAnchorIndex):
+        @classmethod
+        def from_packet_records(cls, tcm_records: Any, western_records: Any) -> Any:
+            nonlocal override_called
+            override_called = True
+            # Attempt to inject forged empty or altered index
+            return FrozenPacketAnchorIndex(
+                packets={},
+                evidence_items={},
+                question_to_packets={},
+                question_to_evidence_ids={},
+                questions=set(),
+            )
+
+    # 1. Test via EvilGenericIndex.from_repo_root against real frozen packets
+    formal_index_1 = EvilGenericIndex.from_repo_root(_ROOT)
+    assert not override_called, "EvilGenericIndex.from_packet_records was invoked via from_repo_root!"
+    assert type(formal_index_1) is VerifiedFormalPacketAnchorIndex
+    assert len(formal_index_1.questions) == 48
+    assert formal_index_1.packet_count == 96
+    assert formal_index_1.evidence_item_count == 384
+
+    # 2. Test via EvilGenericIndex.from_verified_formal_packets directly
+    packets_dir = _ROOT / "research" / "experiments" / "cross_perspective_advisory_ablation_v1" / "packets"
+    tcm_file = packets_dir / "tcm_packets.jsonl"
+    western_file = packets_dir / "western_packets.jsonl"
+
+    formal_index_2 = EvilGenericIndex.from_verified_formal_packets(tcm_file, western_file)
+    assert not override_called, "EvilGenericIndex.from_packet_records was invoked via from_verified_formal_packets!"
+    assert type(formal_index_2) is VerifiedFormalPacketAnchorIndex
+    assert len(formal_index_2.questions) == 48
+    assert formal_index_2.packet_count == 96
+    assert formal_index_2.evidence_item_count == 384
+
+    # 3. Test via EvilGenericIndex.from_packet_files
+    formal_index_3 = EvilGenericIndex.from_packet_files(tcm_file, western_file)
+    assert not override_called, "EvilGenericIndex.from_packet_records was invoked via from_packet_files!"
+    assert type(formal_index_3) is VerifiedFormalPacketAnchorIndex
+    assert len(formal_index_3.questions) == 48
+    assert formal_index_3.packet_count == 96
+    assert formal_index_3.evidence_item_count == 384

@@ -320,7 +320,8 @@ class FrozenPacketAnchorIndex:
         verify_packet_records_integrity(tcm_lines, western_lines)
 
         # 7. Construct sealed VerifiedFormalPacketAnchorIndex directly inside this verified file loader
-        raw_index = cls.from_packet_records(tcm_lines, western_lines)
+        # Use FrozenPacketAnchorIndex.from_packet_records explicitly to prevent subclass polymorphism bypass
+        raw_index = FrozenPacketAnchorIndex.from_packet_records(tcm_lines, western_lines)
 
         instance = object.__new__(VerifiedFormalPacketAnchorIndex)
 
@@ -351,7 +352,7 @@ class FrozenPacketAnchorIndex:
         western_packet_file: Path,
     ) -> VerifiedFormalPacketAnchorIndex:
         """Load formal packet JSONL files using verified formal authority."""
-        return cls.from_verified_formal_packets(tcm_packet_file, western_packet_file)
+        return FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_packet_file, western_packet_file)
 
     @classmethod
     def from_repo_root(cls, repo_root: Path) -> VerifiedFormalPacketAnchorIndex:
@@ -365,7 +366,7 @@ class FrozenPacketAnchorIndex:
         )
         tcm_file = packets_dir / "tcm_packets.jsonl"
         western_file = packets_dir / "western_packets.jsonl"
-        return cls.from_verified_formal_packets(tcm_file, western_file)
+        return FrozenPacketAnchorIndex.from_verified_formal_packets(tcm_file, western_file)
 
     @property
     def is_formal_verified(self) -> bool:
