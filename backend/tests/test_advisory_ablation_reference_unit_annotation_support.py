@@ -689,7 +689,7 @@ def test_exploit_regression_d_create_synthetic_blank_rejects_verified_formal_ind
     """Exploit D: create_synthetic_blank rejects the verified formal index type."""
     formal_viewer = FormalAnnotationViewer.from_repo_root(_ROOT)
     formal_index = formal_viewer.packet_index
-    assert isinstance(formal_index, VerifiedFormalPacketAnchorIndex)
+    assert type(formal_index) is VerifiedFormalPacketAnchorIndex
 
     with pytest.raises(TypeError, match="Cannot create synthetic workspace with VerifiedFormalPacketAnchorIndex"):
         ReviewerWorkspace.create_synthetic_blank("reviewer_a", formal_index)
@@ -714,7 +714,7 @@ def test_exploit_regression_e_load_synthetic_local_rejects_verified_formal_index
 def test_exploit_regression_f_real_formal_loader_returns_verified_formal_index_type():
     """Exploit F: Real formal loader returns the verified formal index type."""
     formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
-    assert isinstance(formal_index, VerifiedFormalPacketAnchorIndex)
+    assert type(formal_index) is VerifiedFormalPacketAnchorIndex
     assert isinstance(formal_index, FrozenPacketAnchorIndex)
     assert formal_index.is_formal_verified is True
 
@@ -806,3 +806,48 @@ def test_verified_formal_packet_anchor_index_public_constructor_forbidden():
 
     with pytest.raises(TypeError, match="cannot be constructed from raw packet records"):
         VerifiedFormalPacketAnchorIndex.from_packet_records([], [])
+
+
+def test_exploit_regression_subclassing_verified_formal_index_forbidden():
+    """Task 4: Ordinary subclassing of VerifiedFormalPacketAnchorIndex is strictly forbidden."""
+    with pytest.raises(TypeError, match="VerifiedFormalPacketAnchorIndex is final and cannot be subclassed"):
+        class FakeVerifiedIndex(VerifiedFormalPacketAnchorIndex):
+            pass
+
+
+def test_exploit_regression_subclass_init_bypass_forbidden():
+    """Task 4: Subclass attempting to override __init__ and call FrozenPacketAnchorIndex.__init__ fails at definition."""
+    with pytest.raises(TypeError, match="VerifiedFormalPacketAnchorIndex is final and cannot be subclassed"):
+        class SubclassInitBypassExploit(VerifiedFormalPacketAnchorIndex):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                FrozenPacketAnchorIndex.__init__(self, *args, **kwargs)
+
+
+def test_exact_type_formal_authority_decisions():
+    """Task 5: Exact type checks for formal authority and synthetic rejection."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    syn_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+
+    # 1. Real formal loader returns exactly VerifiedFormalPacketAnchorIndex
+    assert type(formal_index) is VerifiedFormalPacketAnchorIndex
+
+    # 2. Generic synthetic index is exactly NOT that type
+    assert type(syn_index) is not VerifiedFormalPacketAnchorIndex
+    assert type(syn_index) is FrozenPacketAnchorIndex
+
+    # 3. FormalAnnotationViewer accepts exact verified formal type
+    viewer = FormalAnnotationViewer(formal_index)
+    assert type(viewer.packet_index) is VerifiedFormalPacketAnchorIndex
+
+    # 4. FormalAnnotationViewer rejects generic FrozenPacketAnchorIndex
+    with pytest.raises(FormalPacketAuthorityError, match="requires a formally verified packet index"):
+        FormalAnnotationViewer(syn_index)
+
+    # 5. ReviewerWorkspace.create_formal_blank accepts only exact verified type
+    ws_formal = ReviewerWorkspace.create_formal_blank("reviewer_a", formal_index)
+    assert type(ws_formal._packet_index) is VerifiedFormalPacketAnchorIndex
+
+    # 6. Synthetic workspace rejects verified formal type
+    with pytest.raises(TypeError, match="Cannot create synthetic workspace with VerifiedFormalPacketAnchorIndex"):
+        ReviewerWorkspace.create_synthetic_blank("reviewer_a", formal_index)

@@ -347,7 +347,7 @@ class FrozenPacketAnchorIndex:
     @property
     def is_formal_verified(self) -> bool:
         """Diagnostic check: return True if index is a structurally verified formal index."""
-        return isinstance(self, VerifiedFormalPacketAnchorIndex)
+        return type(self) is VerifiedFormalPacketAnchorIndex
 
     @property
     def packet_count(self) -> int:
@@ -423,6 +423,11 @@ class VerifiedFormalPacketAnchorIndex(FrozenPacketAnchorIndex):
     or source-code modification.
     This is a reproducibility and formal integrity boundary, not a security boundary.
     """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        raise TypeError(
+            "VerifiedFormalPacketAnchorIndex is final and cannot be subclassed"
+        )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         raise TypeError(
