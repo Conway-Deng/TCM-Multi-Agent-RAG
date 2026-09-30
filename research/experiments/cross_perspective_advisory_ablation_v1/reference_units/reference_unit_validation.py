@@ -319,7 +319,30 @@ class FrozenPacketAnchorIndex:
         # 5 & 6. Verify packet canonical self-hashes and chunk text hashes
         verify_packet_records_integrity(tcm_lines, western_lines)
 
-        return VerifiedFormalPacketAnchorIndex._create_sealed_from_records(tcm_lines, western_lines)
+        # 7. Construct sealed VerifiedFormalPacketAnchorIndex directly inside this verified file loader
+        raw_index = cls.from_packet_records(tcm_lines, western_lines)
+
+        instance = object.__new__(VerifiedFormalPacketAnchorIndex)
+
+        sealed_packets: MappingProxyType[str, PacketMetadata] = MappingProxyType(raw_index._packets)
+        sealed_evidence_items: MappingProxyType[tuple[str, str], EvidenceItemMetadata] = MappingProxyType(
+            raw_index._evidence_items
+        )
+
+        sealed_q_to_pkts: dict[str, MappingProxyType[str, str]] = {
+            k: MappingProxyType(dict(v)) for k, v in raw_index._question_to_packets.items()
+        }
+        sealed_q_to_ev: dict[str, frozenset[str]] = {
+            k: frozenset(v) for k, v in raw_index._question_to_evidence_ids.items()
+        }
+
+        object.__setattr__(instance, "_packets", sealed_packets)
+        object.__setattr__(instance, "_evidence_items", sealed_evidence_items)
+        object.__setattr__(instance, "_question_to_packets", MappingProxyType(sealed_q_to_pkts))
+        object.__setattr__(instance, "_question_to_evidence_ids", MappingProxyType(sealed_q_to_ev))
+        object.__setattr__(instance, "_questions", frozenset(raw_index._questions))
+        object.__setattr__(instance, "_is_sealed", True)
+        return instance
 
     @classmethod
     def from_packet_files(
@@ -442,40 +465,6 @@ class VerifiedFormalPacketAnchorIndex(FrozenPacketAnchorIndex):
             "VerifiedFormalPacketAnchorIndex cannot be constructed from raw packet records. "
             "Use FrozenPacketAnchorIndex.from_packet_records() for generic/synthetic fixtures."
         )
-
-    @classmethod
-    def _create_sealed_from_records(
-        cls,
-        tcm_records: list[dict[str, Any]],
-        western_records: list[dict[str, Any]],
-    ) -> VerifiedFormalPacketAnchorIndex:
-        """Internal factory to construct sealed verified index from verified records.
-
-        Must only be called after byte-hash and integrity verification.
-        """
-        raw_index = FrozenPacketAnchorIndex.from_packet_records(tcm_records, western_records)
-
-        instance = object.__new__(cls)
-
-        sealed_packets: MappingProxyType[str, PacketMetadata] = MappingProxyType(raw_index._packets)
-        sealed_evidence_items: MappingProxyType[tuple[str, str], EvidenceItemMetadata] = MappingProxyType(
-            raw_index._evidence_items
-        )
-
-        sealed_q_to_pkts: dict[str, MappingProxyType[str, str]] = {
-            k: MappingProxyType(dict(v)) for k, v in raw_index._question_to_packets.items()
-        }
-        sealed_q_to_ev: dict[str, frozenset[str]] = {
-            k: frozenset(v) for k, v in raw_index._question_to_evidence_ids.items()
-        }
-
-        object.__setattr__(instance, "_packets", sealed_packets)
-        object.__setattr__(instance, "_evidence_items", sealed_evidence_items)
-        object.__setattr__(instance, "_question_to_packets", MappingProxyType(sealed_q_to_pkts))
-        object.__setattr__(instance, "_question_to_evidence_ids", MappingProxyType(sealed_q_to_ev))
-        object.__setattr__(instance, "_questions", frozenset(raw_index._questions))
-        object.__setattr__(instance, "_is_sealed", True)
-        return instance
 
     def __setattr__(self, name: str, value: Any) -> None:
         if getattr(self, "_is_sealed", False):

@@ -851,3 +851,53 @@ def test_exact_type_formal_authority_decisions():
     # 6. Synthetic workspace rejects verified formal type
     with pytest.raises(TypeError, match="Cannot create synthetic workspace with VerifiedFormalPacketAnchorIndex"):
         ReviewerWorkspace.create_synthetic_blank("reviewer_a", formal_index)
+
+
+def test_exploit_regression_no_callable_record_to_verified_factory():
+    """Task 4: Prove there is no ordinary record-to-verified factory on VerifiedFormalPacketAnchorIndex."""
+    # Method is removed entirely
+    assert not hasattr(VerifiedFormalPacketAnchorIndex, "_create_sealed_from_records")
+
+    # Inspect verified type API and confirm no factory accepting raw records exists
+    assert hasattr(VerifiedFormalPacketAnchorIndex, "from_packet_records")
+    with pytest.raises(TypeError, match="cannot be constructed from raw packet records"):
+        VerifiedFormalPacketAnchorIndex.from_packet_records([], [])
+
+    for attr_name in dir(VerifiedFormalPacketAnchorIndex):
+        # Confirm no record factory attributes exist on the class
+        assert attr_name not in ("_create_sealed_from_records", "_create_verified", "create_sealed", "seal")
+
+    # Synthetic records produce ONLY generic FrozenPacketAnchorIndex through from_packet_records
+    tcm_recs, west_recs = _make_synthetic_packet_records("syn_q_01")
+    syn_index = FrozenPacketAnchorIndex.from_packet_records(tcm_recs, west_recs)
+    assert type(syn_index) is FrozenPacketAnchorIndex
+    assert type(syn_index) is not VerifiedFormalPacketAnchorIndex
+    assert syn_index.is_formal_verified is False
+
+    # Real formal frozen files produce exactly VerifiedFormalPacketAnchorIndex through from_repo_root
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+    assert type(formal_index) is VerifiedFormalPacketAnchorIndex
+    assert formal_index.is_formal_verified is True
+
+
+def test_real_formal_path_cardinality_and_consumers():
+    """Task 5: Real formal loader cardinality checks and consumer acceptance."""
+    formal_index = FrozenPacketAnchorIndex.from_repo_root(_ROOT)
+
+    # 1. Exact type
+    assert type(formal_index) is VerifiedFormalPacketAnchorIndex
+
+    # 2. Cardinality: 48 questions, 96 packets, 384 evidence items
+    assert len(formal_index.questions) == 48
+    assert formal_index.packet_count == 96
+    assert formal_index.evidence_item_count == 384
+
+    # 3. FormalAnnotationViewer accepts it
+    viewer = FormalAnnotationViewer(formal_index)
+    assert type(viewer.packet_index) is VerifiedFormalPacketAnchorIndex
+    assert len(viewer.list_questions()) == 48
+
+    # 4. ReviewerWorkspace.create_formal_blank accepts it
+    ws = ReviewerWorkspace.create_formal_blank("reviewer_a", formal_index)
+    assert type(ws._packet_index) is VerifiedFormalPacketAnchorIndex
+    assert ws.workspace_kind == "formal"
