@@ -74,6 +74,7 @@ HUMAN_ONLY_PROHIBITIONS: Final[tuple[str, ...]] = (
 )
 
 ReviewerRole = Literal["reviewer_a", "reviewer_b"]
+WorkspaceKind = Literal["formal", "synthetic"]
 
 
 class AmbiguousSpanError(ValueError):
@@ -513,16 +514,21 @@ def validate_span_coordinates(
     start: int,
     end: int,
 ) -> tuple[int, int, str]:
-    """Validate that [start, end) are valid Unicode code-point coordinates within exact_chunk_text.
+    """Validate that [start, end) is a non-empty Unicode code-point interval within exact_chunk_text.
+
+    Enforces: 0 <= start < end <= len(exact_chunk_text).
+    Zero-length intervals (start == end) are rejected fail-closed.
 
     Returns (start, end, exact_chunk_text[start:end]).
-    Raises ValueError on out-of-bounds or inverted coordinates.
+    Raises ValueError on zero-length, inverted, or out-of-bounds coordinates.
     """
     text_len = len(exact_chunk_text)
     if start < 0:
         raise ValueError(f"Span start offset ({start}) must be non-negative")
-    if end < start:
-        raise ValueError(f"Span end offset ({end}) cannot be less than start ({start})")
+    if end <= start:
+        raise ValueError(
+            f"Span interval must be strictly positive (start < end): start={start}, end={end}"
+        )
     if end > text_len:
         raise ValueError(
             f"Span end offset ({end}) exceeds text length ({text_len} Unicode code points)"
@@ -539,17 +545,15 @@ def validate_span_coordinates(
 class ReviewerWorkspace:
     """Isolated submission container for one human reviewer.
 
-    Records:
-      - reviewer role (strictly 'reviewer_a' or 'reviewer_b')
-      - protocol ID and frozen byte hash
-      - TCM / Western packet frozen byte hashes
-      - question IDs
-      - annotation state ('blank', 'in_progress', 'submitted_locked')
-      - human-entered reference unit records
-      - submission lock metadata
+    Formal study workspaces are strictly bound to a verified formal packet index,
+    the complete frozen 48-question set, and fixed frozen authority hashes.
+
+    Synthetic workspaces are explicitly tagged workspace_kind='synthetic' and bound
+    to a synthetic test index for non-study testing.
     """
 
     reviewer_role: ReviewerRole
+    workspace_kind: WorkspaceKind
     protocol_id: str
     protocol_byte_sha256: str
     tcm_packet_byte_sha256: str
@@ -560,53 +564,120 @@ class ReviewerWorkspace:
     records: list[dict[str, Any]] = field(default_factory=list)
     submission_locked: bool = False
     lock_metadata: dict[str, Any] | None = None
+    _packet_index: FrozenPacketAnchorIndex | None = field(default=None, repr=False)
 
     @classmethod
-    def create_blank(
+    def create_formal_blank(
         cls,
         reviewer_role: ReviewerRole,
-        question_ids: Sequence[str],
+        formal_packet_index: FrozenPacketAnchorIndex,
     ) -> ReviewerWorkspace:
-        """Create a blank, unpopulated workspace for Reviewer A or Reviewer B.
+        """Create a blank, unpopulated formal study workspace for Reviewer A or Reviewer B.
 
-        Contains zero pre-populated semantic units.
+        Requirements:
+          - formal_packet_index.is_formal_verified MUST be True.
+          - question_ids derived mechanically from formal_packet_index (must equal 48 frozen questions).
+          - binds fixed formal frozen byte hashes.
+        """
+        if reviewer_role not in ("reviewer_a", "reviewer_b"):
+            raise ReviewerRoleMismatchError(
+                f"Invalid reviewer_role '{reviewer_role}': must be 'reviewer_a' or 'reviewer_b'"
+            )
+        if not getattr(formal_packet_index, "is_formal_verified", False):
+            raise FormalPacketAuthorityError(
+                "Cannot create formal workspace with unverified/synthetic packet index. "
+                "formal_packet_index must be loaded via from_repo_root or from_verified_formal_packets."
+            )
+
+        formal_questions = tuple(sorted(formal_packet_index.questions))
+        if len(formal_questions) != 48:
+            raise FormalPacketAuthorityError(
+                f"Formal packet index has {len(formal_questions)} questions, expected exactly 48"
+            )
+
+        return cls(
+            reviewer_role=reviewer_role,
+            workspace_kind="formal",
+            protocol_id=PROTOCOL_ID,
+            protocol_byte_sha256=FROZEN_PROTOCOL_BYTE_SHA256,
+            tcm_packet_byte_sha256=FROZEN_TCM_PACKET_BYTE_SHA256,
+            western_packet_byte_sha256=FROZEN_WESTERN_PACKET_BYTE_SHA256,
+            study_id=STUDY_ID,
+            question_ids=formal_questions,
+            annotation_state="blank",
+            records=[],
+            submission_locked=False,
+            lock_metadata=None,
+            _packet_index=formal_packet_index,
+        )
+
+    @classmethod
+    def create_synthetic_blank(
+        cls,
+        reviewer_role: ReviewerRole,
+        synthetic_packet_index: FrozenPacketAnchorIndex,
+        question_ids: Sequence[str] | None = None,
+    ) -> ReviewerWorkspace:
+        """Create a blank workspace for synthetic testing.
+
+        Clearly marks workspace_kind='synthetic'. Binds the synthetic packet index.
+        Does NOT assert formal frozen authority.
         """
         if reviewer_role not in ("reviewer_a", "reviewer_b"):
             raise ReviewerRoleMismatchError(
                 f"Invalid reviewer_role '{reviewer_role}': must be 'reviewer_a' or 'reviewer_b'"
             )
 
+        q_ids = (
+            tuple(sorted(synthetic_packet_index.questions))
+            if question_ids is None
+            else tuple(question_ids)
+        )
+
         return cls(
             reviewer_role=reviewer_role,
+            workspace_kind="synthetic",
             protocol_id=PROTOCOL_ID,
             protocol_byte_sha256=FROZEN_PROTOCOL_BYTE_SHA256,
-            tcm_packet_byte_sha256=FROZEN_TCM_PACKET_BYTE_SHA256,
-            western_packet_byte_sha256=FROZEN_WESTERN_PACKET_BYTE_SHA256,
+            tcm_packet_byte_sha256="SYNTHETIC_PACKET_AUTHORITY",
+            western_packet_byte_sha256="SYNTHETIC_PACKET_AUTHORITY",
             study_id=STUDY_ID,
-            question_ids=tuple(question_ids),
+            question_ids=q_ids,
             annotation_state="blank",
             records=[],
             submission_locked=False,
             lock_metadata=None,
+            _packet_index=synthetic_packet_index,
         )
 
     def add_record(
         self,
         record: ReferenceUnitRecord | dict[str, Any],
-        packet_index: FrozenPacketAnchorIndex | None = None,
         mode: ValidationMode = "draft",
     ) -> None:
-        """Add a human-entered reference unit record after structural validation.
+        """Add a human-entered reference unit record after structural validation against bound authority.
 
         Fail-closed:
           - raises WorkspaceLockedError if submission is locked.
+          - validates against the internally bound packet index.
+          - for formal workspaces, requires bound packet index to be formally verified.
           - raises ValueError if record fails schema or mode validation.
         """
         if self.submission_locked:
             raise WorkspaceLockedError("Cannot add record: workspace is locked for submission")
 
-        # Validate structure against schema & protocol rules
-        errors = validate_reference_unit_record(record, mode=mode, packet_index=packet_index)
+        if self._packet_index is None:
+            raise FormalPacketAuthorityError(
+                f"Cannot add record: {self.workspace_kind} workspace has no bound packet index"
+            )
+
+        if self.workspace_kind == "formal" and not getattr(self._packet_index, "is_formal_verified", False):
+            raise FormalPacketAuthorityError(
+                "Formal workspace requires a verified formal packet index for record validation"
+            )
+
+        # Validate structure against schema & protocol rules using bound packet index
+        errors = validate_reference_unit_record(record, mode=mode, packet_index=self._packet_index)
         if errors:
             raise ValueError(f"Record validation failed with {len(errors)} error(s): {errors}")
 
@@ -617,6 +688,8 @@ class ReviewerWorkspace:
     def lock_submission(self, notes: str = "") -> dict[str, Any]:
         """Lock the workspace to finalize human review.
 
+        NOTE: This is a local administrative workflow lock for the human reviewer interface,
+        NOT a final cryptographic submission freeze or protocol-level immutable seal.
         No further records may be added once locked.
         """
         self.submission_locked = True
@@ -625,6 +698,7 @@ class ReviewerWorkspace:
             "locked_at_utc": datetime.now(timezone.utc).isoformat(),
             "record_count": len(self.records),
             "reviewer_role": self.reviewer_role,
+            "workspace_kind": self.workspace_kind,
             "protocol_byte_sha256": self.protocol_byte_sha256,
             "notes": notes,
         }
@@ -632,11 +706,14 @@ class ReviewerWorkspace:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize workspace to dictionary."""
+        notice = (
+            "LOCAL-ONLY / DO NOT COMMIT - Isolated formal human reviewer submission container."
+            if self.workspace_kind == "formal"
+            else "LOCAL-ONLY / DO NOT COMMIT - Synthetic test reviewer submission container."
+        )
         return {
-            "$notice": (
-                "LOCAL-ONLY / DO NOT COMMIT - Isolated human reviewer submission container. "
-                "Contains unpublished human annotations."
-            ),
+            "$notice": notice,
+            "workspace_kind": self.workspace_kind,
             "reviewer_role": self.reviewer_role,
             "protocol_id": self.protocol_id,
             "protocol_byte_sha256": self.protocol_byte_sha256,
@@ -667,18 +744,40 @@ class ReviewerWorkspace:
         return file_path
 
     @classmethod
-    def load_local(
+    def load_formal_local(
         cls,
         file_path: Path,
+        formal_packet_index: FrozenPacketAnchorIndex,
         expected_reviewer: ReviewerRole | None = None,
     ) -> ReviewerWorkspace:
-        """Load workspace from a local JSON file with authority and role verification."""
+        """Load a formal reviewer workspace from a local JSON file with authority and record revalidation.
+
+        Fail-closed requirements:
+          1. formal_packet_index.is_formal_verified MUST be True.
+          2. file exists and workspace_kind == 'formal'.
+          3. protocol_id and protocol_byte_sha256 match fixed protocol anchors.
+          4. tcm_packet_byte_sha256 and western_packet_byte_sha256 match fixed frozen byte hashes.
+          5. study_id matches STUDY_ID exactly.
+          6. workspace question_ids matches the 48 formal questions from formal_packet_index.
+          7. expected_reviewer matches if supplied.
+          8. EVERY loaded record is mechanically revalidated against formal_packet_index using
+             validate_reference_unit_record(..., mode='draft', packet_index=formal_packet_index).
+        """
         if not file_path.is_file():
             raise FileNotFoundError(f"Workspace file not found: {file_path}")
 
+        if not getattr(formal_packet_index, "is_formal_verified", False):
+            raise FormalPacketAuthorityError(
+                "load_formal_local requires a verified formal packet index."
+            )
+
         data = json.loads(file_path.read_text(encoding="utf-8"))
 
-        # Verify protocol & packet frozen hashes
+        if data.get("workspace_kind") != "formal":
+            raise FormalPacketAuthorityError(
+                f"Workspace kind mismatch: expected 'formal', got '{data.get('workspace_kind')}'"
+            )
+
         if data.get("protocol_id") != PROTOCOL_ID:
             raise FormalPacketAuthorityError(
                 f"Protocol ID mismatch: '{data.get('protocol_id')}' != '{PROTOCOL_ID}'"
@@ -695,6 +794,10 @@ class ReviewerWorkspace:
             raise FormalPacketAuthorityError(
                 f"Western packet byte SHA mismatch: '{data.get('western_packet_byte_sha256')}' != '{FROZEN_WESTERN_PACKET_BYTE_SHA256}'"
             )
+        if data.get("study_id") != STUDY_ID:
+            raise FormalPacketAuthorityError(
+                f"Study ID mismatch: '{data.get('study_id')}' != '{STUDY_ID}'"
+            )
 
         role = data.get("reviewer_role")
         if role not in ("reviewer_a", "reviewer_b"):
@@ -705,16 +808,113 @@ class ReviewerWorkspace:
                 f"Workspace reviewer '{role}' does not match expected reviewer '{expected_reviewer}'"
             )
 
+        expected_questions = tuple(sorted(formal_packet_index.questions))
+        file_questions = tuple(sorted(data.get("question_ids", ())))
+        if file_questions != expected_questions:
+            raise FormalPacketAuthorityError(
+                f"Workspace question set mismatch: expected {len(expected_questions)} formal questions, "
+                f"got {len(file_questions)}"
+            )
+
+        records = data.get("records", [])
+        # Mechanically revalidate every loaded record against verified formal authority
+        for idx, rec in enumerate(records):
+            errors = validate_reference_unit_record(
+                rec, mode="draft", packet_index=formal_packet_index
+            )
+            if errors:
+                raise FormalPacketAuthorityError(
+                    f"Record at index {idx} failed formal validation against frozen packets: {errors}"
+                )
+
         return cls(
             reviewer_role=role,
+            workspace_kind="formal",
             protocol_id=data["protocol_id"],
             protocol_byte_sha256=data["protocol_byte_sha256"],
             tcm_packet_byte_sha256=data["tcm_packet_byte_sha256"],
             western_packet_byte_sha256=data["western_packet_byte_sha256"],
+            study_id=data["study_id"],
+            question_ids=file_questions,
+            annotation_state=data.get("annotation_state", "blank"),
+            records=records,
+            submission_locked=bool(data.get("submission_locked", False)),
+            lock_metadata=data.get("lock_metadata"),
+            _packet_index=formal_packet_index,
+        )
+
+    @classmethod
+    def load_synthetic_local(
+        cls,
+        file_path: Path,
+        synthetic_packet_index: FrozenPacketAnchorIndex,
+        expected_reviewer: ReviewerRole | None = None,
+    ) -> ReviewerWorkspace:
+        """Load a synthetic reviewer workspace from a local JSON file and revalidate records."""
+        if not file_path.is_file():
+            raise FileNotFoundError(f"Workspace file not found: {file_path}")
+
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+
+        if data.get("workspace_kind") != "synthetic":
+            raise ValueError(
+                f"Workspace kind mismatch: expected 'synthetic', got '{data.get('workspace_kind')}'"
+            )
+
+        role = data.get("reviewer_role")
+        if role not in ("reviewer_a", "reviewer_b"):
+            raise ReviewerRoleMismatchError(f"Invalid reviewer role in file: '{role}'")
+
+        if expected_reviewer and role != expected_reviewer:
+            raise ReviewerRoleMismatchError(
+                f"Workspace reviewer '{role}' does not match expected reviewer '{expected_reviewer}'"
+            )
+
+        records = data.get("records", [])
+        for idx, rec in enumerate(records):
+            errors = validate_reference_unit_record(
+                rec, mode="draft", packet_index=synthetic_packet_index
+            )
+            if errors:
+                raise ValueError(
+                    f"Record at index {idx} failed validation against synthetic index: {errors}"
+                )
+
+        return cls(
+            reviewer_role=role,
+            workspace_kind="synthetic",
+            protocol_id=data.get("protocol_id", PROTOCOL_ID),
+            protocol_byte_sha256=data.get("protocol_byte_sha256", FROZEN_PROTOCOL_BYTE_SHA256),
+            tcm_packet_byte_sha256=data.get("tcm_packet_byte_sha256", "SYNTHETIC_PACKET_AUTHORITY"),
+            western_packet_byte_sha256=data.get("western_packet_byte_sha256", "SYNTHETIC_PACKET_AUTHORITY"),
             study_id=data.get("study_id", STUDY_ID),
             question_ids=tuple(data.get("question_ids", ())),
             annotation_state=data.get("annotation_state", "blank"),
-            records=data.get("records", []),
+            records=records,
             submission_locked=bool(data.get("submission_locked", False)),
             lock_metadata=data.get("lock_metadata"),
+            _packet_index=synthetic_packet_index,
         )
+
+    @classmethod
+    def load_local(
+        cls,
+        file_path: Path,
+        packet_index: FrozenPacketAnchorIndex,
+        expected_reviewer: ReviewerRole | None = None,
+    ) -> ReviewerWorkspace:
+        """Route to load_formal_local or load_synthetic_local based on workspace_kind."""
+        if not file_path.is_file():
+            raise FileNotFoundError(f"Workspace file not found: {file_path}")
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        kind = data.get("workspace_kind")
+        if kind == "formal":
+            return cls.load_formal_local(
+                file_path, formal_packet_index=packet_index, expected_reviewer=expected_reviewer
+            )
+        elif kind == "synthetic":
+            return cls.load_synthetic_local(
+                file_path, synthetic_packet_index=packet_index, expected_reviewer=expected_reviewer
+            )
+        else:
+            raise ValueError(f"Unknown or missing workspace_kind in file: '{kind}'")

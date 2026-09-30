@@ -165,15 +165,13 @@ class FrozenPacketAnchorIndex:
         question_to_packets: dict[str, dict[str, str]],
         question_to_evidence_ids: dict[str, set[str]],
         questions: set[str],
-        *,
-        is_formal_verified: bool = False,
     ) -> None:
         self._packets = packets
         self._evidence_items = evidence_items
         self._question_to_packets = question_to_packets
         self._question_to_evidence_ids = question_to_evidence_ids
         self._questions = questions
-        self._is_formal_verified = is_formal_verified
+        self._is_formal_verified = False
 
     @classmethod
     def from_packet_records(
@@ -248,7 +246,6 @@ class FrozenPacketAnchorIndex:
             question_to_packets=question_to_packets,
             question_to_evidence_ids=question_to_evidence_ids,
             questions=questions,
-            is_formal_verified=False,
         )
 
     @classmethod
