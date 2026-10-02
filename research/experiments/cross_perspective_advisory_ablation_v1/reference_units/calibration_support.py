@@ -2437,6 +2437,16 @@ class CalibrationCompletionChecklist:
         self.reviewer_b_submission.validate_current_state()
         self.disagreement_log.validate_current_state()
 
+        # Position-specific roles remain mandatory even if log hashes are rebound.
+        if self.reviewer_a_submission.reviewer_role != "reviewer_a":
+            raise CalibrationCompletionError(
+                "reviewer_a_submission must have reviewer_role='reviewer_a'"
+            )
+        if self.reviewer_b_submission.reviewer_role != "reviewer_b":
+            raise CalibrationCompletionError(
+                "reviewer_b_submission must have reviewer_role='reviewer_b'"
+            )
+
         f_hash = self.fixture_pack.fixture_pack_canonical_sha256
         if f_hash is None:
             raise CalibrationCompletionError("fixture_pack must be frozen")

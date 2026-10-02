@@ -2229,3 +2229,133 @@ def test_l144_human_origin_backward_compatibility_preserved():
     chk.fixture_pack.model_generated_final_fixture_text = True
     with pytest.raises(CalibrationGateError, match="model_generated_final_fixture_text must be False"):
         chk.validate_ready_for_completion()
+
+
+# ==============================================================================
+# SECTION M: PUBLIC READINESS ROLE SAFETY (Phase 2C-C3B-R1 / Tests 145 to 152)
+# Uses only the existing disposable neutral fixtures, never frozen case prose.
+# ==============================================================================
+
+def _substitute_checklist_roles(
+    chk: CalibrationCompletionChecklist,
+    a_role: str,
+    b_role: str,
+    *,
+    rebind_log: bool,
+) -> None:
+    """Substitute authentic locked test snapshots without forging their hashes."""
+    submissions = {
+        "reviewer_a": chk.reviewer_a_submission,
+        "reviewer_b": chk.reviewer_b_submission,
+    }
+    chk.reviewer_a_submission = submissions[a_role]
+    chk.reviewer_b_submission = submissions[b_role]
+    if rebind_log:
+        chk.disagreement_log.reviewer_a_submission_hash = chk.reviewer_a_submission.submission_hash
+        chk.disagreement_log.reviewer_b_submission_hash = chk.reviewer_b_submission.submission_hash
+
+
+@pytest.mark.parametrize("origin", ["human_authored", "ai_drafted_human_approved"])
+def test_m145_valid_distinct_roles_reach_public_readiness(origin):
+    pack = (
+        _make_neutral_fixture_pack(frozen=True)
+        if origin == "human_authored"
+        else _make_ai_drafted_fixture_pack(frozen=True)
+    )
+    chk = _make_valid_completion_checklist(pack)
+    chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is True
+    assert chk.to_dict()["calibration_ready_for_formal_annotation"] is True
+
+
+def test_m146_b_substituted_into_a_position_blocks_readiness():
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    _substitute_checklist_roles(chk, "reviewer_b", "reviewer_b", rebind_log=False)
+    with pytest.raises(CalibrationCompletionError, match="reviewer_a_submission must have reviewer_role"):
+        chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is False
+
+
+def test_m147_a_substituted_into_b_position_blocks_readiness():
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    _substitute_checklist_roles(chk, "reviewer_a", "reviewer_a", rebind_log=False)
+    with pytest.raises(CalibrationCompletionError, match="reviewer_b_submission must have reviewer_role"):
+        chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is False
+
+
+def test_m148_both_a_roles_with_rebound_log_block_readiness():
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    _substitute_checklist_roles(chk, "reviewer_a", "reviewer_a", rebind_log=True)
+    chk.disagreement_log.validate_current_state()
+    with pytest.raises(CalibrationCompletionError, match="reviewer_b_submission must have reviewer_role"):
+        chk.validate_ready_for_completion()
+
+
+def test_m149_both_b_roles_with_rebound_log_block_readiness():
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    _substitute_checklist_roles(chk, "reviewer_b", "reviewer_b", rebind_log=True)
+    chk.disagreement_log.validate_current_state()
+    with pytest.raises(CalibrationCompletionError, match="reviewer_a_submission must have reviewer_role"):
+        chk.validate_ready_for_completion()
+
+
+@pytest.mark.parametrize(
+    "a_role,b_role",
+    [("reviewer_a", "reviewer_a"), ("reviewer_b", "reviewer_b"), ("reviewer_b", "reviewer_a")],
+)
+def test_m150_rebound_hashes_cannot_bypass_any_public_readiness_path(a_role, b_role):
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    chk.mark_calibration_complete()
+    _substitute_checklist_roles(chk, a_role, b_role, rebind_log=True)
+    # These are individually valid sealed snapshots and a structurally valid log.
+    chk.reviewer_a_submission.validate_current_state()
+    chk.reviewer_b_submission.validate_current_state()
+    chk.disagreement_log.validate_current_state()
+    assert chk.disagreement_log.reviewer_a_submission_hash == chk.reviewer_a_submission.submission_hash
+    assert chk.disagreement_log.reviewer_b_submission_hash == chk.reviewer_b_submission.submission_hash
+    checks = (
+        chk.validate_ready_for_completion,
+        chk.mark_calibration_complete,
+        lambda: setattr(chk, "calibration_ready_for_formal_annotation", True),
+        lambda: chk.calibration_ready_for_formal_annotation,
+    )
+    for check in checks:
+        with pytest.raises(CalibrationCompletionError, match="reviewer_role"):
+            check()
+
+
+@pytest.mark.parametrize(
+    "a_role,b_role",
+    [
+        ("reviewer_a", "reviewer_b"),
+        ("reviewer_a", "reviewer_a"),
+        ("reviewer_b", "reviewer_b"),
+        ("reviewer_b", "reviewer_a"),
+    ],
+)
+def test_m151_serialization_and_public_readiness_agree_on_roles(a_role, b_role):
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    chk.mark_calibration_complete()
+    _substitute_checklist_roles(chk, a_role, b_role, rebind_log=True)
+    if (a_role, b_role) == ("reviewer_a", "reviewer_b"):
+        assert chk.calibration_ready_for_formal_annotation is True
+        assert chk.to_dict()["calibration_ready_for_formal_annotation"] is True
+    else:
+        with pytest.raises(CalibrationCompletionError, match="reviewer_role"):
+            _ = chk.calibration_ready_for_formal_annotation
+        with pytest.raises(CalibrationGateError, match="reviewer_role"):
+            chk.to_dict()
+
+
+@pytest.mark.parametrize("position", ["a", "b"])
+def test_m152_invalid_role_blocks_public_readiness(position):
+    chk = _make_valid_completion_checklist(_make_ai_drafted_fixture_pack(frozen=True))
+    chk.mark_calibration_complete()
+    submission = chk.reviewer_a_submission if position == "a" else chk.reviewer_b_submission
+    submission.reviewer_role = "invalid_role"  # type: ignore[assignment]
+    # Role validation precedes hash verification; the expected error must name the role.
+    with pytest.raises(ValueError, match="reviewer_role must be"):
+        chk.validate_ready_for_completion()
+    with pytest.raises(ValueError, match="reviewer_role must be"):
+        _ = chk.calibration_ready_for_formal_annotation
