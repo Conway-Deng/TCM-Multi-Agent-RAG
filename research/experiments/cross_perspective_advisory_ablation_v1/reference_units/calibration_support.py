@@ -2466,13 +2466,44 @@ class CalibrationCompletionChecklist:
         _require_non_empty_str(self.attestor_a, "attestor_a")
         _require_non_empty_str(self.attestor_b, "attestor_b")
 
-        # 2. Fixture pack authorship
-        if not self.fixture_pack.human_authorship_attested:
-            raise CalibrationCompletionError("fixture_pack.human_authorship_attested must be True")
+        # 2. Fixture pack origin and authorship routing
         if not self.fixture_pack.formal_material_not_used_attested:
             raise CalibrationCompletionError("fixture_pack.formal_material_not_used_attested must be True")
-        if self.fixture_pack.model_generated_final_fixture_text is not False:
-            raise CalibrationCompletionError("fixture_pack.model_generated_final_fixture_text must be False")
+
+        if self.fixture_pack.text_origin == "human_authored":
+            if not self.fixture_pack.human_authorship_attested:
+                raise CalibrationCompletionError(
+                    "fixture_pack.human_authorship_attested must be True for human_authored pack"
+                )
+            if self.fixture_pack.model_generated_final_fixture_text is not False:
+                raise CalibrationCompletionError(
+                    "fixture_pack.model_generated_final_fixture_text must be False for human_authored pack"
+                )
+        elif self.fixture_pack.text_origin == "ai_drafted_human_approved":
+            if self.fixture_pack.human_authorship_attested is not False:
+                raise CalibrationCompletionError(
+                    "fixture_pack.human_authorship_attested must be False for ai_drafted_human_approved pack"
+                )
+            if self.fixture_pack.model_generated_final_fixture_text is not True:
+                raise CalibrationCompletionError(
+                    "fixture_pack.model_generated_final_fixture_text must be True for ai_drafted_human_approved pack"
+                )
+            if self.fixture_pack.ai_draft_provenance is None:
+                raise CalibrationCompletionError(
+                    "fixture_pack.ai_draft_provenance is required for ai_drafted_human_approved pack"
+                )
+            if self.fixture_pack.case_approvals is None or len(self.fixture_pack.case_approvals) != 8:
+                raise CalibrationCompletionError(
+                    "fixture_pack.case_approvals must contain all 8 case approvals"
+                )
+            if self.fixture_pack.pack_approval is None:
+                raise CalibrationCompletionError(
+                    "fixture_pack.pack_approval is required for ai_drafted_human_approved pack"
+                )
+        else:
+            raise CalibrationCompletionError(
+                f"Unknown or invalid fixture_pack.text_origin: '{self.fixture_pack.text_origin}'"
+            )
 
         # 3. Disagreement resolution
         if self.disagreement_log.has_open_disagreements():

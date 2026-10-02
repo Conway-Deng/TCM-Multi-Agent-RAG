@@ -1,0 +1,16 @@
+{
+  "clarification_id": "CPAA1-CALIBRATION-REVIEWER-ELIGIBILITY-CLARIFICATION-V1",
+  "clarification_version": "V1",
+  "clarification_document_byte_sha256": "d7cc62ae1db5faae45944acc86984312d754d0eb9794a1aebd4039c241eeae71",
+  "approval_record_byte_sha256": "96bd9f4dda0bdacd710b30a20884f922d167f9852304cfb8eb423a696fd76d03",
+  "protocol_byte_sha256": "5ab2f681e605f3bc75ef6e91fa8d864a102aa60e6b14efdda132448845dcb46b",
+  "authorship_amendment_byte_sha256": "9de5635eaf62a6346789f7be1f291c0e88d6d8f8b3266daaa45a942a66c98dfa",
+  "fixture_content_canonical_sha256": "9f9a724676857a72d12d6da585a247e70087494e2bc14225b66bdc2562f2b0ea",
+  "fixture_pack_canonical_sha256": "0df8db31c0435e38f6414656445598b49b09c31719771d1518c0fc315eb964d9",
+  "approval_event_date": "2026-10-02",
+  "approval_recording_timestamp": "2026-10-03T00:39:54.585079+08:00",
+  "freeze_timestamp": "2026-10-03T00:39:54.586080+08:00",
+  "approver_identity": "Conway Deng",
+  "approver_role": "study researcher / protocol owner",
+  "status": "APPROVED_AND_FROZEN_FOR_C3_CALIBRATION_PROCEDURE"
+}

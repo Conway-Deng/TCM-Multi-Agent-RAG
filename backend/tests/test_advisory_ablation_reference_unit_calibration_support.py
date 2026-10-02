@@ -1992,3 +1992,240 @@ def test_k128_formal_study_hashes_unchanged():
 def test_k129_no_model_or_provider_calls_invoked():
     """Task 16.28: confirm zero external model or network calls are invoked."""
     assert True
+
+
+# ==============================================================================
+# SECTION L: ORIGIN-AWARE COMPLETION GATE (Phase 2C-C3B / Tests 130 to 144)
+# ==============================================================================
+
+def _make_valid_completion_checklist(pack: CalibrationFixturePack) -> CalibrationCompletionChecklist:
+    """Helper to build a fully satisfied completion checklist against a fixture pack."""
+    sub_a, sub_b = _make_valid_dual_locked_submissions(pack)
+    d_log = _make_valid_disagreement_log(pack, sub_a, sub_b)
+    return CalibrationCompletionChecklist(
+        fixture_pack=pack,
+        reviewer_a_submission=sub_a,
+        reviewer_b_submission=sub_b,
+        disagreement_log=d_log,
+        all_eight_boundaries_reviewed=True,
+        boundary_05_07_08_distinction_reviewed=True,
+        reviewers_agree_rules_applicable=True,
+        no_calibration_artifact_model_exposed=True,
+        no_numerical_agreement_threshold_used=True,
+        attestor_a="Reviewer A",
+        attestor_b="Reviewer B",
+    )
+
+
+def test_l130_valid_human_authored_reaches_completion():
+    """Test A (130): valid human-authored route still reaches completion when all other gates pass."""
+    pack = _make_neutral_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.calibration_ready_for_formal_annotation is False
+    chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is True
+
+
+def test_l131_valid_ai_drafted_reaches_completion():
+    """Test B (131): valid ai_drafted_human_approved route reaches completion when all gates pass."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.calibration_ready_for_formal_annotation is False
+    chk.mark_calibration_complete()
+    assert chk.calibration_ready_for_formal_annotation is True
+
+
+def test_l132_ai_origin_missing_provenance_fails():
+    """Test C (132): AI-origin fixture with missing AI provenance fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.fixture_pack.ai_draft_provenance = None
+    with pytest.raises((CalibrationGateError, CalibrationCompletionError), match="ai_draft_provenance is required"):
+        chk.validate_ready_for_completion()
+
+
+def test_l133_ai_origin_wrong_amendment_hash_fails():
+    """Test D (133): AI-origin fixture with wrong amendment hash fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.fixture_pack.ai_draft_provenance is not None
+    chk.fixture_pack.ai_draft_provenance.amendment_byte_sha256 = "0" * 64
+    with pytest.raises(CalibrationGateError, match="amendment_byte_sha256 mismatch"):
+        chk.validate_ready_for_completion()
+
+
+def test_l134_ai_origin_stale_case_approval_fails():
+    """Test E (134): AI-origin fixture with stale case approval fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.fixture_pack.case_approvals is not None
+    chk.fixture_pack.case_approvals["CAL-2CC-01"].case_content_sha256 = "0" * 64
+    with pytest.raises(CalibrationGateError, match="case_content_sha256 mismatch"):
+        chk.validate_ready_for_completion()
+
+
+def test_l135_ai_origin_wrong_pack_approval_hash_fails():
+    """Test F (135): AI-origin fixture with wrong fixture-content approval binding fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.fixture_pack.pack_approval is not None
+    chk.fixture_pack.pack_approval.fixture_content_canonical_sha256 = "0" * 64
+    with pytest.raises(CalibrationGateError, match="pack_approval fixture_content_canonical_sha256 mismatch"):
+        chk.validate_ready_for_completion()
+
+
+def test_l136_ai_origin_rejected_case_approval_fails():
+    """Test G (136): AI-origin fixture with rejected human case approval fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    assert chk.fixture_pack.case_approvals is not None
+    chk.fixture_pack.case_approvals["CAL-2CC-01"].decision = "rejected"
+    with pytest.raises(CalibrationGateError, match="must be 'approved'"):
+        chk.validate_ready_for_completion()
+
+
+def test_l137_contradictory_provenance_flags_fail():
+    """Test H (137): contradictory provenance flags fail completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.fixture_pack.human_authorship_attested = True
+    with pytest.raises((CalibrationGateError, CalibrationCompletionError), match="cannot falsely claim human authorship|human_authorship_attested must be False"):
+        chk.validate_ready_for_completion()
+
+    chk.fixture_pack.human_authorship_attested = False
+    chk.fixture_pack.model_generated_final_fixture_text = False
+    with pytest.raises((CalibrationGateError, CalibrationCompletionError), match="model_generated_final_fixture_text must be True"):
+        chk.validate_ready_for_completion()
+
+
+def test_l138_unknown_text_origin_fails():
+    """Test I (138): unknown origin fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.fixture_pack.text_origin = "synthetic_hybrid"  # type: ignore[assignment]
+    with pytest.raises((ValueError, CalibrationGateError, CalibrationCompletionError), match="text_origin"):
+        chk.validate_ready_for_completion()
+
+
+def test_l139_missing_reviewer_lock_still_fails():
+    """Test J (139): missing reviewer lock still fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.reviewer_a_submission.records_by_case["CAL-2CC-01"].append({"tampered": "record"})
+    with pytest.raises(CalibrationLockError, match="submission_hash mismatch"):
+        chk.validate_ready_for_completion()
+
+
+def test_l140_wrong_reviewer_fixture_binding_still_fails():
+    """Test K (140): wrong reviewer/fixture binding still fails completion."""
+    pack_ai = _make_ai_drafted_fixture_pack(frozen=True)
+    pack_other = _make_neutral_fixture_pack(frozen=True)
+    _, sub_b_other = _make_valid_dual_locked_submissions(pack_other)
+    chk = _make_valid_completion_checklist(pack_ai)
+    chk.reviewer_b_submission = sub_b_other
+    with pytest.raises(CalibrationCompletionError, match="Reviewer B fixture hash mismatch"):
+        chk.validate_ready_for_completion()
+
+
+def test_l141_open_disagreement_still_fails():
+    """Test L (141): open disagreement still fails completion."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    entry = CalibrationDisagreementEntry(
+        calibration_case_id="CAL-2CC-01",
+        disagreement_id="DIS-01",
+        decision_category="Scope",
+        reviewer_a_position="Pos A",
+        reviewer_b_position="Pos B",
+        ambiguity_classification="A_CASE_LEVEL",
+        status="open",
+    )
+    chk.disagreement_log.add_entry(entry)
+    with pytest.raises(CalibrationCompletionError, match="open disagreements exist in log"):
+        chk.validate_ready_for_completion()
+
+
+def test_l142_unresolved_type_b_disagreement_fails():
+    """Test M (142): unresolved Type B disagreement / missing required refreeze still fails."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+
+    # Subtest 1: Open Type-B disagreement prevents completion
+    entry_open = CalibrationDisagreementEntry(
+        calibration_case_id="CAL-2CC-01",
+        disagreement_id="DIS-OPEN-B",
+        decision_category="Protocol",
+        reviewer_a_position="Pos A",
+        reviewer_b_position="Pos B",
+        ambiguity_classification="B_METHODOLOGICAL_AMBIGUITY",
+        status="open",
+    )
+    chk.disagreement_log.add_entry(entry_open)
+    with pytest.raises(CalibrationCompletionError, match="open disagreements exist in log"):
+        chk.validate_ready_for_completion()
+
+    # Subtest 2: Attempting to resolve Type-B without refreeze fails entry validation
+    with pytest.raises((ValueError, CalibrationStateError), match="clarification_refreeze"):
+        entry_open.resolve(
+            human_resolution="Clarified protocol",
+            resolution_rationale="Clarified without refreeze",
+            participants=["reviewer_a", "reviewer_b"],
+            resolution_date="2026-10-02",
+            clarification_refreeze_id="",
+            clarification_refreeze_attested=False,
+        )
+
+    # Subtest 3: Type-B entry lacking refreeze attestation blocks checklist completion
+    entry_resolved = CalibrationDisagreementEntry(
+        calibration_case_id="CAL-2CC-02",
+        disagreement_id="DIS-TYPEB",
+        decision_category="Protocol",
+        reviewer_a_position="Pos A",
+        reviewer_b_position="Pos B",
+        ambiguity_classification="B_METHODOLOGICAL_AMBIGUITY",
+        status="open",
+    )
+    entry_resolved.resolve(
+        human_resolution="Clarified protocol",
+        resolution_rationale="Clarified with refreeze",
+        participants=["reviewer_a", "reviewer_b"],
+        resolution_date="2026-10-02",
+        clarification_refreeze_id="CPAA1-REFREEZE-01",
+        clarification_refreeze_attested=True,
+    )
+    chk.disagreement_log.entries.clear()
+    chk.disagreement_log.add_entry(entry_resolved)
+    # Tamper with refreeze attestation after addition to test completion checklist gate
+    entry_resolved.clarification_refreeze_attested = False
+    with pytest.raises((CalibrationStateError, CalibrationCompletionError), match="clarification_refreeze"):
+        chk.validate_ready_for_completion()
+
+
+def test_l143_missing_completion_attestation_still_fails():
+    """Test N (143): missing completion attestation still fails."""
+    pack = _make_ai_drafted_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.all_eight_boundaries_reviewed = False
+    with pytest.raises(CalibrationCompletionError, match="all_eight_boundaries_reviewed must be True"):
+        chk.validate_ready_for_completion()
+
+    chk.all_eight_boundaries_reviewed = True
+    chk.attestor_a = ""
+    with pytest.raises(ValueError, match="attestor_a"):
+        chk.validate_ready_for_completion()
+
+
+def test_l144_human_origin_backward_compatibility_preserved():
+    """Test O (144): existing human-origin behavior remains backward compatible."""
+    pack = _make_neutral_fixture_pack(frozen=True)
+    chk = _make_valid_completion_checklist(pack)
+    chk.validate_ready_for_completion()
+
+    chk.fixture_pack.human_authorship_attested = False
+    with pytest.raises(CalibrationGateError, match="human_authorship_attested must be True for human-authored fixture freeze"):
+        chk.validate_ready_for_completion()
+
+    chk.fixture_pack.human_authorship_attested = True
+    chk.fixture_pack.model_generated_final_fixture_text = True
+    with pytest.raises(CalibrationGateError, match="model_generated_final_fixture_text must be False"):
+        chk.validate_ready_for_completion()
